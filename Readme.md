@@ -1,5 +1,7 @@
 # PyGemini
 
+![ci_python](https://github.com/gemini3d/pygemini/workflows/ci/badge.svg)
+
 A Python interface to [Gemini3D](https://github.com/gemini3d/gemini)
 
 ## Setup
