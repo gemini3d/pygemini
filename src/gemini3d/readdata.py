@@ -47,7 +47,9 @@ def readgrid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
     return grid
 
 
-def readdata(fn: Path, file_format: str = None, *, E0dir: Path = None) -> T.Dict[str, T.Any]:
+def readdata(
+    fn: Path, file_format: str = None, *, cfg: T.Dict[str, T.Any] = None, E0dir: Path = None
+) -> T.Dict[str, T.Any]:
     """
     knowing the filename for a simulation time step, read the data for that time step
 
@@ -55,6 +57,12 @@ def readdata(fn: Path, file_format: str = None, *, E0dir: Path = None) -> T.Dict
     ----------
     fn: pathlib.Path
         filename for this timestep
+    file_format: str
+        specify file extension of data files
+    cfg: dict
+        to avoid reading config.nml
+    E0dir: pathlib.Path
+        E0 directory
 
     Returns
     -------
@@ -86,34 +94,35 @@ def readdata(fn: Path, file_format: str = None, *, E0dir: Path = None) -> T.Dict
         fn_Efield = E0dir / fn.name
 
     input_dir = fn.parent / "inputs"
-    P = read_config(input_dir)
-    P["lxs"] = get_simsize(input_dir)
+    if cfg is None:
+        cfg = read_config(input_dir)
+    cfg["lxs"] = get_simsize(input_dir)
 
     if not file_format:
         file_format = fn.suffix[1:]
 
     if file_format == "dat":
-        if P["flagoutput"] == 1:
-            dat = raw.loadframe3d_curv(fn, P["lxs"])
-        elif P["flagoutput"] == 2:
-            dat = raw.loadframe3d_curvavg(fn, P["lxs"])
+        if cfg["flagoutput"] == 0:
+            dat = raw.loadframe3d_curvne(fn, cfg["lxs"])
+        elif cfg["flagoutput"] == 1:
+            dat = raw.loadframe3d_curv(fn, cfg["lxs"])
+        elif cfg["flagoutput"] == 2:
+            dat = raw.loadframe3d_curvavg(fn, cfg["lxs"])
         else:
             raise ValueError("TODO: need to handle this case, file a bug report.")
 
         if fn_aurora.is_file():
-            dat.update(raw.loadglow_aurmap(fn_aurora, P["lxs"], len(wavelength)))
+            dat.update(raw.loadglow_aurmap(fn_aurora, cfg["lxs"], len(wavelength)))
             dat["wavelength"] = wavelength
 
-        if E0dir and fn_Efield.is_file():
-            dat.update(read_Efield(fn_Efield))
     elif file_format == "h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
 
-        if P["flagoutput"] == 1:
-            dat = hdf.loadframe3d_curv(fn, P["lxs"])
-        elif P["flagoutput"] == 2:
-            dat = hdf.loadframe3d_curvavg(fn, P["lxs"])
+        if cfg["flagoutput"] == 1:
+            dat = hdf.loadframe3d_curv(fn, cfg["lxs"])
+        elif cfg["flagoutput"] == 2:
+            dat = hdf.loadframe3d_curvavg(fn, cfg["lxs"])
         else:
             raise ValueError("TODO: need to handle this case, file a bug report.")
 
@@ -124,10 +133,10 @@ def readdata(fn: Path, file_format: str = None, *, E0dir: Path = None) -> T.Dict
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
 
-        if P["flagoutput"] == 1:
-            dat = nc4.loadframe3d_curv(fn, P["lxs"])
-        elif P["flagoutput"] == 2:
-            dat = nc4.loadframe3d_curvavg(fn, P["lxs"])
+        if cfg["flagoutput"] == 1:
+            dat = nc4.loadframe3d_curv(fn, cfg["lxs"])
+        elif cfg["flagoutput"] == 2:
+            dat = nc4.loadframe3d_curvavg(fn, cfg["lxs"])
         else:
             raise ValueError("TODO: need to handle this case, file a bug report.")
 
@@ -136,6 +145,9 @@ def readdata(fn: Path, file_format: str = None, *, E0dir: Path = None) -> T.Dict
             dat["wavelength"] = wavelength
     else:
         raise ValueError(f"Unknown file type {fn}")
+
+    if E0dir and fn_Efield.is_file():
+        dat.update(read_Efield(fn_Efield))
 
     return dat
 
