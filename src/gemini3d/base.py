@@ -24,15 +24,19 @@ def get_simsize(path: Pathlike) -> T.Tuple[int, ...]:
     path = Path(path).expanduser().resolve()
     if path.is_dir():
         for suffix in [".h5", ".nc", ".dat"]:
-            fn = path / ("simsize" + suffix)
-            if fn.is_file():
-                break
+            for stem in ["", "inputs/"]:
+                fn = path / (f"{stem}simsize" + suffix)
+                if fn.is_file():
+                    break
     else:
         fn = path
         if not fn.stem == "simsize":
-            fn = path.parent / ("simsize" + path.suffix)
+            for stem in ["", "inputs/"]:
+                fn = path.parent / (f"{stem}simsize" + path.suffix)
+                if fn.is_file():
+                    break
     if not fn.is_file():
-        raise FileNotFoundError(path)
+        raise FileNotFoundError(f"simsize not found in {path}")
 
     if fn.suffix == ".h5":
         if hdf is None:
