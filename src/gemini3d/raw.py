@@ -244,6 +244,18 @@ def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     return dat
 
 
+def loadframe3d_curvne(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+
+    dat: T.Dict[str, T.Any] = {}
+
+    with fn.open("r") as f:
+        dat["time"] = read_time(f)
+
+        dat["ne"] = [("x1", "x2", "x3"), read3D(f, lxs)]
+
+    return dat
+
+
 def read4D(f, lsp: int, lxs: T.Sequence[int]) -> np.ndarray:
     """
     end users should normally use laodframe() instead
