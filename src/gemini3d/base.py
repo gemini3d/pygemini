@@ -18,26 +18,10 @@ except ModuleNotFoundError:
 Pathlike = T.Union[str, Path]
 
 
-def get_simsize(path: Pathlike) -> T.Tuple[int, ...]:
-    """ get simulation dimenions """
+def get_simsize(path: Path) -> T.Tuple[int, ...]:
+    """ get simulation dimensions """
 
-    path = Path(path).expanduser().resolve()
-    if path.is_dir():
-        for suffix in [".h5", ".nc", ".dat"]:
-            for stem in ["", "inputs/"]:
-                fn = path / (f"{stem}simsize" + suffix)
-                if fn.is_file():
-                    break
-    else:
-        fn = path
-        if not fn.stem == "simsize":
-            for stem in ["", "inputs/"]:
-                fn = path.parent / (f"{stem}simsize" + path.suffix)
-                if fn.is_file():
-                    break
-    if not fn.is_file():
-        raise FileNotFoundError(f"simsize not found in {path}")
-
+    fn = get_simsize_path(path)
     if fn.suffix == ".h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
@@ -48,6 +32,30 @@ def get_simsize(path: Pathlike) -> T.Tuple[int, ...]:
         return nc4.get_simsize(fn)
     else:
         return raw.get_simsize(fn)
+
+
+def get_simsize_path(path: Path) -> Path:
+    """ gets path to simsize file """
+
+    path = Path(path).expanduser()
+
+    if path.is_dir():
+        for suffix in [".h5", ".nc", ".dat"]:
+            for stem in ["", "inputs/"]:
+                fn = path / (f"{stem}simsize" + suffix)
+                if fn.is_file():
+                    return fn
+    elif path.is_file():
+        fn = path
+        if fn.stem == "simsize":
+            return fn
+
+        for stem in ["", "inputs/"]:
+            fn = path.parent / (f"{stem}simsize" + path.suffix)
+            if fn.is_file():
+                return fn
+
+    raise FileNotFoundError(f"simsize not found in {path}")
 
 
 def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
