@@ -38,15 +38,16 @@ def get_mpi_count(path: Path, max_cpu: int) -> int:
         raise FileNotFoundError(f"{path} is not a file or directory")
 
     mpi_count = 1
+
     if size[2] == 1:
         # 2D sim
-        for i in range(max_cpu, 2, -1):
+        for i in range(max_cpu, 1, -1):
             mpi_count = max(math.gcd(size[1], i), mpi_count)
             if i < mpi_count:
                 break
     else:
         # 3D sim
-        for i in range(max_cpu, 2, -1):
+        for i in range(max_cpu, 1, -1):
             mpi_count = max(math.gcd(size[2], i), mpi_count)
             if i < mpi_count:
                 break
