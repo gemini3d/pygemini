@@ -122,7 +122,9 @@ def readdata(
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
 
-        if cfg["flagoutput"] == 1:
+        if cfg["flagoutput"] == 0:
+            dat = hdf.loadframe3d_curvne(fn)
+        elif cfg["flagoutput"] == 1:
             dat = hdf.loadframe3d_curv(fn, cfg["lxs"])
         elif cfg["flagoutput"] == 2:
             dat = hdf.loadframe3d_curvavg(fn, cfg["lxs"])

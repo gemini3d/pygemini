@@ -102,6 +102,44 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         )
 
 
+def write_data(dat: T.Dict[str, T.Any], outfn: Path):
+    """
+    write simulation data
+    e.g. for converting a file format from a simulation
+    """
+    lxs = dat["lxs"]
+
+    with h5py.File(outfn, "w") as h:
+        for k in ["ns", "vs1", "Ts"]:
+            if k not in dat:
+                continue
+
+            h.create_dataset(
+                k,
+                data=dat[k][1].astype(np.float32),
+                chunks=(1, *lxs[1:], LSP),
+                compression="gzip",
+                compression_opts=1,
+            )
+
+        for k in ["ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"]:
+            if k not in dat:
+                continue
+
+            h.create_dataset(
+                k,
+                data=dat[k][1].astype(np.float32),
+                chunks=(1, *lxs[1:]),
+                compression="gzip",
+                compression_opts=1,
+            )
+
+        if "Phitop" in dat:
+            h.create_dataset(
+                "Phitop", data=dat["Phitop"][1], compression="gzip", compression_opts=1,
+            )
+
+
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     """
     get simulation grid
@@ -331,9 +369,20 @@ def write_precip(outdir: Path, precip: T.Dict[str, T.Any]):
                 )
 
 
+def loadframe3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
+    """
+    just Ne
+    """
+
+    with h5py.File(fn, "r") as f:
+        dat = {"ne": f["/ne"][:]}
+
+    return dat
+
+
 def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     """
-    end users should normally use loadframe() instead
+    curvilinear
     """
 
     #    grid = readgrid(fn.parent / "inputs/simgrid.h5")

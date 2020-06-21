@@ -189,6 +189,55 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         _write_var(f, "Ts", ("species", "x3", "x2", "x1"), Ts.transpose(p4))
 
 
+def write_data(dat: T.Dict[str, T.Any], fn: Path):
+    """
+    write simulation data
+    e.g. for converting a file format from a simulation
+    """
+
+    print("nc4:write_data:", fn)
+
+    with Dataset(fn, "w") as f:
+        if "ns" in dat:
+            shape = dat["ns"].shape
+        elif "ne" in dat:
+            shape = dat["ne"].shape
+        else:
+            raise ValueError("what variable should I use to determine dimensions?")
+
+        if len(shape) == 4:
+            f.createDimension("species", 7)
+            f.createDimension("x1", shape[1])
+            f.createDimension("x2", shape[2])
+            f.createDimension("x3", shape[3])
+        elif len(shape) == 3:
+            f.createDimension("x1", shape[0])
+            f.createDimension("x2", shape[1])
+            f.createDimension("x3", shape[2])
+        else:
+            raise ValueError("unknown how to handle non 3-D or 4-D array")
+
+        if len(shape) == 3:
+            # ne-only case
+            _write_var(f, "ne", ("x1", "x2", "x3"), dat["ne"])
+            return
+
+        for k in ["ns", "vs1", "Ts"]:
+            if k not in dat:
+                continue
+
+            _write_var(f, k, ("species", "x1", "x2", "x3"), dat[k])
+
+        for k in ["ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"]:
+            if k not in dat:
+                continue
+
+            _write_var(f, k, ("species", "x1", "x2", "x3"), dat[k])
+
+        if "Phitop" in dat:
+            _write_var(f, k, ("x2", "x3"), dat["Phitop"])
+
+
 def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     """
     load electric field

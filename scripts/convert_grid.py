@@ -11,6 +11,7 @@ import gemini3d
 
 def cli():
     p = argparse.ArgumentParser()
+    p.add_argument("format", help="file format", choices=["h5", "nc"])
     p.add_argument("indir", help="Gemini simgrid.dat")
     p.add_argument("-o", "--outdir", help="directory to write HDF5 files")
     P = p.parse_args()
@@ -23,12 +24,17 @@ def cli():
     else:
         raise FileNotFoundError(infile)
 
-    outfile = outdir / (infile.stem + ".h5")
+    suffix = f".{P.format}"
+
+    outfile = outdir / (infile.stem + suffix)
     print(infile, "=>", outfile)
 
     xg = gemini3d.readgrid(infile)
 
-    cfg = {"indat_size": infile.with_name("simsize.h5"), "indat_grid": infile.with_suffix(".h5")}
+    cfg = {
+        "indat_size": infile.with_name(f"simsize{suffix}"),
+        "indat_grid": infile.with_suffix(suffix),
+    }
 
     gemini3d.base.write_grid(cfg, xg)
 
