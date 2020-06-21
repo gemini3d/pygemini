@@ -14,7 +14,7 @@ def read_grid(fn: Path) -> T.Dict[str, T.Any]:
     Parameters
     ----------
     fn: pathlib.Path
-        filepath to simgrid.h5
+        filepath to simgrid file
 
     Returns
     -------
@@ -51,3 +51,19 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
         raise KeyError(f"could not find '/lxs', '/lx' or '/lx1' in {path.as_posix()}")
 
     return lxs
+
+
+def read_state(fn: Path) -> T.Dict[str, T.Any]:
+    """
+    load initial condition data
+    """
+
+    return scipy.io.loadmat(fn, squeeze_me=True)
+
+
+def read_precip(fn: Path) -> T.Dict[str, T.Any]:
+    """
+    load precipitation data
+    """
+
+    return scipy.io.loadmat(fn, squeeze_me=True)
