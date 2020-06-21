@@ -4,6 +4,7 @@ import numpy as np
 from datetime import datetime
 
 from . import raw
+from . import matlab
 
 try:
     from . import hdf
@@ -30,6 +31,10 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
         return nc4.get_simsize(fn)
+    elif fn.suffix == ".dat":
+        return raw.get_simsize(fn)
+    elif fn.suffix == ".mat":
+        return matlab.get_simsize(fn)
     else:
         return raw.get_simsize(fn)
 
@@ -40,7 +45,7 @@ def get_simsize_path(path: Path) -> Path:
     path = Path(path).expanduser()
 
     if path.is_dir():
-        for suffix in [".h5", ".nc", ".dat"]:
+        for suffix in [".h5", ".nc", ".dat", ".mat"]:
             for stem in ["", "inputs/"]:
                 fn = path / (f"{stem}simsize" + suffix)
                 if fn.is_file():
@@ -74,6 +79,9 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     """
 
     p["indat_size"].parent.mkdir(parents=True, exist_ok=True)
+
+    if "format" not in p:
+        p["format"] = p["indat_size"].suffix[1:]
 
     if p["format"] in ("hdf5", "h5"):
         if hdf is None:

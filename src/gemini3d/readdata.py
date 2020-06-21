@@ -10,6 +10,7 @@ import typing as T
 from . import raw
 from .config import read_config
 from .base import get_simsize
+from . import matlab
 
 try:
     from . import hdf
@@ -41,6 +42,8 @@ def readgrid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
         grid = nc4.readgrid(fn.with_suffix(".nc"))
+    elif file_format == "mat":
+        grid = matlab.read_grid(fn.with_suffix(".mat"))
     else:
         raise ValueError(f"Unknown file type {fn}")
 

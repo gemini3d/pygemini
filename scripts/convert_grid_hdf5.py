@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-convert Gemini .dat to .h5
+convert Gemini grid to HDF5 .h5
 """
 
 from pathlib import Path
@@ -27,7 +27,9 @@ def cli():
     print(infile, "=>", outfile)
 
     xg = gemini3d.readgrid(infile)
+
     cfg = {"indat_size": infile.with_name("simsize.h5"), "indat_grid": infile.with_suffix(".h5")}
+
     gemini3d.base.write_grid(cfg, xg)
 
 

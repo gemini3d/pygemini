@@ -153,6 +153,9 @@ def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
     need the .transpose() for h5py
     """
 
+    if "lx" not in xg:
+        xg["lx"] = np.array([xg["x1"].shape, xg["x2"].shape, xg["x3"].shape])
+
     print("hdf:write_grid:", size_fn)
     with h5py.File(size_fn, "w") as h:
         h["/lx"] = xg["lx"]
@@ -172,6 +175,10 @@ def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
                 f"gx{i}",
                 f"e{i}",
             ):
+                if k not in xg:
+                    logging.info(f"SKIP: {k}")
+                    continue
+
                 if xg[k].ndim >= 2:
                     h.create_dataset(
                         f"/{k}",
@@ -202,6 +209,10 @@ def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
             "y",
             "z",
         ):
+            if k not in xg:
+                logging.info(f"SKIP: {k}")
+                continue
+
             if xg[k].ndim >= 2:
                 h.create_dataset(
                     f"/{k}",

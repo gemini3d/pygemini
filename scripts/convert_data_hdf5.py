@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-convert Gemini .dat to .h5
+convert Gemini data to HDF5 .h5
 """
 import h5py
 from pathlib import Path
@@ -33,12 +33,13 @@ def cli():
     else:
         raise FileNotFoundError(indir)
 
-    if indir.is_file() and indir.suffix == ".dat":
+    if indir.is_file():
         infiles = [indir]
     elif indir.is_dir():
         infiles = sorted(indir.glob("*.dat"))
     else:
-        raise FileNotFoundError(f"{indir} is not a .dat file or directory")
+        raise FileNotFoundError(indir)
+
     if not infiles:
         raise FileNotFoundError(f"no files to convert in {indir}")
 
@@ -53,7 +54,9 @@ def cli():
         print(infile, "=>", outfile)
 
         dat = gemini3d.readdata(infile, cfg=cfg)
-        dat["lxs"] = lxs
+        if "lxs" not in dat:
+            dat["lxs"] = lxs
+
         write_hdf5(dat, outfile)
 
 
