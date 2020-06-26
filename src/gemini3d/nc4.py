@@ -357,7 +357,18 @@ def write_precip(outdir: Path, precip: T.Dict[str, np.ndarray]):
                 _write_var(f, f"{k}p", ("lat", "lon"), precip[k][i, :, :].transpose())
 
 
-def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+def loadframe3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
+    """
+    just Ne
+    """
+
+    with Dataset(fn, "r") as f:
+        dat = {"ne": (("x1", "x2", "x3"), f["/ne"][:])}
+
+    return dat
+
+
+def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     """
     end users should normally use loadframe() instead
     """
@@ -366,6 +377,8 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
+
+    lxs = get_simsize(fn.parent / "simsize.nc")
 
     dat: T.Dict[str, T.Any] = {}
 
@@ -419,7 +432,7 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     return dat
 
 
-def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     """
     end users should normally use loadframe() instead
 

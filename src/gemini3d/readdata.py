@@ -99,23 +99,23 @@ def readdata(
     input_dir = fn.parent / "inputs"
     if cfg is None:
         cfg = read_config(input_dir)
-    cfg["lxs"] = get_simsize(input_dir)
 
     if not file_format:
         file_format = fn.suffix[1:]
 
     if file_format == "dat":
+        lxs = get_simsize(fn.parent / "simsize.dat")
         if cfg["flagoutput"] == 0:
-            dat = raw.loadframe3d_curvne(fn, cfg["lxs"])
+            dat = raw.loadframe3d_curvne(fn, lxs)
         elif cfg["flagoutput"] == 1:
-            dat = raw.loadframe3d_curv(fn, cfg["lxs"])
+            dat = raw.loadframe3d_curv(fn, lxs)
         elif cfg["flagoutput"] == 2:
-            dat = raw.loadframe3d_curvavg(fn, cfg["lxs"])
+            dat = raw.loadframe3d_curvavg(fn, lxs)
         else:
             raise ValueError("TODO: need to handle this case, file a bug report.")
 
         if fn_aurora.is_file():
-            dat.update(raw.loadglow_aurmap(fn_aurora, cfg["lxs"], len(wavelength)))
+            dat.update(raw.loadglow_aurmap(fn_aurora, lxs, len(wavelength)))
             dat["wavelength"] = wavelength
 
     elif file_format == "h5":
@@ -125,9 +125,9 @@ def readdata(
         if cfg["flagoutput"] == 0:
             dat = hdf.loadframe3d_curvne(fn)
         elif cfg["flagoutput"] == 1:
-            dat = hdf.loadframe3d_curv(fn, cfg["lxs"])
+            dat = hdf.loadframe3d_curv(fn)
         elif cfg["flagoutput"] == 2:
-            dat = hdf.loadframe3d_curvavg(fn, cfg["lxs"])
+            dat = hdf.loadframe3d_curvavg(fn)
         else:
             raise ValueError("TODO: need to handle this case, file a bug report.")
 
@@ -138,10 +138,12 @@ def readdata(
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
 
+        if cfg["flagoutput"] == 0:
+            dat = nc4.loadframe3d_curvne(fn)
         if cfg["flagoutput"] == 1:
-            dat = nc4.loadframe3d_curv(fn, cfg["lxs"])
+            dat = nc4.loadframe3d_curv(fn)
         elif cfg["flagoutput"] == 2:
-            dat = nc4.loadframe3d_curvavg(fn, cfg["lxs"])
+            dat = nc4.loadframe3d_curvavg(fn)
         else:
             raise ValueError("TODO: need to handle this case, file a bug report.")
 

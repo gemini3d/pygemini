@@ -2,6 +2,7 @@ from pathlib import Path
 import typing as T
 import numpy as np
 from datetime import datetime
+import logging
 
 from . import raw
 from . import matlab
@@ -23,6 +24,9 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     """ get simulation dimensions """
 
     fn = get_simsize_path(path)
+    if not fn:
+        return None
+
     if fn.suffix == ".h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
@@ -35,8 +39,10 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
         return raw.get_simsize(fn)
     elif fn.suffix == ".mat":
         return matlab.get_simsize(fn)
-    else:
+    elif fn.suffix == ".dat":
         return raw.get_simsize(fn)
+    else:
+        raise ValueError("unkonwn simsize file type")
 
 
 def get_simsize_path(path: Path) -> Path:
@@ -60,7 +66,8 @@ def get_simsize_path(path: Path) -> Path:
             if fn.is_file():
                 return fn
 
-    raise FileNotFoundError(f"simsize not found in {path}")
+    logging.error(f"simsize not found in {path}")
+    return None
 
 
 def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):

@@ -5,6 +5,8 @@
 https://docs.enthought.com/mayavi/mayavi/mlab_case_studies.html
 https://docs.enthought.com/mayavi/mayavi/auto/mlab_decorations.html
 """
+
+import typing as T
 from mayavi import mlab
 import argparse
 
@@ -16,7 +18,9 @@ if __name__ == "__main__":
     p.add_argument("fn", help=".dat filename to load directly")
     P = p.parse_args()
 
-    dat = gemini3d.readdata(P.fn)
+    cfg: T.Dict[str, T.Any] = {}
+
+    dat = gemini3d.readdata(P.fn, cfg=cfg)
 
     for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
         mlab.pipeline.volume(mlab.pipeline.scalar_field(dat[p][1]))
