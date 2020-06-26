@@ -6,7 +6,6 @@ https://docs.enthought.com/mayavi/mayavi/mlab_case_studies.html
 https://docs.enthought.com/mayavi/mayavi/auto/mlab_decorations.html
 """
 
-import typing as T
 from mayavi import mlab
 import argparse
 
@@ -15,10 +14,11 @@ import gemini3d
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
+    p.add_argument("flag", help="output flag", type=int)
     p.add_argument("fn", help=".dat filename to load directly")
     P = p.parse_args()
 
-    cfg: T.Dict[str, T.Any] = {}
+    cfg = {"flagoutput": P.flag}
 
     dat = gemini3d.readdata(P.fn, cfg=cfg)
 

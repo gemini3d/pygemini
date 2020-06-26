@@ -105,14 +105,16 @@ def readdata(
 
     if file_format == "dat":
         lxs = get_simsize(fn.parent / "simsize.dat")
-        if cfg["flagoutput"] == 0:
+
+        flag: int = cfg.get("flagoutput")
+        if flag == 0:
             dat = raw.loadframe3d_curvne(fn, lxs)
-        elif cfg["flagoutput"] == 1:
+        elif flag == 1:
             dat = raw.loadframe3d_curv(fn, lxs)
-        elif cfg["flagoutput"] == 2:
+        elif flag == 2:
             dat = raw.loadframe3d_curvavg(fn, lxs)
         else:
-            raise ValueError("TODO: need to handle this case, file a bug report.")
+            raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
         if fn_aurora.is_file():
             dat.update(raw.loadglow_aurmap(fn_aurora, lxs, len(wavelength)))
@@ -122,14 +124,15 @@ def readdata(
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
 
-        if cfg["flagoutput"] == 0:
+        flag = cfg.get("flagoutput")
+        if flag == 0:
             dat = hdf.loadframe3d_curvne(fn)
-        elif cfg["flagoutput"] == 1:
+        elif flag == 1:
             dat = hdf.loadframe3d_curv(fn)
-        elif cfg["flagoutput"] == 2:
+        elif flag == 2:
             dat = hdf.loadframe3d_curvavg(fn)
         else:
-            raise ValueError("TODO: need to handle this case, file a bug report.")
+            raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
         if fn_aurora.is_file():
             dat.update(hdf.loadglow_aurmap(fn_aurora))
@@ -138,14 +141,15 @@ def readdata(
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
 
-        if cfg["flagoutput"] == 0:
+        flag = cfg.get("flagoutput")
+        if flag == 0:
             dat = nc4.loadframe3d_curvne(fn)
-        if cfg["flagoutput"] == 1:
+        elif flag == 1:
             dat = nc4.loadframe3d_curv(fn)
-        elif cfg["flagoutput"] == 2:
+        elif flag == 2:
             dat = nc4.loadframe3d_curvavg(fn)
         else:
-            raise ValueError("TODO: need to handle this case, file a bug report.")
+            raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
         if fn_aurora.is_file():
             dat.update(nc4.loadglow_aurmap(fn_aurora))
