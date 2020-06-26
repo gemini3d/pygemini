@@ -189,7 +189,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         _write_var(f, "Ts", ("species", "x3", "x2", "x1"), Ts.transpose(p4))
 
 
-def write_data(dat: T.Dict[str, T.Any], fn: Path):
+def write_data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
     """
     write simulation data
     e.g. for converting a file format from a simulation
@@ -216,6 +216,10 @@ def write_data(dat: T.Dict[str, T.Any], fn: Path):
             f.createDimension("x3", shape[2])
         else:
             raise ValueError("unknown how to handle non 3-D or 4-D array")
+
+        # set dimension values
+        for k in ("x1", "x2", "x3"):
+            _write_var(f, k, (k,), xg[k])
 
         if len(shape) == 3:
             # ne-only case

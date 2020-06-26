@@ -37,6 +37,7 @@ def cli():
 
     if indir.is_file():
         infiles = [indir]
+        indir = indir.parent
     elif indir.is_dir():
         infiles = sorted(indir.glob("*.dat"))
     else:
@@ -51,6 +52,9 @@ def cli():
     if P.flagoutput is not None:
         cfg["flagoutput"] = P.flagoutput
 
+    if P.format == "nc":
+        xg = gemini3d.readgrid(indir)
+
     for infile in infiles:
         outfile = outdir / (f"{infile.stem}.{cfg['format']}")
         print(infile, "=>", outfile)
@@ -62,7 +66,7 @@ def cli():
         if cfg["format"] == "h5":
             gemini3d.hdf.write_data(dat, outfile)
         elif cfg["format"] == "nc":
-            gemini3d.nc4.write_data(dat, outfile)
+            gemini3d.nc4.write_data(dat, xg, outfile)
 
 
 if __name__ == "__main__":
