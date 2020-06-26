@@ -22,8 +22,11 @@ if __name__ == "__main__":
 
     dat = gemini3d.readdata(P.fn, cfg=cfg)
 
+    mlab.USE_LOD_ACTOR = True  # this didn't help RAM or performance
+
     for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
-        mlab.pipeline.volume(mlab.pipeline.scalar_field(dat[p][1]))
-        mlab.title(p)
-        mlab.colorbar()
-        mlab.show()
+        if p in dat:
+            mlab.pipeline.volume(mlab.pipeline.scalar_field(dat[p][1]))
+            mlab.title(p)
+            mlab.colorbar()
+            mlab.show()
