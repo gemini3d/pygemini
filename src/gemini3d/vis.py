@@ -415,18 +415,21 @@ def plot_interp(
 
     else:  # 3-panel plot, vs. single-panel plots of 2-D cases
         if name == "rayleighs":
-            axs = fg.subplots(2, 2, sharey=True, sharex=True).ravel()
-            fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
-            # arbitrary pick of which emission lines to plot lat/lon slices
-            for j, i in enumerate([1, 3, 4, 8]):
-                f = interp.interp2d(
-                    grid["x3"][inds3], grid["x2"][inds2], parm[i, :, :], bounds_error=False
-                )
-                hi = axs[j].pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp))
-                axs[j].set_title(kwargs["wavelength"][i] + r"$\AA$")
-                fg.colorbar(hi, ax=axs[j], label="Rayleighs")
-            axs[2].set_xlabel("eastward dist. (km)")
-            axs[2].set_ylabel("northward dist. (km)")
+            bright_east_north(
+                fg,
+                grid,
+                parm,
+                xp,
+                yp,
+                inds2,
+                inds3,
+                cmap,
+                vmin,
+                vmax,
+                name,
+                time,
+                kwargs["wavelength"],
+            )
             return
         elif parm.ndim == 3:
             fg.set_size_inches((18, 5))
@@ -434,22 +437,11 @@ def plot_interp(
             fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
         elif is_Efield:
             # like phitop, SINGLE plot
-            ax = fg.gca()
-            hi = ax.pcolormesh(grid["mlon"], grid["mlat"], parm, cmap=cmap, vmin=vmin, vmax=vmax)
-            ax.set_xlabel("magnetic longitude (deg.)")
-            ax.set_ylabel("magnetic latitude (deg.)")
-            ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
-            fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+            mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time)
             return
         else:
             # like phitop, SINGLE plot
-            ax = fg.gca()
-            f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm, bounds_error=False)
-            hi = ax.pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp), cmap=cmap, vmin=vmin, vmax=vmax)
-            ax.set_xlabel("eastward dist. (km)")
-            ax.set_ylabel("northward dist. (km)")
-            ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
-            fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+            east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time)
             return
 
         # %% CONVERT TO DISTANCE UP, EAST, NORTH (left panel)
@@ -488,3 +480,39 @@ def plot_interp(
 
 plot3D_cart_frames_long_ENU = plot_interp
 plot2D_cart = plot_interp
+
+
+def bright_east_north(
+    fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time, wavelength
+):
+    axs = fg.subplots(2, 2, sharey=True, sharex=True).ravel()
+    fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
+    # arbitrary pick of which emission lines to plot lat/lon slices
+    for j, i in enumerate([1, 3, 4, 8]):
+        f = interp.interp2d(
+            grid["x3"][inds3], grid["x2"][inds2], parm[i, :, :], bounds_error=False
+        )
+        hi = axs[j].pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp))
+        axs[j].set_title(wavelength[i] + r"$\AA$")
+        fg.colorbar(hi, ax=axs[j], label="Rayleighs")
+    axs[2].set_xlabel("eastward dist. (km)")
+    axs[2].set_ylabel("northward dist. (km)")
+
+
+def east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time):
+    ax = fg.gca()
+    f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm, bounds_error=False)
+    hi = ax.pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp), cmap=cmap, vmin=vmin, vmax=vmax)
+    ax.set_xlabel("eastward dist. (km)")
+    ax.set_ylabel("northward dist. (km)")
+    ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
+    fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+
+
+def mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time):
+    ax = fg.gca()
+    hi = ax.pcolormesh(grid["mlon"], grid["mlat"], parm, cmap=cmap, vmin=vmin, vmax=vmax)
+    ax.set_xlabel("magnetic longitude (deg.)")
+    ax.set_ylabel("magnetic latitude (deg.)")
+    ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
+    fg.colorbar(hi, ax=ax, label=CB_LBL[name])

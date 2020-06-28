@@ -161,11 +161,14 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
         logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
         return grid
 
-    grid["lxs"] = get_simsize(fn.with_name("simsize.h5"))
-
     with h5py.File(fn, "r") as f:
         for key in f.keys():
             grid[key] = f[key][:]
+
+    try:
+        grid["lxs"] = get_simsize(fn.with_name("simsize.h5"))
+    except FileNotFoundError:
+        grid["lxs"] = np.array([grid["x1"].size, grid["x2"].size, grid["x3"].size])
 
     return grid
 
