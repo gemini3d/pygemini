@@ -16,8 +16,9 @@ from .readdata import (
     read_precip,
     read_Efield,
     read_state,
-    get_frame_filename,
 )
+
+from .find import get_frame_filename
 
 try:
     from .plotdiff import plotdiff

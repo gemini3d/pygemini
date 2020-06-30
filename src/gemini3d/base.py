@@ -2,10 +2,10 @@ from pathlib import Path
 import typing as T
 import numpy as np
 from datetime import datetime
-import logging
 
 from . import raw
 from . import matlab
+from .find import get_simsize_path
 
 try:
     from . import hdf
@@ -43,31 +43,6 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
         return raw.get_simsize(fn)
     else:
         raise ValueError("unkonwn simsize file type")
-
-
-def get_simsize_path(path: Path) -> Path:
-    """ gets path to simsize file """
-
-    path = Path(path).expanduser()
-
-    if path.is_dir():
-        for suffix in [".h5", ".nc", ".dat", ".mat"]:
-            for stem in ["", "inputs/"]:
-                fn = path / (f"{stem}simsize" + suffix)
-                if fn.is_file():
-                    return fn
-    elif path.is_file():
-        fn = path
-        if fn.stem == "simsize":
-            return fn
-
-        for stem in ["", "inputs/"]:
-            fn = path.parent / (f"{stem}simsize" + path.suffix)
-            if fn.is_file():
-                return fn
-
-    logging.error(f"simsize not found in {path}")
-    return None
 
 
 def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
