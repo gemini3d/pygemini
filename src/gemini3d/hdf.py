@@ -285,11 +285,11 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     with h5py.File(fn, "r") as f:
         E["flagdirich"] = f["flagdirich"]
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-            E[p] = [("x2", "x3"), f[p][:]]
+            E[p] = (("x2", "x3"), f[p][:])
         for p in ("Vminx2ist", "Vmaxx2ist"):
-            E[p] = [("x2",), f[p][:]]
+            E[p] = (("x2",), f[p][:])
         for p in ("Vminx3ist", "Vmaxx3ist"):
-            E[p] = [("x3",), f[p][:]]
+            E[p] = (("x3",), f[p][:])
 
     return E
 
@@ -378,7 +378,7 @@ def loadframe3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     with h5py.File(fn, "r") as f:
-        dat = {"ne": f["/ne"][:]}
+        dat = {"ne": (("x1", "x2", "x3"), f["/ne"][:])}
 
     return dat
 
@@ -469,16 +469,16 @@ def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
             f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["/time/UThour"][()]
         )
 
-        dat["ne"] = [("x1", "x2", "x3"), f["/neall"][:].transpose(2, 0, 1)]
-        dat["v1"] = [("x1", "x2", "x3"), f["/v1avgall"][:].transpose(2, 0, 1)]
-        dat["Ti"] = [("x1", "x2", "x3"), f["/Tavgall"][:].transpose(2, 0, 1)]
-        dat["Te"] = [("x1", "x2", "x3"), f["/TEall"][:].transpose(2, 0, 1)]
-        dat["J1"] = [("x1", "x2", "x3"), f["/J1all"][:].transpose(2, 0, 1)]
-        dat["J2"] = [("x1", "x2", "x3"), f["/J2all"][:].transpose(2, 0, 1)]
-        dat["J3"] = [("x1", "x2", "x3"), f["/J3all"][:].transpose(2, 0, 1)]
-        dat["v2"] = [("x1", "x2", "x3"), f["/v2avgall"][:].transpose(2, 0, 1)]
-        dat["v3"] = [("x1", "x2", "x3"), f["/v3avgall"][:].transpose(2, 0, 1)]
-        dat["Phitop"] = [("x2", "x3"), f["/Phiall"][:]]
+        dat["ne"] = (("x1", "x2", "x3"), f["/neall"][:].transpose(2, 0, 1))
+        dat["v1"] = (("x1", "x2", "x3"), f["/v1avgall"][:].transpose(2, 0, 1))
+        dat["Ti"] = (("x1", "x2", "x3"), f["/Tavgall"][:].transpose(2, 0, 1))
+        dat["Te"] = (("x1", "x2", "x3"), f["/TEall"][:].transpose(2, 0, 1))
+        dat["J1"] = (("x1", "x2", "x3"), f["/J1all"][:].transpose(2, 0, 1))
+        dat["J2"] = (("x1", "x2", "x3"), f["/J2all"][:].transpose(2, 0, 1))
+        dat["J3"] = (("x1", "x2", "x3"), f["/J3all"][:].transpose(2, 0, 1))
+        dat["v2"] = (("x1", "x2", "x3"), f["/v2avgall"][:].transpose(2, 0, 1))
+        dat["v3"] = (("x1", "x2", "x3"), f["/v3avgall"][:].transpose(2, 0, 1))
+        dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:])
 
     return dat
 
@@ -494,6 +494,6 @@ def loadglow_aurmap(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     with h5py.File(fn, "r") as h:
-        dat = {"rayleighs": [("wavelength", "x2", "x3"), h["/aurora/iverout"][:]]}
+        dat = {"rayleighs": (("wavelength", "x2", "x3"), h["/aurora/iverout"][:])}
 
     return dat

@@ -158,11 +158,11 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
         """
         E["flagdirich"] = int(read(f, np.float64, 1))
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-            E[p] = [("x2", "x3"), read2D(f, lxs)]
+            E[p] = (("x2", "x3"), read2D(f, lxs))
         for p in ("Vminx2ist", "Vmaxx2ist"):
-            E[p] = [("x2",), read(f, np.float64, E["Nlat"])]
+            E[p] = (("x2",), read(f, np.float64, E["Nlat"]))
         for p in ("Vminx3ist", "Vmaxx3ist"):
-            E[p] = [("x3",), read(f, np.float64, E["Nlon"])]
+            E[p] = (("x3",), read(f, np.float64, E["Nlon"]))
         filesize = fn.stat().st_size
         if f.tell() != filesize:
             logging.error(f"{fn} size {filesize} != file read position {f.tell()}")
@@ -209,9 +209,9 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
         dat["Te"] = (("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze())
 
         for p in ("J1", "J2", "J3", "v2", "v3"):
-            dat[p] = [("x1", "x2", "x3"), read3D(f, lxs)]
+            dat[p] = (("x1", "x2", "x3"), read3D(f, lxs))
 
-        dat["Phitop"] = [("x2", "x3"), read2D(f, lxs)]
+        dat["Phitop"] = (("x2", "x3"), read2D(f, lxs))
 
     return dat
 
@@ -237,9 +237,9 @@ def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
         dat["time"] = read_time(f)
 
         for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
-            dat[p] = [("x1", "x2", "x3"), read3D(f, lxs)]
+            dat[p] = (("x1", "x2", "x3"), read3D(f, lxs))
 
-        dat["Phitop"] = [("x2", "x3"), read2D(f, lxs)]
+        dat["Phitop"] = (("x2", "x3"), read2D(f, lxs))
 
     return dat
 
@@ -251,7 +251,7 @@ def loadframe3d_curvne(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     with fn.open("r") as f:
         dat["time"] = read_time(f)
 
-        dat["ne"] = [("x1", "x2", "x3"), read3D(f, lxs)]
+        dat["ne"] = (("x1", "x2", "x3"), read3D(f, lxs))
 
     return dat
 
@@ -295,7 +295,7 @@ def loadglow_aurmap(f, lxs: T.Sequence[int], lwave: int) -> T.Dict[str, T.Any]:
     raw = np.fromfile(f, np.float64, np.prod(lxs[1:]) * lwave).reshape(
         np.prod(lxs[1:]) * lwave, order="F"
     )
-    return {"rayleighs": [("wavelength", "x2", "x3"), raw]}
+    return {"rayleighs": (("wavelength", "x2", "x3"), raw)}
 
 
 def read_time(f) -> datetime:

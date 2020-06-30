@@ -6,6 +6,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 import typing as T
+import logging
 
 from . import raw
 from .config import read_config
@@ -28,6 +29,8 @@ FILE_FORMATS = [".h5", ".nc", ".dat"]
 def readgrid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
 
     fn = get_grid_filename(path)
+    if not fn:
+        return {}
 
     if not file_format:
         file_format = fn.suffix[1:]
@@ -344,4 +347,5 @@ def get_grid_filename(path: Path) -> Path:
             if file.is_file():
                 return file
 
-    raise FileNotFoundError(f"could not find grid file in {path}")
+    logging.error(f"could not find grid file in {path}")
+    return None

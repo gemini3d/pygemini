@@ -202,14 +202,14 @@ def write_data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
 
     with Dataset(fn, "w") as f:
         if "ns" in dat:
-            shape = dat["ns"].shape
+            shape = dat["ns"][1].shape
         elif "ne" in dat:
-            shape = dat["ne"].shape
+            shape = dat["ne"][1].shape
         else:
             raise ValueError("what variable should I use to determine dimensions?")
 
         if len(shape) == 4:
-            f.createDimension("species", 7)
+            f.createDimension("species", LSP)
             f.createDimension("x1", shape[1])
             f.createDimension("x2", shape[2])
             f.createDimension("x3", shape[3])
@@ -221,28 +221,29 @@ def write_data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
             raise ValueError("unknown how to handle non 3-D or 4-D array")
 
         # set dimension values
-        for k in ("x1", "x2", "x3"):
-            _write_var(f, k, (k,), xg[k])
+        if xg:
+            for k in ("x1", "x2", "x3"):
+                _write_var(f, k, (k,), xg[k])
 
         if len(shape) == 3:
             # ne-only case
-            _write_var(f, "ne", ("x1", "x2", "x3"), dat["ne"])
+            _write_var(f, "ne", ("x1", "x2", "x3"), dat["ne"][1])
             return
 
         for k in ["ns", "vs1", "Ts"]:
             if k not in dat:
                 continue
 
-            _write_var(f, k, ("species", "x1", "x2", "x3"), dat[k])
+            _write_var(f, k, ("species", "x1", "x2", "x3"), dat[k][1])
 
         for k in ["ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"]:
             if k not in dat:
                 continue
 
-            _write_var(f, k, ("species", "x1", "x2", "x3"), dat[k])
+            _write_var(f, k, ("species", "x1", "x2", "x3"), dat[k][1])
 
         if "Phitop" in dat:
-            _write_var(f, k, ("x2", "x3"), dat["Phitop"])
+            _write_var(f, k, ("x2", "x3"), dat["Phitop"][1])
 
 
 def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
@@ -261,11 +262,11 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     with Dataset(fn, "r") as f:
         E["flagdirich"] = f["flagdirich"]
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-            E[p] = [("x2", "x3"), f[p][:]]
+            E[p] = (("x2", "x3"), f[p][:])
         for p in ("Vminx2ist", "Vmaxx2ist"):
-            E[p] = [("x2",), f[p][:]]
+            E[p] = (("x2",), f[p][:])
         for p in ("Vminx3ist", "Vmaxx3ist"):
-            E[p] = [("x3",), f[p][:]]
+            E[p] = (("x3",), f[p][:])
 
     return E
 
@@ -453,16 +454,16 @@ def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     with Dataset(fn, "r") as f:
         dat["time"] = ymdhourdec2datetime(f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()])
 
-        dat["ne"] = [("x1", "x2", "x3"), f["neall"][:].transpose(2, 0, 1)]
-        dat["v1"] = [("x1", "x2", "x3"), f["v1avgall"][:].transpose(2, 0, 1)]
-        dat["Ti"] = [("x1", "x2", "x3"), f["Tavgall"][:].transpose(2, 0, 1)]
-        dat["Te"] = [("x1", "x2", "x3"), f["TEall"][:].transpose(2, 0, 1)]
-        dat["J1"] = [("x1", "x2", "x3"), f["J1all"][:].transpose(2, 0, 1)]
-        dat["J2"] = [("x1", "x2", "x3"), f["J2all"][:].transpose(2, 0, 1)]
-        dat["J3"] = [("x1", "x2", "x3"), f["J3all"][:].transpose(2, 0, 1)]
-        dat["v2"] = [("x1", "x2", "x3"), f["v2avgall"][:].transpose(2, 0, 1)]
-        dat["v3"] = [("x1", "x2", "x3"), f["v3avgall"][:].transpose(2, 0, 1)]
-        dat["Phitop"] = [("x2", "x3"), f["Phiall"][:]]
+        dat["ne"] = (("x1", "x2", "x3"), f["neall"][:].transpose(2, 0, 1))
+        dat["v1"] = (("x1", "x2", "x3"), f["v1avgall"][:].transpose(2, 0, 1))
+        dat["Ti"] = (("x1", "x2", "x3"), f["Tavgall"][:].transpose(2, 0, 1))
+        dat["Te"] = (("x1", "x2", "x3"), f["TEall"][:].transpose(2, 0, 1))
+        dat["J1"] = (("x1", "x2", "x3"), f["J1all"][:].transpose(2, 0, 1))
+        dat["J2"] = (("x1", "x2", "x3"), f["J2all"][:].transpose(2, 0, 1))
+        dat["J3"] = (("x1", "x2", "x3"), f["J3all"][:].transpose(2, 0, 1))
+        dat["v2"] = (("x1", "x2", "x3"), f["v2avgall"][:].transpose(2, 0, 1))
+        dat["v3"] = (("x1", "x2", "x3"), f["v3avgall"][:].transpose(2, 0, 1))
+        dat["Phitop"] = (("x2", "x3"), f["Phiall"][:])
 
     return dat
 
@@ -478,6 +479,6 @@ def loadglow_aurmap(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     with Dataset(fn, "r") as h:
-        dat = {"rayleighs": [("wavelength", "x2", "x3"), h["iverout"][:]]}
+        dat = {"rayleighs": (("wavelength", "x2", "x3"), h["iverout"][:])}
 
     return dat
