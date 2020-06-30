@@ -107,7 +107,7 @@ def readdata(
         file_format = fn.suffix[1:]
 
     if file_format == "dat":
-        lxs = get_simsize(fn.parent / "simsize.dat")
+        lxs = get_simsize(fn.parent / "inputs/simsize.dat")
 
         flag: int = cfg.get("flagoutput")
         if flag == 0:
