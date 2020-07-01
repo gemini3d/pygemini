@@ -375,8 +375,17 @@ def loadframe3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
     just Ne
     """
 
+    dat: T.Dict[str, T.Any] = {}
+
     with Dataset(fn, "r") as f:
-        dat = {"ne": (("x1", "x2", "x3"), f["/ne"][:])}
+        dat["ne"] = (("x1", "x2", "x3"), f["/ne"][:])
+
+        try:
+            dat["time"] = ymdhourdec2datetime(
+                f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()]
+            )
+        except IndexError:
+            logging.warning(f"time not found in {fn}, perhaps extract time from filename")
 
     return dat
 
@@ -396,7 +405,12 @@ def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     dat: T.Dict[str, T.Any] = {}
 
     with Dataset(fn, "r") as f:
-        dat["time"] = ymdhourdec2datetime(f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()])
+        try:
+            dat["time"] = ymdhourdec2datetime(
+                f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()]
+            )
+        except IndexError:
+            logging.warning(f"time not found in {fn}, perhaps extract time from filename")
 
         if lxs[2] == 1:  # east-west
             p4 = (0, 3, 1, 2)
@@ -461,7 +475,12 @@ def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     dat: T.Dict[str, T.Any] = {}
 
     with Dataset(fn, "r") as f:
-        dat["time"] = ymdhourdec2datetime(f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()])
+        try:
+            dat["time"] = ymdhourdec2datetime(
+                f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()]
+            )
+        except IndexError:
+            logging.warning(f"time not found in {fn}, perhaps extract time from filename")
 
         dat["ne"] = (("x1", "x2", "x3"), f["neall"][:].transpose(2, 0, 1))
         dat["v1"] = (("x1", "x2", "x3"), f["v1avgall"][:].transpose(2, 0, 1))

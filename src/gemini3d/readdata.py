@@ -100,7 +100,7 @@ def readdata(
         fn_Efield = E0dir / fn.name
 
     input_dir = fn.parent / "inputs"
-    if cfg is None:
+    if not cfg:
         cfg = read_config(input_dir)
 
     if not file_format:
@@ -161,16 +161,16 @@ def readdata(
 
         # detect output type
         with Dataset(fn, "r") as f:
-            if "flagoutput" in f:
+            if "flagoutput" in f.variables:
                 flag = f["flagoutput"][()]
             elif "flagoutput" in cfg:
                 flag = cfg["flagoutput"]
             else:
-                if "ne" in f and f["ne"].ndim == 3:
+                if "ne" in f.variables and f["ne"].ndim == 3:
                     flag = 0
-                elif "nsall" in f and f["nsall"].ndim == 4:
+                elif "nsall" in f.variables and f["nsall"].ndim == 4:
                     flag = 1
-                elif "neall" in f and f["neall"].ndim == 3:
+                elif "neall" in f.variables and f["neall"].ndim == 3:
                     flag = 2
                 else:
                     raise ValueError(f"please specify flagoutput in config.nml or {fn}")
