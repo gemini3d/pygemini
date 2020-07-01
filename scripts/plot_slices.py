@@ -9,9 +9,11 @@ import argparse
 
 import gemini3d
 import gemini3d.vis as vis
+import gemini3d.find as find
 
 try:
     import seaborn as sns
+
     sns.set_context("talk")
 except ImportError:
     pass
@@ -19,26 +21,45 @@ except ImportError:
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("flag", help="output flag", type=int)
     p.add_argument("fn", help=".dat filename to load directly")
+    p.add_argument(
+        "-f",
+        "--flagoutput",
+        help="manually specify flagoutput, for if config.nml is missing",
+        type=int,
+    )
     P = p.parse_args()
 
-    cfg = {"flagoutput": P.flag}
+    cfg = {}
+    if P.flagoutput:
+        cfg["flagoutput"] = P.flag
 
     dat_file = Path(P.fn).expanduser()
-    grid_file = dat_file.parent / ("inputs/simgrid" + dat_file.suffix)
-
     dat = gemini3d.readdata(dat_file, cfg=cfg)
-    grid = gemini3d.readgrid(grid_file)
 
-    x1 = grid["x1"]
-    x2 = grid["x2"]
-    x3 = grid["x3"]
+    try:
+        x1 = dat["x1"]
+        x2 = dat["x2"]
+        x3 = dat["x3"]
+    except KeyError:
+        grid_file = find.get_grid_filename(dat_file.parent / "inputs")
+        grid = gemini3d.readgrid(grid_file)
 
-    fg = figure(figsize=(15, 5), tight_layout=True)  # , constrained_layout=True)
+        x1 = grid["x1"]
+        x2 = grid["x2"]
+        x3 = grid["x3"]
+
+    Ng = 4  # number of ghost cells
+    if x1.size == dat["ne"][1].shape[0] + Ng:
+        x1 = x1[2:-2]
+    if x2.size == dat["ne"][1].shape[1] + Ng:
+        x2 = x2[2:-2]
+    if x3.size == dat["ne"][1].shape[2] + Ng:
+        x3 = x3[2:-2]
 
     for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
         if p in dat:
+            fg = figure(figsize=(15, 5), tight_layout=True)  # , constrained_layout=True)
             # %% left panel
             ax = fg.add_subplot(1, 3, 1)
             ix3 = x3.size // 2 - 1  # arbitrary slice
@@ -66,4 +87,4 @@ if __name__ == "__main__":
                 ax=ax,
             )
 
-            show()
+    show()
