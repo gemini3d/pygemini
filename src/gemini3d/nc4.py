@@ -38,7 +38,7 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
         else:
             raise KeyError(f"could not find 'lxs', 'lx' or 'lx1' in {path.as_posix()}")
 
-    return lxs.data
+    return lxs
 
 
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
@@ -200,13 +200,19 @@ def write_data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
 
     print("nc4:write_data:", fn)
 
+    lxs = get_simsize(fn.parent / "inputs/simsize.nc")
+
+    if "ns" in dat:
+        shape = dat["ns"][1].shape
+    elif "ne" in dat:
+        shape = dat["ne"][1].shape
+    else:
+        raise ValueError("what variable should I use to determine dimensions?")
+
+    if not lxs == shape:
+        raise ValueError(f"simsize {lxs} does not match data shape {shape}")
+
     with Dataset(fn, "w") as f:
-        if "ns" in dat:
-            shape = dat["ns"][1].shape
-        elif "ne" in dat:
-            shape = dat["ne"][1].shape
-        else:
-            raise ValueError("what variable should I use to determine dimensions?")
 
         if len(shape) == 4:
             f.createDimension("species", LSP)
@@ -222,8 +228,16 @@ def write_data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
 
         # set dimension values
         if xg:
+            Ng = 4  # number of ghost cells
             for k in ("x1", "x2", "x3"):
-                _write_var(f, k, (k,), xg[k])
+                if xg[k].size == f.dimensions[k].size + Ng:
+                    # omit ghost cells
+                    x = xg[k][2:-2]
+                elif xg[k].size == f.dimensions[k].size:
+                    x = xg[k]
+                else:
+                    raise ValueError(f"{k}:  {xg[k].size} != {f.dimensions[k].size}")
+                _write_var(f, k, (k,), x)
 
         if len(shape) == 3:
             # ne-only case
