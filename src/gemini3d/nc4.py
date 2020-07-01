@@ -136,7 +136,7 @@ def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
         _write_var(f, "I", ("x3", "x2"), xg["I"].transpose())
 
 
-def _write_var(f, name: str, dims: tuple, value: np.ndarray):
+def _write_var(f, name: str, dims: T.Sequence[str], value: np.ndarray):
     g = f.createVariable(
         name,
         np.float32,
@@ -215,21 +215,23 @@ def write_data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
     with Dataset(fn, "w") as f:
 
         if len(shape) == 4:
-            f.createDimension("species", LSP)
-            f.createDimension("x1", shape[1])
-            f.createDimension("x2", shape[2])
-            f.createDimension("x3", shape[3])
+            dims = ["species", "x1", "x2", "x3"]
+            f.createDimension(dims[0], LSP)
+            f.createDimension(dims[1], shape[1])
+            f.createDimension(dims[2], shape[2])
+            f.createDimension(dims[3], shape[3])
         elif len(shape) == 3:
-            f.createDimension("x1", shape[0])
-            f.createDimension("x2", shape[1])
-            f.createDimension("x3", shape[2])
+            dims = ["x1", "x2", "x3"]
+            f.createDimension(dims[0], shape[0])
+            f.createDimension(dims[1], shape[1])
+            f.createDimension(dims[2], shape[2])
         else:
             raise ValueError("unknown how to handle non 3-D or 4-D array")
 
         # set dimension values
         if xg:
             Ng = 4  # number of ghost cells
-            for k in ("x1", "x2", "x3"):
+            for k in dims[-3:]:
                 if xg[k].size == f.dimensions[k].size + Ng:
                     # omit ghost cells
                     x = xg[k][2:-2]
@@ -239,25 +241,18 @@ def write_data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
                     raise ValueError(f"{k}:  {xg[k].size} != {f.dimensions[k].size}")
                 _write_var(f, k, (k,), x)
 
-        if len(shape) == 3:
-            # ne-only case
-            _write_var(f, "ne", ("x1", "x2", "x3"), dat["ne"][1])
-            return
-
         for k in ["ns", "vs1", "Ts"]:
             if k not in dat:
                 continue
-
-            _write_var(f, k, ("species", "x1", "x2", "x3"), dat[k][1])
+            _write_var(f, k, dims, dat[k][1])
 
         for k in ["ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"]:
             if k not in dat:
                 continue
-
-            _write_var(f, k, ("species", "x1", "x2", "x3"), dat[k][1])
+            _write_var(f, k, dims, dat[k][1])
 
         if "Phitop" in dat:
-            _write_var(f, k, ("x2", "x3"), dat["Phitop"][1])
+            _write_var(f, "Phitop", dims[-2:], dat["Phitop"][1])
 
 
 def read_Efield(fn: Path) -> T.Dict[str, T.Any]:

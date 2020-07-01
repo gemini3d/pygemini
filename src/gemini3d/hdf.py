@@ -478,6 +478,11 @@ def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
         else:
             p3 = (2, 1, 0)
 
+        if f["/Phiall"].shape[0] == lxs[2]:
+            p2 = (1, 0)
+        else:
+            p2 = (0, 1)
+
         for j, k in zip(
             ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"),
             (
@@ -496,7 +501,7 @@ def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
             if dat[j][1].shape != lxs:
                 raise ValueError(f"simsize {lxs} does not match {k} {j} shape {dat[j][1].shape}")
 
-        dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:])
+        dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:].transpose(p2))
 
     return dat
 
