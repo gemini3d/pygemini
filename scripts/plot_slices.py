@@ -10,6 +10,12 @@ import argparse
 import gemini3d
 import gemini3d.vis as vis
 
+try:
+    import seaborn as sns
+    sns.set_context("talk")
+except ImportError:
+    pass
+
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
