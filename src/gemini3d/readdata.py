@@ -14,11 +14,13 @@ from .find import get_frame_filename, get_grid_filename
 from . import matlab
 
 try:
+    import h5py
     from . import hdf
 except ModuleNotFoundError:
     hdf = None
 
 try:
+    from netCDF4 import Dataset
     from . import nc4
 except ModuleNotFoundError:
     nc4 = None
@@ -107,7 +109,7 @@ def readdata(
     if file_format == "dat":
         lxs = get_simsize(fn.parent / "inputs/simsize.dat")
 
-        flag: int = cfg.get("flagoutput")
+        flag = cfg.get("flagoutput")
         if flag == 0:
             dat = raw.loadframe3d_curvne(fn, lxs)
         elif flag == 1:
@@ -125,7 +127,22 @@ def readdata(
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
 
-        flag = cfg.get("flagoutput")
+        # detect output type
+        with h5py.File(fn, "r") as f:
+            if "flagoutput" in f:
+                flag = f["/flagoutput"][()]
+            elif "flagoutput" in cfg:
+                flag = cfg["flagoutput"]
+            else:
+                if "ne" in f and f["/ne"].ndim == 3:
+                    flag = 0
+                elif "nsall" in f and f["/nsall"].ndim == 4:
+                    flag = 1
+                elif "neall" in f and f["/neall"].ndim == 3:
+                    flag = 2
+                else:
+                    raise ValueError(f"please specify flagoutput in config.nml or {fn}")
+
         if flag == 0:
             dat = hdf.loadframe3d_curvne(fn)
         elif flag == 1:
@@ -142,7 +159,22 @@ def readdata(
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
 
-        flag = cfg.get("flagoutput")
+        # detect output type
+        with Dataset(fn, "r") as f:
+            if "flagoutput" in f:
+                flag = f["flagoutput"][()]
+            elif "flagoutput" in cfg:
+                flag = cfg["flagoutput"]
+            else:
+                if "ne" in f and f["ne"].ndim == 3:
+                    flag = 0
+                elif "nsall" in f and f["nsall"].ndim == 4:
+                    flag = 1
+                elif "neall" in f and f["neall"].ndim == 3:
+                    flag = 2
+                else:
+                    raise ValueError(f"please specify flagoutput in config.nml or {fn}")
+
         if flag == 0:
             dat = nc4.loadframe3d_curvne(fn)
         elif flag == 1:

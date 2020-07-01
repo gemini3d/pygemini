@@ -393,7 +393,7 @@ def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
 
-    lxs = get_simsize(fn.parent / "simsize.h5")
+    lxs = get_simsize(fn.parent / "inputs/simsize.h5")
 
     dat: T.Dict[str, T.Any] = {}
 
@@ -411,7 +411,7 @@ def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
 
         ns = f["/nsall"][:].transpose(p4)
         # np.any() in case neither is an np.ndarray
-        if ns.shape[0] != 7 or np.any(ns.shape[1:] != lxs):
+        if ns.shape[0] != LSP or np.any(ns.shape[1:] != lxs):
             raise ValueError(
                 f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {ns.shape}"
             )
