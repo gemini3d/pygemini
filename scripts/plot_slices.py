@@ -4,7 +4,7 @@ NOTE: this is made for very basic plots. The axes quantities are notional and no
 """
 
 from pathlib import Path
-from matplotlib.pyplot import figure, show
+from matplotlib.pyplot import figure, show, close
 import argparse
 
 import gemini3d
@@ -22,6 +22,9 @@ except ImportError:
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("fn", help=".dat filename to load directly")
+    p.add_argument(
+        "-s", "--saveplot", help="save plots to data file directory", action="store_true"
+    )
     p.add_argument(
         "-f",
         "--flagoutput",
@@ -86,5 +89,11 @@ if __name__ == "__main__":
                 fg=fg,
                 ax=ax,
             )
+
+            if P.saveplot:
+                pfn = dat_file.parent / f"{p}-{dat_file.stem}.png"
+                print("writing", pfn)
+                fg.savefig(pfn, bbox_inches="tight")
+                close(fg)
 
     show()
