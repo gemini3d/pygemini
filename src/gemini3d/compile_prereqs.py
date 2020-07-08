@@ -6,6 +6,7 @@ import subprocess
 import shutil
 import logging
 import argparse
+import tempfile
 from pathlib import Path
 
 from .utils import get_cpu_count
@@ -51,13 +52,19 @@ def main():
         choices=["netcdf", "openmpi", "hdf5", "lapack", "scalapack", "mumps"],
         nargs="+",
     )
-    p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_gcc")
-    p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
+    p.add_argument("-prefix", help="top-level directory to install libraries under")
+    p.add_argument(
+        "-workdir",
+        help="top-level directory to where you keep code repos",
+        default=tempfile.gettempdir(),
+    )
     p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
     P = p.parse_args()
 
+    prefix = P.prefix if P.prefix else f"~/lib_{P.compiler}"
+
     dirs = {
-        "prefix": Path(P.prefix).expanduser().resolve(),
+        "prefix": Path(prefix).expanduser().resolve(),
         "workdir": Path(P.workdir).expanduser().resolve(),
     }
 
@@ -90,6 +97,8 @@ def setup_libs(libs: T.Sequence[str], dirs: T.Dict[str, Path], compiler: str, wi
         scalapack(wipe, dirs, env=env)
     if "mumps" in libs:
         mumps(wipe, dirs, env=env)
+
+    print("Installed", libs, "under", dirs["prefix"])
 
 
 def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False):
@@ -309,7 +318,7 @@ def cmake_build(
 
     if run_test:
         subprocess.check_call(
-            nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir)
+            nice + ["ctest", "--parallel", "2", "--output-on-failure"], cwd=str(build_dir)
         )
 
 
@@ -391,45 +400,32 @@ def git_update(path: Path, repo: str, tag: str = None):
             subprocess.check_call([GITEXE, "clone", repo, "--depth", "1", str(path)])
 
 
-def get_compilers(fc_name: str, cc_name: str, cxx_name: str) -> T.Mapping[str, str]:
-    """ get paths to GCC compilers """
+def get_compilers(**kwargs) -> T.Mapping[str, str]:
+    """ get paths to compilers """
     env = os.environ
 
-    fc = env.get("FC", "")
-    if fc_name not in fc:
-        fc = shutil.which(fc_name)
-    if not fc:
-        raise FileNotFoundError(fc_name)
-
-    cc = env.get("CC", "")
-    if cc_name not in cc:
-        cc = shutil.which(cc_name)
-    if not cc:
-        raise FileNotFoundError(cc_name)
-
-    cxx = env.get("CXX", "")
-    if cxx_name not in cxx:
-        cxx = shutil.which(cxx_name)
-    if not cxx:
-        raise FileNotFoundError(cxx_name)
-
-    env.update({"FC": fc, "CC": cc, "CXX": cxx})
+    for k, v in kwargs.items():
+        c = env.get(k, "")
+        if v not in c:
+            c = shutil.which(v)
+        if not c:
+            raise FileNotFoundError(k)
+        env.update({k: c})
 
     return env
 
 
 def gcc_compilers() -> T.Mapping[str, str]:
-    return get_compilers("gfortran", "gcc", "g++")
+    return get_compilers(FC="gfortran", CC="gcc", CXX="g++")
 
 
 def intel_compilers() -> T.Mapping[str, str]:
-
-    fc_name = "ifort"
-    cc_name = "icl" if os.name == "nt" else "icc"
-    cxx_name = "icl" if os.name == "nt" else "icpc"
-
-    return get_compilers(fc_name, cc_name, cxx_name)
+    return get_compilers(
+        FC="ifort",
+        CC="icl" if os.name == "nt" else "icc",
+        CXX="icl" if os.name == "nt" else "icpc",
+    )
 
 
 def ibmxl_compilers() -> T.Mapping[str, str]:
-    return get_compilers("xlf", "xlc", "xlc++")
+    return get_compilers(FC="xlf", CC="xlc", CXX="xlc++")
