@@ -1,3 +1,6 @@
+"""
+Compiles prerequisites for Gemini
+"""
 import typing as T
 import sys
 import os
@@ -42,7 +45,9 @@ nice = ["nice"] if sys.platform == "linux" else []
 
 
 def main():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(
+        description="Compiles prerequisite libraries for Gemini (or other programs)"
+    )
     p.add_argument(
         "compiler", help="compiler to build libraries for", choices=["gcc", "intel", "ibmxl"]
     )
@@ -55,7 +60,7 @@ def main():
     p.add_argument("-prefix", help="top-level directory to install libraries under")
     p.add_argument(
         "-workdir",
-        help="top-level directory to where you keep code repos",
+        help="top-level directory to build under (can be deleted when done)",
         default=tempfile.gettempdir(),
     )
     p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
