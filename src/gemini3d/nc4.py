@@ -472,6 +472,9 @@ def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
+
+    lxs = get_simsize(fn.parent / "inputs/simsize.nc")
+
     dat: T.Dict[str, T.Any] = {}
 
     with Dataset(fn, "r") as f:
@@ -482,16 +485,27 @@ def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
         except IndexError:
             logging.warning(f"time not found in {fn}, perhaps extract time from filename")
 
-        dat["ne"] = (("x1", "x2", "x3"), f["neall"][:].transpose(2, 0, 1))
-        dat["v1"] = (("x1", "x2", "x3"), f["v1avgall"][:].transpose(2, 0, 1))
-        dat["Ti"] = (("x1", "x2", "x3"), f["Tavgall"][:].transpose(2, 0, 1))
-        dat["Te"] = (("x1", "x2", "x3"), f["TEall"][:].transpose(2, 0, 1))
-        dat["J1"] = (("x1", "x2", "x3"), f["J1all"][:].transpose(2, 0, 1))
-        dat["J2"] = (("x1", "x2", "x3"), f["J2all"][:].transpose(2, 0, 1))
-        dat["J3"] = (("x1", "x2", "x3"), f["J3all"][:].transpose(2, 0, 1))
-        dat["v2"] = (("x1", "x2", "x3"), f["v2avgall"][:].transpose(2, 0, 1))
-        dat["v3"] = (("x1", "x2", "x3"), f["v3avgall"][:].transpose(2, 0, 1))
-        dat["Phitop"] = (("x2", "x3"), f["Phiall"][:])
+        p3 = (2, 0, 1)
+
+        for j, k in zip(
+            ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"),
+            (
+                "neall",
+                "v1avgall",
+                "Tavgall",
+                "TEall",
+                "J1all",
+                "J2all",
+                "J3all",
+                "v2avgall",
+                "v3avgall",
+            ),
+        ):
+
+            dat[j] = (("x1", "x2", "x3"), f[k][:].transpose(p3))
+
+            if dat[j][1].shape != lxs:
+                raise ValueError(f"simsize {lxs} does not match {k} {j} shape {dat[j][1].shape}")
 
     return dat
 
