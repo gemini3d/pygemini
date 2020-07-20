@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 import pytest
-from pathlib import Path
 from datetime import datetime, timedelta
+import importlib.resources
 
 import gemini3d.config as config
-
-Rc = Path(__file__).parent / "config"
 
 
 def test_nml_bad(tmp_path):
@@ -26,15 +24,17 @@ def test_nml_bad(tmp_path):
 
 
 @pytest.mark.parametrize("group", ["base", ("base", "flags", "files", "precip", "efield")])
-def test_namelist(group):
+def test_namelist_exists(group):
 
-    assert config.namelist_exists(Rc / "config_example.nml", "base")
+    with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
+        assert config.namelist_exists(cfn, "base")
 
 
 @pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])
 def test_nml_namelist(namelist):
 
-    params = config.read_namelist(Rc / "config_example.nml", namelist)
+    with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
+        params = config.read_namelist(cfn, namelist)
     if "base" in namelist:
         assert params["t0"] == datetime(2013, 2, 20, 5)
 
@@ -48,11 +48,17 @@ def test_nml_namelist(namelist):
         assert params["dtE0"] == timedelta(seconds=1)
 
 
-@pytest.mark.parametrize(
-    "filename", [Rc / "config_example.nml", Rc / "config_example.ini"], ids=["nml", "ini"],
-)
-def test_read_config(filename):
-    params = config.read_config(filename)
+def test_read_config_nml():
+
+    with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
+        params = config.read_config(cfn)
+    assert params["t0"] == datetime(2013, 2, 20, 5)
+
+
+def test_read_config_ini():
+
+    with importlib.resources.path("gemini3d.tests.config", "config_example.ini") as cfn:
+        params = config.read_config(cfn)
     assert params["t0"] == datetime(2013, 2, 20, 5)
 
 

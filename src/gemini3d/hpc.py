@@ -4,8 +4,7 @@ import binascii
 from pathlib import Path
 import typing as T
 import shutil
-
-R = Path(__file__).parent
+import importlib.resources
 
 
 def hpc_submit_job(batcher: str, job_file: Path):
@@ -37,12 +36,10 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: T.Sequence[str]) -> Path:
     3. format number of nodes request
     """
 
-    template_dir = R / "templates"
     Nchar = 6  # arbitrary number of characters
 
     if batcher == "qsub":
-        template_file = template_dir / "qsub_template.sh"
-        template = template_file.read_text()
+        template = importlib.resources.read_text(__package__, "templates/qsub_template.sh")
         job_file = out_dir / f"job_{binascii.b2a_hex(os.urandom(Nchar)).decode('ascii')}.sh"
         print("writing job file", job_file)
         text = template + "\n" + " ".join(cmd)

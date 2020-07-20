@@ -5,7 +5,6 @@ from pathlib import Path
 from datetime import datetime, timedelta
 
 NaN = float("NaN")
-R = Path(__file__).resolve().parents[1]
 
 __all__ = ["read_config"]
 

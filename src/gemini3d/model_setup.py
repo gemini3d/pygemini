@@ -11,8 +11,6 @@ from .efield import Efield_BCs
 from .particles import particles_BCs
 from .base import write_state, write_grid
 
-R = Path(__file__).resolve().parents[1]
-
 
 def model_setup(path: Path, out_dir: Path):
     """
