@@ -9,7 +9,7 @@ A Python interface to [Gemini3D](https://github.com/gemini3d/gemini)
 Setup Gemini and prereqs from the pygemini/ directory:
 
 ```sh
-python3 setup.py develop --user
+pip install -e .
 ```
 
 ## Run simulation
