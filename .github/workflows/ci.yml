@@ -28,6 +28,9 @@ jobs:
     - run: mypy . src scripts
 
     - run: pytest
+      env:
+        FC: gfortran-9
+
 
   macos:
     runs-on: macos-latest
@@ -45,6 +48,9 @@ jobs:
     - run: python -m pip install -e .[tests,lint]
 
     - run: pytest
+      env:
+        FC: gfortran-9
+
 
   windows:
     runs-on: windows-latest
