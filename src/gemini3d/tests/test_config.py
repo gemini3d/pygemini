@@ -60,7 +60,3 @@ def test_read_config_ini():
     with importlib.resources.path("gemini3d.tests.config", "config_example.ini") as cfn:
         params = config.read_config(cfn)
     assert params["t0"] == datetime(2013, 2, 20, 5)
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

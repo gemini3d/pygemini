@@ -3,9 +3,10 @@ plasma functions
 """
 import typing as T
 import numpy as np
-from pathlib import Path
-import shutil
+import os
+import logging
 import subprocess
+import importlib.resources
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d, interp2d, interpn
 
@@ -415,41 +416,32 @@ def chapmana(z: np.ndarray, nm: float, z0: float, H: float) -> np.ndarray:
 
 def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     """calls MSIS Fortran exectuable
-    % compiles if not present
-    %
-    % [f107a, f107, ap] = activ
-    %     COLUMNS OF DATA:
-    %       1 - ALT
-    %       2 - HE NUMBER DENSITY(M-3)
-    %       3 - O NUMBER DENSITY(M-3)
-    %       4 - N2 NUMBER DENSITY(M-3)
-    %       5 - O2 NUMBER DENSITY(M-3)
-    %       6 - AR NUMBER DENSITY(M-3)
-    %       7 - TOTAL MASS DENSITY(KG/M3)
-    %       8 - H NUMBER DENSITY(M-3)
-    %       9 - N NUMBER DENSITY(M-3)
-    %       10 - Anomalous oxygen NUMBER DENSITY(M-3)
-    %       11 - TEMPERATURE AT ALT
-    %
+     compiles if not present
+
+     [f107a, f107, ap] = activ
+         COLUMNS OF DATA:
+           1 - ALT
+           2 - HE NUMBER DENSITY(M-3)
+           3 - O NUMBER DENSITY(M-3)
+           4 - N2 NUMBER DENSITY(M-3)
+           5 - O2 NUMBER DENSITY(M-3)
+           6 - AR NUMBER DENSITY(M-3)
+           7 - TOTAL MASS DENSITY(KG/M3)
+           8 - H NUMBER DENSITY(M-3)
+           9 - N NUMBER DENSITY(M-3)
+           10 - Anomalous oxygen NUMBER DENSITY(M-3)
+           11 - TEMPERATURE AT ALT
+
     """
 
-    R = Path(__file__).resolve().parent
-    builddir = R / "build"
-    builddir.mkdir(parents=True, exist_ok=True)
-    exe = shutil.which("msis_setup", path=str(builddir))
-    if not exe:
-        cfg_cmd = ["cmake", "-S", str(R), "-B", str(builddir)]
-        print(" ".join(cfg_cmd))
-        subprocess.check_call(cfg_cmd)
+    msis_name = "msis_setup"
+    if os.name == "nt":
+        msis_name += ".exe"
 
-        build_cmd = ["cmake", "--build", str(builddir), "--target", "msis_setup"]
-        print(" ".join(build_cmd))
-        subprocess.check_call(build_cmd)
+    if not importlib.resources.is_resource(__package__, msis_name):
+        with importlib.resources.path(__package__, "setup.cmake") as setup:
+            subprocess.check_call(["ctest", "-S", str(setup), "-VV"])
 
-        exe = shutil.which("msis_setup", path=str(builddir))
-
-    if not exe:
-        raise FileNotFoundError(f"MSIS setup executable not found in {builddir}")
     # %% SPECIFY SIZES ETC.
     lx1 = xg["lx"][0]
     lx2 = xg["lx"][1]
@@ -491,9 +483,11 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     )
     # %% CALL MSIS
     # the "-" means to use stdin, stdout
-    cmd = [exe, "-", "-", str(lz)]
-    print(" ".join(cmd))
-    ret = subprocess.check_output(cmd, input=invals, universal_newlines=True)
+
+    with importlib.resources.path(__package__, msis_name) as exe:
+        cmd = [str(exe), "-", "-", str(lz)]
+        logging.info(" ".join(cmd))
+        ret = subprocess.check_output(cmd, input=invals, universal_newlines=True)
 
     Nread = lz * 11
 
