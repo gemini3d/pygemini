@@ -125,8 +125,8 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
         gemexe = Path(gemexe).expanduser()
         if not gemexe.is_file():
             raise EnvironmentError(f"Cannot find gemini.bin in {gemexe}")
-    elif __file__ is not None:
-        build_dir = Path(__file__).resolve().parents[2] / "build"
+    elif os.environ.get("GEMINI_ROOT"):
+        build_dir = Path(os.environ["GEMINI_ROOT"]).expanduser().resolve() / "build"
         if not build_dir.is_dir():
             raise EnvironmentError(f"GEMINI build directory missing: {build_dir}")
 
