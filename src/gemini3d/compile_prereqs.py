@@ -4,7 +4,6 @@ Compiles prerequisites for Gemini
 import typing as T
 import sys
 import os
-import pkg_resources
 import subprocess
 import shutil
 import logging
@@ -14,6 +13,11 @@ from pathlib import Path
 
 from .utils import get_cpu_count
 from .web import url_retrieve, extract_tar
+
+try:
+    import pkg_resources
+except ImportError:
+    pkg_resources = None
 
 BUILDDIR = "build"
 NJOBS = get_cpu_count()
@@ -144,7 +148,7 @@ def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool
 
     git_update(source_dir, NETCDF_FORTRAN_GIT, f"v{NETCDF_FORTRAN}")
 
-    # NetCDF-Fortran does not yet use NetCDF_ROO
+    # NetCDF-Fortran does not yet use NetCDF_ROOT
     if sys.platform == "linux":
         netcdf_c = install_dir / "lib/libnetcdf.so"
     elif sys.platform == "win32":
@@ -308,7 +312,11 @@ def cmake_build(
     run_test: bool = True,
 ):
     """ build and install with CMake """
-    cmake = cmake_minimum_version("3.13")
+    cmake = shutil.which("cmake")
+    if not cmake_minimum_version(cmake, "3.15"):
+        # warning so as not to require setuptools.pkg_resources
+        logging.warning("CMake >= 3.15 is required.")
+
     cachefile = build_dir / "CMakeCache.txt"
     if wipe and cachefile.is_file():
         cachefile.unlink()
@@ -317,14 +325,14 @@ def cmake_build(
         nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir)], env=env
     )
 
-    subprocess.check_call(
-        nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"]
-    )
+    subprocess.check_call(nice + [cmake, "--build", str(build_dir), "--parallel"])
 
     if run_test:
         subprocess.check_call(
             nice + ["ctest", "--parallel", "2", "--output-on-failure"], cwd=str(build_dir)
         )
+
+    subprocess.check_call(nice + [cmake, "--install", str(build_dir)])
 
 
 def meson_build(
@@ -348,27 +356,32 @@ def meson_build(
     return ret.returncode
 
 
-def cmake_minimum_version(min_version: str = None) -> str:
+def cmake_minimum_version(exe: str, min_version: str) -> bool:
     """
-    if CMake is at least minimum version, return path to CMake executable
+    if possible, check if CMake is at least minimum version
     """
 
-    cmake = shutil.which("cmake")
+    if not exe:
+        exe = "cmake"
+
+    cmake = shutil.which(exe)
     if not cmake:
         raise FileNotFoundError("could not find CMake")
 
-    if not min_version:
-        return cmake
+    if pkg_resources is None:
+        return None
 
-    cmake_ver = (
-        subprocess.check_output([cmake, "--version"], universal_newlines=True)
+    return get_cmake_version(cmake) >= pkg_resources.parse_version(min_version)
+
+
+def get_cmake_version(exe: str) -> T.Tuple[str, ...]:
+    ver_str = (
+        subprocess.check_output([exe, "--version"], universal_newlines=True)
         .split("\n")[0]
         .split(" ")[2]
     )
-    if pkg_resources.parse_version(cmake_ver) < pkg_resources.parse_version(min_version):
-        logging.error(f"CMake {cmake_ver} is less than minimum required {min_version}")
 
-    return cmake
+    return pkg_resources.parse_version(ver_str)
 
 
 def git_update(path: Path, repo: str, tag: str = None):
