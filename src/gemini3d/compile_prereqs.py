@@ -279,7 +279,10 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
 
     lib_args = [f'-DLAPACK_ROOT={dirs["prefix"] / LAPACK_DIR}']
 
-    args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={dirs['prefix'] / SCALAPACK_DIR}"]
+    args = [
+        "-Dautobuild:BOOL=off",
+        f"-DCMAKE_INSTALL_PREFIX:PATH={dirs['prefix'] / SCALAPACK_DIR}",
+    ]
     cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
 
 
@@ -419,8 +422,15 @@ def git_update(path: Path, repo: str, tag: str = None):
             subprocess.check_call([GITEXE, "clone", repo, "--depth", "1", str(path)])
 
 
-def get_compilers(**kwargs) -> T.Mapping[str, str]:
-    """ get paths to compilers """
+def get_compilers(compiler_name: str, **kwargs) -> T.Mapping[str, str]:
+    """ get paths to compilers
+
+    Parameters
+    ----------
+
+    compiler_name: str
+        arbitrary string naming compiler--to give useful error message when compiler not found.
+    """
     env = os.environ
 
     for k, v in kwargs.items():
@@ -428,18 +438,22 @@ def get_compilers(**kwargs) -> T.Mapping[str, str]:
         if v not in c:
             c = shutil.which(v)
         if not c:
-            raise FileNotFoundError(k)
+            raise FileNotFoundError(
+                f"Compiler {compiler_name} was not found: {k}."
+                " Did you load the compiler shell environment first?"
+            )
         env.update({k: c})
 
     return env
 
 
 def gcc_compilers() -> T.Mapping[str, str]:
-    return get_compilers(FC="gfortran", CC="gcc", CXX="g++")
+    return get_compilers("GCC", FC="gfortran", CC="gcc", CXX="g++")
 
 
 def intel_compilers() -> T.Mapping[str, str]:
     return get_compilers(
+        "Intel",
         FC="ifort",
         CC="icl" if os.name == "nt" else "icc",
         CXX="icl" if os.name == "nt" else "icpc",
@@ -447,4 +461,4 @@ def intel_compilers() -> T.Mapping[str, str]:
 
 
 def ibmxl_compilers() -> T.Mapping[str, str]:
-    return get_compilers(FC="xlf", CC="xlc", CXX="xlc++")
+    return get_compilers("IBM XL", FC="xlf", CC="xlc", CXX="xlc++")
