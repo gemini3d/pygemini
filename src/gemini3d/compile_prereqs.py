@@ -19,6 +19,9 @@ BUILDDIR = "build"
 NETCDF_C_TAG = "v4.7.4"
 NETCDF_FORTRAN_TAG = "v4.5.2"
 HDF5_TAG = "1.12/master"
+MUMPS_TAG = "v5.3.3.4"
+SCALAPACK_TAG = "v2.1.0.8"
+LAPACK_TAG = "v3.9.0.2"
 
 # Note: using OpenMPI 3.x because of legacy configured HPC
 # that break for *any* OpenMPI 4.x app.
@@ -109,7 +112,7 @@ def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = Fal
 
     git_url = "https://github.com/Unidata/netcdf-c.git"
 
-    git_update(source_dir, git_url, NETCDF_C_TAG)
+    git_download(source_dir, git_url, NETCDF_C_TAG)
 
     c_args = [
         f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
@@ -139,7 +142,7 @@ def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool
 
     git_url = "https://github.com/Unidata/netcdf-fortran.git"
 
-    git_update(source_dir, git_url, NETCDF_FORTRAN_TAG)
+    git_download(source_dir, git_url, NETCDF_FORTRAN_TAG)
 
     # NetCDF-Fortran does not yet use NetCDF_ROOT
     if sys.platform == "linux":
@@ -207,7 +210,7 @@ Instead of this, it is generally best to use MSYS2 or Windows Subsystem for Linu
 
     git_url = "https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git"
 
-    git_update(source_dir, git_url, tag=HDF5_TAG)
+    git_download(source_dir, git_url, HDF5_TAG)
 
     cmd = [
         "./configure",
@@ -265,7 +268,7 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
 
     git_url = "https://github.com/scivision/lapack.git"
 
-    git_update(source_dir, git_url)
+    git_download(source_dir, git_url, LAPACK_TAG)
 
     args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
     cmake_build(args, source_dir, build_dir, wipe, env=env)
@@ -278,7 +281,7 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
 
     git_url = "https://github.com/scivision/scalapack.git"
 
-    git_update(source_dir, git_url)
+    git_download(source_dir, git_url, SCALAPACK_TAG)
 
     lib_args = [f'-DLAPACK_ROOT={dirs["prefix"] / LAPACK_DIR}']
 
@@ -300,7 +303,7 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
 
     git_url = "https://github.com/scivision/mumps.git"
 
-    git_update(source_dir, git_url)
+    git_download(source_dir, git_url, MUMPS_TAG)
 
     if env["FC"] == "ifort":
         lib_args = []
@@ -382,11 +385,9 @@ def get_cmake() -> str:
     return cmake
 
 
-def git_update(path: Path, repo: str, tag: str = None):
+def git_download(path: Path, repo: str, tag: str):
     """
-    Use Git to update a local repo, or clone it if not already existing.
-
-    we use cwd= instead of "git -C" for very old Git versions that might be on your HPC.
+    Use Git to download code repo.
     """
     GITEXE = shutil.which("git")
 
@@ -400,7 +401,10 @@ def git_update(path: Path, repo: str, tag: str = None):
 
     if path.is_dir():
         # don't use "git -C" for old HPC
-        subprocess.check_call([GITEXE, "pull"], cwd=str(path))
+        ret = subprocess.run([GITEXE, "checkout", tag], cwd=str(path))
+        if ret.returncode != 0:
+            subprocess.check_call([GITEXE, "fetch"], cwd=str(path))
+            subprocess.check_call([GITEXE, "checkout", tag], cwd=str(path))
     else:
         # shallow clone
         if tag:
