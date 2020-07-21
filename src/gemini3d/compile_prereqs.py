@@ -15,15 +15,16 @@ from .web import url_retrieve, extract_tar
 
 # ========= user parameters ======================
 BUILDDIR = "build"
-NJOBS = get_cpu_count()
-# Library parameters
 
 NETCDF_C_TAG = "v4.7.4"
 NETCDF_FORTRAN_TAG = "v4.5.2"
 HDF5_TAG = "1.12/master"
 
-MPI_TAG = "3.1.6"  # OpenMPI 4 needs Scalapack 2.1
-MPISHA1 = "bc4cd7fa0a7993d0ae05ead839e6056207e432d4"
+# Note: using OpenMPI 3.x because of legacy configured HPC
+# that break for *any* OpenMPI 4.x app.
+# https://www.open-mpi.org/software/ompi/major-changes.php
+MPI_TAG = "3.1.6"
+MPI_SHA1 = "bc4cd7fa0a7993d0ae05ead839e6056207e432d4"
 
 LAPACK_DIR = "lapack"
 SCALAPACK_DIR = "scalapack"
@@ -217,7 +218,9 @@ Instead of this, it is generally best to use MSYS2 or Windows Subsystem for Linu
 
     subprocess.check_call(nice + cmd, cwd=source_dir, env=env)
 
-    cmd = ["make", "-C", str(source_dir), "-j", str(NJOBS), "install"]
+    Njobs = get_cpu_count()
+
+    cmd = ["make", "-C", str(source_dir), "-j", str(Njobs), "install"]
     subprocess.check_call(nice + cmd)
 
 
@@ -235,7 +238,7 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     tar_name = f"openmpi-{MPI_TAG}.tar.bz2"
     tarfn = dirs["workdir"] / tar_name
     url = f"https://download.open-mpi.org/release/open-mpi/v{MPI_TAG[:3]}/{tar_name}"
-    url_retrieve(url, tarfn, ("sha1", MPISHA1))
+    url_retrieve(url, tarfn, ("sha1", MPI_SHA1))
     extract_tar(tarfn, source_dir)
 
     cmd = [
@@ -248,7 +251,9 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
 
     subprocess.check_call(nice + cmd, cwd=source_dir, env=env)
 
-    cmd = ["make", "-C", str(source_dir), "-j", str(NJOBS), "install"]
+    Njobs = get_cpu_count()
+
+    cmd = ["make", "-C", str(source_dir), "-j", str(Njobs), "install"]
     subprocess.check_call(nice + cmd)
 
 
