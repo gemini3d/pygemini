@@ -266,7 +266,7 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
 
     git_update(source_dir, LAPACK_GIT)
 
-    args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
+    args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
     cmake_build(args, source_dir, build_dir, wipe, env=env)
 
 
@@ -279,7 +279,7 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
 
     lib_args = [f'-DLAPACK_ROOT={dirs["prefix"] / LAPACK_DIR}']
 
-    args = [f"-DCMAKE_INSTALL_PREFIX:PATH={dirs['prefix'] / SCALAPACK_DIR}"]
+    args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={dirs['prefix'] / SCALAPACK_DIR}"]
     cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
 
 
@@ -299,7 +299,7 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     else:
         lib_args = [f"-DSCALAPACK_ROOT:PATH={scalapack_lib}", f"-DLAPACK_ROOT:PATH={lapack_lib}"]
 
-    args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
+    args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
     cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
 
 
