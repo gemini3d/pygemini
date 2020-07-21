@@ -6,18 +6,12 @@ import sys
 import os
 import subprocess
 import shutil
-import logging
 import argparse
 import tempfile
 from pathlib import Path
 
 from .utils import get_cpu_count
 from .web import url_retrieve, extract_tar
-
-try:
-    import pkg_resources
-except ImportError:
-    pkg_resources = None
 
 BUILDDIR = "build"
 NJOBS = get_cpu_count()
@@ -67,7 +61,9 @@ def main():
         help="top-level directory to build under (can be deleted when done)",
         default=tempfile.gettempdir(),
     )
-    p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
+    p.add_argument(
+        "-reuse", help="reuse existing downloaded code (not usually done)", action="store_true"
+    )
     P = p.parse_args()
 
     prefix = P.prefix if P.prefix else f"~/lib_{P.compiler}"
@@ -77,7 +73,7 @@ def main():
         "workdir": Path(P.workdir).expanduser().resolve(),
     }
 
-    setup_libs(P.libs, dirs, P.compiler, P.wipe)
+    setup_libs(P.libs, dirs, P.compiler, wipe=not P.reuse)
 
 
 def setup_libs(libs: T.Sequence[str], dirs: T.Dict[str, Path], compiler: str, wipe: bool):
@@ -315,14 +311,15 @@ def cmake_build(
     run_test: bool = True,
 ):
     """ build and install with CMake """
-    cmake = shutil.which("cmake")
-    if not cmake_minimum_version(cmake, "3.15"):
-        # warning so as not to require setuptools.pkg_resources
-        logging.warning("CMake >= 3.15 is required.")
+    cmake = get_cmake()
 
-    cachefile = build_dir / "CMakeCache.txt"
-    if wipe and cachefile.is_file():
-        cachefile.unlink()
+    cache_file = build_dir / "CMakeCache.txt"
+    cache_dir = build_dir / "CmakeFiles"
+    if wipe:
+        if cache_file.is_file():
+            cache_file.unlink()
+        if cache_dir.is_dir():
+            shutil.rmtree(cache_dir, ignore_errors=True, onerror=print)
 
     subprocess.check_call(
         nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir)], env=env
@@ -359,32 +356,21 @@ def meson_build(
     return ret.returncode
 
 
-def cmake_minimum_version(exe: str, min_version: str) -> bool:
-    """
-    if possible, check if CMake is at least minimum version
-    """
+def get_cmake() -> str:
 
-    if not exe:
-        exe = "cmake"
-
-    cmake = shutil.which(exe)
+    cmake = shutil.which("cmake")
     if not cmake:
-        raise FileNotFoundError("could not find CMake")
+        raise FileNotFoundError("CMake not found.")
 
-    if pkg_resources is None:
-        return None
-
-    return get_cmake_version(cmake) >= pkg_resources.parse_version(min_version)
-
-
-def get_cmake_version(exe: str) -> T.Tuple[str, ...]:
-    ver_str = (
-        subprocess.check_output([exe, "--version"], universal_newlines=True)
+    cmake_version = (
+        subprocess.check_output([cmake, "--version"], universal_newlines=True)
         .split("\n")[0]
         .split(" ")[2]
     )
 
-    return pkg_resources.parse_version(ver_str)
+    print("Using CMake", cmake_version)
+
+    return cmake
 
 
 def git_update(path: Path, repo: str, tag: str = None):
@@ -396,8 +382,12 @@ def git_update(path: Path, repo: str, tag: str = None):
     GITEXE = shutil.which("git")
 
     if not GITEXE:
-        logging.error("Git not available.")
-        return
+        raise FileNotFoundError("Git not found.")
+
+    git_version = (
+        subprocess.check_output([GITEXE, "--version"], universal_newlines=True).strip().split()[-1]
+    )
+    print("Using Git", git_version)
 
     if path.is_dir():
         # don't use "git -C" for old HPC
