@@ -16,6 +16,7 @@ endif()
 set(msis_path ${gemini_root}/src/vendor/msis00)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/git.cmake)
+
 git_download(${gemini_root} ${gemini_url} ${gemini_tag})
 
 add_subdirectory(${msis_path} ${PROJECT_BINARY_DIR}/msis)
