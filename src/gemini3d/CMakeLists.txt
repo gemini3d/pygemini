@@ -3,7 +3,7 @@ project(MSIS LANGUAGES Fortran)
 enable_testing()
 
 set(gemini_url "https://github.com/gemini3d/gemini")
-set(gemini_tag "0.6.0")
+set(gemini_tag "v0.6.0")
 
 if(NOT gemini_root)
   if(DEFINED ENV{GEMINI_ROOT})
@@ -19,6 +19,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/git.cmake)
 git_download(${gemini_root} ${gemini_url} ${gemini_tag})
 
 add_subdirectory(${msis_path} ${PROJECT_BINARY_DIR}/msis)
-# this source_dir location is for Python, so the robust importlib.resources can get it.
+# this source_dir location is for Python
+# importlib.resources finds it.
 set_target_properties(msis_setup PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
