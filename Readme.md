@@ -31,17 +31,17 @@ PyGemini requires that you have already installed:
 For those working with GEMINI Fortran code itself or to work with non-release versions of GEMINI Fortran code:
 
 1. install PyGemini in development mode as above
-2. make a symbolic / soft link in Terminal from `pygemini/src/gemini3d/gemini-fortran/` to the top-level directory where you're prototyping Gemini Fortran code. For example, suppose you're in "~/code/" and have Gemini at "~/code/gemini" and PyGemini at "~/code/pygemini". T
+2. make a symbolic / soft link in Terminal from `pygemini/src/gemini3d/gemini-fortran/` to the top-level directory where you're prototyping Gemini Fortran code. For example, suppose Gemini at "./gemini" and PyGemini at "./pygemini/".
 
    * MacOS / Linux:
 
         ```sh
-        ln -s gemini/ pygemini/src/gemini3d/gemini-fortran/
+        ln -s ./gemini/ ./pygemini/src/gemini3d/gemini-fortran/
         ````
     * Windows / PowerShell:
 
         ```posh
-        New-Item -ItemType SymbolicLink -Path "pygemini/src/gemini3d/gemini-fortran/" -Target "gemini/"
+        New-Item -ItemType SymbolicLink -Path "./pygemini/src/gemini3d/gemini-fortran/" -Target "./gemini/"
         ```
 
 ## Run simulation
