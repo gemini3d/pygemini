@@ -13,28 +13,20 @@ from pathlib import Path
 from .utils import get_cpu_count
 from .web import url_retrieve, extract_tar
 
+# ========= user parameters ======================
 BUILDDIR = "build"
 NJOBS = get_cpu_count()
 # Library parameters
 
-NETCDF_C = "4.7.4"
-NETCDF_C_GIT = "https://github.com/Unidata/netcdf-c.git"
-NETCDF_FORTRAN = "4.5.2"
-NETCDF_FORTRAN_GIT = "https://github.com/Unidata/netcdf-fortran.git"
-
+NETCDF_C_TAG = "v4.7.4"
+NETCDF_FORTRAN_TAG = "v4.5.2"
 HDF5_TAG = "1.12/master"
-HDF5_GIT = "https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git"
 
-MPIVERSION = "3.1.6"  # OpenMPI 4 needs Scalapack 2.1
+MPI_TAG = "3.1.6"  # OpenMPI 4 needs Scalapack 2.1
 MPISHA1 = "bc4cd7fa0a7993d0ae05ead839e6056207e432d4"
 
-LAPACK_GIT = "https://github.com/scivision/lapack.git"
 LAPACK_DIR = "lapack"
-
-SCALAPACK_GIT = "https://github.com/scivision/scalapack.git"
 SCALAPACK_DIR = "scalapack"
-
-MUMPS_GIT = "https://github.com/scivision/mumps.git"
 MUMPS_DIR = "mumps"
 
 # ========= end of user parameters ================
@@ -110,11 +102,13 @@ def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = Fal
     """ build and install NetCDF-C
     """
 
-    install_dir = dirs["prefix"] / f"netcdf-{NETCDF_C}"
+    install_dir = dirs["prefix"] / "netcdf"
     source_dir = dirs["workdir"] / "netcdf-c"
     build_dir = source_dir / BUILDDIR
 
-    git_update(source_dir, NETCDF_C_GIT, f"v{NETCDF_C}")
+    git_url = "https://github.com/Unidata/netcdf-c.git"
+
+    git_update(source_dir, git_url, NETCDF_C_TAG)
 
     c_args = [
         f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
@@ -138,11 +132,13 @@ def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool
     """ build and install NetCDF-Fortran
     """
 
-    install_dir = dirs["prefix"] / f"netcdf-{NETCDF_C}"
+    install_dir = dirs["prefix"] / "netcdf"
     source_dir = dirs["workdir"] / "netcdf-fortran"
     build_dir = source_dir / BUILDDIR
 
-    git_update(source_dir, NETCDF_FORTRAN_GIT, f"v{NETCDF_FORTRAN}")
+    git_url = "https://github.com/Unidata/netcdf-fortran.git"
+
+    git_update(source_dir, git_url, NETCDF_FORTRAN_TAG)
 
     # NetCDF-Fortran does not yet use NetCDF_ROOT
     if sys.platform == "linux":
@@ -208,7 +204,9 @@ Instead of this, it is generally best to use MSYS2 or Windows Subsystem for Linu
     install_dir = dirs["prefix"] / hdf5_name
     source_dir = dirs["workdir"] / hdf5_name
 
-    git_update(source_dir, HDF5_GIT, tag=HDF5_TAG)
+    git_url = "https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git"
+
+    git_update(source_dir, git_url, tag=HDF5_TAG)
 
     cmd = [
         "./configure",
@@ -230,13 +228,13 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
             "OpenMPI is not available in native Windows. Use MS-MPI instead."
         )
 
-    mpi_dir = f"openmpi-{MPIVERSION}"
+    mpi_dir = f"openmpi-{MPI_TAG}"
     install_dir = dirs["prefix"] / mpi_dir
     source_dir = dirs["workdir"] / mpi_dir
 
-    tar_name = f"openmpi-{MPIVERSION}.tar.bz2"
+    tar_name = f"openmpi-{MPI_TAG}.tar.bz2"
     tarfn = dirs["workdir"] / tar_name
-    url = f"https://download.open-mpi.org/release/open-mpi/v{MPIVERSION[:3]}/{tar_name}"
+    url = f"https://download.open-mpi.org/release/open-mpi/v{MPI_TAG[:3]}/{tar_name}"
     url_retrieve(url, tarfn, ("sha1", MPISHA1))
     extract_tar(tarfn, source_dir)
 
@@ -260,7 +258,9 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     source_dir = dirs["workdir"] / LAPACK_DIR
     build_dir = source_dir / BUILDDIR
 
-    git_update(source_dir, LAPACK_GIT)
+    git_url = "https://github.com/scivision/lapack.git"
+
+    git_update(source_dir, git_url)
 
     args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
     cmake_build(args, source_dir, build_dir, wipe, env=env)
@@ -271,7 +271,9 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     source_dir = dirs["workdir"] / SCALAPACK_DIR
     build_dir = source_dir / BUILDDIR
 
-    git_update(source_dir, SCALAPACK_GIT)
+    git_url = "https://github.com/scivision/scalapack.git"
+
+    git_update(source_dir, git_url)
 
     lib_args = [f'-DLAPACK_ROOT={dirs["prefix"] / LAPACK_DIR}']
 
@@ -291,7 +293,9 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     scalapack_lib = dirs["prefix"] / SCALAPACK_DIR
     lapack_lib = dirs["prefix"] / LAPACK_DIR
 
-    git_update(source_dir, MUMPS_GIT)
+    git_url = "https://github.com/scivision/mumps.git"
+
+    git_update(source_dir, git_url)
 
     if env["FC"] == "ifort":
         lib_args = []
