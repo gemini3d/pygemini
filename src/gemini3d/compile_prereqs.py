@@ -397,7 +397,8 @@ def git_update(path: Path, repo: str, tag: str = None):
         return
 
     if path.is_dir():
-        subprocess.check_call([GITEXE, "-C", str(path), "pull"])
+        # don't use "git -C" for old HPC
+        subprocess.check_call([GITEXE, "pull"], cwd=str(path))
     else:
         # shallow clone
         if tag:
