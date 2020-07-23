@@ -9,6 +9,7 @@ import shutil
 import argparse
 import tempfile
 from pathlib import Path
+import importlib.resources
 
 from .utils import get_cpu_count
 from .web import url_retrieve, extract_tar
@@ -17,10 +18,10 @@ from .web import url_retrieve, extract_tar
 BUILDDIR = "build"
 
 NETCDF_C_TAG = "v4.7.4"
-NETCDF_FORTRAN_TAG = "v4.5.2"
+NETCDF_FORTRAN_TAG = "v4.5.3"
 HDF5_TAG = "1.12/master"
-MUMPS_TAG = "v5.3.3.4"
-SCALAPACK_TAG = "v2.1.0.8"
+MUMPS_TAG = "v5.3.3.5"
+SCALAPACK_TAG = "v2.1.0.9"
 LAPACK_TAG = "v3.9.0.2"
 
 # Note: using OpenMPI 3.x because of legacy configured HPC
@@ -29,6 +30,7 @@ LAPACK_TAG = "v3.9.0.2"
 MPI_TAG = "3.1.6"
 MPI_SHA1 = "bc4cd7fa0a7993d0ae05ead839e6056207e432d4"
 
+HDF5_DIR = "hdf5"
 LAPACK_DIR = "lapack"
 SCALAPACK_DIR = "scalapack"
 MUMPS_DIR = "mumps"
@@ -57,8 +59,12 @@ def main():
         help="top-level directory to build under (can be deleted when done)",
         default=tempfile.gettempdir(),
     )
+    p.add_argument("-reuse", help="reuse existing build (not usually done)", action="store_true")
     p.add_argument(
-        "-reuse", help="reuse existing downloaded code (not usually done)", action="store_true"
+        "-n",
+        "--dryrun",
+        help="download code and configure but don't actually build (for testing only)",
+        action="store_true",
     )
     P = p.parse_args()
 
@@ -69,10 +75,17 @@ def main():
         "workdir": Path(P.workdir).expanduser().resolve(),
     }
 
-    setup_libs(P.libs, dirs, P.compiler, wipe=not P.reuse)
+    setup_libs(P.libs, dirs, P.compiler, wipe=not P.reuse, dryrun=P.dryrun)
 
 
-def setup_libs(libs: T.Sequence[str], dirs: T.Dict[str, Path], compiler: str, wipe: bool):
+def setup_libs(
+    libs: T.Sequence[str],
+    dirs: T.Dict[str, Path],
+    compiler: str,
+    *,
+    wipe: bool,
+    dryrun: bool = False,
+):
 
     if compiler == "gcc":
         env = gcc_compilers()
@@ -82,27 +95,30 @@ def setup_libs(libs: T.Sequence[str], dirs: T.Dict[str, Path], compiler: str, wi
         env = ibmxl_compilers()
     else:
         raise ValueError(f"unknown compiler {compiler}")
-    # Note: HDF5 needs to be before NetCDF
+
     if "hdf5" in libs:
-        hdf5(dirs, env=env)
+        hdf5(dirs, env=env, dryrun=dryrun)
     if "netcdf" in libs:
-        netcdf_c(dirs, env=env, wipe=wipe)
-        netcdf_fortran(dirs, env=env, wipe=wipe)
+        netcdf_c(dirs, env=env, wipe=wipe, dryrun=dryrun)
+        netcdf_fortran(dirs, env=env, wipe=wipe, dryrun=dryrun)
 
     # Note: OpenMPI needs to be before scalapack and mumps
     if "openmpi" in libs:
-        openmpi(dirs, env=env)
+        openmpi(dirs, env=env, dryrun=dryrun)
     if "lapack" in libs:
-        lapack(wipe, dirs, env=env)
+        lapack(wipe, dirs, env=env, dryrun=dryrun)
     if "scalapack" in libs:
-        scalapack(wipe, dirs, env=env)
+        scalapack(wipe, dirs, env=env, dryrun=dryrun)
     if "mumps" in libs:
-        mumps(wipe, dirs, env=env)
+        mumps(wipe, dirs, env=env, dryrun=dryrun)
 
-    print("Installed", libs, "under", dirs["prefix"])
+    if not dryrun:
+        print("Installed", libs, "under", dirs["prefix"])
 
 
-def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False):
+def netcdf_c(
+    dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False, dryrun: bool = False
+):
     """ build and install NetCDF-C
     """
 
@@ -113,6 +129,15 @@ def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = Fal
     git_url = "https://github.com/Unidata/netcdf-c.git"
 
     git_download(source_dir, git_url, NETCDF_C_TAG)
+
+    hdf5_root = dirs["prefix"] / HDF5_DIR
+    if hdf5_root.is_dir():
+        lib_args = [f"-DHDF5_ROOT={hdf5_root.as_posix()}"]
+    else:
+        lib_args = []
+
+    if not cmake_find_library("HDF5 COMPONENTS C Fortran", lib_args, env):
+        raise RuntimeError("Please install HDF5 before NetCDF4")
 
     c_args = [
         f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
@@ -129,10 +154,14 @@ def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = Fal
         "-DENABLE_DAP2:BOOL=OFF",
         "-DENABLE_DAP4:BOOL=OFF",
     ]
-    cmake_build(c_args, source_dir, build_dir, wipe, env=env, run_test=False)
+    cmake_build(
+        c_args + lib_args, source_dir, build_dir, wipe, env=env, run_test=False, dryrun=dryrun
+    )
 
 
-def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False):
+def netcdf_fortran(
+    dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False, dryrun: bool = False
+):
     """ build and install NetCDF-Fortran
     """
 
@@ -160,6 +189,15 @@ def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool
             f"please open a GitHub Issue for your operating system {sys.platform}"
         )
 
+    hdf5_root = dirs["prefix"] / HDF5_DIR
+    if hdf5_root.is_dir():
+        lib_args = [f"-DHDF5_ROOT={hdf5_root.as_posix()}"]
+    else:
+        lib_args = []
+
+    if not cmake_find_library("HDF5 COMPONENTS C Fortran", lib_args, env):
+        raise RuntimeError("Please install HDF5 before NetCDF4")
+
     patch = [
         f"-DNETCDF_C_LIBRARY:FILEPATH={netcdf_c}",
         f"-DNETCDF_INCLUDE_DIR:PATH={install_dir / 'include'}",
@@ -173,10 +211,10 @@ def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool
         "-DENABLE_TESTS:BOOL=off",
         "-DBUILD_EXAMPLES:BOOL=OFF",
     ]
-    cmake_build(f_args, source_dir, build_dir, wipe, env=env, run_test=False)
+    cmake_build(f_args, source_dir, build_dir, wipe, env=env, run_test=False, dryrun=dryrun)
 
 
-def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
+def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """ build and install HDF5
     some systems have broken libz and so have trouble extracting tar.bz2 from Python.
     To avoid this, we git clone the release instead.
@@ -204,9 +242,8 @@ Instead of this, it is generally best to use MSYS2 or Windows Subsystem for Linu
             """
         raise SystemExit(msg)
 
-    hdf5_name = "hdf5"
-    install_dir = dirs["prefix"] / hdf5_name
-    source_dir = dirs["workdir"] / hdf5_name
+    install_dir = dirs["prefix"] / HDF5_DIR
+    source_dir = dirs["workdir"] / HDF5_DIR
 
     git_url = "https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git"
 
@@ -224,10 +261,15 @@ Instead of this, it is generally best to use MSYS2 or Windows Subsystem for Linu
     Njobs = get_cpu_count()
 
     cmd = ["make", "-C", str(source_dir), "-j", str(Njobs), "install"]
+
+    if dryrun:
+        print("DRYRUN: would have run\n", " ".join(cmd))
+        return None
+
     subprocess.check_call(nice + cmd)
 
 
-def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
+def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """ build and install OpenMPI """
     if os.name == "nt":
         raise NotImplementedError(
@@ -257,10 +299,15 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     Njobs = get_cpu_count()
 
     cmd = ["make", "-C", str(source_dir), "-j", str(Njobs), "install"]
+
+    if dryrun:
+        print("DRYRUN: would have run\n", " ".join(cmd))
+        return None
+
     subprocess.check_call(nice + cmd)
 
 
-def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
+def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """ build and insall Lapack """
     install_dir = dirs["prefix"] / LAPACK_DIR
     source_dir = dirs["workdir"] / LAPACK_DIR
@@ -271,11 +318,12 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     git_download(source_dir, git_url, LAPACK_TAG)
 
     args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
-    cmake_build(args, source_dir, build_dir, wipe, env=env)
+    cmake_build(args, source_dir, build_dir, wipe, env=env, dryrun=dryrun)
 
 
-def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
+def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """ build and install Scalapack """
+    install_dir = dirs["prefix"] / SCALAPACK_DIR
     source_dir = dirs["workdir"] / SCALAPACK_DIR
     build_dir = source_dir / BUILDDIR
 
@@ -283,16 +331,25 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
 
     git_download(source_dir, git_url, SCALAPACK_TAG)
 
-    lib_args = [f'-DLAPACK_ROOT={dirs["prefix"] / LAPACK_DIR}']
+    lapack_root = dirs["prefix"] / LAPACK_DIR
+    lib_args = [f"-DLAPACK_ROOT={lapack_root.as_posix()}"]
+
+    if not cmake_find_library("MPI COMPONENTS C Fortran", [], env):
+        raise RuntimeError(
+            "An MPI library is required for SCALAPACK."
+            "OpenMPI, IntelMPI, MPICH, MS-MPI are known to work."
+        )
+    if not cmake_find_library("lapack", lib_args, env):
+        lapack(wipe, dirs, env)
 
     args = [
         "-Dautobuild:BOOL=off",
-        f"-DCMAKE_INSTALL_PREFIX:PATH={dirs['prefix'] / SCALAPACK_DIR}",
+        f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
     ]
-    cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
+    cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env, dryrun=dryrun)
 
 
-def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
+def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """ build and install Mumps """
     install_dir = dirs["prefix"] / MUMPS_DIR
     source_dir = dirs["workdir"] / MUMPS_DIR
@@ -308,10 +365,23 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     if env["FC"] == "ifort":
         lib_args = []
     else:
-        lib_args = [f"-DSCALAPACK_ROOT:PATH={scalapack_lib}", f"-DLAPACK_ROOT:PATH={lapack_lib}"]
+        lib_args = [
+            f"-DSCALAPACK_ROOT:PATH={scalapack_lib.as_posix()}",
+            f"-DLAPACK_ROOT:PATH={lapack_lib.as_posix()}",
+        ]
+
+    if not cmake_find_library("MPI COMPONENTS C Fortran", [], env):
+        raise RuntimeError(
+            "An MPI library is required for MUMPS."
+            "OpenMPI, IntelMPI, MPICH, MS-MPI are known to work."
+        )
+    if not cmake_find_library("LAPACK", lib_args, env):
+        lapack(wipe, dirs, env)
+    if not cmake_find_library("SCALAPACK", lib_args, env):
+        scalapack(wipe, dirs, env)
 
     args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
-    cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
+    cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env, dryrun=dryrun)
 
 
 def cmake_build(
@@ -321,51 +391,82 @@ def cmake_build(
     wipe: bool,
     env: T.Mapping[str, str],
     run_test: bool = True,
+    dryrun: bool = False,
 ):
     """ build and install with CMake """
     cmake = get_cmake()
 
     cache_file = build_dir / "CMakeCache.txt"
-    cache_dir = build_dir / "CmakeFiles"
     if wipe:
         if cache_file.is_file():
             cache_file.unlink()
-        if cache_dir.is_dir():
-            shutil.rmtree(cache_dir, ignore_errors=True, onerror=print)
 
-    subprocess.check_call(
-        nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir)], env=env
-    )
+    cmd = nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir)]
+    subprocess.check_call(cmd, env=env)
 
-    subprocess.check_call(nice + [cmake, "--build", str(build_dir), "--parallel"])
+    cmd = nice + [cmake, "--build", str(build_dir), "--parallel"]
+    if dryrun:
+        print("DRYRUN: would have run\n", " ".join(cmd))
+        return None
+
+    subprocess.check_call(cmd)
+
+    Njobs = get_cpu_count()
 
     if run_test:
         subprocess.check_call(
-            nice + ["ctest", "--parallel", "2", "--output-on-failure"], cwd=str(build_dir)
+            nice + ["ctest", "--parallel", str(Njobs), "--output-on-failure"], cwd=str(build_dir)
         )
 
     subprocess.check_call(nice + [cmake, "--install", str(build_dir)])
 
 
-def meson_build(
-    args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str]
-) -> int:
-    """ build and install with Meson """
-    meson = shutil.which("meson")
-    if not meson:
-        raise FileNotFoundError("Meson not found.")
+def cmake_find_library(lib_name: str, lib_path: T.List[str], env: T.Mapping[str, str]) -> bool:
+    """
+    check if library exists with CMake
 
-    if wipe and (build_dir / "build.ninja").is_file():
-        args.append("--wipe")
+    lib_name must have the appropriate upper and lower case letter as would be used
+    directly in CMake.
+    """
 
-    subprocess.check_call(
-        nice + [meson, "setup"] + args + [str(build_dir), str(source_dir)], env=env
-    )
+    cmake = get_cmake()
 
-    for op in ("test", "install"):
-        ret = subprocess.run(nice + [meson, op, "-C", str(build_dir)])
+    if __file__:
+        mod_path = Path(__file__).parent / "cmake"
+    else:
+        with importlib.resources.path("gemini3d.cmake", "FindLAPACK.cmake") as f:
+            mod_path = Path(f).parent
 
-    return ret.returncode
+    cmake_template = """
+cmake_minimum_required(VERSION 3.15)
+project(dummy LANGUAGES C Fortran)
+
+"""
+
+    if mod_path.is_dir():
+        mod_str = mod_path.as_posix()
+        cmake_template += f'list(APPEND CMAKE_MODULE_PATH "{mod_str}")\n'
+
+    cmake_template += f"find_package({lib_name} REQUIRED)\n"
+
+    build_dir = f"find-{lib_name.split(' ', 1)[0]}"
+
+    # not context_manager to avoid Windows PermissionError on context exit for Git subdirs
+    d = tempfile.TemporaryDirectory()
+    r = Path(d.name)
+    (r / "CMakeLists.txt").write_text(cmake_template)
+
+    cmd = [cmake, "-S", str(r), "-B", str(r / build_dir)] + lib_path
+    # use cwd= to avoid spilling temporary files into current directory if ancient CMake used
+    # also avoids bugs if there is a CMakeLists.txt in the current directory
+    ret = subprocess.run(cmd, env=env, cwd=str(r))
+
+    try:
+        d.cleanup()
+    except PermissionError:
+        pass
+
+    return ret.returncode == 0
 
 
 def get_cmake() -> str:
@@ -403,7 +504,9 @@ def git_download(path: Path, repo: str, tag: str):
         # don't use "git -C" for old HPC
         ret = subprocess.run([GITEXE, "checkout", tag], cwd=str(path))
         if ret.returncode != 0:
-            subprocess.check_call([GITEXE, "fetch"], cwd=str(path))
+            ret = subprocess.run([GITEXE, "fetch"], cwd=str(path))
+            if ret.returncode != 0:
+                raise RuntimeError(f"could not fetch {path}  Maybe try removing this directory.")
             subprocess.check_call([GITEXE, "checkout", tag], cwd=str(path))
     else:
         # shallow clone
@@ -451,7 +554,7 @@ def get_compilers(compiler_name: str, **kwargs) -> T.Mapping[str, str]:
 
 
 def gcc_compilers() -> T.Mapping[str, str]:
-    return get_compilers("GCC", FC="gfortran", CC="gcc", CXX="g++")
+    return get_compilers("GNU", FC="gfortran", CC="gcc", CXX="g++")
 
 
 def intel_compilers() -> T.Mapping[str, str]:
