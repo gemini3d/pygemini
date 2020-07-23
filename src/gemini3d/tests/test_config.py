@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import pytest
 from datetime import datetime, timedelta
 import importlib.resources

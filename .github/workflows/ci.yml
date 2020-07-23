@@ -24,14 +24,17 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: install prereqs
+      run: |
+        sudo apt update -yq
+        sudo apt install -yq gfortran liblapack-dev libscalapack-openmpi-dev libopenmpi-dev
+
     - run: python -m pip install -e .[tests,lint]
 
     - run: flake8
     - run: mypy . src scripts
 
     - run: pytest
-      env:
-        FC: gfortran-9
 
 
   macos:
@@ -49,7 +52,7 @@ jobs:
 
     - run: python -m pip install -e .[tests,lint]
 
-    - run: pytest
+    - run: pytest --ignore-glob="*prereqs.py"
       env:
         FC: gfortran-9
 
@@ -69,4 +72,4 @@ jobs:
 
     - run: python -m pip install -e .[tests,lint]
 
-    - run: pytest
+    - run: pytest --ignore-glob="*prereqs.py"
