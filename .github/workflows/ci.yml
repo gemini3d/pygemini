@@ -34,7 +34,11 @@ jobs:
     - run: flake8
     - run: mypy . src scripts
 
-    - run: pytest
+# codecov coverage
+    - run: pip install codecov pytest-cov
+    - run: pytest --cov --cov-report=xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
 
 
   macos:

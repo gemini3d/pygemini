@@ -1,6 +1,7 @@
 # PyGemini
 
 ![ci_python](https://github.com/gemini3d/pygemini/workflows/ci/badge.svg)
+[![codecov](https://codecov.io/gh/gemini3d/pygemini/branch/master/graph/badge.svg)](https://codecov.io/gh/gemini3d/pygemini)
 
 A Python interface to [Gemini3D](https://github.com/gemini3d/gemini).
 In general, making multi-language programs with Python benefit significantly from Python &ge; 3.7.
