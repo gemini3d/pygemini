@@ -489,9 +489,7 @@ def bright_east_north(
     fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
     # arbitrary pick of which emission lines to plot lat/lon slices
     for j, i in enumerate([1, 3, 4, 8]):
-        f = interp.interp2d(
-            grid["x3"][inds3], grid["x2"][inds2], parm[i, :, :], bounds_error=False
-        )
+        f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm[i, :, :], bounds_error=False)
         hi = axs[j].pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp))
         axs[j].set_title(wavelength[i] + r"$\AA$")
         fg.colorbar(hi, ax=axs[j], label="Rayleighs")

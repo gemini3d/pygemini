@@ -79,15 +79,7 @@ if __name__ == "__main__":
             ax = fg.add_subplot(1, 3, 3)
             ix2 = x2.size // 2 - 1  # arbitrary slice
             hi = vis.plot13(
-                x3,
-                x1,
-                dat[p][1][:, ix2, :],
-                name=p,
-                cmap=None,
-                vmin=None,
-                vmax=None,
-                fg=fg,
-                ax=ax,
+                x3, x1, dat[p][1][:, ix2, :], name=p, cmap=None, vmin=None, vmax=None, fg=fg, ax=ax,
             )
 
             if P.saveplot:

@@ -28,7 +28,6 @@ LAPACK_TAG = "v3.9.0.2"
 # that break for *any* OpenMPI 4.x app.
 # https://www.open-mpi.org/software/ompi/major-changes.php
 MPI_TAG = "3.1.6"
-MPI_SHA1 = "bc4cd7fa0a7993d0ae05ead839e6056207e432d4"
 
 HDF5_DIR = "hdf5"
 LAPACK_DIR = "lapack"
@@ -240,7 +239,7 @@ For Windows, use HDF5 binaries from HDF Group.
 https://www.hdfgroup.org/downloads/hdf5/
 Instead of this, it is generally best to use MSYS2 or Windows Subsystem for Linux
             """
-        raise SystemExit(msg)
+        raise NotImplementedError(msg)
 
     install_dir = dirs["prefix"] / HDF5_DIR
     source_dir = dirs["workdir"] / HDF5_DIR
@@ -273,7 +272,14 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = Fa
     """ build and install OpenMPI """
     if os.name == "nt":
         raise NotImplementedError(
-            "OpenMPI is not available in native Windows. Use MS-MPI instead."
+            """
+OpenMPI is not available in native Windows.
+Other options on Windows:
+* Windows Subsystem for Linux
+* MS-MPI with MSYS2: https://www.scivision.dev/windows-mpi-msys2/
+* Intel oneAPI with IntelMPI: https://www.scivision.dev/intel-oneapi-fortran-install/
+* Cygwin
+"""
         )
 
     mpi_dir = f"openmpi-{MPI_TAG}"
@@ -283,7 +289,7 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = Fa
     tar_name = f"openmpi-{MPI_TAG}.tar.bz2"
     tarfn = dirs["workdir"] / tar_name
     url = f"https://download.open-mpi.org/release/open-mpi/v{MPI_TAG[:3]}/{tar_name}"
-    url_retrieve(url, tarfn, ("sha1", MPI_SHA1))
+    url_retrieve(url, tarfn)
     extract_tar(tarfn, source_dir)
 
     cmd = [
@@ -334,12 +340,7 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dry
     lapack_root = dirs["prefix"] / LAPACK_DIR
     lib_args = [f"-DLAPACK_ROOT={lapack_root.as_posix()}"]
 
-    if not cmake_find_library("MPI COMPONENTS C Fortran", [], env):
-        raise RuntimeError(
-            "An MPI library is required for SCALAPACK."
-            "OpenMPI, IntelMPI, MPICH, MS-MPI are known to work."
-        )
-    if not cmake_find_library("lapack", lib_args, env):
+    if not cmake_find_library("LAPACK", lib_args, env):
         lapack(wipe, dirs, env)
 
     args = [
@@ -370,11 +371,6 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun:
             f"-DLAPACK_ROOT:PATH={lapack_lib.as_posix()}",
         ]
 
-    if not cmake_find_library("MPI COMPONENTS C Fortran", [], env):
-        raise RuntimeError(
-            "An MPI library is required for MUMPS."
-            "OpenMPI, IntelMPI, MPICH, MS-MPI are known to work."
-        )
     if not cmake_find_library("LAPACK", lib_args, env):
         lapack(wipe, dirs, env)
     if not cmake_find_library("SCALAPACK", lib_args, env):

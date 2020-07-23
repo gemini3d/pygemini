@@ -367,9 +367,7 @@ def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> T.Tuple[np.ndarray, np.ndar
     thetat = np.arccos(
         np.cos(thetagp) * np.cos(thetan) + np.sin(thetagp) * np.sin(thetan) * np.cos(phig - phin)
     )
-    argtmp = (np.cos(thetagp) - np.cos(thetat) * np.cos(thetan)) / (
-        np.sin(thetat) * np.sin(thetan)
-    )
+    argtmp = (np.cos(thetagp) - np.cos(thetat) * np.cos(thetan)) / (np.sin(thetat) * np.sin(thetan))
     alpha = np.arccos(max(min(argtmp, 1), -1))
     phit = np.empty_like(lat)
 

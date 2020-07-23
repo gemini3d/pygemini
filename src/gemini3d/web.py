@@ -75,7 +75,7 @@ def extract_tar(fn: Pathlike, outpath: Pathlike, overwrite: bool = False):
             z.extractall(str(outpath.parent))
     except Exception as e:
         raise RuntimeError(
-            f"failed to extract {fn} with error {e}.\n"
-            "This file may be corrupt or system libz may be broken.\n\n"
-            f"Try deleting {fn} or manually extracting it."
+            f"""failed to extract {fn} with error {e}.
+This file may be corrupt or system libz may be broken.
+Try deleting {fn} or manually extracting it."""
         )
