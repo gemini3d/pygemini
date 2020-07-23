@@ -12,7 +12,7 @@ GFORTRAN = shutil.which("gfortran")
 
 @pytest.mark.skipif(GFORTRAN is None, reason="test assumes Gfortran")
 def test_find_compilers():
-    comps = gcp.gcc_compilers("GNU")
+    comps = gcp.gcc_compilers()
     assert "gfortran" in comps["FC"]
 
 
