@@ -156,7 +156,7 @@ def read_state(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     with Dataset(fn, "r") as f:
-        return {"ns": f["/ns"][:], "vs": f["/vsx1"][:], "Ts": f["/Ts"][:]}
+        return {"ns": f["/nsall"][:], "vs": f["/vs1all"][:], "Ts": f["/Tsall"][:]}
 
 
 def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Path):
