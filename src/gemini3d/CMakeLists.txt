@@ -3,7 +3,7 @@ project(MSIS LANGUAGES Fortran)
 enable_testing()
 
 set(gemini_url "https://github.com/gemini3d/gemini3d.git")
-set(gemini_tag "v0.6.1")
+set(gemini_tag "master")
 
 if(NOT gemini_root)
   if(DEFINED ENV{GEMINI_ROOT})
