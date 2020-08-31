@@ -5,11 +5,11 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import typing as T
 
-try:
-    import psutil
-except ImportError:
-    psutil = None
-    # pip install psutil will improve CPU utilization.
+# try:
+#     import psutil
+# except ImportError:
+#     psutil = None
+#     # pip install psutil will improve CPU utilization.
 
 
 git = shutil.which("git")
@@ -37,19 +37,19 @@ def get_cpu_count() -> int:
         detect number of physical CPU
     """
 
-    max_cpu = None
-    # without psutil, hyperthreaded CPU may overestimate physical count by factor of 2 (or more)
-    if psutil is not None:
-        max_cpu = psutil.cpu_count(logical=False)
-        extradiv = 1
-        if max_cpu is None:
-            max_cpu = psutil.cpu_count()
-            extradiv = 2
-    if max_cpu is None:
-        max_cpu = os.cpu_count()
-        extradiv = 2
+    # max_cpu = None
+    # # without psutil, hyperthreaded CPU may overestimate physical count by factor of 2 (or more)
+    # if psutil is not None:
+    #     max_cpu = psutil.cpu_count(logical=False)
+    #     if max_cpu is None:
+    #         max_cpu = psutil.cpu_count()
 
-    return max_cpu // extradiv
+    # if max_cpu is None:
+    #     max_cpu = os.cpu_count()
+    # else:
+    #     max_cpu = min(os.cpu_count(), max_cpu)
+
+    return os.cpu_count()
 
 
 def ymdhourdec2datetime(year: int, month: int, day: int, hourdec: float) -> datetime:
