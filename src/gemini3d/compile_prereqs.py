@@ -1,5 +1,11 @@
 """
-Compiles prerequisites for Gemini
+Compile HDF5 library
+
+Be sure environment variables are set for your desired compiler.
+Use the full compiler path if it's not getting the right compiler.
+
+* FC: Fortran compiler name or path
+* CC: C compiler name or path
 """
 import typing as T
 import sys
@@ -20,7 +26,7 @@ BUILDDIR = "build"
 NETCDF_C_TAG = "v4.7.4"
 NETCDF_FORTRAN_TAG = "v4.5.3"
 HDF5_TAG = "1.12/master"
-MUMPS_TAG = "v5.3.3.5"
+MUMPS_TAG = "v5.3.3.8"
 SCALAPACK_TAG = "v2.1.0.9"
 LAPACK_TAG = "v3.9.0.2"
 
@@ -96,7 +102,7 @@ def setup_libs(
         raise ValueError(f"unknown compiler {compiler}")
 
     if "hdf5" in libs:
-        hdf5(dirs, env=env, dryrun=dryrun)
+        hdf5(dirs, env=env)
     if "netcdf" in libs:
         netcdf_c(dirs, env=env, wipe=wipe, dryrun=dryrun)
         netcdf_fortran(dirs, env=env, wipe=wipe, dryrun=dryrun)
@@ -213,11 +219,15 @@ def netcdf_fortran(
     cmake_build(f_args, source_dir, build_dir, wipe, env=env, run_test=False, dryrun=dryrun)
 
 
-def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
+def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     """ build and install HDF5
     some systems have broken libz and so have trouble extracting tar.bz2 from Python.
     To avoid this, we git clone the release instead.
     """
+
+    name = "hdf5"
+    install_dir = dirs["prefix"] / name
+    source_dir = dirs["workdir"] / name
 
     if os.name == "nt":
         if "ifort" in env["FC"]:
@@ -226,46 +236,40 @@ For Windows with Intel compiler, use HDF5 binaries from HDF Group.
 https://www.hdfgroup.org/downloads/hdf5/
 look for filename like hdf5-1.12.0-Std-win10_64-vs14-Intel.zip
             """
-        elif "gfortran" in env["FC"]:
-            msg = """
-For MSYS2 on Windows, just use MSYS2 HDF5.
-Install from the MSYS2 terminal like:
-pacman -S mingw-w64-x86_64-hdf5
-reference: https://packages.msys2.org/package/mingw-w64-x86_64-hdf5
-            """
-        else:
-            msg = """
-For Windows, use HDF5 binaries from HDF Group.
-https://www.hdfgroup.org/downloads/hdf5/
-Instead of this, it is generally best to use MSYS2 or Windows Subsystem for Linux
-            """
-        raise NotImplementedError(msg)
+            raise NotImplementedError(msg)
 
-    install_dir = dirs["prefix"] / HDF5_DIR
-    source_dir = dirs["workdir"] / HDF5_DIR
+        cmd0 = [
+            "cmake",
+            f"-S{source_dir}",
+            f"-B{source_dir/BUILDDIR}",
+            f"-DCMAKE_INSTALL_PREFIX={install_dir}",
+            "-DBUILD_SHARED_LIBS:BOOL=false",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DHDF5_BUILD_FORTRAN:BOOL=true",
+            "-DHDF5_BUILD_CPP_LIB:BOOL=false",
+            "-DHDF5_BUILD_TOOLS:BOOL=false",
+            "-DBUILD_TESTING:BOOL=false",
+            "-DHDF5_BUILD_EXAMPLES:BOOL=false",
+        ]
+        cmd1 = ["cmake", "--build", BUILDDIR, "--parallel"]
+        cmd2 = ["cmake", "--install", BUILDDIR, "--parallel"]
+    else:
+        cmd0 = [
+            "./configure",
+            f"--prefix={install_dir}",
+            "--enable-fortran",
+            "--enable-build-mode=production",
+        ]
+        cmd1 = ["make", "-j"]
+        cmd2 = ["make", "-j", "install"]
 
     git_url = "https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git"
 
     git_download(source_dir, git_url, HDF5_TAG)
 
-    cmd = [
-        "./configure",
-        f"--prefix={install_dir}",
-        "--enable-fortran",
-        "--enable-build-mode=production",
-    ]
-
-    subprocess.check_call(nice + cmd, cwd=source_dir, env=env)
-
-    Njobs = get_cpu_count()
-
-    cmd = ["make", "-C", str(source_dir), "-j", str(Njobs), "install"]
-
-    if dryrun:
-        print("DRYRUN: would have run\n", " ".join(cmd))
-        return None
-
-    subprocess.check_call(nice + cmd)
+    subprocess.check_call(nice + cmd0, cwd=source_dir, env=env)
+    subprocess.check_call(nice + cmd1, cwd=source_dir)
+    subprocess.check_call(nice + cmd2, cwd=source_dir)
 
 
 def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
@@ -508,17 +512,7 @@ def git_download(path: Path, repo: str, tag: str):
         # shallow clone
         if tag:
             subprocess.check_call(
-                [
-                    GITEXE,
-                    "clone",
-                    repo,
-                    "--depth",
-                    "1",
-                    "--branch",
-                    tag,
-                    "--single-branch",
-                    str(path),
-                ]
+                [GITEXE, "clone", repo, "--branch", tag, "--single-branch", str(path)]
             )
         else:
             subprocess.check_call([GITEXE, "clone", repo, "--depth", "1", str(path)])
