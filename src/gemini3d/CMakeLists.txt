@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(MSIS LANGUAGES Fortran)
 enable_testing()
 
 set(gemini_url "https://github.com/gemini3d/gemini3d.git")
-set(gemini_tag "master")
+set(gemini_tag "v0.7.1")
 
 if(NOT gemini_root)
   if(DEFINED ENV{GEMINI_ROOT})

@@ -1,13 +1,9 @@
 # PyGemini
 
 ![ci_python](https://github.com/gemini3d/pygemini/workflows/ci/badge.svg)
-[![codecov](https://codecov.io/gh/gemini3d/pygemini/branch/master/graph/badge.svg)](https://codecov.io/gh/gemini3d/pygemini)
+[![codecov](https://codecov.io/gh/gemini3d/pygemini/branch/main/graph/badge.svg)](https://codecov.io/gh/gemini3d/pygemini)
 
 A Python interface to [Gemini3D](https://github.com/gemini3d/gemini).
-In general, making multi-language programs with Python benefit significantly from Python &ge; 3.7.
-In general, Python &ge; 3.8 provides additional robustness.
-
-We kindly suggest using Python &ge; 3.7 for any Python project, including PyGemini.
 
 ## Setup
 
@@ -25,25 +21,13 @@ Upon the first `import gemini3d`, the underlying C and Fortran Gemini code build
 PyGemini requires that you have already installed:
 
 * Fortran 2008 compiler, such as: GNU Gfortran, Intel Parallel Studio or Intel oneAPI
-* MPI-2 capable library, such as: OpenMPI, MPICH, IntelMPI, MS-MPI
 
 ### Developers
 
 For those working with GEMINI Fortran code itself or to work with non-release versions of GEMINI Fortran code:
 
 1. install PyGemini in development mode as above
-2. make a symbolic / soft link in Terminal from `pygemini/src/gemini3d/gemini-fortran/` to the top-level directory where you're prototyping Gemini Fortran code. For example, suppose Gemini at "./gemini" and PyGemini at "./pygemini/".
-
-   * MacOS / Linux:
-
-        ```sh
-        ln -s ./gemini/ ./pygemini/src/gemini3d/gemini-fortran/
-        ````
-    * Windows / PowerShell:
-
-        ```posh
-        New-Item -ItemType SymbolicLink -Path "./pygemini/src/gemini3d/gemini-fortran/" -Target "./gemini/"
-        ```
+2. set environment variable GEMINI_ROOT to the Gemini3D Fortran code directory, otherwise PyGemini will Git clone a new copy.
 
 ## Run simulation
 
