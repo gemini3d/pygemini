@@ -37,7 +37,7 @@ def url_retrieve(
         except (socket.gaierror, urllib.error.URLError) as err:
             raise ConnectionError(f"could not download {url} due to {err}")
 
-    if filehash:
+    if filehash and filehash[1]:
         if not file_checksum(outfile, filehash[0], filehash[1]):
             raise ValueError(f"Hash mismatch: {outfile}")
 
