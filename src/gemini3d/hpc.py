@@ -32,15 +32,15 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: T.Sequence[str]) -> Path:
     TODO:
 
     1. determine estimated wallclock time to request on HPC
-    2. determine requested HPC RAM per node (limit is master node)
+    2. determine requested HPC RAM per node (limit is main node)
     3. format number of nodes request
     """
 
     Nchar = 6  # arbitrary number of characters
 
     if batcher == "qsub":
-        template = importlib.resources.read_text(__package__, "templates/qsub_template.sh")
-        job_file = out_dir / f"job_{binascii.b2a_hex(os.urandom(Nchar)).decode('ascii')}.sh"
+        template = importlib.resources.read_text(__package__, "templates/qsub_template.job")
+        job_file = out_dir / f"{binascii.b2a_hex(os.urandom(Nchar)).decode('ascii')}.job"
         print("writing job file", job_file)
         text = template + "\n" + " ".join(cmd)
         job_file.write_text(text)
