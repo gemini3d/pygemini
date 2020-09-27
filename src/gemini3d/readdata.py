@@ -16,13 +16,14 @@ from . import matlab
 try:
     import h5py
     from . import hdf
-except ModuleNotFoundError:
+except (ImportError, AttributeError):
+    # must be ImportError not ModuleNotFoundError for botched HDF5 linkage
     hdf = None
 
 try:
     from netCDF4 import Dataset
     from . import nc4
-except ModuleNotFoundError:
+except ImportError:
     nc4 = None
 
 
