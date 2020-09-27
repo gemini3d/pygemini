@@ -10,8 +10,6 @@ from argparse import ArgumentParser
 import typing as T
 import shutil
 
-from gemini3d.linux_info import get_package_manager
-
 PKG = {
     "yum": [
         "epel-release",
@@ -51,7 +49,10 @@ def main(package_manager: str):
     cmd: T.List[str] = []
 
     if sys.platform == "linux":
+
         if not package_manager:
+            from gemini3d.linux_info import get_package_manager
+
             package_manager = get_package_manager()
 
         if package_manager == "yum":
