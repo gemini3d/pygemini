@@ -28,6 +28,8 @@ def os_release() -> T.List[str]:
             return ["rhel"]
         elif Path("/etc/debian_version").is_file():
             return ["debian"]
+        elif Path("/etc/arch-version").is_file():
+            return ["arch"]
 
     return parse_os_release("[all]" + fn.read_text())
 
@@ -37,7 +39,12 @@ def parse_os_release(txt: str) -> T.List[str]:
 
     C = ConfigParser(inline_comment_prefixes=("#", ";"))
     C.read_string(txt)
-    return C["all"].get("ID_LIKE").strip('"').strip("'").split()
+    like = C["all"].get("ID_LIKE", fallback="")
+    if not like:
+        like = C["all"].get("ID", fallback="")
+    like = like.strip('"').strip("'").split()
+
+    return like
 
 
 def get_package_manager(like: T.List[str] = None) -> str:
@@ -50,6 +57,8 @@ def get_package_manager(like: T.List[str] = None) -> str:
         return "yum"
     elif {"debian", "ubuntu"}.intersection(like):
         return "apt"
+    elif like == "arch":
+        return "pacman"
     else:
         raise ValueError(
             f"Unknown ID_LIKE={like}, please file bug report or manually specify package manager"

@@ -1,17 +1,49 @@
 #!/usr/bin/env python3
 """
-installs Gemini prerequisite libraries for:
-CentOS, Debian, Ubuntu, Homebrew and Cygwin
+installs Gemini3D prerequisite libraries for:
+CentOS, Debian, Ubuntu, Homebrew, MSYS2 and Cygwin
 assuming GCC/Gfortran
-
-Michael Hirsch, Ph.D.
 """
 import subprocess
 import sys
 from argparse import ArgumentParser
 import typing as T
+import shutil
 
 from gemini3d.linux_info import get_package_manager
+
+PKG = {
+    "yum": [
+        "epel-release",
+        "pkg-config",
+        "gcc-gfortran",
+        "MUMPS-openmpi-devel",
+        "lapack-devel",
+        "scalapack-openmpi-devel",
+        "openmpi-devel",
+        "hdf5-devel",
+    ],
+    "apt": [
+        "pkg-config",
+        "gfortran",
+        "libmumps-dev",
+        "liblapack-dev",
+        "libscalapack-mpi-dev",
+        "libopenmpi-dev",
+        "openmpi-bin",
+        "libhdf5-dev",
+    ],
+    "pacman": ["pkgconf", "gcc-fortran", "lapack", "openmpi", "hdf5"],
+    "brew": ["gcc", "make", "cmake", "lapack", "scalapack", "openmpi", "hdf5"],
+    "cygwin": ["gcc-fortran", "liblapack-devel", "libopenmpi-devel"],
+    "msys": [
+        "mingw-w64-x86_64-gcc-fortran",
+        "mingw-w64-x86_64-hdf5",
+        "mingw-w64-x86_64-lapack",
+        "mingw-w64-x86_64-scalapack",
+        "mingw-w64-x86_64-mumps",
+    ],
+}
 
 
 def main(package_manager: str):
@@ -22,48 +54,29 @@ def main(package_manager: str):
         if not package_manager:
             package_manager = get_package_manager()
 
-        pkgs = {
-            "yum": [
-                "epel-release",
-                "pkg-config",
-                "gcc-gfortran",
-                "MUMPS-openmpi-devel",
-                "lapack-devel",
-                "scalapack-openmpi-devel",
-                "openmpi-devel",
-                "hdf5-devel",
-            ],
-            "apt": [
-                "pkg-config",
-                "gfortran",
-                "libmumps-dev",
-                "liblapack-dev",
-                "libscalapack-mpi-dev",
-                "libopenmpi-dev",
-                "openmpi-bin",
-                "libhdf5-dev",
-            ],
-        }
-
         if package_manager == "yum":
             subprocess.run(["sudo", "yum", "--assumeyes", "updateinfo"])
-            cmd = ["sudo", "yum", "--assumeyes", "install"] + pkgs["yum"]
+            cmd = ["sudo", "yum", "install"] + PKG["yum"]
         elif package_manager == "apt":
             subprocess.run(["sudo", "apt", "update", "--yes"])
-            cmd = ["sudo", "apt", "--yes", "install"] + pkgs["apt"]
+            cmd = ["sudo", "apt", "install"] + PKG["apt"]
+        elif package_manager == "pacman":
+            subprocess.run(["sudo", "pacman", "-S", "--needed"] + PKG["pacman"])
         else:
             raise ValueError(
                 f"Unknown package manager {package_manager}, try installing the prereqs manually"
             )
     elif sys.platform == "darwin":
-        pkgs = {"brew": ["gcc", "make", "cmake", "lapack", "scalapack", "openmpi", "hdf5"]}
-        cmd = ["brew", "install"] + pkgs["brew"]
+        cmd = ["brew", "install"] + PKG["brew"]
         # autobuild Mumps, it's much faster
     elif sys.platform == "cygwin":
-        pkgs = ["gcc-fortran", "liblapack-devel", "libopenmpi-devel"]
-        cmd = ["setup-x86_64.exe", "-P"] + pkgs
+        cmd = ["setup-x86_64.exe", "-P"] + PKG["cygwin"]
     elif sys.platform == "win32":
-        raise SystemExit("Windows Subsystem for Linux or MSYS2 is recommended.")
+        if shutil.which("pacman"):
+            # assume MSYS2
+            cmd = ["pacman", "-S", "--needed"] + PKG["msys"]
+        else:
+            raise SystemExit("Windows Subsystem for Linux or MSYS2 is recommended.")
     else:
         raise ValueError(f"unknown platform {sys.platform}")
 
