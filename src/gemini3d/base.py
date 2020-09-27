@@ -9,12 +9,14 @@ from .find import get_simsize_path
 
 try:
     from . import hdf
-except ModuleNotFoundError:
+except ImportError:
+    # must be ImportError not ModuleNotFoundError for botched HDF5 linkage
     hdf = None
 
 try:
     from . import nc4
-except ModuleNotFoundError:
+except ImportError:
+    # must be ImportError not ModuleNotFoundError for botched HDF5 linkage
     nc4 = None
 
 Pathlike = T.Union[str, Path]
