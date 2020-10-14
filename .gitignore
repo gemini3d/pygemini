@@ -1,5 +1,6 @@
+src/tests/data/
 msis_setup.exe
-src/gemini3d/gemini-fortran
+src/gemini3d/gemini-fortran/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
