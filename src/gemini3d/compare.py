@@ -266,3 +266,7 @@ def compare_output(
         ref.update(A)
 
     return errs
+
+
+if __name__ == '__main__':
+    cli()
