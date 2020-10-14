@@ -15,12 +15,17 @@ git clone https://github.com/gemini3d/pygemini
 pip install -e pygemini
 ```
 
+### build
+
+Not all users need to run Gemini3D on the same device where PyGemini is installed.
 PyGemini uses the "build on run" method developed by Michael Hirsch, which allows complex multi-language Python packages to install reliably across operating systems (MacOS, Linux, Windows).
-Upon the first `import gemini3d`, the underlying C and Fortran Gemini code builds and installs, including all necessary libraries.
+Upon the first `gemini3d.run()`, the underlying Gemini3D code is built, including all necessary libraries.
 
-PyGemini requires that you have already installed:
+```sh
+python -m gemini3d.prereqs
+```
 
-* Fortran 2008 compiler, such as: GNU Gfortran, Intel Parallel Studio or Intel oneAPI
+allows manually installing those libraries to save rebuild time, but this is optional as Gemini3D automatically downloads and builds missing libraries.
 
 ### Developers
 
@@ -35,12 +40,12 @@ For those working with GEMINI Fortran code itself or to work with non-release ve
 2. run the equilibrium sim:
 
     ```sh
-    gemini_run /path_to/config_eq.nml /path_to/sim_eq/
+    python -m gemini3d.run /path_to/config_eq.nml /path_to/sim_eq/
     ```
 3. create a new config.nml for the actual simulation and run
 
     ```sh
-    gemini_run /path_to/config.nml /path_to/sim_out/
+    python -m gemini3d.run /path_to/config.nml /path_to/sim_out/
     ```
 
 ## Convert data files to HDF5

@@ -6,7 +6,7 @@ import pytest
 import shutil
 import os
 
-import gemini3d.compile_prereqs as gcp
+import gemini3d.prereqs as gcp
 
 
 @pytest.mark.skipif(shutil.which("gfortran") is None, reason="test assumes GCC")

@@ -45,7 +45,7 @@ MUMPS_DIR = "mumps"
 nice = ["nice"] if sys.platform == "linux" else []
 
 
-def main():
+def cli():
     p = argparse.ArgumentParser(
         description="Compiles prerequisite libraries for Gemini (or other programs)"
     )
@@ -73,14 +73,21 @@ def main():
     )
     P = p.parse_args()
 
-    prefix = P.prefix if P.prefix else f"~/lib_{P.compiler}"
+    main(P.compiler, P.libs, P.prefix, P.workdir, P.reuse, P.dryrun)
+
+
+def main(
+    compiler: str, libs: T.Sequence[str], prefix: str, workdir: str, reuse: bool, dryrun: bool
+):
+
+    prefix = prefix if prefix else f"~/lib_{compiler}"
 
     dirs = {
         "prefix": Path(prefix).expanduser().resolve(),
-        "workdir": Path(P.workdir).expanduser().resolve(),
+        "workdir": Path(workdir).expanduser().resolve(),
     }
 
-    setup_libs(P.libs, dirs, P.compiler, wipe=not P.reuse, dryrun=P.dryrun)
+    setup_libs(libs, dirs, compiler, wipe=not reuse, dryrun=dryrun)
 
 
 def setup_libs(
@@ -558,3 +565,7 @@ def intel_compilers() -> T.Mapping[str, str]:
 
 def ibmxl_compilers() -> T.Mapping[str, str]:
     return get_compilers("IBM XL", FC="xlf", CC="xlc", CXX="xlc++")
+
+
+if __name__ == "__main__":
+    cli()
