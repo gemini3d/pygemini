@@ -268,5 +268,5 @@ def compare_output(
     return errs
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()
