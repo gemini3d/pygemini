@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+
 """
 installs Gemini3D prerequisite libraries for:
 CentOS, Debian, Ubuntu, Homebrew, MSYS2 and Cygwin
 assuming GCC/Gfortran
 """
+
 import subprocess
 import sys
 from argparse import ArgumentParser
@@ -89,7 +91,12 @@ def main(package_manager: str):
 
 if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument("package_manager", help="specify package manager e.g. apt, yum", nargs="?")
+    p.add_argument(
+        "package_manager",
+        help="specify package manager e.g. apt, yum",
+        choices=list(PKG.keys()),
+        nargs="?",
+    )
     P = p.parse_args()
 
     main(P.package_manager)
