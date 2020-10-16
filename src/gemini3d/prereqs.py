@@ -25,8 +25,8 @@ BUILDDIR = "build"
 
 NETCDF_C_TAG = "v4.7.4"
 NETCDF_FORTRAN_TAG = "v4.5.3"
-HDF5_TAG = "1.12/master"
-MUMPS_TAG = "v5.3.3.8"
+HDF5_TAG = "hdf5_1_10_7"
+MUMPS_TAG = "v5.3.4.0"
 SCALAPACK_TAG = "v2.1.0.9"
 LAPACK_TAG = "v3.9.0.2"
 
@@ -270,7 +270,7 @@ look for filename like hdf5-1.12.0-Std-win10_64-vs14-Intel.zip
         cmd1 = ["make", "-j"]
         cmd2 = ["make", "-j", "install"]
 
-    git_url = "https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git"
+    git_url = "https://github.com/HDFGroup/hdf5.git"
 
     git_download(source_dir, git_url, HDF5_TAG)
 
