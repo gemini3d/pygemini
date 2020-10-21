@@ -2,6 +2,8 @@
 """
 run test
 """
+
+import zipfile
 import argparse
 from configparser import ConfigParser
 import sys
@@ -92,7 +94,13 @@ def runner(
         if not z["dir"].is_dir():
             download_and_extract(z, url_ini)
 
-    gemini3d.extract_zip(z["zip"], z["dir"])
+        try:
+            gemini3d.extract_zip(z["zip"], z["dir"])
+        except zipfile.BadZipFile:
+            # bad download, delete and try again (maybe someone hit Ctrl-C during download)
+            z["zip"].unlink()
+            download_and_extract(z, url_ini)
+            gemini3d.extract_zip(z["zip"], z["dir"])
 
     outdir = Path(outdir).expanduser().resolve()
     # prepare simulation output directory
