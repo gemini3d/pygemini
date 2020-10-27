@@ -16,16 +16,14 @@ import importlib.resources
 
 import gemini3d
 
-Rtop = Path(__file__).resolve().parents[1]
-Rtest = Rtop / "tests/data"
-
 
 def cli():
     p = argparse.ArgumentParser()
-    p.add_argument("testname")
+    p.add_argument("testname", help="name of test")
     p.add_argument("-mpiexec", help="mpiexec path")
-    p.add_argument("exe")
-    p.add_argument("outdir")
+    p.add_argument("exe", help="Gemini.bin executable binary")
+    p.add_argument("outdir", help="output directory")
+    p.add_argument("refdir", help="reference directory")
     p.add_argument("-np", help="force number of MPI images", type=int)
     p.add_argument(
         "-out_format", help="override config.nml output file format", choices=["h5", "nc", "raw"],
@@ -38,13 +36,14 @@ def cli():
         P.mpiexec,
         P.exe,
         P.outdir,
+        P.refdir,
         mpi_count=P.np,
         out_format=P.out_format,
         dryrun=P.dryrun,
     )
 
 
-def get_test_params(test_name: str, url_file: Path) -> T.Dict[str, T.Any]:
+def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> T.Dict[str, T.Any]:
     """ get URL and MD5 for a test name """
     ini = Path(url_file).expanduser().read_text()
     C = ConfigParser()
@@ -53,8 +52,8 @@ def get_test_params(test_name: str, url_file: Path) -> T.Dict[str, T.Any]:
     z = {
         "url": C.get(test_name, "url"),
         "md5": C.get(test_name, "md5", fallback=None),
-        "dir": Rtest / f"test{test_name}",
-        "zip": Rtest / f"test{test_name}.zip",
+        "dir": ref_dir / f"test{test_name}",
+        "zip": ref_dir / f"test{test_name}.zip",
     }
 
     return z
@@ -73,6 +72,7 @@ def runner(
     mpiexec: str,
     exe: str,
     outdir: Path,
+    refdir: Path,
     *,
     mpi_count: int = None,
     out_format: str = None,
@@ -83,7 +83,7 @@ def runner(
     """
 
     with importlib.resources.path("gemini3d.tests", "gemini3d_url.ini") as url_ini:
-        z = get_test_params(testname, url_ini)
+        z = get_test_params(testname, url_ini, refdir)
 
         if not z["dir"].is_dir():
             download_and_extract(z, url_ini)
@@ -147,7 +147,7 @@ def runner(
 
     print(" ".join(cmd))
 
-    ret = subprocess.run(cmd, cwd=Rtop)
+    ret = subprocess.run(cmd)
     if ret.returncode == 0:
         print("OK:", testname)
     else:
