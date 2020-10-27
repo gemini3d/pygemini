@@ -82,6 +82,9 @@ def runner(
     This is usually called from CMake Ctest
     """
 
+    outdir = Path(outdir).expanduser().resolve()
+    refdir = Path(refdir).expanduser().resolve()
+
     with importlib.resources.path("gemini3d.tests", "gemini3d_url.ini") as url_ini:
         z = get_test_params(testname, url_ini, refdir)
 
@@ -96,7 +99,6 @@ def runner(
             download_and_extract(z, url_ini)
             gemini3d.extract_zip(z["zip"], z["dir"])
 
-    outdir = Path(outdir).expanduser().resolve()
     # prepare simulation output directory
     input_dir = outdir / "inputs"
     nml = z["dir"] / "inputs/config.nml"
