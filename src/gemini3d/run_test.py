@@ -65,13 +65,7 @@ def download_and_extract(z: T.Dict[str, T.Any], url_ini: Path):
     try:
         gemini3d.url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
     except (ConnectionError, ValueError) as e:
-        print(f"SKIP: problem downloading reference data {e}", file=sys.stderr)
-        raise SystemExit(77)
-    except KeyError as e:
-        print(
-            f"SKIP: problem getting reference config from {url_ini} {e}", file=sys.stderr,
-        )
-        raise SystemExit(77)
+        raise ConnectionError(f"problem downloading reference data {e}")
 
 
 def runner(

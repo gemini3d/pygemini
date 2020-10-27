@@ -1,6 +1,7 @@
 """
 compare simulation outputs to verify model performance
 """
+
 from pathlib import Path
 import numpy as np
 import logging
@@ -77,11 +78,9 @@ def compare_all(
     refdir = Path(refdir).expanduser()
 
     if not outdir.is_dir():
-        print(f"output directory(s) not found: {outdir}", file=sys.stderr)
-        raise SystemExit(77)
+        raise FileNotFoundError(f"output directory(s) not found: {outdir}")
     if not refdir.is_dir():
-        print(f"reference directory(s) not found: {refdir}", file=sys.stderr)
-        raise SystemExit(77)
+        raise FileNotFoundError(f"reference directory(s) not found: {refdir}")
     if outdir.samefile(refdir):
         raise OSError(f"reference and output are the same directory: {outdir}")
 
