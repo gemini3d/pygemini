@@ -5,7 +5,7 @@ run test
 
 import zipfile
 import argparse
-from configparser import ConfigParser
+import json
 import sys
 import typing
 import subprocess
@@ -45,17 +45,18 @@ def cli():
 
 def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> T.Dict[str, T.Any]:
     """ get URL and MD5 for a test name """
-    ini = Path(url_file).expanduser().read_text()
-    C = ConfigParser()
-    C.read_string(ini)
+    json_str = Path(url_file).expanduser().read_text()
+    urls = json.loads(json_str)
 
     z = {
-        "url": C.get(test_name, "url"),
-        "md5": C.get(test_name, "md5", fallback=None),
+        "url": urls[test_name]["url"],
         "dir": ref_dir / f"test{test_name}",
         "zip": ref_dir / f"test{test_name}.zip",
     }
 
+    if urls[test_name].get("md5"):
+        z["md5"] = urls[test_name]["md5"]
+    print(z)
     return z
 
 
@@ -85,7 +86,7 @@ def runner(
     outdir = Path(outdir).expanduser().resolve()
     refdir = Path(refdir).expanduser().resolve()
 
-    with importlib.resources.path("gemini3d.tests", "gemini3d_url.ini") as url_ini:
+    with importlib.resources.path("gemini3d.tests", "gemini3d_url.json") as url_ini:
         z = get_test_params(testname, url_ini, refdir)
 
         if not z["dir"].is_dir():
