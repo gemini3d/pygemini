@@ -56,7 +56,9 @@ def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> T.Dict[str
 
     if urls[test_name].get("md5"):
         z["md5"] = urls[test_name]["md5"]
-    print(z)
+    else:
+        z["md5"] = None
+
     return z
 
 
