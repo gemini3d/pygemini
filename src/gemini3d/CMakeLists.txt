@@ -1,9 +1,16 @@
 cmake_minimum_required(VERSION 3.15)
+
+include(cmake/compiler_find.cmake)
+
 project(MSIS LANGUAGES Fortran)
-enable_testing()
+
+include(CTest)
+if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
+  set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
+endif()
 
 set(gemini_url "https://github.com/gemini3d/gemini3d.git")
-set(gemini_tag "v0.7.1")
+set(gemini_tag "master")
 
 if(NOT gemini_root)
   if(DEFINED ENV{GEMINI_ROOT})
@@ -15,7 +22,7 @@ endif()
 
 set(msis_path ${gemini_root}/src/vendor/msis00)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/git.cmake)
+include(cmake/git.cmake)
 
 git_download(${gemini_root} ${gemini_url} ${gemini_tag})
 
