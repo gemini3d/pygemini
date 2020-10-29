@@ -36,8 +36,6 @@ def read_config(path: Path) -> T.Dict[str, T.Any]:
     else:
         raise ValueError(f"unsure how to read {file}")
 
-    P["nml"] = file
-
     return P
 
 
@@ -65,12 +63,9 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     Just trying to keep Python prereqs reduced for this simple parsing.
     """
 
-    fn = Path(fn).expanduser().resolve()
+    fn = get_config_filename(fn)
 
-    if fn.is_dir():
-        fn = fn / "config.nml"
-
-    params = {}
+    params = {"nml": fn}
     for n in ("base", "files", "flags", "setup"):
         params.update(read_namelist(fn, n))
 
@@ -223,6 +218,8 @@ def parse_namelist(raw: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]
 
 def read_ini(fn: Path) -> T.Dict[str, T.Any]:
     """ parse .ini file (legacy) """
+
+    fn = get_config_filename(fn)
 
     P: T.Dict[str, T.Any] = {}
 

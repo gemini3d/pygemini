@@ -1,3 +1,4 @@
+import logging
 import argparse
 from pathlib import Path
 import sys
@@ -18,7 +19,11 @@ def cli():
     p.add_argument(
         "-out_format", help="override Fortran output file format", choices=["h5", "nc", "raw"]
     )
+    p.add_argument("-v", "--verbose", action="store_true")
     P = p.parse_args()
+
+    level = logging.INFO if P.verbose else None
+    logging.basicConfig(format="%(message)s", level=level)
 
     params = {
         "config_file": Path(P.config_file).expanduser(),

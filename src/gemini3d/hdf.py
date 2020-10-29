@@ -2,10 +2,15 @@ from pathlib import Path
 import typing as T
 import numpy as np
 import logging
-import h5py
 from datetime import datetime
 
 from .utils import datetime2ymd_hourdec, ymdhourdec2datetime
+
+try:
+    import h5py
+except ImportError:
+    # must be ImportError not ModuleNotFoundError for botched HDF5 linkage
+    h5py = None
 
 LSP = 7
 
@@ -14,6 +19,10 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     """
     get simulation size
     """
+
+    if h5py is None:
+        raise ImportError("pip install h5py")
+
     path = Path(path).expanduser().resolve()
 
     with h5py.File(path, "r") as f:
@@ -41,6 +50,9 @@ def read_state(fn: Path) -> T.Dict[str, T.Any]:
     load initial condition data
     """
 
+    if h5py is None:
+        raise ImportError("pip install h5py")
+
     with h5py.File(fn, "r") as f:
         return {"ns": f["/nsall"][:], "vs": f["/vs1all"][:], "Ts": f["/Tsall"][:]}
 
@@ -64,6 +76,9 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     need the .transpose() for h5py
     """
 
+    if h5py is None:
+        raise ImportError("pip install h5py")
+
     print("hdf:write_state:", fn)
 
     with h5py.File(fn, "w") as f:
@@ -74,7 +89,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         # we have to reverse axes order and put lsp at the last dim
 
         f.create_dataset(
-            "/ns",
+            "/nsall",
             data=ns.transpose(p4),
             dtype=np.float32,
             compression="gzip",
@@ -83,7 +98,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
             fletcher32=True,
         )
         f.create_dataset(
-            "/vsx1",
+            "/vs1all",
             data=vs.transpose(p4),
             dtype=np.float32,
             compression="gzip",
@@ -92,7 +107,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
             fletcher32=True,
         )
         f.create_dataset(
-            "/Ts",
+            "/Tsall",
             data=Ts.transpose(p4),
             dtype=np.float32,
             compression="gzip",
@@ -107,6 +122,10 @@ def write_data(dat: T.Dict[str, T.Any], outfn: Path):
     write simulation data
     e.g. for converting a file format from a simulation
     """
+
+    if h5py is None:
+        raise ImportError("pip install h5py")
+
     lxs = dat["lxs"]
 
     with h5py.File(outfn, "w") as h:
@@ -155,6 +174,9 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
         grid parameters
     """
 
+    if h5py is None:
+        raise ImportError("pip install h5py")
+
     grid: T.Dict[str, T.Any] = {}
 
     if not fn.is_file():
@@ -193,6 +215,9 @@ def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
     Matlab read/write HDF5 in Fortran order. h5py read/write HDF5 in C order so we
     need the .transpose() for h5py
     """
+
+    if h5py is None:
+        raise ImportError("pip install h5py")
 
     if "lx" not in xg:
         xg["lx"] = np.array([xg["x1"].shape, xg["x2"].shape, xg["x3"].shape])
@@ -273,6 +298,9 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     load electric field
     """
 
+    if h5py is None:
+        raise ImportError("pip install h5py")
+
     # sizefn = fn.with_name("simsize.h5")  # NOT the whole sim simsize.dat
     # with h5py.File(sizefn, "r") as f:
     #     E["llon"] = f["/llon"][()]
@@ -298,6 +326,9 @@ def write_Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
     """
     write Efield to disk
     """
+
+    if h5py is None:
+        raise ImportError("pip install h5py")
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f["/llon"] = E["llon"]
@@ -336,6 +367,9 @@ def read_precip(fn: Path) -> T.Dict[str, T.Any]:
     #     dat["llon"] = f["/llon"][()]
     #     dat["llat"] = f["/llat"][()]
 
+    if h5py is None:
+        raise ImportError("pip install h5py")
+
     with h5py.File(fn.with_name("simgrid.h5"), "r") as f:
         dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
 
@@ -347,6 +381,9 @@ def read_precip(fn: Path) -> T.Dict[str, T.Any]:
 
 
 def write_precip(outdir: Path, precip: T.Dict[str, T.Any]):
+
+    if h5py is None:
+        raise ImportError("pip install h5py")
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f["/llon"] = precip["llon"]
@@ -377,6 +414,9 @@ def loadframe3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
     just Ne
     """
 
+    if h5py is None:
+        raise ImportError("pip install h5py")
+
     with h5py.File(fn, "r") as f:
         dat = {"ne": (("x1", "x2", "x3"), f["/ne"][:])}
 
@@ -392,6 +432,9 @@ def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
+
+    if h5py is None:
+        raise ImportError("pip install h5py")
 
     lxs = get_simsize(fn.parent / "inputs/simsize.h5")
 
@@ -464,6 +507,9 @@ def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
 
+    if h5py is None:
+        raise ImportError("pip install h5py")
+
     lxs = get_simsize(fn.parent / "inputs/simsize.h5")
 
     dat: T.Dict[str, T.Any] = {}
@@ -509,6 +555,9 @@ def loadglow_aurmap(fn: Path) -> T.Dict[str, T.Any]:
     fn: pathlib.Path
         filename of this timestep of simulation output
     """
+
+    if h5py is None:
+        raise ImportError("pip install h5py")
 
     with h5py.File(fn, "r") as h:
         dat = {"rayleighs": (("wavelength", "x2", "x3"), h["/aurora/iverout"][:])}

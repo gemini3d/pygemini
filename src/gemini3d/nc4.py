@@ -2,7 +2,6 @@
 NetCDF4 file IO
 """
 
-from netCDF4 import Dataset
 from pathlib import Path
 import typing as T
 import logging
@@ -11,6 +10,13 @@ from datetime import datetime
 
 from .utils import datetime2ymd_hourdec, ymdhourdec2datetime
 
+
+try:
+    from netCDF4 import Dataset
+except ImportError:
+    # must be ImportError not ModuleNotFoundError for botched NetCDF4 linkage
+    Dataset = None
+
 LSP = 7
 
 
@@ -18,6 +24,9 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     """
     get simulation size
     """
+
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
 
     path = Path(path).expanduser().resolve()
 
@@ -56,6 +65,9 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
         grid parameters
     """
 
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
+
     grid: T.Dict[str, T.Any] = {}
 
     if not fn.is_file():
@@ -87,6 +99,9 @@ def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
     xg: dict
         grid values
     """
+
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
 
     print("nc4:write_grid:", size_fn)
     with Dataset(size_fn, "w") as f:
@@ -155,6 +170,9 @@ def read_state(fn: Path) -> T.Dict[str, T.Any]:
     load initial condition data
     """
 
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
+
     with Dataset(fn, "r") as f:
         return {"ns": f["/nsall"][:], "vs": f["/vs1all"][:], "Ts": f["/Tsall"][:]}
 
@@ -169,6 +187,9 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
+
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
 
     print("nc4:write_state:", fn)
 
@@ -197,6 +218,9 @@ def write_data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
     write simulation data
     e.g. for converting a file format from a simulation
     """
+
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
 
     print("nc4:write_data:", fn)
 
@@ -265,6 +289,9 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     #     E["llon"] = f["/llon"][()]
     #     E["llat"] = f["/llat"][()]
 
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
+
     with Dataset(fn.with_name("simgrid.nc"), "r") as f:
         E = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
 
@@ -285,6 +312,9 @@ def read_precip(fn: Path) -> T.Dict[str, T.Any]:
     #     dat["llon"] = f["/llon"][()]
     #     dat["llat"] = f["/llat"][()]
 
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
+
     with Dataset(fn.with_name("simgrid.nc"), "r") as f:
         dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
 
@@ -301,6 +331,9 @@ def write_Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
 
     TODO: verify dimensions vs. data vs. Fortran order
     """
+
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
 
     with Dataset(outdir / "simsize.nc", "w") as f:
         for k in ("llon", "llat"):
@@ -348,6 +381,9 @@ def write_precip(outdir: Path, precip: T.Dict[str, np.ndarray]):
     TODO: verify dimensions vs. data vs. Fortran order
     """
 
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
+
     with Dataset(outdir / "simsize.nc", "w") as f:
         for k in ("llon", "llat"):
             g = f.createVariable(k, np.int32)
@@ -375,6 +411,9 @@ def loadframe3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
     just Ne
     """
 
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
+
     dat: T.Dict[str, T.Any] = {}
 
     with Dataset(fn, "r") as f:
@@ -399,6 +438,9 @@ def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
+
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
 
     lxs = get_simsize(fn.parent / "simsize.nc")
 
@@ -473,6 +515,9 @@ def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
 
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
+
     lxs = get_simsize(fn.parent / "inputs/simsize.nc")
 
     dat: T.Dict[str, T.Any] = {}
@@ -519,6 +564,9 @@ def loadglow_aurmap(fn: Path) -> T.Dict[str, T.Any]:
     fn: pathlib.Path
         filename of this timestep of simulation output
     """
+
+    if Dataset is None:
+        raise ImportError("pip install netcdf4")
 
     with Dataset(fn, "r") as h:
         dat = {"rayleighs": (("wavelength", "x2", "x3"), h["iverout"][:])}

@@ -6,18 +6,8 @@ from datetime import datetime
 from . import raw
 from . import matlab
 from .find import get_simsize_path
-
-try:
-    from . import hdf
-except ImportError:
-    # must be ImportError not ModuleNotFoundError for botched HDF5 linkage
-    hdf = None
-
-try:
-    from . import nc4
-except ImportError:
-    # must be ImportError not ModuleNotFoundError for botched HDF5 linkage
-    nc4 = None
+from . import hdf
+from . import nc4
 
 Pathlike = T.Union[str, Path]
 
@@ -30,12 +20,8 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
         return None
 
     if fn.suffix == ".h5":
-        if hdf is None:
-            raise ModuleNotFoundError("pip install h5py")
         return hdf.get_simsize(fn)
     elif fn.suffix == ".nc":
-        if nc4 is None:
-            raise ModuleNotFoundError("pip install netcdf4")
         return nc4.get_simsize(fn)
     elif fn.suffix == ".dat":
         return raw.get_simsize(fn)
@@ -68,12 +54,8 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         p["format"] = p["indat_size"].suffix[1:]
 
     if p["format"] in ("hdf5", "h5"):
-        if hdf is None:
-            raise ImportError("pip install h5py")
         hdf.write_grid(p["indat_size"].with_suffix(".h5"), p["indat_grid"].with_suffix(".h5"), xg)
     elif p["format"] in ("netcdf", "nc"):
-        if nc4 is None:
-            raise ImportError("pip install netcdf4")
         nc4.write_grid(p["indat_size"].with_suffix(".nc"), p["indat_grid"].with_suffix(".nc"), xg)
     else:
         raise ValueError(f'unknown file format {p["format"]}')
@@ -97,12 +79,8 @@ def write_Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
     outdir.mkdir(parents=True, exist_ok=True)
 
     if file_format in ("hdf5", "h5"):
-        if hdf is None:
-            raise ImportError("pip install h5py")
         hdf.write_Efield(outdir, E)
     elif file_format in ("netcdf", "nc"):
-        if nc4 is None:
-            raise ImportError("pip install netcdf4")
         nc4.write_Efield(outdir, E)
     else:
         raise ValueError(f"unknown file format {file_format}")
@@ -125,12 +103,8 @@ def write_precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
     outdir.mkdir(parents=True, exist_ok=True)
 
     if file_format in ("hdf5", "h5"):
-        if hdf is None:
-            raise ImportError("pip install h5py")
         hdf.write_precip(outdir, precip)
     elif file_format in ("netcdf", "nc"):
-        if nc4 is None:
-            raise ImportError("pip install netcdf4")
         nc4.write_precip(outdir, precip)
     else:
         raise ValueError(f"unknown file format {file_format}")
@@ -150,12 +124,8 @@ def write_state(
     """
 
     if out_file.suffix == ".h5":
-        if hdf is None:
-            raise ImportError("pip install h5py")
         hdf.write_state(time, ns, vs, Ts, out_file.with_suffix(".h5"))
     elif out_file.suffix == ".nc":
-        if nc4 is None:
-            raise ImportError("pip install netcdf4")
         nc4.write_state(time, ns, vs, Ts, out_file.with_suffix(".nc"))
     else:
         raise ValueError(f"unknown file format {out_file.suffix}")

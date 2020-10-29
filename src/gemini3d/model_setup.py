@@ -1,8 +1,10 @@
 """
 setup a new simulation
 """
+
 from pathlib import Path
 import typing as T
+import shutil
 
 from .config import read_nml
 from .grid import makegrid_cart3d
@@ -14,20 +16,32 @@ from .base import write_state, write_grid
 
 def model_setup(path: Path, out_dir: Path):
     """
-  top-level function to create a new simulation
+    top-level function to create a new simulation
 
-  Parameters
-  ----------
+    Parameters
+    ----------
 
-  path: pathlib.Path
-      path (directory or full path) to config.nml
-  out_dir: pathlib.Path
-      directory to write simulation artifacts to
-  """
+    path: pathlib.Path
+        path (directory or full path) to config.nml
+    out_dir: pathlib.Path
+        directory to write simulation artifacts to
+    """
 
     # %% read config.nml
     p = read_nml(path)
+
     p["out_dir"] = Path(out_dir).expanduser().resolve()
+
+    for k in ("indat_size", "indat_grid", "indat_file"):
+        p[k] = p["out_dir"] / p[k]
+
+    # FIXME: should use is_absolute() ?
+    for k in ("eqdir", "eqzip", "E0dir", "precdir"):
+        if p.get(k):
+            p[k] = (p["out_dir"] / p[k]).resolve()
+
+    # %% copy input config.nml to output dir
+    shutil.copy2(p["nml"], p["out_dir"])
 
     # %% is this equilibrium or interpolated simulation
     if "eqdir" in p:

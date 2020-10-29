@@ -3,7 +3,6 @@ import math
 
 from .utils import get_cpu_count
 from .base import get_simsize
-from .config import read_config
 
 
 def get_mpi_count(path: Path, max_cpu: int) -> int:
@@ -30,10 +29,6 @@ def get_mpi_count(path: Path, max_cpu: int) -> int:
     elif path.is_file():
         if path.suffix in (".h5", ".nc", ".dat"):
             size = get_simsize(path)
-        elif path.suffix in (".ini", ".nml"):
-            params = read_config(path)
-            # OK to use indat_size because we're going to run a sim on this machine
-            size = get_simsize(params["indat_size"])
     else:
         raise FileNotFoundError(f"{path} is not a file or directory")
 

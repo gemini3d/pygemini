@@ -16,32 +16,26 @@ Pathlike = T.Union[str, Path]
 
 def runner(pr: T.Dict[str, T.Any]) -> int:
 
+    out_dir = check_outdir(pr["out_dir"])
+
     config_file = get_config_filename(pr["config_file"])
     # load configuration to know what directories to check
     p = read_config(config_file)
+
     for k in ("indat_size", "indat_grid", "indat_file"):
-        f = p[k].expanduser().resolve()
+        f = out_dir / p[k].expanduser()
         if pr["force"] or not f.is_file():
-            model_setup(p["nml"], pr["out_dir"])
-            if not f.is_file():
-                raise FileNotFoundError(
-                    f"tried to initialize simulation but missing expected output file {f}"
-                )
-            break
+            model_setup(p["nml"], out_dir)
 
     if "E0dir" in p:
-        E0dir = p["E0dir"].expanduser().resolve()
+        E0dir = out_dir / p["E0dir"]
         if not E0dir.is_dir():
-            model_setup(p["nml"], pr["out_dir"])
-            if not E0dir.is_dir():
-                raise FileNotFoundError(E0dir)
+            model_setup(p["nml"], out_dir)
 
     if "precdir" in p:
-        precdir = p["precdir"].expanduser().resolve()
+        precdir = out_dir / p["precdir"]
         if not precdir.is_dir():
-            model_setup(p["nml"], pr["out_dir"])
-            if not precdir.is_dir():
-                raise FileNotFoundError(precdir)
+            model_setup(p["nml"], out_dir)
 
     # build checks
     mpiexec = check_mpiexec(pr["mpiexec"])
@@ -50,9 +44,7 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
     gemexe = check_gemini_exe(pr["gemexe"])
     logging.info(f"using gemini executable: {gemexe}")
 
-    out_dir = check_outdir(pr["out_dir"])
-
-    Nmpi = get_mpi_count(config_file, pr["cpu_count"])
+    Nmpi = get_mpi_count(out_dir / p["indat_size"], pr["cpu_count"])
 
     cmd = mpiexec + ["-n", str(Nmpi), str(gemexe), str(out_dir)]
     if pr["out_format"]:
@@ -60,9 +52,9 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
 
     # %% attempt dry run, but don't fail in case intended for HPC
     logging.info("Attempting Gemini dry run of first time step")
-    proc = subprocess.run(
-        cmd + ["-dryrun", "-debug"], stdout=subprocess.PIPE, universal_newlines=True
-    )
+    logging.info(" ".join(cmd))
+    proc = subprocess.run(cmd + ["-dryrun"])
+
     if proc.returncode == 0:
         logging.info("OK: Gemini dry run")
     else:
