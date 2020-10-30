@@ -1,3 +1,7 @@
+"""
+raw binary file I/O.
+Raw files are deprecated and do not contain most features of Gemini
+"""
 from pathlib import Path
 import typing as T
 import numpy as np

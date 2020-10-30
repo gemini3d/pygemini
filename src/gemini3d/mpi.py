@@ -18,19 +18,13 @@ def get_mpi_count(path: Path, max_cpu: int) -> int:
     count: int
         detect number of physical CPU
     """
+
     path = Path(path).expanduser()
 
     if not max_cpu:
         max_cpu = get_cpu_count()
 
-    # %% config.nml file or directory or simsize.h5?
-    if path.is_dir():
-        size = get_simsize(path)
-    elif path.is_file():
-        if path.suffix in (".h5", ".nc", ".dat"):
-            size = get_simsize(path)
-    else:
-        raise FileNotFoundError(f"{path} is not a file or directory")
+    size = get_simsize(path)
 
     mpi_count = 1
 

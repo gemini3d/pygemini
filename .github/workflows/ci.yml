@@ -44,6 +44,7 @@ jobs:
 
 
   macos:
+    needs: linux
     runs-on: macos-latest
     strategy:
       matrix:
@@ -64,6 +65,7 @@ jobs:
 
 
   windows:
+    needs: linux
     runs-on: windows-latest
     strategy:
       matrix:

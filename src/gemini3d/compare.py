@@ -114,6 +114,9 @@ def compare_input(
     doplot: bool = True,
 ) -> int:
 
+    if len(times) == 0:
+        raise ValueError("Must have at least one time to compare")
+
     ref_params = read_config(refdir / "inputs")
     ref_indir = refdir / ref_params["indat_file"].parts[-2]
     ref = read_state(ref_indir / ref_params["indat_file"].name)
@@ -144,6 +147,7 @@ def compare_input(
                 plotdiff(a, b, k, times[0], outdir, refdir)
 
     # %% precipitation
+    k: str = None
     prec_errs = 0
     prec_path = new_indir / new_params["precdir"].name
     if prec_path.is_dir():
@@ -219,6 +223,8 @@ def compare_output(
 
     ref: T.Dict[str, T.Any] = {}
     errs = 0
+    a: np.ndarray = None
+
     for i, t in enumerate(times):
         st = f"UTsec {t}"
         A = loadframe(outdir, t, file_format)

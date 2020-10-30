@@ -98,8 +98,6 @@ def readdata(
 
     fn = Path(fn).expanduser()
     fn_aurora = fn.parent / "aurmaps" / fn.name
-    if E0dir:
-        fn_Efield = E0dir / fn.name
 
     input_dir = fn.parent / "inputs"
     if not cfg:
@@ -192,8 +190,10 @@ def readdata(
     else:
         raise ValueError(f"Unknown file type {fn}")
 
-    if E0dir and fn_Efield.is_file():
-        dat.update(read_Efield(fn_Efield))
+    if E0dir:
+        fn_Efield = E0dir / fn.name
+        if fn_Efield.is_file():
+            dat.update(read_Efield(fn_Efield))
 
     return dat
 

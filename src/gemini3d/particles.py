@@ -10,7 +10,8 @@ def particles_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     # %% CREATE PRECIPITATION CHARACTERISTICS data
     # number of grid cells.
     # This will be interpolated to grid, so 100x100 is arbitrary
-
+    lx2 = None
+    lx3 = None
     pg: T.Dict[str, T.Any] = {}
 
     pg["llon"] = 100
@@ -24,6 +25,9 @@ def particles_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         pg["llon"] = 1
     elif lx3 == 1:
         pg["llat"] = 1
+
+    if lx2 is None:
+        raise ValueError("size data not in Efield grid")
 
     pg = precip_grid(xg, p, pg)
 

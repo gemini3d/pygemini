@@ -66,13 +66,20 @@ def scalar(time: datetime, grid: T.Dict[str, np.ndarray], parm: np.ndarray, name
     # lzp = 100
 
     # %% SIZE OF SIMULATION
+    lxs: T.Tuple[int, int, int] = None
+
     for k in ("lx", "lxs", "lx1"):
         if k in grid:
             if k == "lx1":
                 lxs = (grid["lx1"], grid["lx2"], grid["lx3"])
             else:
                 lxs = grid[k]
-    lx1, lx2, lx3 = lxs
+            break
+
+    if lxs is None:
+        raise ValueError("Grid size information not found")
+
+    lx2 = lxs[1]
     # inds1 = slice(2, lx1 + 2)
     inds2 = slice(2, lx2 + 2)
     # inds3 = slice(2, lx3 + 2)

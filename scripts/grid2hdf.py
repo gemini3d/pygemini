@@ -1,13 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 convert grid .dat to hdf5
 """
+
 import h5py
 from numpy import float64, float32, prod, fromfile
 from pathlib import Path
 import argparse
 
-import gemini3d
+import gemini3d.fileio
 
 read = fromfile
 CLVL = 6
@@ -17,7 +18,7 @@ def grid2hdf(infn: Path):
     infn = Path(infn).expanduser()
     outfn = infn.with_suffix(".h5")
 
-    lxs = gemini3d.get_simsize(infn.parent / "simsize.dat")
+    lxs = gemini3d.fileio.get_simsize(infn.parent / "simsize.dat")
     lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 

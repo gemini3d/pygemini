@@ -52,7 +52,4 @@ if __name__ == "__main__":
             "cpu_count": P.cpu,
         }
 
-        ret = gemini3d.job.runner(params)
-        if ret != 0:
-            # underlying function code prints errors
-            raise SystemExit(ret)
+        gemini3d.job.runner(params)
