@@ -16,6 +16,7 @@ import importlib.resources
 
 import gemini3d.web
 import gemini3d.config
+import gemini3d.mpi
 
 
 def cli():
