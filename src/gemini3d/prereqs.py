@@ -7,6 +7,7 @@ Use the full compiler path if it's not getting the right compiler.
 * FC: Fortran compiler name or path
 * CC: C compiler name or path
 """
+
 import typing as T
 import sys
 import os
@@ -257,7 +258,7 @@ look for filename like hdf5-1.12.0-Std-win10_64-vs14-Intel.zip
             "-DHDF5_BUILD_EXAMPLES:BOOL=false",
         ]
         cmd1 = ["cmake", "--build", BUILDDIR, "--parallel"]
-        cmd2 = ["cmake", "--install", BUILDDIR, "--parallel"]
+        cmd2 = ["cmake", "--install", BUILDDIR]  # no --parallel option
     else:
         cmd0 = [
             "./configure",
@@ -436,11 +437,8 @@ def cmake_find_library(lib_name: str, lib_path: T.List[str], env: T.Mapping[str,
 
     cmake = get_cmake()
 
-    if __file__:
-        mod_path = Path(__file__).parent / "cmake"
-    else:
-        with importlib.resources.path("gemini3d.cmake", "FindLAPACK.cmake") as f:
-            mod_path = Path(f).parent
+    with importlib.resources.path("gemini3d.cmake", "FindLAPACK.cmake") as f:
+        mod_path = Path(f).parent
 
     cmake_template = """
 cmake_minimum_required(VERSION 3.15)

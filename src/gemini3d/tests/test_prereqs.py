@@ -41,7 +41,7 @@ def test_libs(name, tmp_path):
 
 
 @pytest.mark.skipif(os.name != "nt", reason="these are windows-only tests")
-@pytest.mark.parametrize("name", ["openmpi", "hdf5"])
+@pytest.mark.parametrize("name", ["openmpi"])
 def test_not_for_windows(name, tmp_path):
 
     dirs = {"prefix": tmp_path / f"install/{name}", "workdir": tmp_path / f"build/{name}"}
