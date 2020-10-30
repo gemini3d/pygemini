@@ -32,7 +32,7 @@ jobs:
     - run: python -m pip install -e .[tests,lint]
 
     - run: flake8
-    - run: mypy src scripts
+    - run: mypy
 
     - run: pytest
 
