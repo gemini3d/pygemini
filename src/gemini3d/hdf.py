@@ -155,7 +155,10 @@ def write_data(dat: T.Dict[str, T.Any], outfn: Path):
 
         if "Phitop" in dat:
             h.create_dataset(
-                "Phitop", data=dat["Phitop"][1], compression="gzip", compression_opts=1,
+                "Phitop",
+                data=dat["Phitop"][1],
+                compression="gzip",
+                compression_opts=1,
             )
 
 
@@ -196,7 +199,7 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
 
 
 def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
-    """ writes grid to disk
+    """writes grid to disk
 
     Parameters
     ----------

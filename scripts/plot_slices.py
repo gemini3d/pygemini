@@ -38,7 +38,7 @@ if __name__ == "__main__":
         cfg["flagoutput"] = P.flag
 
     dat_file = Path(P.fn).expanduser()
-    dat = gemini3d.readdata(dat_file, cfg=cfg)
+    dat = gemini3d.readdata.readdata(dat_file, cfg=cfg)
 
     try:
         x1 = dat["x1"]
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         x3 = dat["x3"]
     except KeyError:
         grid_file = find.get_grid_filename(dat_file.parent / "inputs")
-        grid = gemini3d.readgrid(grid_file)
+        grid = gemini3d.readdata.readgrid(grid_file)
 
         x1 = grid["x1"]
         x2 = grid["x2"]
@@ -79,7 +79,15 @@ if __name__ == "__main__":
             ax = fg.add_subplot(1, 3, 3)
             ix2 = x2.size // 2 - 1  # arbitrary slice
             hi = vis.plot13(
-                x3, x1, dat[p][1][:, ix2, :], name=p, cmap=None, vmin=None, vmax=None, fg=fg, ax=ax,
+                x3,
+                x1,
+                dat[p][1][:, ix2, :],
+                name=p,
+                cmap=None,
+                vmin=None,
+                vmax=None,
+                fg=fg,
+                ax=ax,
             )
 
             if P.saveplot:

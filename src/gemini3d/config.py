@@ -58,7 +58,7 @@ def get_config_filename(path: Path) -> Path:
 
 
 def read_nml(fn: Path) -> T.Dict[str, T.Any]:
-    """ parse .nml file
+    """parse .nml file
     for now we don't use the f90nml package, though maybe we will in the future.
     Just trying to keep Python prereqs reduced for this simple parsing.
     """

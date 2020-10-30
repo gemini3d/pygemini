@@ -14,7 +14,8 @@ import typing as T
 import shutil
 import importlib.resources
 
-import gemini3d
+import gemini3d.web
+import gemini3d.config
 
 
 def cli():
@@ -26,7 +27,9 @@ def cli():
     p.add_argument("refdir", help="reference directory")
     p.add_argument("-np", help="force number of MPI images", type=int)
     p.add_argument(
-        "-out_format", help="override config.nml output file format", choices=["h5", "nc", "raw"],
+        "-out_format",
+        help="override config.nml output file format",
+        choices=["h5", "nc", "raw"],
     )
     p.add_argument("-dryrun", help="only run first time step", action="store_true")
     P = p.parse_args()
@@ -65,7 +68,7 @@ def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> T.Dict[str
 def download_and_extract(z: T.Dict[str, T.Any], url_ini: Path):
 
     try:
-        gemini3d.url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
+        gemini3d.web.url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
     except (ConnectionError, ValueError) as e:
         raise ConnectionError(f"problem downloading reference data {e}")
 
@@ -81,7 +84,7 @@ def runner(
     out_format: str = None,
     dryrun: bool = False,
 ):
-    """ configure and run a test
+    """configure and run a test
     This is usually called from CMake Ctest
     """
 
@@ -95,12 +98,12 @@ def runner(
             download_and_extract(z, url_ini)
 
         try:
-            gemini3d.extract_zip(z["zip"], z["dir"])
+            gemini3d.web.extract_zip(z["zip"], z["dir"])
         except zipfile.BadZipFile:
             # bad download, delete and try again (maybe someone hit Ctrl-C during download)
             z["zip"].unlink()
             download_and_extract(z, url_ini)
-            gemini3d.extract_zip(z["zip"], z["dir"])
+            gemini3d.web.extract_zip(z["zip"], z["dir"])
 
     # prepare simulation output directory
     input_dir = outdir / "inputs"
@@ -116,7 +119,7 @@ def runner(
     if not (input_dir / "config.nml").is_file():
         shutil.copy2(nml, input_dir)
 
-    cfg = gemini3d.read_config(nml)
+    cfg = gemini3d.config.read_config(nml)
 
     # delete previous test run data to avoid restarting milestone and failing test
     if (outdir / "output.nml").is_file():
@@ -137,7 +140,7 @@ def runner(
         shutil.copytree(z["dir"] / cfg["sourcedir"], outdir / cfg["sourcedir"])
 
     if not mpi_count:
-        mpi_count = gemini3d.get_mpi_count(z["dir"] / cfg["indat_size"], 0)
+        mpi_count = gemini3d.mpi.get_mpi_count(z["dir"] / cfg["indat_size"], 0)
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()

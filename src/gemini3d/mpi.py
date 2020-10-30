@@ -2,11 +2,11 @@ from pathlib import Path
 import math
 
 from .utils import get_cpu_count
-from .base import get_simsize
+from .fileio import get_simsize
 
 
 def get_mpi_count(path: Path, max_cpu: int) -> int:
-    """ get appropriate MPI image count for problem shape
+    """get appropriate MPI image count for problem shape
 
     Parameters
     ----------

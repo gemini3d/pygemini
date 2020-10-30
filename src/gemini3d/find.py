@@ -59,7 +59,7 @@ def get_frame_filename(simdir: Path, time: datetime, file_format: str = None) ->
 
 
 def get_grid_filename(path: Path) -> Path:
-    """ given a path or filename, return the full path to simgrid file
+    """given a path or filename, return the full path to simgrid file
     we don't override FILE_FORMATS to allow outputs from a prior sim in a different
     file format to be used in this sim.
     """

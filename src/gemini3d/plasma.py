@@ -1,6 +1,7 @@
 """
 plasma functions
 """
+
 import typing as T
 import numpy as np
 import os
@@ -12,7 +13,7 @@ from scipy.interpolate import interp1d, interp2d, interpn
 
 from .config import read_config
 from .readdata import readgrid, loadframe
-from .base import write_grid, write_state
+from .fileio import write_grid, write_state
 
 DictArray = T.Dict[str, T.Any]
 
@@ -55,7 +56,7 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
 def model_resample(
     xgin: DictArray, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, xg: DictArray
 ) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """ resample a grid
+    """resample a grid
     usually used to upsample an equilibrium simulation grid
 
     Parameters
@@ -416,21 +417,21 @@ def chapmana(z: np.ndarray, nm: float, z0: float, H: float) -> np.ndarray:
 
 def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     """calls MSIS Fortran exectuable
-     compiles if not present
+    compiles if not present
 
-     [f107a, f107, ap] = activ
-         COLUMNS OF DATA:
-           1 - ALT
-           2 - HE NUMBER DENSITY(M-3)
-           3 - O NUMBER DENSITY(M-3)
-           4 - N2 NUMBER DENSITY(M-3)
-           5 - O2 NUMBER DENSITY(M-3)
-           6 - AR NUMBER DENSITY(M-3)
-           7 - TOTAL MASS DENSITY(KG/M3)
-           8 - H NUMBER DENSITY(M-3)
-           9 - N NUMBER DENSITY(M-3)
-           10 - Anomalous oxygen NUMBER DENSITY(M-3)
-           11 - TEMPERATURE AT ALT
+    [f107a, f107, ap] = activ
+        COLUMNS OF DATA:
+          1 - ALT
+          2 - HE NUMBER DENSITY(M-3)
+          3 - O NUMBER DENSITY(M-3)
+          4 - N2 NUMBER DENSITY(M-3)
+          5 - O2 NUMBER DENSITY(M-3)
+          6 - AR NUMBER DENSITY(M-3)
+          7 - TOTAL MASS DENSITY(KG/M3)
+          8 - H NUMBER DENSITY(M-3)
+          9 - N NUMBER DENSITY(M-3)
+          10 - Anomalous oxygen NUMBER DENSITY(M-3)
+          11 - TEMPERATURE AT ALT
 
     """
 

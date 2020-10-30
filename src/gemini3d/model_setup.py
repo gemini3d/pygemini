@@ -11,7 +11,7 @@ from .grid import makegrid_cart3d
 from .plasma import equilibrium_state, equilibrium_resample
 from .efield import Efield_BCs
 from .particles import particles_BCs
-from .base import write_state, write_grid
+from .fileio import write_state, write_grid
 
 
 def model_setup(path: Path, out_dir: Path):

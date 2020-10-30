@@ -1,7 +1,7 @@
 import typing as T
 import numpy as np
 
-from .base import write_precip
+from .fileio import write_precip
 
 
 def particles_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):

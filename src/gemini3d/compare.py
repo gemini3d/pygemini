@@ -215,8 +215,7 @@ def compare_output(
     file_format: str = None,
     doplot: bool = True,
 ) -> int:
-    """ compare simulation outputs
-    """
+    """compare simulation outputs"""
 
     ref: T.Dict[str, T.Any] = {}
     errs = 0

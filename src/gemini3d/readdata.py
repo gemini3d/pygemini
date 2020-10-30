@@ -2,6 +2,7 @@
 struct manpage:
 https://docs.python.org/3/library/struct.html#struct-format-strings
 """
+
 import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -9,7 +10,7 @@ import typing as T
 
 from . import raw
 from .config import read_config
-from .base import get_simsize
+from .fileio import get_simsize
 from .find import get_frame_filename, get_grid_filename
 from . import matlab
 
@@ -198,7 +199,7 @@ def readdata(
 
 
 def read_Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
-    """ load Efield data "Efield_inputs"
+    """load Efield data "Efield_inputs"
 
     Parameters
     ----------
@@ -233,7 +234,7 @@ def read_Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
 
 
 def read_precip(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
-    """ load precipitation to disk
+    """load precipitation to disk
 
     Parameters
     ----------
@@ -267,7 +268,9 @@ def read_precip(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     return dat
 
 
-def read_state(file: Path,) -> T.Dict[str, T.Any]:
+def read_state(
+    file: Path,
+) -> T.Dict[str, T.Any]:
     """
     load inital condition data
     """

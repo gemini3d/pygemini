@@ -1,9 +1,13 @@
+"""
+generate, read, write Electric Field
+"""
+
 import typing as T
 import numpy as np
 import logging
 from scipy.special import erf
 
-from .base import write_Efield
+from .fileio import write_Efield
 
 
 def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
@@ -12,10 +16,16 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
     E: T.Dict[str, T.Any] = {}
 
     # %% READ IN THE SIMULATION INFO
+    lx1 = None
+    lx2 = None
+    lx3 = None
     for k in ("lx", "lxs"):
         if k in xg:
             lx1, lx2, lx3 = xg[k]
             break
+
+    if lx1 is None:
+        raise ValueError("size data not in Efield grid")
 
     # %% CREATE ELECTRIC FIELD DATASET
     # the Efield is interpolated from these, 100 x 100 is arbitrary

@@ -1,6 +1,7 @@
 """
 create simulation grids
 """
+
 import typing as T
 import math
 import numpy as np
@@ -11,7 +12,7 @@ pi = math.pi
 
 
 def makegrid_cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
-    """ make 3D grid and save to disk
+    """make 3D grid and save to disk
 
     Parameters
     -----------

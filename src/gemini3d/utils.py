@@ -29,7 +29,7 @@ def gitrev() -> str:
 
 
 def get_cpu_count() -> int:
-    """ get a physical CPU count
+    """get a physical CPU count
 
     Returns
     -------

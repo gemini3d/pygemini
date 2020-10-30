@@ -36,7 +36,7 @@ def cli():
         "indat_grid": infile.with_suffix(suffix),
     }
 
-    gemini3d.base.write_grid(cfg, xg)
+    gemini3d.fileio.write_grid(cfg, xg)
 
 
 if __name__ == "__main__":

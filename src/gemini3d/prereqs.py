@@ -131,8 +131,7 @@ def setup_libs(
 def netcdf_c(
     dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False, dryrun: bool = False
 ):
-    """ build and install NetCDF-C
-    """
+    """build and install NetCDF-C"""
 
     install_dir = dirs["prefix"] / "netcdf"
     source_dir = dirs["workdir"] / "netcdf-c"
@@ -174,8 +173,7 @@ def netcdf_c(
 def netcdf_fortran(
     dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False, dryrun: bool = False
 ):
-    """ build and install NetCDF-Fortran
-    """
+    """build and install NetCDF-Fortran"""
 
     install_dir = dirs["prefix"] / "netcdf"
     source_dir = dirs["workdir"] / "netcdf-fortran"
@@ -227,7 +225,7 @@ def netcdf_fortran(
 
 
 def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
-    """ build and install HDF5
+    """build and install HDF5
     some systems have broken libz and so have trouble extracting tar.bz2 from Python.
     To avoid this, we git clone the release instead.
     """
@@ -526,7 +524,7 @@ def git_download(path: Path, repo: str, tag: str):
 
 
 def get_compilers(compiler_name: str, **kwargs) -> T.Mapping[str, str]:
-    """ get paths to compilers
+    """get paths to compilers
 
     Parameters
     ----------

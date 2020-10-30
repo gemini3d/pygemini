@@ -87,7 +87,7 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
 
 
 def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
-    """ writes grid to disk
+    """writes grid to disk
 
     Parameters
     ----------

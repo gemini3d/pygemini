@@ -34,7 +34,7 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
 
 
 def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
-    """ writes grid to disk
+    """writes grid to disk
 
     Parameters
     ----------
@@ -62,7 +62,7 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
 
 
 def write_Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
-    """ writes E-field to disk
+    """writes E-field to disk
 
     Parameters
     ----------
@@ -87,7 +87,7 @@ def write_Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
 
 
 def write_precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
-    """ writes precipitation to disk
+    """writes precipitation to disk
 
     Parameters
     ----------
@@ -111,7 +111,11 @@ def write_precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
 
 
 def write_state(
-    time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_file: Path,
+    time: datetime,
+    ns: np.ndarray,
+    vs: np.ndarray,
+    Ts: np.ndarray,
+    out_file: Path,
 ):
     """
      WRITE STATE VARIABLE DATA.
