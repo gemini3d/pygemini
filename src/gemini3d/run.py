@@ -39,11 +39,11 @@ def cli():
 
 
 def gemini_run(params: T.Dict[str, T.Any]):
-    ret = -1
+    """ Execute Gemini3D run """
 
     tic = time.monotonic()
     try:
-        ret = runner(params)
+        runner(params)
     except FileNotFoundError:
         print(
             "\nA necessary simulation input file was not found."
@@ -61,8 +61,6 @@ def gemini_run(params: T.Dict[str, T.Any]):
         )
 
     print(f"job.py ran in {time.monotonic() - tic:.3f} seconds.")
-
-    raise SystemExit(ret)
 
 
 if __name__ == "__main__":

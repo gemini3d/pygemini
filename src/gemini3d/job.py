@@ -14,7 +14,7 @@ from .model_setup import model_setup
 Pathlike = T.Union[str, Path]
 
 
-def runner(pr: T.Dict[str, T.Any]) -> int:
+def runner(pr: T.Dict[str, T.Any]) -> None:
 
     out_dir = check_outdir(pr["out_dir"])
 
@@ -39,19 +39,24 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
 
     # build checks
     mpiexec = check_mpiexec(pr["mpiexec"])
-    logging.info(f"Detected mpiexec: {' '.join(mpiexec)}")
 
     gemexe = check_gemini_exe(pr["gemexe"])
-    logging.info(f"using gemini executable: {gemexe}")
+    logging.info(f"gemini executable: {gemexe}")
 
-    Nmpi = get_mpi_count(out_dir / p["indat_size"], pr["cpu_count"])
+    if mpiexec:
+        logging.info(f"mpiexec: {mpiexec}")
+        Nmpi = get_mpi_count(out_dir / p["indat_size"], pr["cpu_count"])
+        mpi_cmd = [mpiexec, "-n", str(Nmpi)]
+    else:
+        mpi_cmd = []
 
-    cmd = mpiexec + ["-n", str(Nmpi), str(gemexe), str(out_dir)]
+    cmd = mpi_cmd + [str(gemexe), str(out_dir)]
+
     if pr["out_format"]:
         cmd += ["-out_format", pr["out_format"]]
 
     # %% attempt dry run, but don't fail in case intended for HPC
-    logging.info("Attempting Gemini dry run of first time step")
+    logging.info("Gemini dry run of first time step")
     logging.info(" ".join(cmd))
     proc = subprocess.run(cmd + ["-dryrun"])
 
@@ -59,21 +64,19 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
         logging.info("OK: Gemini dry run")
     else:
         print(proc.stdout, file=sys.stderr)
-        logging.error("Gemini dry run failed.")
-        return -1
+        raise RuntimeError("Gemini dry run failed.")
 
     batcher = hpc_batch_detect()
     if batcher:
         job_file = hpc_batch_create(batcher, out_dir, cmd)  # noqa: F841
         # hpc_submit_job(job_file)
         print("Please examine batch file", job_file, "and when ready submit the job as usual.")
-        ret = 0
     else:
         print("\nBEGIN Gemini run with command:")
         print(" ".join(cmd), "\n")
         ret = subprocess.run(cmd).returncode
-
-    return ret
+        if ret != 0:
+            raise RuntimeError("Gemini run failed")
 
 
 def check_compiler():
@@ -84,22 +87,19 @@ def check_compiler():
         raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
 
 
-def check_mpiexec(mpiexec: Pathlike) -> T.List[str]:
-    """ check that specified mpiexec exists on this system """
+def check_mpiexec(mpiexec: Pathlike) -> str:
+    """check if specified mpiexec exists on this system
+    If not, fall back to not using MPI (slow, but still works)."""
 
     if not mpiexec:
         mpiexec = "mpiexec"
-    mpi_root = os.getenv("MPI_ROOT")
+    mpi_root = os.environ.get("MPI_ROOT")
     if mpi_root:
         mpi_root += "/bin"
+
     mpiexec = shutil.which(mpiexec, path=mpi_root)
 
-    if mpiexec:
-        mpi_exec = [mpiexec]
-    else:
-        raise EnvironmentError("Need mpiexec to run simulations")
-
-    return mpi_exec
+    return mpiexec
 
 
 def check_gemini_exe(gemexe: Pathlike) -> str:
