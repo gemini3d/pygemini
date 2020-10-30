@@ -38,21 +38,21 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
             model_setup(p["nml"], out_dir)
 
     # build checks
-    mpiexec = check_mpiexec(pr["mpiexec"])
+    mpiexec = check_mpiexec(pr.get("mpiexec"))
 
-    gemexe = check_gemini_exe(pr["gemexe"])
+    gemexe = check_gemini_exe(pr.get("gemexe"))
     logging.info(f"gemini executable: {gemexe}")
 
     if mpiexec:
         logging.info(f"mpiexec: {mpiexec}")
-        Nmpi = get_mpi_count(out_dir / p["indat_size"], pr["cpu_count"])
+        Nmpi = get_mpi_count(out_dir / p["indat_size"], pr.get("cpu_count"))
         mpi_cmd = [mpiexec, "-n", str(Nmpi)]
     else:
         mpi_cmd = []
 
     cmd = mpi_cmd + [str(gemexe), str(out_dir)]
 
-    if pr["out_format"]:
+    if pr.get("out_format"):
         cmd += ["-out_format", pr["out_format"]]
 
     # %% attempt dry run, but don't fail in case intended for HPC
@@ -66,7 +66,7 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
         print(proc.stdout, file=sys.stderr)
         raise RuntimeError("Gemini dry run failed.")
 
-    if pr["dryrun"]:
+    if pr.get("dryrun"):
         return None
 
     batcher = hpc_batch_detect()
