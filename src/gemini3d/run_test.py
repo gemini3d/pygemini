@@ -3,16 +3,11 @@
 run test
 """
 
-import zipfile
 import argparse
-import json
 import sys
-import typing
 import subprocess
 from pathlib import Path
-import typing as T
 import shutil
-import importlib.resources
 
 import gemini3d.web
 import gemini3d.config
@@ -47,35 +42,8 @@ def cli():
     )
 
 
-def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> T.Dict[str, T.Any]:
-    """ get URL and MD5 for a test name """
-    json_str = Path(url_file).expanduser().read_text()
-    urls = json.loads(json_str)
-
-    z = {
-        "url": urls[test_name]["url"],
-        "dir": ref_dir / f"test{test_name}",
-        "zip": ref_dir / f"test{test_name}.zip",
-    }
-
-    if urls[test_name].get("md5"):
-        z["md5"] = urls[test_name]["md5"]
-    else:
-        z["md5"] = None
-
-    return z
-
-
-def download_and_extract(z: T.Dict[str, T.Any], url_ini: Path):
-
-    try:
-        gemini3d.web.url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
-    except (ConnectionError, ValueError) as e:
-        raise ConnectionError(f"problem downloading reference data {e}")
-
-
 def runner(
-    testname: str,
+    test_name: str,
     mpiexec: str,
     exe: str,
     outdir: Path,
@@ -92,23 +60,11 @@ def runner(
     outdir = Path(outdir).expanduser().resolve()
     refdir = Path(refdir).expanduser().resolve()
 
-    with importlib.resources.path("gemini3d.tests", "gemini3d_url.json") as url_ini:
-        z = get_test_params(testname, url_ini, refdir)
-
-        if not z["dir"].is_dir():
-            download_and_extract(z, url_ini)
-
-        try:
-            gemini3d.web.extract_zip(z["zip"], z["dir"])
-        except zipfile.BadZipFile:
-            # bad download, delete and try again (maybe someone hit Ctrl-C during download)
-            z["zip"].unlink()
-            download_and_extract(z, url_ini)
-            gemini3d.web.extract_zip(z["zip"], z["dir"])
+    ref = gemini3d.web.download_and_extract(test_name, refdir)
 
     # prepare simulation output directory
     input_dir = outdir / "inputs"
-    nml = z["dir"] / "inputs/config.nml"
+    nml = ref / "inputs/config.nml"
     input_dir.mkdir(parents=True, exist_ok=True)
 
     # a normal, non-test simulation already has all these files in the
@@ -130,18 +86,18 @@ def runner(
 
     # copy remaining input files needed
     if not (input_dir / cfg["indat_size"]).is_file():
-        shutil.copy2(z["dir"] / cfg["indat_size"], input_dir)
-        shutil.copy2(z["dir"] / cfg["indat_grid"], input_dir)
-        shutil.copy2(z["dir"] / cfg["indat_file"], input_dir)
+        shutil.copy2(ref / cfg["indat_size"], input_dir)
+        shutil.copy2(ref / cfg["indat_grid"], input_dir)
+        shutil.copy2(ref / cfg["indat_file"], input_dir)
     if "precdir" in cfg and not (outdir / cfg["precdir"]).is_dir():
-        shutil.copytree(z["dir"] / cfg["precdir"], outdir / cfg["precdir"])
+        shutil.copytree(ref / cfg["precdir"], outdir / cfg["precdir"])
     if "E0dir" in cfg and not (outdir / cfg["E0dir"]).is_dir():
-        shutil.copytree(z["dir"] / cfg["E0dir"], outdir / cfg["E0dir"])
+        shutil.copytree(ref / cfg["E0dir"], outdir / cfg["E0dir"])
     if "neutral_perturb" in cfg and not (outdir / cfg["sourcedir"]).is_dir():
-        shutil.copytree(z["dir"] / cfg["sourcedir"], outdir / cfg["sourcedir"])
+        shutil.copytree(ref / cfg["sourcedir"], outdir / cfg["sourcedir"])
 
     if not mpi_count:
-        mpi_count = gemini3d.mpi.get_mpi_count(z["dir"] / cfg["indat_size"], 0)
+        mpi_count = gemini3d.mpi.get_mpi_count(ref / cfg["indat_size"], 0)
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()
@@ -158,9 +114,9 @@ def runner(
 
     ret = subprocess.run(cmd)
     if ret.returncode == 0:
-        print("OK:", testname)
+        print("OK:", test_name)
     else:
-        print("FAIL:", testname, file=sys.stderr)
+        print("FAIL:", test_name, file=sys.stderr)
 
     raise SystemExit(ret.returncode)
 

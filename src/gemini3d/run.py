@@ -12,6 +12,7 @@ def cli():
     p = argparse.ArgumentParser()
     p.add_argument("config_file", help="path to config*.nml file")
     p.add_argument("out_dir", help="simulation output directory")
+    p.add_argument("-dryrun", help="quick check if sim is ok", action="store_true")
     p.add_argument("-mpiexec", help="path to desired mpiexec executable")
     p.add_argument("-gemexe", help="path to desired gemini.bin")
     p.add_argument("-n", "--cpu", help="number of CPU cores", type=int, default=0)
@@ -33,6 +34,7 @@ def cli():
         "force": P.force,
         "out_format": P.out_format,
         "cpu_count": P.cpu,
+        "dryrun": P.dryrun
     }
 
     gemini_run(params)

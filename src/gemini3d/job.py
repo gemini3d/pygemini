@@ -24,7 +24,7 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
 
     for k in ("indat_size", "indat_grid", "indat_file"):
         f = out_dir / p[k].expanduser()
-        if pr["force"] or not f.is_file():
+        if pr.get("force") or not f.is_file():
             model_setup(p["nml"], out_dir)
 
     if "E0dir" in p:
@@ -65,6 +65,9 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
     else:
         print(proc.stdout, file=sys.stderr)
         raise RuntimeError("Gemini dry run failed.")
+
+    if pr["dryrun"]:
+        return None
 
     batcher = hpc_batch_detect()
     if batcher:
