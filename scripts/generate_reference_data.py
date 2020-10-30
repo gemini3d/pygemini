@@ -44,7 +44,7 @@ if __name__ == "__main__":
     for d in dirs:
         params = {
             "config_file": d / "config.nml",
-            "out_dir": Path(P.out_dir).expanduser().resolve() / d.name,
+            "out_dir": Path(P.out_dir) / d.name,
             "mpiexec": P.mpiexec,
             "gemexe": P.gemexe,
             "force": P.force,
