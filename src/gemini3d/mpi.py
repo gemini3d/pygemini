@@ -1,5 +1,6 @@
 from pathlib import Path
 import math
+import typing as T
 
 from .utils import get_cpu_count
 from .fileio import get_simsize
@@ -19,26 +20,30 @@ def get_mpi_count(path: Path, max_cpu: int) -> int:
         detect number of physical CPU
     """
 
-    path = Path(path).expanduser()
+    return max_mpi(get_simsize(path), max_cpu)
+
+
+def max_mpi(size: T.Tuple[int, ...], max_cpu: int) -> int:
 
     if not max_cpu:
         max_cpu = get_cpu_count()
 
-    size = get_simsize(path)
-
-    mpi_count = 1
-
     if size[2] == 1:
         # 2D sim
-        for i in range(max_cpu, 1, -1):
-            mpi_count = max(math.gcd(size[1], i), mpi_count)
-            if i < mpi_count:
-                break
+        N = max_gcd(size[1], max_cpu)
     else:
         # 3D sim
-        for i in range(max_cpu, 1, -1):
-            mpi_count = max(math.gcd(size[2], i), mpi_count)
-            if i < mpi_count:
-                break
+        N = max_gcd(size[2], max_cpu)
 
-    return mpi_count
+    return N
+
+
+def max_gcd(s: int, M: int) -> int:
+
+    N = 1
+    for i in range(M, 1, -1):
+        N = max(math.gcd(s, i), N)
+        if i < N:
+            break
+
+    return N

@@ -12,7 +12,7 @@ FILE_FORMATS = [".h5", ".nc", ".dat"]
 def get_simsize_path(path: Path) -> Path:
     """ gets path to simsize file """
 
-    path = Path(path).expanduser()
+    path = Path(path).expanduser().resolve()
 
     if path.is_dir():
         for suffix in [".h5", ".nc", ".dat", ".mat"]:
