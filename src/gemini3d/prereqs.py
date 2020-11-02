@@ -26,7 +26,7 @@ BUILDDIR = "build"
 
 NETCDF_C_TAG = "v4.7.4"
 NETCDF_FORTRAN_TAG = "v4.5.3"
-HDF5_TAG = "hdf5_1_10_7"
+HDF5_TAG = "1.10/master"
 MUMPS_TAG = "v5.3.4.0"
 SCALAPACK_TAG = "v2.1.0.9"
 LAPACK_TAG = "v3.9.0.2"
@@ -231,24 +231,24 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     To avoid this, we git clone the release instead.
     """
 
+    use_cmake = True
     name = "hdf5"
     install_dir = dirs["prefix"] / name
     source_dir = dirs["workdir"] / name
+    build_dir = source_dir / BUILDDIR
+    git_url = "https://github.com/HDFGroup/hdf5.git"
 
-    if os.name == "nt":
-        if "ifort" in env["FC"]:
-            msg = """
-For Windows with Intel compiler, use HDF5 binaries from HDF Group.
-https://www.hdfgroup.org/downloads/hdf5/
-look for filename like hdf5-1.12.0-Std-win10_64-vs14-Intel.zip
-            """
-            raise NotImplementedError(msg)
+    git_download(source_dir, git_url, HDF5_TAG)
 
+    if use_cmake or os.name == "nt":
+        # works for Intel oneAPI on Windows and many other systems/compilers.
+        # works for Make or Ninja in general.
         cmd0 = [
             "cmake",
             f"-S{source_dir}",
-            f"-B{source_dir/BUILDDIR}",
             f"-DCMAKE_INSTALL_PREFIX={install_dir}",
+            "-DHDF5_GENERATE_HEADERS:BOOL=false",
+            "-DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=true",
             "-DBUILD_SHARED_LIBS:BOOL=false",
             "-DCMAKE_BUILD_TYPE=Release",
             "-DHDF5_BUILD_FORTRAN:BOOL=true",
@@ -257,8 +257,18 @@ look for filename like hdf5-1.12.0-Std-win10_64-vs14-Intel.zip
             "-DBUILD_TESTING:BOOL=false",
             "-DHDF5_BUILD_EXAMPLES:BOOL=false",
         ]
-        cmd1 = ["cmake", "--build", BUILDDIR, "--parallel"]
-        cmd2 = ["cmake", "--install", BUILDDIR]  # no --parallel option
+
+        cmd1 = ["cmake", "--build", str(build_dir), "--parallel"]
+
+        cmd2 = ["cmake", "--install", str(build_dir)]
+
+        # this old "cmake .." style command is necessary due to bugs with
+        # HDF5 (including 1.10.7) CMakeLists:
+        #   CMake Error at config/cmake/HDF5UseFortran.cmake:205 (file):
+        #   file failed to open for reading (No such file or directory):
+        #   C:/Users/micha/AppData/Local/Temp/hdf5/build/pac_fconftest.out.
+        build_dir.mkdir(exist_ok=True)
+        subprocess.check_call(nice + cmd0, cwd=build_dir, env=env)
     else:
         cmd0 = [
             "./configure",
@@ -268,12 +278,8 @@ look for filename like hdf5-1.12.0-Std-win10_64-vs14-Intel.zip
         ]
         cmd1 = ["make", "-j"]
         cmd2 = ["make", "-j", "install"]
+        subprocess.check_call(nice + cmd0, cwd=source_dir, env=env)
 
-    git_url = "https://github.com/HDFGroup/hdf5.git"
-
-    git_download(source_dir, git_url, HDF5_TAG)
-
-    subprocess.check_call(nice + cmd0, cwd=source_dir, env=env)
     subprocess.check_call(nice + cmd1, cwd=source_dir)
     subprocess.check_call(nice + cmd2, cwd=source_dir)
 
@@ -497,11 +503,6 @@ def git_download(path: Path, repo: str, tag: str):
 
     if not GITEXE:
         raise FileNotFoundError("Git not found.")
-
-    git_version = (
-        subprocess.check_output([GITEXE, "--version"], universal_newlines=True).strip().split()[-1]
-    )
-    print("Using Git", git_version)
 
     if path.is_dir():
         # don't use "git -C" for old HPC
