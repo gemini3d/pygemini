@@ -19,7 +19,7 @@ def test_dryrun(tmp_path):
         "mpiexec": None,
         "gemexe": None,
         "out_format": None,
-        "dryrun": True
+        "dryrun": True,
     }
 
     gemini3d.run.gemini_run(params)

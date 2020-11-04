@@ -34,7 +34,7 @@ def cli():
         "force": P.force,
         "out_format": P.out_format,
         "cpu_count": P.cpu,
-        "dryrun": P.dryrun
+        "dryrun": P.dryrun,
     }
 
     gemini_run(params)

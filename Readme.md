@@ -48,6 +48,12 @@ For those working with GEMINI Fortran code itself or to work with non-release ve
     python -m gemini3d.run /path_to/config.nml /path_to/sim_out/
     ```
 
+## Plot simulation outputs
+
+```sh
+python -m gemini3d.plot /path_to/sim_data
+```
+
 ## Convert data files to HDF5
 
 There is a a script to convert data to HDF5, and another to convert grids to HDF5.
