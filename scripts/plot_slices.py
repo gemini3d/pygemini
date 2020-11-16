@@ -7,9 +7,9 @@ from pathlib import Path
 from matplotlib.pyplot import figure, show, close
 import argparse
 
-import gemini3d
 import gemini3d.vis as vis
 import gemini3d.find as find
+import gemini3d.readdata as read
 
 try:
     import seaborn as sns
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         cfg["flagoutput"] = P.flag
 
     dat_file = Path(P.fn).expanduser()
-    dat = gemini3d.readdata.readdata(dat_file, cfg=cfg)
+    dat = read.readdata(dat_file, cfg=cfg)
 
     try:
         x1 = dat["x1"]
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         x3 = dat["x3"]
     except KeyError:
         grid_file = find.get_grid_filename(dat_file.parent / "inputs")
-        grid = gemini3d.readdata.readgrid(grid_file)
+        grid = read.readgrid(grid_file)
 
         x1 = grid["x1"]
         x2 = grid["x2"]
