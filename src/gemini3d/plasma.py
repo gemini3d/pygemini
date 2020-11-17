@@ -12,7 +12,7 @@ from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d, interp2d, interpn
 
 from .config import read_config
-from .readdata import readgrid, loadframe
+from . import read
 from .fileio import write_grid, write_state
 
 DictArray = T.Dict[str, T.Any]
@@ -34,13 +34,13 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
             f"equilibrium directory {p['eqdir']} does not appear to contain config.nml"
         )
 
-    xgin = readgrid(p["eqdir"])
+    xgin = read.grid(p["eqdir"])
     # %% END FRAME time of equilibrium simulation
     # this will be the starting time of the new simulation
     t_eq_end = peq["time"][-1]
 
     # %% LOAD THE last equilibrium frame
-    dat = loadframe(p["eqdir"], t_eq_end)
+    dat = read.frame(p["eqdir"], t_eq_end)
 
     # %% sanity check equilibrium simulation input to interpolation
     check_density(dat["ns"][1])

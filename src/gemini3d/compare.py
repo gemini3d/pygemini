@@ -5,20 +5,12 @@ compare simulation outputs to verify model performance
 from pathlib import Path
 import numpy as np
 import logging
+import sys
 import argparse
 from datetime import datetime
 import typing as T
-import sys
 
-from .readdata import (
-    read_config,
-    readgrid,
-    loadframe,
-    read_precip,
-    read_Efield,
-    read_state,
-)
-
+from . import read
 from .find import get_frame_filename
 
 try:
@@ -104,8 +96,8 @@ def compare_all(
 
 def compare_grid(outdir: Path, refdir: Path, tol: T.Dict[str, float] = TOL) -> int:
 
-    ref = readgrid(refdir)
-    new = readgrid(outdir)
+    ref = read.grid(refdir)
+    new = read.grid(outdir)
 
     if not ref:
         raise FileNotFoundError(f"No simulation grid in {refdir}")
@@ -133,13 +125,13 @@ def compare_input(
     plot: bool = True,
 ) -> int:
 
-    ref_params = read_config(refdir)
+    ref_params = read.config(refdir)
     if not ref_params:
         raise FileNotFoundError(f"{refdir} does not appear to contain config.nml")
     ref_indir = refdir / ref_params["indat_file"].parts[-2]
-    ref = read_state(ref_indir / ref_params["indat_file"].name)
+    ref = read.state(ref_indir / ref_params["indat_file"].name)
 
-    new_params = read_config(outdir)
+    new_params = read.config(outdir)
     if not new_params:
         raise FileNotFoundError(f"{outdir} does not appear to contain config.nml")
     if len(new_params["time"]) <= 1:
@@ -147,7 +139,7 @@ def compare_input(
             f"{outdir} simulation did not run long enough, must run for more than one time step"
         )
     new_indir = outdir / new_params["indat_file"].parts[-2]
-    new = read_state(new_indir / new_params["indat_file"].name)
+    new = read.state(new_indir / new_params["indat_file"].name)
 
     if not file_format:
         file_format = new_params["indat_file"].suffix[1:]
@@ -214,8 +206,8 @@ def compare_precip(
 
     # often we reuse precipitation inputs without copying over files
     for t in times:
-        ref = read_precip(get_frame_filename(refdir, t), file_format)
-        new = read_precip(get_frame_filename(newdir, t), file_format)
+        ref = read.precip(get_frame_filename(refdir, t), file_format)
+        new = read.precip(get_frame_filename(newdir, t), file_format)
 
         for k in ref.keys():
             b = np.atleast_1d(ref[k])
@@ -246,8 +238,8 @@ def compare_Efield(
     efield_errs = 0
     # often we reuse Efield inputs without copying over files
     for t in times:
-        ref = read_Efield(get_frame_filename(refdir, t), file_format)
-        new = read_Efield(get_frame_filename(newdir, t), file_format)
+        ref = read.Efield(get_frame_filename(refdir, t), file_format)
+        new = read.Efield(get_frame_filename(newdir, t), file_format)
         for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
             b = ref[k][1]
             a = new[k][1]
@@ -279,7 +271,7 @@ def compare_output(
     errs = 0
     a: np.ndarray = None
 
-    params = read_config(outdir)
+    params = read.config(outdir)
     if not params:
         raise FileNotFoundError(f"{outdir} does not appear to contain config.nml")
     if len(params["time"]) <= 1:
@@ -289,8 +281,8 @@ def compare_output(
 
     for i, t in enumerate(params["time"]):
         st = f"UTsec {t}"
-        A = loadframe(outdir, t, file_format)
-        B = loadframe(refdir, t)
+        A = read.frame(outdir, t, file_format)
+        B = read.frame(refdir, t)
         # don't specify file_format for reference,
         # so that one reference file format can check multiple "out" format
 

@@ -6,7 +6,7 @@ convert Gemini data to HDF5 .h5
 from pathlib import Path
 import argparse
 
-import gemini3d
+import gemini3d.read
 
 LSP = 7
 CLVL = 6
@@ -53,13 +53,13 @@ def cli():
         cfg["flagoutput"] = P.flagoutput
 
     if P.format == "nc":
-        xg = gemini3d.readgrid(indir)
+        xg = gemini3d.read.grid(indir)
 
     for infile in infiles:
         outfile = outdir / (f"{infile.stem}.{cfg['format']}")
         print(infile, "=>", outfile)
 
-        dat = gemini3d.readdata(infile, cfg=cfg)
+        dat = gemini3d.read.data(infile, cfg=cfg)
         if "lxs" not in dat:
             dat["lxs"] = lxs
 

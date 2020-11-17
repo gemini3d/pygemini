@@ -1,8 +1,7 @@
 import argparse
 from pathlib import Path
 
-from .grid import readgrid
-from .readdata import readdata
+from . import read
 from .vis import plotframe
 
 
@@ -31,7 +30,7 @@ def cli():
         fg = None
         save_dir = None
 
-    grid = readgrid(direc)
+    grid = read.grid(direc)
 
     flist = sorted(direc.glob("*.h5"))
     if len(flist) == 0:
@@ -39,7 +38,7 @@ def cli():
     # %% loop over files / time
     for file in flist:
         try:
-            dat = readdata(file)
+            dat = read.data(file)
         except Exception as e:
             print(f"SKIP: {file}   {e}")
             continue

@@ -9,7 +9,7 @@ from datetime import datetime
 import typing as T
 
 from . import raw
-from .config import read_config
+from .config import read_config as config
 from .fileio import get_simsize
 from .find import get_frame_filename, get_grid_filename
 from . import matlab
@@ -28,7 +28,7 @@ except ImportError:
     nc4 = None
 
 
-def readgrid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
+def grid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
 
     fn = get_grid_filename(path)
     if not fn:
@@ -55,7 +55,7 @@ def readgrid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
     return grid
 
 
-def readdata(
+def data(
     fn: Path, file_format: str = None, *, cfg: T.Dict[str, T.Any] = None, E0dir: Path = None
 ) -> T.Dict[str, T.Any]:
     """
@@ -104,7 +104,7 @@ def readdata(
 
     input_dir = fn.parent / "inputs"
     if not cfg:
-        cfg = read_config(input_dir)
+        cfg = config(input_dir)
 
     if not file_format:
         file_format = fn.suffix[1:]
@@ -196,12 +196,12 @@ def readdata(
     if E0dir:
         fn_Efield = E0dir / fn.name
         if fn_Efield.is_file():
-            dat.update(read_Efield(fn_Efield))
+            dat.update(Efield(fn_Efield))
 
     return dat
 
 
-def read_Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
+def Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     """load Efield data "Efield_inputs"
 
     Parameters
@@ -239,7 +239,7 @@ def read_Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     return E
 
 
-def read_precip(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
+def precip(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     """load precipitation to disk
 
     Parameters
@@ -277,7 +277,7 @@ def read_precip(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     return dat
 
 
-def read_state(
+def state(
     file: Path,
 ) -> T.Dict[str, T.Any]:
     """
@@ -298,7 +298,7 @@ def read_state(
     return dat
 
 
-def loadframe(simdir: Path, time: datetime, file_format: str = None) -> T.Dict[str, T.Any]:
+def frame(simdir: Path, time: datetime, file_format: str = None) -> T.Dict[str, T.Any]:
     """
     This is what users should normally use.
     load a frame of simulation data, automatically selecting the correct
@@ -319,4 +319,4 @@ def loadframe(simdir: Path, time: datetime, file_format: str = None) -> T.Dict[s
         simulation output for this time step
     """
 
-    return readdata(get_frame_filename(simdir, time, file_format), file_format)
+    return data(get_frame_filename(simdir, time, file_format), file_format)

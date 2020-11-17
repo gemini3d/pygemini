@@ -9,7 +9,7 @@ https://docs.enthought.com/mayavi/mayavi/auto/mlab_decorations.html
 from mayavi import mlab
 import argparse
 
-import gemini3d.readdata
+import gemini3d.read
 
 
 if __name__ == "__main__":
@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     cfg = {"flagoutput": P.flag}
 
-    dat = gemini3d.readdata.readdata(P.fn, cfg=cfg)
+    dat = gemini3d.read.data(P.fn, cfg=cfg)
 
     mlab.USE_LOD_ACTOR = True  # this didn't help RAM or performance
 

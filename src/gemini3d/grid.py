@@ -7,7 +7,7 @@ import typing as T
 import math
 import numpy as np
 
-from .readdata import readgrid
+from . import read
 
 pi = math.pi
 
@@ -38,7 +38,7 @@ def makegrid_cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
         z = altitude_grid(p["alt_min"], p["alt_max"], p["Bincl"], p["alt_scale"])
     elif "eqdir" in p and p["eqdir"].is_file():
         logging.info("makegrid_cart_3D: reusing grid from", p["eqdir"])
-        xeq = readgrid(p["eqdir"])
+        xeq = read.grid(p["eqdir"])
         z = xeq["x1"]
         del xeq
     else:

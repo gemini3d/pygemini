@@ -5,7 +5,7 @@ plot electric field input to simulation "Efield_inputs" for a single file
 
 import argparse
 from matplotlib.pyplot import figure, show
-import gemini3d.readdata
+import gemini3d.read
 import numpy as np
 
 
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     p.add_argument("fn", help=".dat or .h5 filename to load directly")
     P = p.parse_args()
 
-    dat = gemini3d.readdata.read_Efield(P.fn)
+    dat = gemini3d.read.Efield(P.fn)
 
     plotVmaxx1it(dat["Vmaxx1it"][1])
 
