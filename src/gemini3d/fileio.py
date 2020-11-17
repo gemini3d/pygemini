@@ -26,11 +26,9 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     elif fn.suffix == ".nc":
         return nc4.get_simsize(fn)
     elif fn.suffix == ".dat":
-        return raw.get_simsize(fn)
+        return raw.read.simsize(fn)
     elif fn.suffix == ".mat":
         return matlab.get_simsize(fn)
-    elif fn.suffix == ".dat":
-        return raw.get_simsize(fn)
     else:
         raise ValueError("unkonwn simsize file type")
 

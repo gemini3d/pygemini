@@ -133,7 +133,7 @@ def namelist_exists(fn: Path, namelist: str) -> bool:
 def read_namelist(fn: Path, namelist: str) -> T.Dict[str, T.Any]:
     """ read a namelist from an .nml file """
 
-    raw: T.Dict[str, T.Sequence[str]] = {}
+    r: T.Dict[str, T.Sequence[str]] = {}
     nml_pat = re.compile(r"^\s*&(" + namelist + r")")
     end_pat = re.compile(r"^\s*/\s*$")
     val_pat = re.compile(r"^\s*(\w+)\s*=\s*['\"]?([^!'\"]*)['\"]?")
@@ -146,18 +146,18 @@ def read_namelist(fn: Path, namelist: str) -> T.Dict[str, T.Any]:
             for line in f:
                 if end_pat.match(line):
                     # end of namelist
-                    return parse_namelist(raw, namelist)
+                    return parse_namelist(r, namelist)
                 val_mat = val_pat.match(line)
                 if not val_mat:
                     continue
 
                 key, vals = val_mat.group(1), val_mat.group(2).split(",")
-                raw[key] = vals[0] if len(vals) == 1 else vals
+                r[key] = vals[0] if len(vals) == 1 else vals
 
     raise KeyError(f"did not find Namelist {namelist} in {fn}")
 
 
-def parse_namelist(raw: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
+def parse_namelist(r: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
     """
     this is Gemini-specific
     don't resolve absolute paths here because that assumes same machine
@@ -166,44 +166,43 @@ def parse_namelist(raw: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]
     P: T.Dict[str, T.Any] = {}
 
     if namelist == "base":
-        t0 = datetime(int(raw["ymd"][0]), int(raw["ymd"][1]), int(raw["ymd"][2])) + timedelta(
-            seconds=float(raw["UTsec0"])
+        t0 = datetime(int(r["ymd"][0]), int(r["ymd"][1]), int(r["ymd"][2])) + timedelta(
+            seconds=float(r["UTsec0"])
         )
-
-        P["tdur"] = timedelta(seconds=float(raw["tdur"]))
-        P["dtout"] = timedelta(seconds=float(raw["dtout"]))
+        P["tdur"] = timedelta(seconds=float(r["tdur"]))
+        P["dtout"] = timedelta(seconds=float(r["dtout"]))
         P["time"] = datetime_range(t0, t0 + P["tdur"], P["dtout"])
 
-        P["f107a"] = float(raw["activ"][0])
-        P["f107"] = float(raw["activ"][1])
-        P["Ap"] = float(raw["activ"][2])
-        P["tcfl"] = float(raw["tcfl"])
-        P["Teinf"] = float(raw["Teinf"])
+        P["f107a"] = float(r["activ"][0])
+        P["f107"] = float(r["activ"][1])
+        P["Ap"] = float(r["activ"][2])
+        P["tcfl"] = float(r["tcfl"])
+        P["Teinf"] = float(r["Teinf"])
     elif namelist == "flags":
-        for k in raw:
-            P[k] = int(raw[k])
+        for k in r:
+            P[k] = int(r[k])
     elif namelist == "files":
         for k in ("indat_file", "indat_grid", "indat_size"):
-            P[k] = Path(raw[k])
+            P[k] = Path(r[k])
 
-        if "file_format" in raw:
-            P["format"] = raw["file_format"]
+        if "file_format" in r:
+            P["format"] = r["file_format"]
         else:
             # defaults to type of input
             P["format"] = P["indat_size"].suffix[1:]
 
-        if "realbits" in raw:
-            P["realbits"] = int(raw["realbits"])
+        if "realbits" in r:
+            P["realbits"] = int(r["realbits"])
         else:
             if P["format"] in ("raw", "dat"):
                 P["realbits"] = 64
             else:
                 P["realbits"] = 32
     elif namelist == "setup":
-        P["alt_scale"] = list(map(float, raw["alt_scale"]))
+        P["alt_scale"] = list(map(float, r["alt_scale"]))
 
         for k in ("lxp", "lyp"):
-            P[k] = int(raw[k])
+            P[k] = int(r[k])
         for k in (
             "glat",
             "glon",
@@ -225,29 +224,29 @@ def parse_namelist(raw: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]
             "Efield_lonwidth",
             # "Eflagdirich",  # future
         ):
-            if k in raw:
-                P[k] = float(raw[k])
+            if k in r:
+                P[k] = float(r[k])
         for k in ("eqdir",):
-            if k in raw:
-                P[k] = Path(raw[k])
+            if k in r:
+                P[k] = Path(r[k])
     elif namelist == "neutral_perturb":
-        P["interptype"] = int(raw["interptype"])
-        P["sourcedir"] = Path(raw["source_dir"])
+        P["interptype"] = int(r["interptype"])
+        P["sourcedir"] = Path(r["source_dir"])
 
         for k in ("sourcemlat", "sourcemlon", "dtneu", "dxn", "drhon", "dzn"):
             try:
-                P[k] = float(raw[k])
+                P[k] = float(r[k])
             except KeyError:
                 P[k] = NaN
     elif namelist == "precip":
-        P["dtprec"] = timedelta(seconds=float(raw["dtprec"]))
-        P["precdir"] = Path(raw["prec_dir"])
+        P["dtprec"] = timedelta(seconds=float(r["dtprec"]))
+        P["precdir"] = Path(r["prec_dir"])
     elif namelist == "efield":
-        P["dtE0"] = timedelta(seconds=float(raw["dtE0"]))
-        P["E0dir"] = Path(raw["E0_dir"])
+        P["dtE0"] = timedelta(seconds=float(r["dtE0"]))
+        P["E0dir"] = Path(r["E0_dir"])
     elif namelist == "glow":
-        P["dtglow"] = timedelta(seconds=float(raw["dtglow"]))
-        P["dtglowout"] = float(raw["dtglowout"])
+        P["dtglow"] = timedelta(seconds=float(r["dtglow"]))
+        P["dtglowout"] = float(r["dtglowout"])
 
     if not P:
         raise ValueError(f"Not sure how to parse NML namelist {namelist}")

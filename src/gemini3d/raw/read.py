@@ -2,6 +2,7 @@
 raw binary file I/O.
 Raw files are deprecated and do not contain most features of Gemini
 """
+
 from pathlib import Path
 import typing as T
 import numpy as np
@@ -13,7 +14,7 @@ LSP = 7
 
 
 # NOT lru_cache
-def get_simsize(fn: Path) -> T.Tuple[int, ...]:
+def simsize(fn: Path) -> T.Tuple[int, ...]:
     """
     get simulation dimensions from simsize.dat
 
@@ -39,7 +40,7 @@ def get_simsize(fn: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
+def grid(fn: Path) -> T.Dict[str, np.ndarray]:
     """
     get simulation dimensions
 
@@ -53,16 +54,16 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     grid: dict
         grid parameters
     """
-    lxs = get_simsize(fn.parent / "simsize.dat")
+    lxs = simsize(fn.parent / "simsize.dat")
     if len(lxs) == 2:
-        return readgrid2(fn, lxs)
+        return grid2(fn, lxs)
     elif len(lxs) == 3:
-        return readgrid3(fn, lxs)
+        return grid3(fn, lxs)
     else:
         raise ValueError("lxs must be 2-D or 3-D")
 
 
-def readgrid2(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
+def grid2(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
     """ for Efield """
     if not fn.is_file():
         raise FileNotFoundError(fn)
@@ -76,7 +77,7 @@ def readgrid2(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
     return grid
 
 
-def readgrid3(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
+def grid3(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
 
     lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
@@ -131,7 +132,7 @@ def readgrid3(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
     return grid
 
 
-def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
+def Efield(fn: Path) -> T.Dict[str, T.Any]:
     """
     load Efield_inputs files that contain input electric field in V/m
     """
@@ -140,14 +141,14 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
 
     E: T.Dict[str, np.ndarray] = {}
 
-    E["Nlon"], E["Nlat"] = get_simsize(fn.parent / "simsize.dat")
+    E["Nlon"], E["Nlat"] = simsize(fn.parent / "simsize.dat")
 
     assert E["Nlon"] > 0, "must have strictly positive number of longitude cells"
     assert E["Nlat"] > 0, "must have strictly positive number of latitude cells"
 
     lxs = (0, E["Nlon"], E["Nlat"])
 
-    E.update(readgrid2(fn.parent / "simgrid.dat", (E["Nlon"], E["Nlat"])))
+    E.update(grid2(fn.parent / "simgrid.dat", (E["Nlon"], E["Nlat"])))
 
     assert (
         (E["mlat"] >= -90) & (E["mlat"] <= 90)
@@ -174,9 +175,8 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     return E
 
 
-def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+def frame3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     """
-    end users should normally use loadframe() instead
 
     Parameters
     ----------
@@ -186,7 +186,7 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
         array dimension
     """
 
-    #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
+    #    grid = grid(fn.parent / "inputs/simgrid.dat")
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
@@ -194,7 +194,7 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     dat: T.Dict[str, T.Any] = {}
 
     with fn.open("r") as f:
-        dat["time"] = read_time(f)
+        dat["time"] = time(f)
 
         ns = read4D(f, LSP, lxs)
         dat["ne"] = (("x1", "x2", "x3"), ns[:, :, :, LSP - 1])
@@ -220,9 +220,8 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     return dat
 
 
-def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+def frame3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     """
-    end users should normally use loadframe() instead
 
     Parameters
     ----------
@@ -231,14 +230,14 @@ def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     lxs: list of int
         array dimension
     """
-    #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
+    #    grid = grid(fn.parent / "inputs/simgrid.dat")
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
     dat: T.Dict[str, T.Any] = {}
 
     with fn.open("r") as f:
-        dat["time"] = read_time(f)
+        dat["time"] = time(f)
 
         for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
             dat[p] = (("x1", "x2", "x3"), read3D(f, lxs))
@@ -248,12 +247,12 @@ def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     return dat
 
 
-def loadframe3d_curvne(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+def frame3d_curvne(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
 
     dat: T.Dict[str, T.Any] = {}
 
     with fn.open("r") as f:
-        dat["time"] = read_time(f)
+        dat["time"] = time(f)
 
         dat["ne"] = (("x1", "x2", "x3"), read3D(f, lxs))
 
@@ -262,7 +261,7 @@ def loadframe3d_curvne(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
 
 def read4D(f, lsp: int, lxs: T.Sequence[int]) -> np.ndarray:
     """
-    end users should normally use laodframe() instead
+    read 4D array from raw file
     """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
@@ -272,7 +271,7 @@ def read4D(f, lsp: int, lxs: T.Sequence[int]) -> np.ndarray:
 
 def read3D(f, lxs: T.Sequence[int]) -> np.ndarray:
     """
-    end users should normally use loadframe() instead
+    read 3D array from raw file
     """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
@@ -282,7 +281,7 @@ def read3D(f, lxs: T.Sequence[int]) -> np.ndarray:
 
 def read2D(f, lxs: T.Sequence[int]) -> np.ndarray:
     """
-    end users should normally use laodframe() instead
+    read 2D array from raw file
     """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
@@ -290,7 +289,7 @@ def read2D(f, lxs: T.Sequence[int]) -> np.ndarray:
     return np.fromfile(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
 
 
-def loadglow_aurmap(f, lxs: T.Sequence[int], lwave: int) -> T.Dict[str, T.Any]:
+def glow_aurmap(f, lxs: T.Sequence[int], lwave: int) -> T.Dict[str, T.Any]:
     """
     read the auroral output from GLOW
     """
@@ -302,6 +301,6 @@ def loadglow_aurmap(f, lxs: T.Sequence[int], lwave: int) -> T.Dict[str, T.Any]:
     return {"rayleighs": (("wavelength", "x2", "x3"), raw)}
 
 
-def read_time(f) -> datetime:
+def time(f) -> datetime:
     t = np.fromfile(f, np.float64, 4)
     return datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])

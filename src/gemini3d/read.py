@@ -38,7 +38,7 @@ def grid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
         file_format = fn.suffix[1:]
 
     if file_format == "dat":
-        grid = raw.readgrid(fn.with_suffix(".dat"))
+        grid = raw.read.grid(fn.with_suffix(".dat"))
     elif file_format == "h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
@@ -114,16 +114,16 @@ def data(
 
         flag = cfg.get("flagoutput")
         if flag == 0:
-            dat = raw.loadframe3d_curvne(fn, lxs)
+            dat = raw.read.frame3d_curvne(fn, lxs)
         elif flag == 1:
-            dat = raw.loadframe3d_curv(fn, lxs)
+            dat = raw.read.frame3d_curv(fn, lxs)
         elif flag == 2:
-            dat = raw.loadframe3d_curvavg(fn, lxs)
+            dat = raw.read.frame3d_curvavg(fn, lxs)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
         if fn_aurora.is_file():
-            dat.update(raw.loadglow_aurmap(fn_aurora, lxs, len(wavelength)))
+            dat.update(raw.read.glow_aurmap(fn_aurora, lxs, len(wavelength)))
             dat["wavelength"] = wavelength
 
     elif file_format == "h5":
@@ -232,7 +232,7 @@ def Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
             raise ModuleNotFoundError("pip install netcdf4")
         E = nc4.read_Efield(fn)
     elif file_format == "dat":
-        E = raw.read_Efield(fn)
+        E = raw.read.Efield(fn)
     else:
         raise ValueError(f"Unknown file type {fn}")
 
