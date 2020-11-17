@@ -7,7 +7,7 @@ import typing as T
 import scipy.io
 
 
-def read_grid(fn: Path) -> T.Dict[str, T.Any]:
+def grid(fn: Path) -> T.Dict[str, T.Any]:
     """
     get simulation grid
 
@@ -27,7 +27,7 @@ def read_grid(fn: Path) -> T.Dict[str, T.Any]:
     return grid
 
 
-def get_simsize(path: Path) -> T.Tuple[int, ...]:
+def simsize(path: Path) -> T.Tuple[int, ...]:
     """
     get simulation size
     """
@@ -53,7 +53,7 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def read_state(fn: Path) -> T.Dict[str, T.Any]:
+def state(fn: Path) -> T.Dict[str, T.Any]:
     """
     load initial condition data
     """
@@ -61,7 +61,7 @@ def read_state(fn: Path) -> T.Dict[str, T.Any]:
     return scipy.io.loadmat(fn, squeeze_me=True)
 
 
-def read_precip(fn: Path) -> T.Dict[str, T.Any]:
+def precip(fn: Path) -> T.Dict[str, T.Any]:
     """
     load precipitation data
     """

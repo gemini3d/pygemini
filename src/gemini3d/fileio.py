@@ -4,12 +4,18 @@ import numpy as np
 from datetime import datetime
 import sys
 
-from . import raw
-from . import matlab
 from .find import get_simsize_path
 from .utils import git_meta
-from . import hdf
-from . import nc4
+
+from . import matlab
+
+from .raw import read as raw_read
+
+from .hdf5 import write as h5write
+from .hdf5 import read as h5read
+
+from .nc4 import read as ncread
+from .nc4 import write as ncwrite
 
 Pathlike = T.Union[str, Path]
 
@@ -22,13 +28,13 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
         return None
 
     if fn.suffix == ".h5":
-        return hdf.get_simsize(fn)
+        return h5read.simsize(fn)
     elif fn.suffix == ".nc":
-        return nc4.get_simsize(fn)
+        return ncread.simsize(fn)
     elif fn.suffix == ".dat":
-        return raw.read.simsize(fn)
+        return raw_read.simsize(fn)
     elif fn.suffix == ".mat":
-        return matlab.get_simsize(fn)
+        return matlab.simsize(fn)
     else:
         raise ValueError("unkonwn simsize file type")
 
@@ -58,9 +64,9 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         p["format"] = p["indat_size"].suffix[1:]
 
     if p["format"] in ("hdf5", "h5"):
-        hdf.write_grid(p["indat_size"].with_suffix(".h5"), p["indat_grid"].with_suffix(".h5"), xg)
+        h5write.grid(p["indat_size"].with_suffix(".h5"), p["indat_grid"].with_suffix(".h5"), xg)
     elif p["format"] in ("netcdf", "nc"):
-        nc4.write_grid(p["indat_size"].with_suffix(".nc"), p["indat_grid"].with_suffix(".nc"), xg)
+        ncwrite.grid(p["indat_size"].with_suffix(".nc"), p["indat_grid"].with_suffix(".nc"), xg)
     else:
         raise ValueError(f'unknown file format {p["format"]}')
 
@@ -85,9 +91,9 @@ def write_Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
     outdir.mkdir(parents=True, exist_ok=True)
 
     if file_format in ("hdf5", "h5"):
-        hdf.write_Efield(outdir, E)
+        h5write.Efield(outdir, E)
     elif file_format in ("netcdf", "nc"):
-        nc4.write_Efield(outdir, E)
+        ncwrite.Efield(outdir, E)
     else:
         raise ValueError(f"unknown file format {file_format}")
 
@@ -109,9 +115,9 @@ def write_precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
     outdir.mkdir(parents=True, exist_ok=True)
 
     if file_format in ("hdf5", "h5"):
-        hdf.write_precip(outdir, precip)
+        h5write.precip(outdir, precip)
     elif file_format in ("netcdf", "nc"):
-        nc4.write_precip(outdir, precip)
+        ncwrite.precip(outdir, precip)
     else:
         raise ValueError(f"unknown file format {file_format}")
 
@@ -134,9 +140,9 @@ def write_state(
     """
 
     if out_file.suffix == ".h5":
-        hdf.write_state(time, ns, vs, Ts, out_file.with_suffix(".h5"))
+        h5write.state(time, ns, vs, Ts, out_file.with_suffix(".h5"))
     elif out_file.suffix == ".nc":
-        nc4.write_state(time, ns, vs, Ts, out_file.with_suffix(".nc"))
+        ncwrite.state(time, ns, vs, Ts, out_file.with_suffix(".nc"))
     else:
         raise ValueError(f"unknown file format {out_file.suffix}")
 

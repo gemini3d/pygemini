@@ -8,24 +8,14 @@ from pathlib import Path
 from datetime import datetime
 import typing as T
 
-from . import raw
 from .config import read_config as config
 from .fileio import get_simsize
 from .find import get_frame_filename, get_grid_filename
 from . import matlab
 
-try:
-    import h5py
-    from . import hdf
-except (ImportError, AttributeError):
-    # must be ImportError not ModuleNotFoundError for botched HDF5 linkage
-    hdf = None
-
-try:
-    from netCDF4 import Dataset
-    from . import nc4
-except ImportError:
-    nc4 = None
+from .raw import read as raw_read
+from .hdf5 import read as h5read
+from .nc4 import read as ncread
 
 
 def grid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
@@ -38,17 +28,13 @@ def grid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
         file_format = fn.suffix[1:]
 
     if file_format == "dat":
-        grid = raw.read.grid(fn.with_suffix(".dat"))
+        grid = raw_read.grid(fn.with_suffix(".dat"))
     elif file_format == "h5":
-        if hdf is None:
-            raise ModuleNotFoundError("pip install h5py")
-        grid = hdf.readgrid(fn.with_suffix(".h5"))
+        grid = h5read.grid(fn.with_suffix(".h5"))
     elif file_format == "nc":
-        if nc4 is None:
-            raise ModuleNotFoundError("pip install netcdf4")
-        grid = nc4.readgrid(fn.with_suffix(".nc"))
+        grid = ncread.grid(fn.with_suffix(".nc"))
     elif file_format == "mat":
-        grid = matlab.read_grid(fn.with_suffix(".mat"))
+        grid = matlab.grid(fn.with_suffix(".mat"))
     else:
         raise ValueError(f"Unknown file type {fn}")
 
@@ -114,81 +100,47 @@ def data(
 
         flag = cfg.get("flagoutput")
         if flag == 0:
-            dat = raw.read.frame3d_curvne(fn, lxs)
+            dat = raw_read.frame3d_curvne(fn, lxs)
         elif flag == 1:
-            dat = raw.read.frame3d_curv(fn, lxs)
+            dat = raw_read.frame3d_curv(fn, lxs)
         elif flag == 2:
-            dat = raw.read.frame3d_curvavg(fn, lxs)
+            dat = raw_read.frame3d_curvavg(fn, lxs)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
         if fn_aurora.is_file():
-            dat.update(raw.read.glow_aurmap(fn_aurora, lxs, len(wavelength)))
+            dat.update(raw_read.glow_aurmap(fn_aurora, lxs, len(wavelength)))
             dat["wavelength"] = wavelength
 
     elif file_format == "h5":
-        if hdf is None:
-            raise ModuleNotFoundError("pip install h5py")
-
-        # detect output type
-        with h5py.File(fn, "r") as f:
-            if "flagoutput" in f:
-                flag = f["/flagoutput"][()]
-            elif "flagoutput" in cfg:
-                flag = cfg["flagoutput"]
-            else:
-                if "ne" in f and f["/ne"].ndim == 3:
-                    flag = 0
-                elif "nsall" in f and f["/nsall"].ndim == 4:
-                    flag = 1
-                elif "neall" in f and f["/neall"].ndim == 3:
-                    flag = 2
-                else:
-                    raise ValueError(f"please specify flagoutput in config.nml or {fn}")
+        flag = h5read.flagoutput(fn, cfg)
 
         if flag == 0:
-            dat = hdf.loadframe3d_curvne(fn)
+            dat = h5read.frame3d_curvne(fn)
         elif flag == 1:
-            dat = hdf.loadframe3d_curv(fn)
+            dat = h5read.frame3d_curv(fn)
         elif flag == 2:
-            dat = hdf.loadframe3d_curvavg(fn)
+            dat = h5read.frame3d_curvavg(fn)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
         if fn_aurora.is_file():
-            dat.update(hdf.loadglow_aurmap(fn_aurora))
+            dat.update(h5read.glow_aurmap(fn_aurora))
             dat["wavelength"] = wavelength
     elif file_format == "nc":
-        if nc4 is None:
-            raise ModuleNotFoundError("pip install netcdf4")
-
-        # detect output type
-        with Dataset(fn, "r") as f:
-            if "flagoutput" in f.variables:
-                flag = f["flagoutput"][()]
-            elif "flagoutput" in cfg:
-                flag = cfg["flagoutput"]
-            else:
-                if "ne" in f.variables and f["ne"].ndim == 3:
-                    flag = 0
-                elif "nsall" in f.variables and f["nsall"].ndim == 4:
-                    flag = 1
-                elif "neall" in f.variables and f["neall"].ndim == 3:
-                    flag = 2
-                else:
-                    raise ValueError(f"please specify flagoutput in config.nml or {fn}")
+        flag = ncread.flagoutput(fn, cfg)
 
         if flag == 0:
-            dat = nc4.loadframe3d_curvne(fn)
+            dat = ncread.frame3d_curvne(fn)
         elif flag == 1:
-            dat = nc4.loadframe3d_curv(fn)
+            dat = ncread.frame3d_curv(fn)
         elif flag == 2:
-            dat = nc4.loadframe3d_curvavg(fn)
+            dat = ncread.frame3d_curvavg(fn)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
         if fn_aurora.is_file():
-            dat.update(nc4.loadglow_aurmap(fn_aurora))
+            dat.update(ncread.glow_aurmap(fn_aurora))
             dat["wavelength"] = wavelength
     else:
         raise ValueError(f"Unknown file type {fn}")
@@ -224,15 +176,11 @@ def Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
         file_format = fn.suffix[1:]
 
     if file_format == "h5":
-        if hdf is None:
-            raise ModuleNotFoundError("pip install h5py")
-        E = hdf.read_Efield(fn)
+        E = h5read.Efield(fn)
     elif file_format == "nc":
-        if nc4 is None:
-            raise ModuleNotFoundError("pip install netcdf4")
-        E = nc4.read_Efield(fn)
+        E = ncread.Efield(fn)
     elif file_format == "dat":
-        E = raw.read.Efield(fn)
+        E = raw_read.Efield(fn)
     else:
         raise ValueError(f"Unknown file type {fn}")
 
@@ -264,13 +212,9 @@ def precip(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
         file_format = fn.suffix[1:]
 
     if file_format == "h5":
-        if hdf is None:
-            raise ImportError("pip install h5py")
-        dat = hdf.read_precip(fn)
+        dat = h5read.precip(fn)
     elif file_format == "nc":
-        if nc4 is None:
-            raise ImportError("pip install netcdf4")
-        dat = nc4.read_precip(fn)
+        dat = ncread.precip(fn)
     else:
         raise ValueError(f"unknown file format {file_format}")
 
@@ -285,13 +229,9 @@ def state(
     """
 
     if file.suffix == ".h5":
-        if hdf is None:
-            raise ImportError("pip install h5py")
-        dat = hdf.read_state(file)
+        dat = h5read.state(file)
     elif file.suffix == ".nc":
-        if nc4 is None:
-            raise ImportError("pip install netcdf4")
-        dat = nc4.read_state(file)
+        dat = ncread.state(file)
     else:
         raise ValueError(f"unknown file format {file.suffix}")
 

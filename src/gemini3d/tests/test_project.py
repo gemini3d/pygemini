@@ -10,7 +10,7 @@ import gemini3d.web
 from gemini3d.fileio import write_grid
 from gemini3d.grid import makegrid_cart3d
 from gemini3d.compare import compare_all, compare_grid, compare_Efield, compare_precip
-from gemini3d.readdata import read_config, readgrid
+import gemini3d.read as read
 from gemini3d.model_setup import model_setup
 from gemini3d.efield import Efield_BCs
 from gemini3d.particles import particles_BCs
@@ -25,7 +25,7 @@ def test_grid(name, file_format, tmp_path):
     # get files if needed
     test_dir = gemini3d.web.download_and_extract(name, R)
     # setup new test data
-    cfg = read_config(test_dir)
+    cfg = read.config(test_dir)
     xg = makegrid_cart3d(cfg)
 
     # path patch
@@ -48,8 +48,8 @@ def test_Efield(name, file_format, tmp_path):
     # get files if needed
     test_dir = gemini3d.web.download_and_extract(name, R)
 
-    cfg = read_config(test_dir)
-    xg = readgrid(test_dir)
+    cfg = read.config(test_dir)
+    xg = read.grid(test_dir)
 
     # patch paths
     cfg["out_dir"] = tmp_path
@@ -69,8 +69,8 @@ def test_precip(name, file_format, tmp_path):
     # get files if needed
     test_dir = gemini3d.web.download_and_extract(name, R)
 
-    cfg = read_config(test_dir)
-    xg = readgrid(test_dir)
+    cfg = read.config(test_dir)
+    xg = read.grid(test_dir)
 
     # patch paths
     cfg["out_dir"] = tmp_path
@@ -104,7 +104,7 @@ def test_runner(name, file_format, tmp_path):
     test_dir = gemini3d.web.download_and_extract(name, R)
 
     # setup new test data
-    params = read_config(test_dir)
+    params = read.config(test_dir)
 
     params["format"] = file_format
     params["out_dir"] = out_dir
