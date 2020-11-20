@@ -82,8 +82,10 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     print("hdf:write_state:", fn)
 
     with h5py.File(fn, "w") as f:
-        f["/ymd"] = [time.year, time.month, time.day]
-        f["/UTsec"] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
+        f["/time/ymd"] = [time.year, time.month, time.day]
+        f["/time/UTsec"] = (
+            time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
+        )
 
         p4 = (0, 3, 2, 1)
         # we have to reverse axes order and put lsp at the last dim
