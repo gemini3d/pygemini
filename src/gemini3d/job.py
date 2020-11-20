@@ -56,7 +56,7 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
         cmd += ["-out_format", pr["out_format"]]
 
     # %% attempt dry run, but don't fail in case intended for HPC
-    logging.info("Gemini dry run of first time step")
+    logging.info("Gemini dry run command:")
     logging.info(" ".join(cmd))
     proc = subprocess.run(cmd + ["-dryrun"])
 
