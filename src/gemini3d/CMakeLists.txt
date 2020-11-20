@@ -10,7 +10,7 @@ if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
 endif()
 
 set(gemini_url "https://github.com/gemini3d/gemini3d.git")
-set(gemini_tag "master")
+set(gemini_tag)
 
 if(NOT gemini_root)
   if(DEFINED ENV{GEMINI_ROOT})
@@ -20,11 +20,17 @@ if(NOT gemini_root)
   endif()
 endif()
 
+# It's necessary to resolve the path on Windows in particular
+# otherwise add_subdirectory() may fail to find the path
+get_filename_component(gemini_root ${gemini_root} ABSOLUTE)
+
 set(msis_path ${gemini_root}/src/vendor/msis00)
 
 include(cmake/git.cmake)
 
 git_download(${gemini_root} ${gemini_url} ${gemini_tag})
+
+# --- build msis
 
 add_subdirectory(${msis_path} ${PROJECT_BINARY_DIR}/msis)
 # this source_dir location is for Python
