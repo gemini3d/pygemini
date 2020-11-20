@@ -453,8 +453,7 @@ project(dummy LANGUAGES C Fortran)
 """
 
     if mod_path.is_dir():
-        mod_str = mod_path.as_posix()
-        cmake_template += f'list(APPEND CMAKE_MODULE_PATH "{mod_str}")\n'
+        cmake_template += f'list(APPEND CMAKE_MODULE_PATH "{mod_path.as_posix()}")\n'
 
     cmake_template += f"find_package({lib_name} REQUIRED)\n"
 

@@ -1,7 +1,7 @@
 # PyGemini
 
-![ci_python](https://github.com/gemini3d/pygemini/workflows/ci/badge.svg)
-[![codecov](https://codecov.io/gh/gemini3d/pygemini/branch/main/graph/badge.svg)](https://codecov.io/gh/gemini3d/pygemini)
+![ci](https://github.com/gemini3d/pygemini/workflows/ci/badge.svg)
+![ci](https://github.com/gemini3d/pygemini/workflows/ci_prereq/badge.svg)
 
 A Python interface to [Gemini3D](https://github.com/gemini3d/gemini).
 

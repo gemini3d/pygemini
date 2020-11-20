@@ -20,4 +20,6 @@ exclude = '''
 '''
 
 [tool.pytest.ini_options]
-addopts = "-ra -v"
+addopts = "-ra -v --ignore-glob=*prereqs.py"
+# the prereqs tests are long and tedious, and are an auxiliary function of PyGemini
+# we test them explicitly with a CI case.
