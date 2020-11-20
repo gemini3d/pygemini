@@ -1,9 +1,11 @@
-#!/usr/bin/env python3
-
 """
 installs Gemini3D prerequisite libraries for:
-CentOS, Debian, Ubuntu, Homebrew, MSYS2 and Cygwin
-assuming GCC/Gfortran
+
+* Linux: CentOS, Debian, Ubuntu, Windows Subsystem for Linux
+* MacOS: Homebrew
+* Windows: MSYS2, Cygwin
+
+assumes GCC/Gfortran
 """
 
 import subprocess
@@ -34,7 +36,7 @@ PKG = {
         "libhdf5-dev",
     ],
     "pacman": ["pkgconf", "gcc-fortran", "lapack", "openmpi", "hdf5"],
-    "brew": ["gcc", "make", "cmake", "lapack", "scalapack", "openmpi", "hdf5"],
+    "brew": ["gcc", "ninja", "cmake", "lapack", "scalapack", "openmpi", "hdf5"],
     "cygwin": ["gcc-fortran", "liblapack-devel", "libopenmpi-devel"],
     "msys": [
         "mingw-w64-x86_64-gcc-fortran",
@@ -70,16 +72,19 @@ def main(package_manager: str):
                 f"Unknown package manager {package_manager}, try installing the prereqs manually"
             )
     elif sys.platform == "darwin":
+        if not shutil.which("brew"):
+            raise SystemExit(
+                "We assume Homebrew is available, need to manually install a Fortran compiler otherwise."
+            )
         cmd = ["brew", "install"] + PKG["brew"]
         # autobuild Mumps, it's much faster
     elif sys.platform == "cygwin":
         cmd = ["setup-x86_64.exe", "-P"] + PKG["cygwin"]
     elif sys.platform == "win32":
-        if shutil.which("pacman"):
-            # assume MSYS2
-            cmd = ["pacman", "-S", "--needed"] + PKG["msys"]
-        else:
+        if not shutil.which("pacman"):
             raise SystemExit("Windows Subsystem for Linux or MSYS2 is recommended.")
+        # assume MSYS2
+        cmd = ["pacman", "-S", "--needed"] + PKG["msys"]
     else:
         raise ValueError(f"unknown platform {sys.platform}")
 
