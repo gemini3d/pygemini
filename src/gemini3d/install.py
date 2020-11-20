@@ -17,7 +17,6 @@ import shutil
 PKG = {
     "yum": [
         "epel-release",
-        "pkg-config",
         "gcc-gfortran",
         "MUMPS-openmpi-devel",
         "lapack-devel",
@@ -26,7 +25,6 @@ PKG = {
         "hdf5-devel",
     ],
     "apt": [
-        "pkg-config",
         "gfortran",
         "libmumps-dev",
         "liblapack-dev",
@@ -35,7 +33,7 @@ PKG = {
         "openmpi-bin",
         "libhdf5-dev",
     ],
-    "pacman": ["pkgconf", "gcc-fortran", "lapack", "openmpi", "hdf5"],
+    "pacman": ["gcc-fortran", "lapack", "openmpi", "hdf5"],
     "brew": ["gcc", "ninja", "cmake", "lapack", "scalapack", "openmpi", "hdf5"],
     "cygwin": ["gcc-fortran", "liblapack-devel", "libopenmpi-devel"],
     "msys": [
