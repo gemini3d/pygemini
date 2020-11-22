@@ -79,7 +79,12 @@ def model_resample(
     Returns
     -------
 
-
+    nsi: dict
+        interpolated number density of species(4D)
+    vsi: dict
+        interpolated velocity (4D)
+    Tsi: dict
+        interpolated temperature of species (4D)
     """
     # %% NEW GRID SIZES
     lx1, lx2, lx3 = xg["lx"]
