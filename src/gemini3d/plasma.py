@@ -342,6 +342,8 @@ def equilibrium_state(
             nmolc = np.zeros(lx1)
             nmolc[inds1] = (1 - rho[inds1]) * ne[inds1]
 
+            cond: bool = None
+
             if len(inds2) > 0:
                 if xg["r"].ndim == 3:
                     cond = xg["r"][0, 0, 0] > xg["r"][1, 0, 0]
@@ -351,10 +353,7 @@ def equilibrium_state(
                     raise ValueError(
                         "xg['r'] expected to be 3D, possibly with degenerate 2nd or 3rd dimension"
                     )
-                if cond:
-                    iref = inds1[0]
-                else:
-                    iref = inds1[-1]
+                iref = inds1[0] if cond else inds1[-1]
 
                 n0 = nmolc[iref]
                 ms = 30.5 * amu
@@ -383,11 +382,7 @@ def equilibrium_state(
             ns[5, inds2, ix2, ix3] = (1 - rho[inds2]) * ne[inds2]
             z = alt[inds1, ix2, ix3]
             if len(inds2) > 0:
-                if cond:
-                    iref = inds2[-1]
-                else:
-                    iref = inds2[0]
-
+                iref = inds2[-1] if cond else inds2[0]
                 n0 = ns[5, iref, ix2, ix3]
             else:
                 iref = alt[:, ix2, ix3].argmax()
