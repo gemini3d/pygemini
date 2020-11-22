@@ -219,6 +219,38 @@ def equilibrium_state(
     # %% MAKE UP SOME INITIAL CONDITIONS FOR FORTRAN CODE
     mindens = 1e-100
 
+    def Oplus(ns: np.ndarray) -> np.ndarray:
+        ns[0, :, ix2, ix3] = rho * ne
+        zref = 900e3
+        i = alt[:, ix2, ix3] > zref
+        if any(i):
+            iord = np.argsort(alt[:, ix2, ix3])
+            altsort = alt[iord, ix2, ix3]
+            nsort = ns[0, :, ix2, ix3]
+            nsort = nsort[iord]
+
+            ms = 16 * AMU
+            H = KB * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
+            z = alt[i, ix2, ix3]
+            lz = z.size
+            iord = np.argsort(z)
+            z = z[iord]
+            #     z=[z; 2*z(lz)-z(lz-1)];
+            z = np.insert(z, 0, zref)
+            integrand = 1 / H[iord]
+            integrand = np.append(integrand, integrand[-1])
+
+            redheight = cumtrapz(integrand, z)
+            f = interp1d(altsort, nsort)
+            n1top = f(zref) * np.exp(-redheight)
+            n1sort = np.zeros(lz)
+            for iz in range(lz):
+                n1sort[iord[iz]] = n1top[iz]
+
+            ns[0, i, ix2, ix3] = n1sort
+
+        return ns
+
     def molecular_density(ns: np.ndarray, xgr: np.ndarray, inds: np.ndarray) -> np.ndarray:
         """MOLECULAR DENSITIES
 
@@ -361,35 +393,7 @@ def equilibrium_state(
 
                 ne[inds] = nesort
 
-            # %% O+
-            ns[0, :, ix2, ix3] = rho * ne
-            zref = 900e3
-            inds0 = alt[:, ix2, ix3] > zref
-            if any(inds0):
-                iord = np.argsort(alt[:, ix2, ix3])
-                altsort = alt[iord, ix2, ix3]
-                nsort = ns[0, :, ix2, ix3]
-                nsort = nsort[iord]
-
-                ms = 16 * AMU
-                H = KB * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
-                z = alt[inds0, ix2, ix3]
-                lz = z.size
-                iord = np.argsort(z)
-                z = z[iord]
-                #     z=[z; 2*z(lz)-z(lz-1)];
-                z = np.insert(z, 0, zref)
-                integrand = 1 / H[iord]
-                integrand = np.append(integrand, integrand[-1])
-
-                redheight = cumtrapz(integrand, z)
-                f = interp1d(altsort, nsort)
-                n1top = f(zref) * np.exp(-redheight)
-                n1sort = np.zeros(lz)
-                for iz in range(lz):
-                    n1sort[iord[iz]] = n1top[iz]
-
-                ns[0, inds0, ix2, ix3] = n1sort
+            ns = Oplus(ns)
 
             # N+
             ns[4, :, ix2, ix3] = 1e-4 * ns[0, :, ix2, ix3]
