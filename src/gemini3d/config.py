@@ -42,19 +42,27 @@ def read_config(path: Path) -> T.Dict[str, T.Any]:
 def get_config_filename(path: Path) -> Path:
     """ given a path or config filename, return the full path to config file """
 
-    path = Path(path).expanduser().resolve()
+    cfg = None
+    if not path:
+        return cfg
 
-    if path.is_file():
-        return path
+    cfg = Path(path).expanduser().resolve()
 
-    if path.is_dir():
+    if cfg.is_file():
+        return cfg
+
+    if cfg.is_dir():
         for p in (path, path / "inputs"):
             for suff in (".nml", ".ini"):
-                for file in p.glob("config*" + suff):
-                    if file.is_file():
-                        return file
+                for f in p.glob("config*" + suff):
+                    if f.is_file():
+                        cfg = f
+                        break
 
-    raise FileNotFoundError(f"could not find config file in {path}")
+    if not cfg.is_file():
+        cfg = None
+
+    return cfg
 
 
 def read_nml(fn: Path) -> T.Dict[str, T.Any]:
@@ -63,9 +71,13 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     Just trying to keep Python prereqs reduced for this simple parsing.
     """
 
-    fn = get_config_filename(fn)
+    params: T.Dict[str, T.Any] = {}
 
-    params = {"nml": fn}
+    fn = get_config_filename(fn)
+    if not fn:
+        return params
+
+    params["nml"] = fn
     for n in ("base", "files", "flags", "setup"):
         params.update(read_namelist(fn, n))
 
@@ -219,9 +231,12 @@ def parse_namelist(raw: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]
 def read_ini(fn: Path) -> T.Dict[str, T.Any]:
     """ parse .ini file (legacy) """
 
+    P: T.Dict[str, T.Any] = {}
+
     fn = get_config_filename(fn)
 
-    P: T.Dict[str, T.Any] = {}
+    if not fn:
+        return P
 
     with fn.open("r") as f:
         date = list(map(int, f.readline().split()[0].split(",")))[::-1]

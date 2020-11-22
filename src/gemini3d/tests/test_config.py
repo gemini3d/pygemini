@@ -5,6 +5,16 @@ import importlib.resources
 import gemini3d.config as config
 
 
+def test_no_nml(tmp_path):
+    p = config.read_nml(tmp_path)
+    assert p == {}
+
+
+def test_no_ini(tmp_path):
+    p = config.read_ini(tmp_path)
+    assert p == {}
+
+
 def test_nml_bad(tmp_path):
     blank = tmp_path / "foo"
     blank.touch()

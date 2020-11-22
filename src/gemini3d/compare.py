@@ -85,7 +85,7 @@ def compare_all(
         raise OSError(f"reference and output are the same directory: {outdir}")
 
     # %% READ IN THE SIMULATION INFORMATION
-    params = read_config(outdir / "inputs")
+    params = read_config(outdir)
     # %% TIMES OF INTEREST
     t0 = params["t0"]
     times = datetime_range(t0, t0 + params["tdur"], params["dtout"])
@@ -117,11 +117,11 @@ def compare_input(
     if len(times) == 0:
         raise ValueError("Must have at least one time to compare")
 
-    ref_params = read_config(refdir / "inputs")
+    ref_params = read_config(refdir)
     ref_indir = refdir / ref_params["indat_file"].parts[-2]
     ref = read_state(ref_indir / ref_params["indat_file"].name)
 
-    new_params = read_config(outdir / "inputs")
+    new_params = read_config(outdir)
     new_indir = outdir / new_params["indat_file"].parts[-2]
     new = read_state(new_indir / new_params["indat_file"].name)
 
