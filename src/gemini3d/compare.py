@@ -157,33 +157,11 @@ def compare_input(
         )
         errs += prec_errs
 
-    # %% Efield
-    efield_errs = 0
-    efield_path = new_indir / new_params["E0dir"].name
-    if efield_path.is_dir():
-        # often we reuse Efield inputs without copying over files
-        for t in times:
-            ref = read_Efield(
-                get_frame_filename(ref_indir / ref_params["E0dir"].name, t), file_format
-            )
-            new = read_Efield(get_frame_filename(efield_path, t), file_format)
-            for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-                b = ref[k][1]
-                a = new[k][1]
-
-                assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
-
-                if not np.allclose(a, b, tol["rtol"], tol["atol"]):
-                    efield_errs += 1
-                    logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
-                    if doplot and plotdiff is not None:
-                        plotdiff(a, b, k, t, outdir, refdir)
-        if efield_errs == 0:
-            print(f"OK: Efield {efield_path}")
-    else:
-        print(f"SKIP: Efield {efield_path}")
-
-    errs += efield_errs
+    if "E0dir" in new_params:
+        efield_errs = compare_Efield(
+            new_indir, new_params, ref_indir, ref_params, tol, times, doplot, file_format
+        )
+        errs += efield_errs
 
     return errs
 
@@ -204,7 +182,6 @@ def compare_precip(
     doplot: bool,
     file_format: str,
 ) -> int:
-    # %% precipitation
 
     prec_errs = 0
     prec_path = new_indir / new_params["precdir"].name
@@ -231,6 +208,41 @@ def compare_precip(
                 print(f"OK: {k}  {prec_path}")
 
     return prec_errs
+
+
+def compare_Efield(
+    new_indir: Path,
+    new_params: T.Dict[str, T.Any],
+    ref_indir: Path,
+    ref_params: T.Dict[str, T.Any],
+    tol: T.Dict[str, float],
+    times: T.Sequence[datetime],
+    doplot: bool,
+    file_format: str,
+) -> int:
+
+    efield_errs = 0
+    efield_path = new_indir / new_params["E0dir"].name
+    # often we reuse Efield inputs without copying over files
+    for t in times:
+        ref = read_Efield(get_frame_filename(ref_indir / ref_params["E0dir"].name, t), file_format)
+        new = read_Efield(get_frame_filename(efield_path, t), file_format)
+        for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+            b = ref[k][1]
+            a = new[k][1]
+
+            assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
+
+            if not np.allclose(a, b, tol["rtol"], tol["atol"]):
+                efield_errs += 1
+                logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
+                if doplot and plotdiff is not None:
+                    plotdiff(a, b, k, t, new_indir.parent, ref_indir.parent)
+
+    if efield_errs == 0:
+        print(f"OK: Efield {efield_path}")
+
+    return efield_errs
 
 
 def compare_output(
