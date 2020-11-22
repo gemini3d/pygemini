@@ -1,10 +1,18 @@
-from matplotlib.figure import Figure
+from matplotlib.pyplot import figure
 import numpy as np
 from pathlib import Path
 from datetime import datetime
 
 
-def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, outdir: Path, refdir: Path):
+def plotdiff(
+    A: np.ndarray,
+    B: np.ndarray,
+    name: str,
+    time: datetime,
+    outdir: Path,
+    refdir: Path,
+    save: bool = True,
+):
 
     A = A.squeeze()
     B = B.squeeze()
@@ -15,7 +23,7 @@ def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, outdir: Pa
             A = A[-1, :, :]
             B = B[-1, :, :]
 
-    fg = Figure(tight_layout=True, figsize=(12, 5))
+    fg = figure(constrained_layout=True, figsize=(12, 5))
     axs = fg.subplots(1, 3)
 
     if A.ndim == 2:
@@ -36,9 +44,10 @@ def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, outdir: Pa
 
     fg.suptitle(ttxt)
 
-    fn = outdir / f"{name}-diff-{tstr.replace(':','')}.png"
-    print("writing", fn)
-    fg.savefig(fn)
+    if save:
+        fn = outdir / f"{name}-diff-{tstr.replace(':','')}.png"
+        print("writing", fn)
+        fg.savefig(fn)
 
 
 def diff1d(A: np.ndarray, B: np.ndarray, name: str, fg, axs):
@@ -54,11 +63,17 @@ def diff2d(A: np.ndarray, B: np.ndarray, name: str, fg, axs):
 
     cmap = "bwr" if name.startswith(("J", "v")) else None
 
-    hi = axs[0].pcolormesh(A, cmap=cmap)
+    bmin = min(A.min(), B.min())
+    bmax = max(A.max(), B.max())
+
+    hi = axs[0].pcolormesh(A, cmap=cmap, vmin=bmin, vmax=bmax)
     fg.colorbar(hi, ax=axs[0])
 
-    hi = axs[1].pcolormesh(B, cmap=cmap)
+    hi = axs[1].pcolormesh(B, cmap=cmap, vmin=bmin, vmax=bmax)
     fg.colorbar(hi, ax=axs[1])
 
-    hi = axs[2].pcolormesh(A - B, cmap="bwr")
+    dAB = A - B
+    b = max(abs(dAB.min()), abs(dAB.max()))
+
+    hi = axs[2].pcolormesh(A - B, cmap="bwr", vmin=-b, vmax=b)
     fg.colorbar(hi, ax=axs[2])

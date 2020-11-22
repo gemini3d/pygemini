@@ -22,7 +22,8 @@ from .find import get_frame_filename
 
 try:
     from .plotdiff import plotdiff
-except ModuleNotFoundError:
+    from matplotlib.pyplot import show
+except ImportError:
     plotdiff = None
 
 
@@ -55,6 +56,8 @@ def cli():
     out_errs, in_errs = compare_all(P.outdir, P.refdir, tol, P.plot, P.file_format, P.only)
 
     if out_errs or in_errs:
+        if P.plot:
+            show()
         raise SystemExit(f"{out_errs} output errors, {in_errs} input errors")
     else:
         only = ("out", "in") if not P.only else P.only
