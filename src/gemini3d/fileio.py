@@ -149,6 +149,8 @@ def log_meta_nml(fn: Path, meta: T.Dict[str, str], namelist: str):
     """
 
     fn = fn.expanduser()
+    if fn.is_dir():
+        fn = fn / "setup_meta.nml"
 
     with fn.open(mode="a") as f:
         f.write(f"&{namelist}\n")

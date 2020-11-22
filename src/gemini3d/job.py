@@ -10,6 +10,8 @@ from .mpi import get_mpi_count
 from .config import read_config, get_config_filename
 from .hpc import hpc_batch_detect, hpc_batch_create
 from .model_setup import model_setup
+from .fileio import log_meta_nml
+from .utils import git_meta
 
 Pathlike = T.Union[str, Path]
 
@@ -69,6 +71,8 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
     if pr.get("dryrun"):
         return None
 
+    log_meta_nml(out_dir / "setup_meta.nml", git_meta(gemexe.parent), "setup_gemini")
+
     batcher = hpc_batch_detect()
     if batcher:
         job_file = hpc_batch_create(batcher, out_dir, cmd)  # noqa: F841
@@ -105,7 +109,7 @@ def check_mpiexec(mpiexec: Pathlike) -> str:
     return mpiexec
 
 
-def check_gemini_exe(gemexe: Pathlike) -> str:
+def check_gemini_exe(gemexe: Pathlike) -> Path:
     """
     check that Gemini exectuable can run on this system
 
@@ -134,9 +138,9 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
     else:
         raise EnvironmentError("Please specify path to gemini.bin")
 
-    gemexe = str(Path(gemexe).resolve())
+    gemexe = Path(gemexe).resolve()
 
-    ret = subprocess.run(gemexe, stdout=subprocess.DEVNULL)
+    ret = subprocess.run([str(gemexe)], stdout=subprocess.DEVNULL)
     if ret.returncode != 0:
         raise RuntimeError(
             f"\n{gemexe} was not runnable on your platform. Try recompiling on this computer type."
