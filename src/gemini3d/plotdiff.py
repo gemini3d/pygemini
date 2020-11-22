@@ -1,4 +1,4 @@
-from matplotlib.pyplot import figure
+from matplotlib.pyplot import figure, close
 import numpy as np
 from pathlib import Path
 from datetime import datetime
@@ -18,10 +18,9 @@ def plotdiff(
     B = B.squeeze()
 
     if A.ndim == 3:
-        if A.shape[0] == 7:
-            # presuming 7 => species and 7th (last) index is electrons
-            A = A[-1, :, :]
-            B = B[-1, :, :]
+        # loop over the species, which are in the first dimension
+        for i in range(A.shape[0]):
+            plotdiff(A[i], B[i], f"{name}-{i}", time, outdir, refdir, save)
 
     fg = figure(constrained_layout=True, figsize=(12, 5))
     axs = fg.subplots(1, 3)
@@ -31,7 +30,7 @@ def plotdiff(
     elif A.ndim == 1:
         diff1d(A, B, name, fg, axs)
     else:
-        fg.close()
+        close(fg)
         print(f"skipping diff plot: {name}")
         return None
 
