@@ -23,6 +23,8 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
     config_file = get_config_filename(pr["config_file"])
     # load configuration to know what directories to check
     p = read_config(config_file)
+    if not p:
+        raise FileNotFoundError(f"{config_file} does not appear to contain config.nml")
 
     for k in ("indat_size", "indat_grid", "indat_file"):
         f = out_dir / p[k].expanduser()

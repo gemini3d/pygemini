@@ -86,6 +86,8 @@ def compare_all(
 
     # %% READ IN THE SIMULATION INFORMATION
     params = read_config(outdir)
+    if not params:
+        raise FileNotFoundError(f"{outdir} does not appear to contain config.nml")
     # %% TIMES OF INTEREST
     t0 = params["t0"]
     times = datetime_range(t0, t0 + params["tdur"], params["dtout"])
@@ -118,10 +120,14 @@ def compare_input(
         raise ValueError("Must have at least one time to compare")
 
     ref_params = read_config(refdir)
+    if not ref_params:
+        raise FileNotFoundError(f"{refdir} does not appear to contain config.nml")
     ref_indir = refdir / ref_params["indat_file"].parts[-2]
     ref = read_state(ref_indir / ref_params["indat_file"].name)
 
     new_params = read_config(outdir)
+    if not new_params:
+        raise FileNotFoundError(f"{outdir} does not appear to contain config.nml")
     new_indir = outdir / new_params["indat_file"].parts[-2]
     new = read_state(new_indir / new_params["indat_file"].name)
 

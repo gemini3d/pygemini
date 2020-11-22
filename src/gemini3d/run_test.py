@@ -64,7 +64,6 @@ def runner(
 
     # prepare simulation output directory
     input_dir = outdir / "inputs"
-    nml = ref / "inputs/config.nml"
     input_dir.mkdir(parents=True, exist_ok=True)
 
     # a normal, non-test simulation already has all these files in the
@@ -74,9 +73,11 @@ def runner(
     # data match to reference outputs from reference inputs.
 
     if not (input_dir / "config.nml").is_file():
-        shutil.copy2(nml, input_dir)
+        shutil.copy2(ref / "inputs/config.nml", input_dir)
 
-    cfg = gemini3d.config.read_config(nml)
+    cfg = gemini3d.config.read_config(ref)
+    if not cfg:
+        raise FileNotFoundError(f"{ref} does not appear to contain a config.nml file")
 
     # delete previous test run data to avoid restarting milestone and failing test
     if (outdir / "output.nml").is_file():

@@ -28,13 +28,13 @@ def read_config(path: Path) -> T.Dict[str, T.Any]:
     """
 
     file = get_config_filename(path)
+    if not file:
+        return {}  # {} instead of None to work with .get()
 
-    if file.suffix == ".nml":
-        P = read_nml(file)
-    elif file.suffix == ".ini":
+    if file.suffix == ".ini":
         P = read_ini(file)
     else:
-        raise ValueError(f"unsure how to read {file}")
+        P = read_nml(file)
 
     return P
 

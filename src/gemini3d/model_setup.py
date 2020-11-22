@@ -29,6 +29,8 @@ def model_setup(path: Path, out_dir: Path):
 
     # %% read config.nml
     p = read_nml(path)
+    if not p:
+        raise FileNotFoundError(f"{path} does not appear to contain a config.nml file")
 
     p["out_dir"] = Path(out_dir).expanduser().resolve()
 
