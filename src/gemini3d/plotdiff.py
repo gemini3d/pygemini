@@ -3,12 +3,8 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 
-from .utils import git_meta
-
 
 def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, outdir: Path, refdir: Path):
-
-    meta = git_meta()
 
     A = A.squeeze()
     B = B.squeeze()
@@ -36,7 +32,7 @@ def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, outdir: Pa
     axs[2].set_title(f"diff: {name}")
 
     tstr = time.isoformat()
-    ttxt = f"{name}  {tstr}  Git: {meta['commit']}"
+    ttxt = f"{name}  {tstr}"
 
     fg.suptitle(ttxt)
 
