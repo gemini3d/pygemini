@@ -272,7 +272,7 @@ def equilibrium_state(
 
         """
 
-        i = np.setdiff1d(range(lx1), inds)
+        i = np.setdiff1d(range(lx1), inds.nonzero()[0])
 
         nmolc = np.zeros(lx1)
         nmolc[i] = (1 - rho[i]) * ne[i]
