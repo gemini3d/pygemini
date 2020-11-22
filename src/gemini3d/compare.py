@@ -5,7 +5,6 @@ compare simulation outputs to verify model performance
 from pathlib import Path
 import numpy as np
 import logging
-import sys
 import argparse
 from datetime import datetime
 import typing as T
@@ -152,33 +151,11 @@ def compare_input(
             if doplot and plotdiff is not None:
                 plotdiff(a, b, k, times[0], outdir, refdir)
 
-    # %% precipitation
-    k: str = None
-    prec_errs = 0
-    prec_path = new_indir / new_params["precdir"].name
-    if prec_path.is_dir():
-        # often we reuse precipitation inputs without copying over files
-        for t in times:
-            ref = read_precip(
-                get_frame_filename(ref_indir / ref_params["precdir"].name, t), file_format
-            )
-            new = read_precip(get_frame_filename(prec_path, t), file_format)
-
-            for k in ref.keys():
-                b = np.atleast_1d(ref[k])
-                a = np.atleast_1d(new[k])
-
-                assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
-
-                if not np.allclose(a, b, tol["rtol"], tol["atol"]):
-                    prec_errs += 1
-                    logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
-                    if doplot and plotdiff is not None:
-                        plotdiff(a, b, k, t, outdir, refdir)
-        if prec_errs == 0:
-            print(f"OK: {k}  {prec_path}")
-    else:
-        print(f"SKIP: precipitation {prec_path}", file=sys.stderr)
+    if "precdir" in new_params:
+        prec_errs = compare_precip(
+            new_indir, new_params, ref_indir, ref_params, tol, times, doplot, file_format
+        )
+        errs += prec_errs
 
     # %% Efield
     efield_errs = 0
@@ -215,6 +192,45 @@ def err_pct(a: np.ndarray, b: np.ndarray) -> float:
     """ compute maximum error percent """
 
     return (abs(a - b).max() / abs(b).max()) * 100
+
+
+def compare_precip(
+    new_indir: Path,
+    new_params: T.Dict[str, T.Any],
+    ref_indir: Path,
+    ref_params: T.Dict[str, T.Any],
+    tol: T.Dict[str, float],
+    times: T.Sequence[datetime],
+    doplot: bool,
+    file_format: str,
+) -> int:
+    # %% precipitation
+
+    prec_errs = 0
+    prec_path = new_indir / new_params["precdir"].name
+
+    # often we reuse precipitation inputs without copying over files
+    for t in times:
+        ref = read_precip(
+            get_frame_filename(ref_indir / ref_params["precdir"].name, t), file_format
+        )
+        new = read_precip(get_frame_filename(prec_path, t), file_format)
+
+        for k in ref.keys():
+            b = np.atleast_1d(ref[k])
+            a = np.atleast_1d(new[k])
+
+            assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
+
+            if not np.allclose(a, b, tol["rtol"], tol["atol"]):
+                prec_errs += 1
+                logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
+                if doplot and plotdiff is not None:
+                    plotdiff(a, b, k, t, new_indir.parent, ref_indir.parent)
+            if prec_errs == 0:
+                print(f"OK: {k}  {prec_path}")
+
+    return prec_errs
 
 
 def compare_output(
