@@ -240,6 +240,7 @@ def equilibrium_state(
             integrand = 1 / H[iord]
             integrand = np.append(integrand, integrand[-1])
 
+            # this cumtrapz() does NOT get initial=0, since matlab user code strips first element here
             redheight = cumtrapz(integrand, z)
             f = interp1d(altsort, nsort)
             n1top = f(zref) * np.exp(-redheight)
@@ -288,7 +289,8 @@ def equilibrium_state(
                 raise ValueError(
                     "xg['r'] expected to be 3D, possibly with degenerate 2nd or 3rd dimension"
                 )
-            iref = i.nonzero()[0][0] if cond else i.nonzero()[0][-1]
+
+            iref = i[0] if cond else i[-1]
 
             n0 = nmolc[iref]
             ms = 30.5 * AMU
@@ -300,7 +302,7 @@ def equilibrium_state(
             z = np.append(z, 2 * z[-1] - z[-2])
             integrand = 1 / H[iord]
             integrand = np.append(integrand, integrand[-1])
-            #        redheight=intrap(integrand,z);
+            # this cumtrapz() does NOT get initial=0, since matlab user code strips first element here
             redheight = cumtrapz(integrand, z)
             nmolctop = n0 * np.exp(-redheight)
             nmolcsort = np.zeros(lz)
@@ -384,8 +386,8 @@ def equilibrium_state(
                 z = np.insert(z, 0, z0f)
                 integrand = 1 / H[iord]
                 integrand = np.append(integrand, integrand[-1])
-                #     redheight=intrap(integrand,z);
-                redheight = cumtrapz(integrand, z)
+                # initial=0 is to match Matlab cumtrapz()
+                redheight = cumtrapz(integrand, z, initial=0)
                 netop = p["nmf"] * np.exp(-redheight)
                 nesort = np.zeros(lz)
                 for iz in range(lz):
