@@ -2,10 +2,12 @@ from pathlib import Path
 import typing as T
 import numpy as np
 from datetime import datetime
+import sys
 
 from . import raw
 from . import matlab
 from .find import get_simsize_path
+from .utils import git_meta
 from . import hdf
 from . import nc4
 
@@ -48,7 +50,11 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     that allows writing NetCDF4 and HDF5 by scripts using same input files
     """
 
-    p["indat_size"].parent.mkdir(parents=True, exist_ok=True)
+    input_dir = p["indat_size"].parent
+    if input_dir.is_file():
+        raise OSError(f"{input_dir} is a file instead of directory")
+
+    input_dir.mkdir(parents=True, exist_ok=True)
 
     if "format" not in p:
         p["format"] = p["indat_size"].suffix[1:]
@@ -59,6 +65,8 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         nc4.write_grid(p["indat_size"].with_suffix(".nc"), p["indat_grid"].with_suffix(".nc"), xg)
     else:
         raise ValueError(f'unknown file format {p["format"]}')
+
+    log_meta_nml(p["out_dir"] / "setup_meta.nml", git_meta(), "setup_python")
 
 
 def write_Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
@@ -133,3 +141,24 @@ def write_state(
         nc4.write_state(time, ns, vs, Ts, out_file.with_suffix(".nc"))
     else:
         raise ValueError(f"unknown file format {out_file.suffix}")
+
+
+def log_meta_nml(fn: Path, meta: T.Dict[str, str], namelist: str):
+    """
+    writes Namelist file with metadata
+    """
+
+    fn = fn.expanduser()
+
+    with fn.open(mode="a") as f:
+        f.write(f"&{namelist}\n")
+
+        # %% variable string values get quoted per NML standard
+        f.write(f'python_version = "{sys.version}"\n')
+        f.write('git_version = "{}"\n'.format(meta["git_version"]))
+        f.write('git_remote = "{}"\n'.format(meta["remote"]))
+        f.write('git_branch = "{}"\n'.format(meta["branch"]))
+        f.write('git_commit = "{}"\n'.format(meta["commit"]))
+        f.write('git_porcelain = "{}"\n'.format(meta["porcelain"]))
+
+        f.write("/\n")

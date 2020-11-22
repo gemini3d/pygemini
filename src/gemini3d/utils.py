@@ -1,9 +1,11 @@
 import subprocess
 import os
+import re
 import shutil
 from pathlib import Path
 from datetime import datetime, timedelta
 import typing as T
+import logging
 
 try:
     import psutil
@@ -11,21 +13,87 @@ except ImportError:
     psutil = None
     # pip install psutil will improve CPU utilization.
 
-
-git = shutil.which("git")
-
 Pathlike = T.Union[str, Path]
 
-__all__ = ["gitrev", "get_cpu_count", "ymdhourdec2datetime", "datetime2ymd_hourdec"]
+__all__ = ["git_meta", "get_cpu_count", "ymdhourdec2datetime", "datetime2ymd_hourdec"]
 
 
-def gitrev() -> str:
+def git_meta(path: Path = None) -> T.Dict[str, str]:
+    """
+    provide metadata about a Git repo in a dictionary
+
+    Dev note: use subprocess.run to avoid crashing program when Git meta is missing or broken (shallow clone)
+
+    empty init in case can't read Git info
+    this avoids needless if statements in consumers
+    """
+
+    git = shutil.which("git")
+    meta = {
+        "git_version": None,
+        "remote": None,
+        "branch": None,
+        "commit": None,
+        "porcelain": "false",
+    }
     if not git:
-        return ""
+        return meta
 
-    return subprocess.check_output(
-        [git, "rev-parse", "--short", "HEAD"], universal_newlines=True
-    ).strip()
+    if not path:
+        if __file__:
+            path = Path(__file__).resolve().parent
+        else:
+            return meta
+
+    ret = subprocess.run([git, "-C", str(path), "--version"], stdout=subprocess.PIPE, text=True)
+    if ret.returncode != 0:
+        logging.error("Git was not available or is too old")
+        return meta
+
+    meta["git_version"] = ret.stdout.strip()
+
+    ret = subprocess.run([git, "-C", str(path), "rev-parse"])
+    if ret.returncode != 0:
+        logging.error(f"{path} is not a Git repo.")
+        return meta
+
+    ret = subprocess.run(
+        [git, "-C", str(path), "rev-parse", "--abbrev-ref", "HEAD"],
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    if ret.returncode != 0:
+        logging.error(f"{path} coul not determine Git branch")
+        return meta
+    meta["branch"] = ret.stdout.strip()
+
+    ret = subprocess.run([git, "-C", str(path), "remote", "-v"], stdout=subprocess.PIPE, text=True)
+    if ret.returncode != 0:
+        logging.error(f"{path} could not determine Git remote")
+        return meta
+
+    pat = re.compile(r"^origin\s+(.*)\s+\(fetch\)")
+    mat = pat.match(ret.stdout.strip())
+    if mat:
+        meta["remote"] = mat.group(1)
+
+    ret = subprocess.run(
+        [git, "-C", str(path), "rev-parse", "--short", "HEAD"], stdout=subprocess.PIPE, text=True
+    )
+    if ret.returncode != 0:
+        logging.error(f"{path} could not determine Git commit")
+        return meta
+    meta["commit"] = ret.stdout.strip()
+
+    ret = subprocess.run(
+        [git, "-C", str(path), "status", "--porcelain"], stdout=subprocess.PIPE, text=True
+    )
+    if ret.returncode != 0:
+        logging.error(f"{path} could not determine Git status")
+    msg = ret.stdout.strip()
+    meta["porcelain"] = "false" if msg else "true"
+
+    return meta
 
 
 def get_cpu_count() -> int:

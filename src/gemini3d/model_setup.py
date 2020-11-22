@@ -41,7 +41,9 @@ def model_setup(path: Path, out_dir: Path):
             p[k] = (p["out_dir"] / p[k]).resolve()
 
     # %% copy input config.nml to output dir
-    shutil.copy2(p["nml"], p["out_dir"] / "inputs")
+    input_dir = p["out_dir"] / "inputs"
+    input_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(p["nml"], input_dir)
 
     # %% is this equilibrium or interpolated simulation
     if "eqdir" in p:

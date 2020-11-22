@@ -484,9 +484,7 @@ def get_cmake() -> str:
         raise FileNotFoundError("CMake not found.")
 
     cmake_version = (
-        subprocess.check_output([cmake, "--version"], universal_newlines=True)
-        .split("\n")[0]
-        .split(" ")[2]
+        subprocess.check_output([cmake, "--version"], text=True).split("\n")[0].split(" ")[2]
     )
 
     print("Using CMake", cmake_version)

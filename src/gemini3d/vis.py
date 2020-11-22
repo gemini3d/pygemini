@@ -9,7 +9,7 @@ from matplotlib.pyplot import figure
 from matplotlib.ticker import MultipleLocator
 import typing as T
 
-from .utils import gitrev
+from .utils import git_meta
 
 
 if T.TYPE_CHECKING:
@@ -245,6 +245,8 @@ def plot_interp(
         hence the negative sign
     """
 
+    meta = git_meta()
+
     cmap = None
     is_Efield = False
     vmin = None
@@ -305,7 +307,7 @@ def plot_interp(
     # %% INTERPOLATE ONTO PLOTTING GRID
     if lxs[2] == 1:  # alt./lon. slice
         ax = fg.gca()
-        ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
+        ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
         # meridional meshgrid, this defines the grid for plotting
         # slice expects the first dim. to be "y" ("z" in the 2D case)
         # %% CONVERT ANGULAR COORDINATES TO MLAT,MLON
@@ -332,7 +334,7 @@ def plot_interp(
             raise ValueError(f"{name}: only 2D and 1D data are expected--squeeze data")
     elif lxs[1] == 1:  # alt./lat. slice
         ax = fg.gca()
-        ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
+        ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
         # so north dist, east dist., alt.
         # slice expects the first dim. to be "y"
         # %% CONVERT ANGULAR COORDINATES TO MLAT,MLON
@@ -381,7 +383,7 @@ def plot_interp(
         elif parm.ndim == 3:
             fg.set_size_inches((18, 5))
             axs = fg.subplots(1, 3, sharey=False, sharex=False)
-            fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
+            fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.99)
         elif is_Efield:
             # like phitop, SINGLE plot
             mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time)
@@ -432,8 +434,10 @@ plot2D_cart = plot_interp
 def bright_east_north(
     fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time, wavelength
 ):
+    meta = git_meta()
+
     axs = fg.subplots(2, 2, sharey=True, sharex=True).ravel()
-    fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
+    fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.99)
     # arbitrary pick of which emission lines to plot lat/lon slices
     for j, i in enumerate([1, 3, 4, 8]):
         f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm[i, :, :], bounds_error=False)
@@ -445,19 +449,23 @@ def bright_east_north(
 
 
 def east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time):
+    meta = git_meta()
+
     ax = fg.gca()
     f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm, bounds_error=False)
     hi = ax.pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp), cmap=cmap, vmin=vmin, vmax=vmax)
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("northward dist. (km)")
-    ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
+    ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
 
 def mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time):
+    meta = git_meta()
+
     ax = fg.gca()
     hi = ax.pcolormesh(grid["mlon"], grid["mlat"], parm, cmap=cmap, vmin=vmin, vmax=vmax)
     ax.set_xlabel("magnetic longitude (deg.)")
     ax.set_ylabel("magnetic latitude (deg.)")
-    ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
+    ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])

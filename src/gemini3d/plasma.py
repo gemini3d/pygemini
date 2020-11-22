@@ -488,7 +488,7 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     with importlib.resources.path(__package__, msis_name) as exe:
         cmd = [str(exe), "-", "-", str(lz)]
         logging.info(" ".join(cmd))
-        ret = subprocess.check_output(cmd, input=invals, universal_newlines=True)
+        ret = subprocess.check_output(cmd, input=invals, text=True)
 
     Nread = lz * 11
 
