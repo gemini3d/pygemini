@@ -16,6 +16,9 @@ from .readdata import readgrid, loadframe
 from .fileio import write_grid, write_state
 
 DictArray = T.Dict[str, T.Any]
+# CONSTANTS
+KB = 1.38e-23
+AMU = 1.67e-27
 
 
 def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
@@ -216,6 +219,82 @@ def equilibrium_state(
     # %% MAKE UP SOME INITIAL CONDITIONS FOR FORTRAN CODE
     mindens = 1e-100
 
+    def molecular_density(ns: np.ndarray, xgr: np.ndarray, inds: np.ndarray) -> np.ndarray:
+        """MOLECULAR DENSITIES
+
+        Parameters
+        ----------
+
+        ns: np.ndarray
+            4D by species number density
+        xgr: np.ndarray
+            xg["r"]
+        inds: np.ndarray
+            boolean vector
+
+        Returns
+        -------
+
+        ns: np.ndarray
+            4D by species number density
+
+        """
+
+        i = np.setdiff1d(range(lx1), inds)
+
+        nmolc = np.zeros(lx1)
+        nmolc[i] = (1 - rho[i]) * ne[i]
+
+        cond: bool = None
+
+        if any(inds):
+            if xgr.ndim == 3:
+                cond = xgr[0, 0, 0] > xgr[1, 0, 0]
+            elif xgr.ndim == 2:
+                cond = xgr[0, 0] > xgr[1, 0]
+            else:
+                raise ValueError(
+                    "xg['r'] expected to be 3D, possibly with degenerate 2nd or 3rd dimension"
+                )
+            iref = i.nonzero()[0][0] if cond else i.nonzero()[0][-1]
+
+            n0 = nmolc[iref]
+            ms = 30.5 * AMU
+            H = KB * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
+            z = alt[inds, ix2, ix3]
+            lz = z.size
+            iord = np.argsort(z)
+            z = z[iord]
+            z = np.append(z, 2 * z[-1] - z[-2])
+            integrand = 1 / H[iord]
+            integrand = np.append(integrand, integrand[-1])
+            #        redheight=intrap(integrand,z);
+            redheight = cumtrapz(integrand, z)
+            nmolctop = n0 * np.exp(-redheight)
+            nmolcsort = np.zeros(lz)
+            for iz in range(lz):
+                nmolcsort[iord[iz]] = nmolctop[iz]
+
+            nmolc[inds] = nmolcsort
+
+        ns[1, :, ix2, ix3] = 1 / 3 * nmolc
+        ns[2, :, ix2, ix3] = 1 / 3 * nmolc
+        ns[3, :, ix2, ix3] = 1 / 3 * nmolc
+
+        # %% PROTONS
+        ns[5, inds, ix2, ix3] = (1 - rho[inds]) * ne[inds]
+        z = alt[i, ix2, ix3]
+        if any(inds):
+            iref = inds.nonzero()[0][-1] if cond else inds.nonzero()[0][0]
+            n0 = ns[5, iref, ix2, ix3]
+        else:
+            iref = alt[:, ix2, ix3].argmax()
+            n0 = 1e6
+
+        ns[5, i, ix2, ix3] = chapmana(z, n0, alt[iref, ix2, ix3], Hf.mean())
+
+        return ns
+
     # %% SLICE THE FIELD IN HALF IF WE ARE CLOSED
     natm = msis_setup(p, xg)
 
@@ -246,16 +325,12 @@ def equilibrium_state(
         Tn = natm[3, :, :, :]
         g = abs(xg["gx1"])
 
-    # CONSTANTS
-    kb = 1.38e-23
-    amu = 1.67e-27
-
     ns = np.zeros((7, lx1, lx2, lx3))
     for ix3 in range(lx3):
         for ix2 in range(lx2):
-            Hf = kb * Tn[:, ix2, ix3] / amu / 16 / g[:, ix2, ix3]
+            Hf = KB * Tn[:, ix2, ix3] / AMU / 16 / g[:, ix2, ix3]
             z0f = 325e3
-            He = 2 * kb * Tn[:, ix2, ix3] / amu / 30 / g[:, ix2, ix3]
+            He = 2 * KB * Tn[:, ix2, ix3] / AMU / 30 / g[:, ix2, ix3]
             z0e = 120e3
             ne = chapmana(alt[:, ix2, ix3], p["nmf"], z0f, Hf) + chapmana(
                 alt[:, ix2, ix3], p["nme"], z0e, He
@@ -266,9 +341,9 @@ def equilibrium_state(
 
             inds = alt[:, ix2, ix3] > z0f
             if any(inds):
-                ms = rho[inds] * 16 * amu + (1 - rho[inds]) * amu
+                ms = rho[inds] * 16 * AMU + (1 - rho[inds]) * AMU
                 # topside composition only
-                H = kb * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
+                H = KB * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
                 z = alt[inds, ix2, ix3]
                 lz = z.size
                 iord = np.argsort(z)
@@ -296,8 +371,8 @@ def equilibrium_state(
                 nsort = ns[0, :, ix2, ix3]
                 nsort = nsort[iord]
 
-                ms = 16 * amu
-                H = kb * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
+                ms = 16 * AMU
+                H = KB * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
                 z = alt[inds0, ix2, ix3]
                 lz = z.size
                 iord = np.argsort(z)
@@ -319,60 +394,7 @@ def equilibrium_state(
             # N+
             ns[4, :, ix2, ix3] = 1e-4 * ns[0, :, ix2, ix3]
 
-            inds2 = inds
-            inds1 = np.setdiff1d(range(lx1), inds2)
-
-            # MOLECULAR DENSITIES
-            nmolc = np.zeros(lx1)
-            nmolc[inds1] = (1 - rho[inds1]) * ne[inds1]
-
-            cond: bool = None
-
-            if any(inds2):
-                if xg["r"].ndim == 3:
-                    cond = xg["r"][0, 0, 0] > xg["r"][1, 0, 0]
-                elif xg["r"].ndim == 2:
-                    cond = xg["r"][0, 0] > xg["r"][1, 0]
-                else:
-                    raise ValueError(
-                        "xg['r'] expected to be 3D, possibly with degenerate 2nd or 3rd dimension"
-                    )
-                iref = inds1.nonzero()[0][0] if cond else inds1.nonzero()[0][-1]
-
-                n0 = nmolc[iref]
-                ms = 30.5 * amu
-                H = kb * Tn[inds2, ix2, ix3] / ms / g[inds2, ix2, ix3]
-                z = alt[inds2, ix2, ix3]
-                lz = z.size
-                iord = np.argsort(z)
-                z = z[iord]
-                z = np.append(z, 2 * z[-1] - z[-2])
-                integrand = 1 / H[iord]
-                integrand = np.append(integrand, integrand[-1])
-                #        redheight=intrap(integrand,z);
-                redheight = cumtrapz(integrand, z)
-                nmolctop = n0 * np.exp(-redheight)
-                nmolcsort = np.zeros(lz)
-                for iz in range(lz):
-                    nmolcsort[iord[iz]] = nmolctop[iz]
-
-                nmolc[inds2] = nmolcsort
-
-            ns[1, :, ix2, ix3] = 1 / 3 * nmolc
-            ns[2, :, ix2, ix3] = 1 / 3 * nmolc
-            ns[3, :, ix2, ix3] = 1 / 3 * nmolc
-
-            # %% PROTONS
-            ns[5, inds2, ix2, ix3] = (1 - rho[inds2]) * ne[inds2]
-            z = alt[inds1, ix2, ix3]
-            if any(inds2):
-                iref = inds2.nonzero()[0][-1] if cond else inds2.nonzero()[0][0]
-                n0 = ns[5, iref, ix2, ix3]
-            else:
-                iref = alt[:, ix2, ix3].argmax()
-                n0 = 1e6
-
-            ns[5, inds1, ix2, ix3] = chapmana(z, n0, alt[iref, ix2, ix3], Hf.mean())
+            ns = molecular_density(ns, xg["r"], inds)
 
     ns[:6, :, :, :][ns[:6, :, :, :] < mindens] = mindens
     ns[6, :, :, :] = ns[:6, :, :, :].sum(axis=0)
