@@ -264,16 +264,8 @@ def equilibrium_state(
                 (alt[:, ix2, ix3] - 1000e3) / 200e3
             )
 
-            # has to be .nonzero() as integers not slice is needed.
-            inds = (alt[:, ix2, ix3] > z0f).nonzero()[0]
-            if len(inds) > 0:
-                n0 = p["nmf"]
-                #     [n0,ix1]=max(ne);  %in case it isn't exactly z0f
-                #     if xg.r(1,1)>xg.r(2,1)
-                #         inds=1:ix1;
-                #     else
-                #         inds=ix1:lx1;
-                #     end
+            inds = alt[:, ix2, ix3] > z0f
+            if any(inds):
                 ms = rho[inds] * 16 * amu + (1 - rho[inds]) * amu
                 # topside composition only
                 H = kb * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
@@ -287,7 +279,7 @@ def equilibrium_state(
                 integrand = np.append(integrand, integrand[-1])
                 #     redheight=intrap(integrand,z);
                 redheight = cumtrapz(integrand, z)
-                netop = n0 * np.exp(-redheight)
+                netop = p["nmf"] * np.exp(-redheight)
                 nesort = np.zeros(lz)
                 for iz in range(lz):
                     nesort[iord[iz]] = netop[iz]
@@ -303,16 +295,7 @@ def equilibrium_state(
                 altsort = alt[iord, ix2, ix3]
                 nsort = ns[0, :, ix2, ix3]
                 nsort = nsort[iord]
-                #        n0=interpolate(nsort,altsort,zref,'lin','lin');
-                f = interp1d(altsort, nsort)
-                n0 = f(zref)
-                #     [tmp,iref]=min(abs(alt(:,ix2,ix3)-900e3));
-                #     if xg.r(1,1)>xg.r(2,1)
-                #         inds0=1:iref;
-                #     else
-                #         inds0=iref:lx1;
-                #     end
-                #    n0=ns(iref,ix2,ix3,1);
+
                 ms = 16 * amu
                 H = kb * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
                 z = alt[inds0, ix2, ix3]
@@ -323,9 +306,10 @@ def equilibrium_state(
                 z = np.insert(z, 0, zref)
                 integrand = 1 / H[iord]
                 integrand = np.append(integrand, integrand[-1])
-                #        redheight=intrap(integrand,z);
+
                 redheight = cumtrapz(integrand, z)
-                n1top = n0 * np.exp(-redheight)
+                f = interp1d(altsort, nsort)
+                n1top = f(zref) * np.exp(-redheight)
                 n1sort = np.zeros(lz)
                 for iz in range(lz):
                     n1sort[iord[iz]] = n1top[iz]
@@ -333,7 +317,7 @@ def equilibrium_state(
                 ns[0, inds0, ix2, ix3] = n1sort
 
             # N+
-            ns[5, :, ix2, ix3] = 1e-4 * ns[0, :, ix2, ix3]
+            ns[4, :, ix2, ix3] = 1e-4 * ns[0, :, ix2, ix3]
 
             inds2 = inds
             inds1 = np.setdiff1d(range(lx1), inds2)
@@ -344,7 +328,7 @@ def equilibrium_state(
 
             cond: bool = None
 
-            if len(inds2) > 0:
+            if any(inds2):
                 if xg["r"].ndim == 3:
                     cond = xg["r"][0, 0, 0] > xg["r"][1, 0, 0]
                 elif xg["r"].ndim == 2:
@@ -353,7 +337,7 @@ def equilibrium_state(
                     raise ValueError(
                         "xg['r'] expected to be 3D, possibly with degenerate 2nd or 3rd dimension"
                     )
-                iref = inds1[0] if cond else inds1[-1]
+                iref = inds1.nonzero()[0][0] if cond else inds1.nonzero()[0][-1]
 
                 n0 = nmolc[iref]
                 ms = 30.5 * amu
@@ -381,8 +365,8 @@ def equilibrium_state(
             # %% PROTONS
             ns[5, inds2, ix2, ix3] = (1 - rho[inds2]) * ne[inds2]
             z = alt[inds1, ix2, ix3]
-            if len(inds2) > 0:
-                iref = inds2[-1] if cond else inds2[0]
+            if any(inds2):
+                iref = inds2.nonzero()[0][-1] if cond else inds2.nonzero()[0][0]
                 n0 = ns[5, iref, ix2, ix3]
             else:
                 iref = alt[:, ix2, ix3].argmax()
