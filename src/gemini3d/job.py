@@ -3,9 +3,10 @@ import os
 import logging
 import subprocess
 import shutil
-import sys
 from pathlib import Path
+import importlib.resources
 
+from .build import cmake_build
 from .mpi import get_mpi_count
 from .config import read_config, get_config_filename
 from .hpc import hpc_batch_detect, hpc_batch_create
@@ -63,10 +64,7 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
     logging.info(" ".join(cmd))
     proc = subprocess.run(cmd + ["-dryrun"])
 
-    if proc.returncode == 0:
-        logging.info("OK: Gemini dry run")
-    else:
-        print(proc.stdout, file=sys.stderr)
+    if proc.returncode != 0:
         raise RuntimeError("Gemini dry run failed.")
 
     if pr.get("dryrun"):
@@ -128,7 +126,7 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
     return mpiexec
 
 
-def get_gemini_exe(gemexe: Pathlike = None) -> Path:
+def get_gemini_exe(gemexe: Path = None) -> Path:
     """
     find and check that Gemini exectuable can run on this system
 
@@ -139,26 +137,29 @@ def get_gemini_exe(gemexe: Pathlike = None) -> Path:
         build / Debug
     """
 
-    if gemexe:
-        gemexe = Path(gemexe).expanduser()
+    if not gemexe:  # allow for default dict empty
+        gemexe = Path("gemini.bin.exe") if os.name == "nt" else Path("gemini.bin")
+    gemexe = Path(gemexe).expanduser()  # not .resolve()
+
+    src_dir = None
+
+    if not gemexe.is_file():
+        if os.environ.get("GEMINI_ROOT"):
+            src_dir = Path(os.environ["GEMINI_ROOT"]).expanduser()
+        if not src_dir or not src_dir.is_dir():
+            # step 1: clone Gemini3D and do a test build
+            with importlib.resources.path(__package__, "setup.cmake") as setup:
+                subprocess.check_call(["ctest", "-S", str(setup), "-VV"])
+                src_dir = setup.parent / "gemini-fortran"
+        assert src_dir.is_dir(), f"could not find Gemini3D source directory {src_dir}"
+        build_dir = src_dir / "build"
+        gemexe = build_dir / gemexe.name
+
         if not gemexe.is_file():
-            raise EnvironmentError(f"Cannot find gemini.bin in {gemexe}")
-    elif os.environ.get("GEMINI_ROOT"):
-        build_dir = Path(os.environ["GEMINI_ROOT"]).expanduser().resolve() / "build"
-        if not build_dir.is_dir():
-            raise EnvironmentError(f"GEMINI build directory missing: {build_dir}")
-
-        for d in (build_dir, build_dir / "Release", build_dir / "Debug"):
-            gemexe = shutil.which("gemini.bin", path=str(d))
-            if gemexe:
-                break
-        if not gemexe:
-            raise EnvironmentError(f"\nCannot find gemini.bin under {build_dir}")
-    else:
-        raise EnvironmentError("Please specify path to gemini.bin")
-
-    gemexe = Path(gemexe).resolve()
-
+            cmake_build(None, src_dir, build_dir, run_test=False, install=False)
+            if not gemexe.is_file():
+                raise RuntimeError(f"Gemini.bin not found in {build_dir}")
+# %% ensure gemini.bin is runnable
     ret = subprocess.run([str(gemexe)], stdout=subprocess.DEVNULL)
     if ret.returncode != 0:
         raise RuntimeError(

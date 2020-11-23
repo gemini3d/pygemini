@@ -16,8 +16,8 @@ import shutil
 import argparse
 import tempfile
 from pathlib import Path
-import importlib.resources
 
+from .build import cmake_build, cmake_find_library
 from .utils import get_cpu_count
 from .web import url_retrieve, extract_tar
 
@@ -27,8 +27,8 @@ BUILDDIR = "build"
 NETCDF_C_TAG = "v4.7.4"
 NETCDF_FORTRAN_TAG = "v4.5.3"
 HDF5_TAG = "1.10/master"
-MUMPS_TAG = "v5.3.4.0"
-SCALAPACK_TAG = "v2.1.0.9"
+MUMPS_TAG = "v5.3.4.2"
+SCALAPACK_TAG = "v2.1.0.11"
 LAPACK_TAG = "v3.9.0.2"
 
 # Note: using OpenMPI 3.x because of legacy configured HPC
@@ -42,8 +42,6 @@ SCALAPACK_DIR = "scalapack"
 MUMPS_DIR = "mumps"
 
 # ========= end of user parameters ================
-
-nice = ["nice"] if sys.platform == "linux" else []
 
 
 def cli():
@@ -268,7 +266,7 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
         #   file failed to open for reading (No such file or directory):
         #   C:/Users/micha/AppData/Local/Temp/hdf5/build/pac_fconftest.out.
         build_dir.mkdir(exist_ok=True)
-        subprocess.check_call(nice + cmd0, cwd=build_dir, env=env)
+        subprocess.check_call(cmd0, cwd=build_dir, env=env)
     else:
         cmd0 = [
             "./configure",
@@ -278,10 +276,10 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
         ]
         cmd1 = ["make", "-j"]
         cmd2 = ["make", "-j", "install"]
-        subprocess.check_call(nice + cmd0, cwd=source_dir, env=env)
+        subprocess.check_call(cmd0, cwd=source_dir, env=env)
 
-    subprocess.check_call(nice + cmd1, cwd=source_dir)
-    subprocess.check_call(nice + cmd2, cwd=source_dir)
+    subprocess.check_call(cmd1, cwd=source_dir)
+    subprocess.check_call(cmd2, cwd=source_dir)
 
 
 def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
@@ -316,7 +314,7 @@ Other options on Windows:
         f"FC={env['FC']}",
     ]
 
-    subprocess.check_call(nice + cmd, cwd=source_dir, env=env)
+    subprocess.check_call(cmd, cwd=source_dir, env=env)
 
     Njobs = get_cpu_count()
 
@@ -326,7 +324,7 @@ Other options on Windows:
         print("DRYRUN: would have run\n", " ".join(cmd))
         return None
 
-    subprocess.check_call(nice + cmd)
+    subprocess.check_call(cmd)
 
 
 def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
@@ -394,102 +392,6 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun:
 
     args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
     cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env, dryrun=dryrun)
-
-
-def cmake_build(
-    args: T.List[str],
-    source_dir: Path,
-    build_dir: Path,
-    wipe: bool,
-    env: T.Mapping[str, str],
-    run_test: bool = True,
-    dryrun: bool = False,
-):
-    """ build and install with CMake """
-    cmake = get_cmake()
-
-    cache_file = build_dir / "CMakeCache.txt"
-    if wipe:
-        if cache_file.is_file():
-            cache_file.unlink()
-
-    cmd = nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir)]
-    subprocess.check_call(cmd, env=env)
-
-    cmd = nice + [cmake, "--build", str(build_dir), "--parallel"]
-    if dryrun:
-        print("DRYRUN: would have run\n", " ".join(cmd))
-        return None
-
-    subprocess.check_call(cmd)
-
-    Njobs = get_cpu_count()
-
-    if run_test:
-        subprocess.check_call(
-            nice + ["ctest", "--parallel", str(Njobs), "--output-on-failure"], cwd=str(build_dir)
-        )
-
-    subprocess.check_call(nice + [cmake, "--install", str(build_dir)])
-
-
-def cmake_find_library(lib_name: str, lib_path: T.List[str], env: T.Mapping[str, str]) -> bool:
-    """
-    check if library exists with CMake
-
-    lib_name must have the appropriate upper and lower case letter as would be used
-    directly in CMake.
-    """
-
-    cmake = get_cmake()
-
-    with importlib.resources.path("gemini3d.cmake", "FindLAPACK.cmake") as f:
-        mod_path = Path(f).parent
-
-    cmake_template = """
-cmake_minimum_required(VERSION 3.15)
-project(dummy LANGUAGES C Fortran)
-
-"""
-
-    if mod_path.is_dir():
-        cmake_template += f'list(APPEND CMAKE_MODULE_PATH "{mod_path.as_posix()}")\n'
-
-    cmake_template += f"find_package({lib_name} REQUIRED)\n"
-
-    build_dir = f"find-{lib_name.split(' ', 1)[0]}"
-
-    # not context_manager to avoid Windows PermissionError on context exit for Git subdirs
-    d = tempfile.TemporaryDirectory()
-    r = Path(d.name)
-    (r / "CMakeLists.txt").write_text(cmake_template)
-
-    cmd = [cmake, "-S", str(r), "-B", str(r / build_dir)] + lib_path
-    # use cwd= to avoid spilling temporary files into current directory if ancient CMake used
-    # also avoids bugs if there is a CMakeLists.txt in the current directory
-    ret = subprocess.run(cmd, env=env, cwd=str(r))
-
-    try:
-        d.cleanup()
-    except PermissionError:
-        pass
-
-    return ret.returncode == 0
-
-
-def get_cmake() -> str:
-
-    cmake = shutil.which("cmake")
-    if not cmake:
-        raise FileNotFoundError("CMake not found.")
-
-    cmake_version = (
-        subprocess.check_output([cmake, "--version"], text=True).split("\n")[0].split(" ")[2]
-    )
-
-    print("Using CMake", cmake_version)
-
-    return cmake
 
 
 def git_download(path: Path, repo: str, tag: str):
