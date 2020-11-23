@@ -42,11 +42,10 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
             model_setup(p["nml"], out_dir)
 
     # build checks
-    mpiexec = check_mpiexec(pr.get("mpiexec"))
-
-    gemexe = check_gemini_exe(pr.get("gemexe"))
+    gemexe = get_gemini_exe(pr.get("gemexe"))
     logging.info(f"gemini executable: {gemexe}")
 
+    mpiexec = check_mpiexec(pr.get("mpiexec"), gemexe)
     if mpiexec:
         logging.info(f"mpiexec: {mpiexec}")
         Nmpi = get_mpi_count(out_dir / p["indat_size"], pr.get("cpu_count"))
@@ -96,7 +95,7 @@ def check_compiler():
         raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
 
 
-def check_mpiexec(mpiexec: Pathlike) -> str:
+def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
     """check if specified mpiexec exists on this system
     If not, fall back to not using MPI (slow, but still works)."""
 
@@ -107,13 +106,31 @@ def check_mpiexec(mpiexec: Pathlike) -> str:
         mpi_root += "/bin"
 
     mpiexec = shutil.which(mpiexec, path=mpi_root)
+    if not mpiexec:
+        return None
+
+    ret = subprocess.run([mpiexec, "-help"], stdout=subprocess.PIPE, text=True)
+    if ret.returncode != 0:
+        return None
+    # %% check that compiler and MPIexec compatible
+    if os.name != "nt":
+        return mpiexec
+
+    mpi_msg = ret.stdout.strip()
+    ret = subprocess.run([str(gemexe), "-compiler"], stdout=subprocess.PIPE, text=True)
+    if ret.returncode != 0:
+        raise EnvironmentError(f"{gemexe} not executable")
+
+    if "GNU" in ret.stdout.strip() and "Intel(R) MPI Library" in mpi_msg:
+        mpiexec = None
+        logging.error("Not using MPIexec since MinGW is not compatible with Intel MPI")
 
     return mpiexec
 
 
-def check_gemini_exe(gemexe: Pathlike) -> Path:
+def get_gemini_exe(gemexe: Pathlike = None) -> Path:
     """
-    check that Gemini exectuable can run on this system
+    find and check that Gemini exectuable can run on this system
 
     If not given a specific full path to gemini.bin, looks for gemini.bin under:
 

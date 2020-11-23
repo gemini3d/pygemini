@@ -1,5 +1,6 @@
-src/tests/data/
+src/gemini3d/tests/data/
 msis_setup.exe
+msis_setup
 src/gemini3d/gemini-fortran/
 
 # Byte-compiled / optimized / DLL files

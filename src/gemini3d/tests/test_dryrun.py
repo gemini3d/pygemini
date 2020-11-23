@@ -1,10 +1,17 @@
 """ test dryrun, that PyGemini can correctly invoke Gemini3D """
 
 import gemini3d.run
+import gemini3d.job as job
 import gemini3d.web
 from pathlib import Path
 
 R = Path(__file__).parents[1] / "tests/data"
+
+
+def test_mpiexec():
+    exe = job.get_gemini_exe()
+    assert isinstance(exe, Path)
+    assert job.check_mpiexec("mpiexec", exe)
 
 
 def test_dryrun(tmp_path):
@@ -16,9 +23,6 @@ def test_dryrun(tmp_path):
     params = {
         "config_file": ref,
         "out_dir": tmp_path,
-        "mpiexec": None,
-        "gemexe": None,
-        "out_format": None,
         "dryrun": True,
     }
 
