@@ -8,6 +8,7 @@ import logging
 import argparse
 from datetime import datetime
 import typing as T
+import sys
 
 from .readdata import (
     read_config,
@@ -24,22 +25,23 @@ try:
     from .plotdiff import plotdiff
     from matplotlib.pyplot import show
 except ImportError:
-    plotdiff = None
+    plotdiff = show = None
+
+TOL = {
+    "rtol": 1e-5,
+    "rtolN": 1e-5,
+    "rtolT": 1e-5,
+    "rtolJ": 1e-5,
+    "rtolV": 1e-5,
+    "atol": 1e-8,
+    "atolN": 1e9,
+    "atolT": 100,
+    "atolJ": 1e-7,
+    "atolV": 50,
+}
 
 
 def cli():
-    tol = {
-        "rtol": 1e-5,
-        "rtolN": 1e-5,
-        "rtolT": 1e-5,
-        "rtolJ": 1e-5,
-        "rtolV": 1e-5,
-        "atol": 1e-8,
-        "atolN": 1e9,
-        "atolT": 100,
-        "atolJ": 1e-7,
-        "atolV": 50,
-    }
 
     p = argparse.ArgumentParser(description="Compare simulation file outputs and inputs")
     p.add_argument("outdir", help="directory to compare")
@@ -53,36 +55,32 @@ def cli():
     )
     P = p.parse_args()
 
-    out_errs, in_errs = compare_all(P.outdir, P.refdir, tol, P.plot, P.file_format, P.only)
+    errs = compare_all(P.outdir, P.refdir, TOL, P.plot, P.file_format, P.only)
 
-    if out_errs or in_errs:
-        if P.plot:
+    if errs:
+        for e, v in errs.items():
+            print(f"{e} has {v} errors", file=sys.stderr)
+        if P.plot and show is not None:
             show()
-        raise SystemExit(f"{out_errs} output errors, {in_errs} input errors")
-    else:
-        only = ("out", "in") if not P.only else P.only
+        raise SystemExit()
 
-        print(f"OK: Gemini {only} comparison {P.outdir} {P.refdir}")
+    print(f"OK: Gemini comparison {P.outdir} {P.refdir}")
 
 
 def compare_all(
     outdir: Path,
     refdir: Path,
-    tol: T.Dict[str, float],
+    tol: T.Dict[str, float] = TOL,
     doplot: bool = True,
     file_format: str = None,
     only: str = None,
-) -> T.Tuple[int, int]:
+) -> T.Dict[str, int]:
     """
     compare two directories across time steps
     """
     outdir = Path(outdir).expanduser()
     refdir = Path(refdir).expanduser()
 
-    if not outdir.is_dir():
-        raise FileNotFoundError(f"output directory(s) not found: {outdir}")
-    if not refdir.is_dir():
-        raise FileNotFoundError(f"reference directory(s) not found: {refdir}")
     if outdir.samefile(refdir):
         raise OSError(f"reference and output are the same directory: {outdir}")
 
@@ -98,15 +96,18 @@ def compare_all(
             f"{outdir} simulation did not run long enough, must run for more than one time step"
         )
 
-    output_errs = 0
+    errs = {}
     if not only or only == "out":
-        output_errs = compare_output(outdir, refdir, tol, times, file_format, doplot)
+        e = compare_output(outdir, refdir, tol, times, file_format, doplot)
+        if e:
+            errs["out"] = e
 
-    input_errs = 0
     if not only or only == "in":
-        input_errs = compare_input(outdir, refdir, tol, times, file_format, doplot)
+        e = compare_input(outdir, refdir, tol, times, file_format, doplot)
+        if e:
+            errs["in"] = e
 
-    return output_errs, input_errs
+    return errs
 
 
 def compare_input(

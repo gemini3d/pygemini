@@ -26,4 +26,4 @@ def test_dryrun(tmp_path):
         "dryrun": True,
     }
 
-    gemini3d.run.gemini_run(params)
+    job.runner(params)

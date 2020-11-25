@@ -14,7 +14,7 @@ from .particles import particles_BCs
 from .fileio import write_state, write_grid
 
 
-def model_setup(path: Path, out_dir: Path):
+def model_setup(p: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
     """
     top-level function to create a new simulation
 
@@ -28,30 +28,36 @@ def model_setup(path: Path, out_dir: Path):
     """
 
     # %% read config.nml
-    p = read_nml(path)
-    if not p:
-        raise FileNotFoundError(f"{path} does not appear to contain a config.nml file")
+    if isinstance(p, dict):
+        cfg = p
+    elif isinstance(p, (str, Path)):
+        cfg = read_nml(p)
+    else:
+        raise TypeError("expected Path to config.nml or dict with parameters")
 
-    p["out_dir"] = Path(out_dir).expanduser().resolve()
+    if not cfg:
+        raise FileNotFoundError(f"no configuration found for {out_dir}")
+
+    cfg["out_dir"] = Path(out_dir).expanduser().resolve()
 
     for k in ("indat_size", "indat_grid", "indat_file"):
-        p[k] = p["out_dir"] / p[k]
+        cfg[k] = cfg["out_dir"] / cfg[k]
 
     # FIXME: should use is_absolute() ?
     for k in ("eqdir", "eqzip", "E0dir", "precdir"):
-        if p.get(k):
-            p[k] = (p["out_dir"] / p[k]).resolve()
+        if cfg.get(k):
+            cfg[k] = (cfg["out_dir"] / cfg[k]).resolve()
 
     # %% copy input config.nml to output dir
-    input_dir = p["out_dir"] / "inputs"
+    input_dir = cfg["out_dir"] / "inputs"
     input_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(p["nml"], input_dir)
+    shutil.copy2(cfg["nml"], input_dir)
 
     # %% is this equilibrium or interpolated simulation
-    if "eqdir" in p:
-        model_setup_interp(p)
+    if "eqdir" in cfg:
+        model_setup_interp(cfg)
     else:
-        model_setup_equilibrium(p)
+        model_setup_equilibrium(cfg)
 
 
 def model_setup_equilibrium(p: T.Dict[str, T.Any]):

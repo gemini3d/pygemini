@@ -2,7 +2,6 @@ import logging
 import argparse
 from pathlib import Path
 import time
-import typing as T
 
 from .job import runner
 
@@ -36,16 +35,8 @@ def cli():
         "dryrun": P.dryrun,
     }
 
-    gemini_run(params)
-
-
-def gemini_run(params: T.Dict[str, T.Any]):
-    """ Execute Gemini3D run """
-
     tic = time.monotonic()
-
     runner(params)
-
     print(f"job.py ran in {time.monotonic() - tic:.3f} seconds.")
 
 
