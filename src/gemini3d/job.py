@@ -6,6 +6,7 @@ import shutil
 from pathlib import Path
 import importlib.resources
 
+from .find import get_frame_filename
 from .build import cmake_build
 from .mpi import get_mpi_count
 from .config import read_config, get_config_filename
@@ -26,6 +27,12 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
     p = read_config(config_file)
     if not p:
         raise FileNotFoundError(f"{config_file} does not appear to contain config.nml")
+
+    # we don't want to overwrite an expensive simulation output
+    if get_frame_filename(out_dir, p["t0"], p.get("out_format")):
+        raise FileExistsError(
+            f"a fresh simulation should not have data in output directory: {out_dir}"
+        )
 
     for k in ("indat_size", "indat_grid", "indat_file"):
         f = out_dir / p[k].expanduser()
@@ -159,7 +166,7 @@ def get_gemini_exe(gemexe: Path = None) -> Path:
             cmake_build(None, src_dir, build_dir, run_test=False, install=False)
             if not gemexe.is_file():
                 raise RuntimeError(f"Gemini.bin not found in {build_dir}")
-# %% ensure gemini.bin is runnable
+    # %% ensure gemini.bin is runnable
     ret = subprocess.run([str(gemexe)], stdout=subprocess.DEVNULL)
     if ret.returncode != 0:
         raise RuntimeError(

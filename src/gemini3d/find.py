@@ -39,7 +39,7 @@ def get_frame_filename(simdir: Path, time: datetime, file_format: str = None) ->
     the frame filenames can have different file formats
     """
 
-    simdir = Path(simdir).expanduser().resolve(True)
+    simdir = Path(simdir).expanduser()
 
     stem = (
         time.strftime("%Y%m%d")
@@ -49,13 +49,15 @@ def get_frame_filename(simdir: Path, time: datetime, file_format: str = None) ->
 
     suffixes = [f".{file_format}"] if file_format else FILE_FORMATS
 
+    filename = None
     for ext in suffixes:
         for tick in ("0", "1"):
             fn = simdir / (stem + tick + ext)
             if fn.is_file():
-                return fn
+                filename = fn
+                break
 
-    raise FileNotFoundError(f"could not find data file in {simdir} at {time}")
+    return filename
 
 
 def get_grid_filename(path: Path) -> Path:

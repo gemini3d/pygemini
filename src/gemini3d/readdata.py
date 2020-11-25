@@ -78,6 +78,9 @@ def readdata(
         simulation outputs as numpy.ndarray
     """
 
+    if not fn:
+        return {}
+
     wavelength = [
         "3371",
         "4278",
@@ -212,6 +215,9 @@ def read_Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
         electric field
     """
 
+    if not fn:
+        return {}
+
     fn = Path(fn).expanduser().resolve(strict=True)
 
     if not file_format:
@@ -248,6 +254,9 @@ def read_precip(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     dat: dict
         precipitation
     """
+
+    if not fn:
+        return {}
 
     fn = Path(fn).expanduser().resolve(strict=True)
 

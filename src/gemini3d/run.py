@@ -1,7 +1,6 @@
 import logging
 import argparse
 from pathlib import Path
-import sys
 import time
 import typing as T
 
@@ -44,23 +43,8 @@ def gemini_run(params: T.Dict[str, T.Any]):
     """ Execute Gemini3D run """
 
     tic = time.monotonic()
-    try:
-        runner(params)
-    except FileNotFoundError:
-        print(
-            "\nA necessary simulation input file was not found."
-            "\nThis can mean that the simulation initialization script wasn't run first.\n",
-            file=sys.stderr,
-        )
-        raise
-    except EnvironmentError as excp:
-        print(excp, file=sys.stderr)
-        print(
-            "If you need to build Gemini, from the Gemini directory:\n\n",
-            "cmake -B build\n",
-            "cmake --build build\n",
-            file=sys.stderr,
-        )
+
+    runner(params)
 
     print(f"job.py ran in {time.monotonic() - tic:.3f} seconds.")
 
