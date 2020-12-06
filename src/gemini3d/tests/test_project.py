@@ -2,6 +2,7 @@
 these test that PyGemini generates inputs that match expectations
 """
 
+import logging
 import pytest
 from pathlib import Path
 
@@ -54,4 +55,11 @@ def test_runner(name, file_format, tmp_path):
     model_setup(params, out_dir)
 
     # %% check generated files
-    compare_all(params["out_dir"], refdir=test_dir, only="in", file_format=file_format)
+    errs = compare_all(
+        params["out_dir"], refdir=test_dir, only="in", plot=False, file_format=file_format
+    )
+
+    if errs:
+        for e, v in errs.items():
+            logging.error(f"compare:{e}: {v} errors")
+        raise ValueError(f"compare_input: new generated inputs do not match reference for: {name}")

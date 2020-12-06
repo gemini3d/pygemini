@@ -62,7 +62,7 @@ def cli():
             print(f"{e} has {v} errors", file=sys.stderr)
         if P.plot and show is not None:
             show()
-        raise SystemExit()
+        raise SystemExit(f"FAIL: compare {P.outdir}")
 
     print(f"OK: Gemini comparison {P.outdir} {P.refdir}")
 
@@ -71,7 +71,7 @@ def compare_all(
     outdir: Path,
     refdir: Path,
     tol: T.Dict[str, float] = TOL,
-    doplot: bool = True,
+    plot: bool = True,
     file_format: str = None,
     only: str = None,
 ) -> T.Dict[str, int]:
@@ -98,12 +98,12 @@ def compare_all(
 
     errs = {}
     if not only or only == "out":
-        e = compare_output(outdir, refdir, tol, times, file_format, doplot)
+        e = compare_output(outdir, refdir, tol, times, file_format, plot)
         if e:
             errs["out"] = e
 
     if not only or only == "in":
-        e = compare_input(outdir, refdir, tol, times, file_format, doplot)
+        e = compare_input(outdir, refdir, tol, times, file_format, plot)
         if e:
             errs["in"] = e
 
@@ -116,7 +116,7 @@ def compare_input(
     tol: T.Dict[str, float],
     times: T.Sequence[datetime],
     file_format: str,
-    doplot: bool = True,
+    plot: bool = True,
 ) -> int:
 
     if len(times) == 0:
@@ -152,18 +152,18 @@ def compare_input(
             errs += 1
             logging.error(f"{k}  {err_pct(a, b):.1f} %")
 
-            if doplot and plotdiff is not None:
+            if plot and plotdiff is not None:
                 plotdiff(a, b, k, times[0], outdir, refdir)
 
     if "precdir" in new_params:
         prec_errs = compare_precip(
-            new_indir, new_params, ref_indir, ref_params, tol, times, doplot, file_format
+            new_indir, new_params, ref_indir, ref_params, tol, times, plot, file_format
         )
         errs += prec_errs
 
     if "E0dir" in new_params:
         efield_errs = compare_Efield(
-            new_indir, new_params, ref_indir, ref_params, tol, times, doplot, file_format
+            new_indir, new_params, ref_indir, ref_params, tol, times, plot, file_format
         )
         errs += efield_errs
 
@@ -183,7 +183,7 @@ def compare_precip(
     ref_params: T.Dict[str, T.Any],
     tol: T.Dict[str, float],
     times: T.Sequence[datetime],
-    doplot: bool,
+    plot: bool,
     file_format: str,
 ) -> int:
 
@@ -206,7 +206,7 @@ def compare_precip(
             if not np.allclose(a, b, tol["rtol"], tol["atol"]):
                 prec_errs += 1
                 logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
-                if doplot and plotdiff is not None:
+                if plot and plotdiff is not None:
                     plotdiff(a, b, k, t, new_indir.parent, ref_indir.parent)
             if prec_errs == 0:
                 print(f"OK: {k}  {prec_path}")
@@ -221,7 +221,7 @@ def compare_Efield(
     ref_params: T.Dict[str, T.Any],
     tol: T.Dict[str, float],
     times: T.Sequence[datetime],
-    doplot: bool,
+    plot: bool,
     file_format: str,
 ) -> int:
 
@@ -240,7 +240,7 @@ def compare_Efield(
             if not np.allclose(a, b, tol["rtol"], tol["atol"]):
                 efield_errs += 1
                 logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
-                if doplot and plotdiff is not None:
+                if plot and plotdiff is not None:
                     plotdiff(a, b, k, t, new_indir.parent, ref_indir.parent)
 
     if efield_errs == 0:
@@ -255,7 +255,7 @@ def compare_output(
     tol: T.Dict[str, float],
     times: T.Sequence[datetime],
     file_format: str = None,
-    doplot: bool = True,
+    plot: bool = True,
 ) -> int:
     """compare simulation outputs"""
 
@@ -282,7 +282,7 @@ def compare_output(
             if not np.allclose(a, b, tol[f"rtol{j}"], tol[f"atol{j}"]):
                 errs += 1
                 logging.error(f"{k} {st}   {err_pct(a, b):.1f}")
-                if doplot and plotdiff is not None:
+                if plot and plotdiff is not None:
                     plotdiff(a, b, k, t, outdir, refdir)
         # %% assert time steps have unique output (earth always rotating...)
         if i > 1:
