@@ -12,6 +12,7 @@ import sys
 
 from .readdata import (
     read_config,
+    readgrid,
     loadframe,
     read_precip,
     read_Efield,
@@ -83,6 +84,10 @@ def compare_all(
     if outdir.samefile(refdir):
         raise OSError(f"reference and output are the same directory: {outdir}")
 
+    # %% fail hard if grid doesn't match, because otherwise data is non-sensical
+    if compare_grid(outdir, refdir, tol) != 0:
+        raise ValueError("grid values do not match {outdir}  {refdir}")
+
     errs = {}
     if not only or only == "out":
         e = compare_output(outdir, refdir, tol, file_format, plot)
@@ -93,6 +98,29 @@ def compare_all(
         e = compare_input(outdir, refdir, tol, file_format, plot)
         if e:
             errs["in"] = e
+
+    return errs
+
+
+def compare_grid(outdir: Path, refdir: Path, tol: T.Dict[str, float] = TOL) -> int:
+
+    ref = readgrid(refdir)
+    new = readgrid(outdir)
+
+    if not ref:
+        raise FileNotFoundError(f"No simulation grid in {refdir}")
+    if not new:
+        raise FileNotFoundError(f"No simulation grid in {outdir}")
+
+    errs = 0
+
+    for k in ref.keys():
+        assert (
+            ref[k].shape == new[k].shape
+        ), f"{k}: ref shape {ref[k].shape} != data shape {new[k].shape}"
+        if not np.allclose(ref[k], new[k], rtol=tol["rtol"], atol=tol["atol"]):
+            errs += 1
+            logging.error(f"{k}  {err_pct(ref[k], new[k]):.1f} %")
 
     return errs
 

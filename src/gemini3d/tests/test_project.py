@@ -7,12 +7,80 @@ import pytest
 from pathlib import Path
 
 import gemini3d.web
-from gemini3d.compare import compare_all
-from gemini3d.readdata import read_config
+from gemini3d.fileio import write_grid
+from gemini3d.grid import makegrid_cart3d
+from gemini3d.compare import compare_all, compare_grid, compare_Efield, compare_precip
+from gemini3d.readdata import read_config, readgrid
 from gemini3d.model_setup import model_setup
+from gemini3d.efield import Efield_BCs
+from gemini3d.particles import particles_BCs
 
 
 R = Path(__file__).parents[1] / "tests/data"
+
+
+@pytest.mark.parametrize("name,file_format", [("2dew_fang", "h5"), ("3d_fang", "h5")])
+def test_grid(name, file_format, tmp_path):
+
+    # get files if needed
+    test_dir = gemini3d.web.download_and_extract(name, R)
+    # setup new test data
+    cfg = read_config(test_dir)
+    xg = makegrid_cart3d(cfg)
+
+    # path patch
+    cfg["out_dir"] = tmp_path
+    cfg["indat_size"] = cfg["out_dir"] / cfg["indat_size"]
+    cfg["indat_grid"] = cfg["out_dir"] / cfg["indat_grid"]
+
+    write_grid(cfg, xg)
+
+    assert (
+        compare_grid(cfg["indat_grid"], test_dir) == 0
+    ), f"grid mismatch {cfg['out_dir']}  {test_dir}"
+
+
+@pytest.mark.parametrize(
+    "name,file_format", [("2dew_fang", "h5"), ("2dns_fang", "h5"), ("3d_fang", "h5")]
+)
+def test_Efield(name, file_format, tmp_path):
+
+    # get files if needed
+    test_dir = gemini3d.web.download_and_extract(name, R)
+
+    cfg = read_config(test_dir)
+    xg = readgrid(test_dir)
+
+    # patch paths
+    cfg["out_dir"] = tmp_path
+    E0dir = cfg["E0dir"]
+    cfg["E0dir"] = cfg["out_dir"] / cfg["E0dir"]
+    Efield_BCs(cfg, xg)
+    compare_Efield(
+        cfg["time"], cfg["E0dir"], refdir=test_dir / E0dir, plot=False, file_format=file_format
+    )
+
+
+@pytest.mark.parametrize(
+    "name,file_format", [("2dew_fang", "h5"), ("2dns_fang", "h5"), ("3d_fang", "h5")]
+)
+def test_precip(name, file_format, tmp_path):
+
+    # get files if needed
+    test_dir = gemini3d.web.download_and_extract(name, R)
+
+    cfg = read_config(test_dir)
+    xg = readgrid(test_dir)
+
+    # patch paths
+    cfg["out_dir"] = tmp_path
+    precdir = cfg["precdir"]
+    cfg["precdir"] = cfg["out_dir"] / cfg["precdir"]
+    particles_BCs(cfg, xg)
+
+    compare_precip(
+        cfg["time"], cfg["precdir"], refdir=test_dir / precdir, plot=False, file_format=file_format
+    )
 
 
 @pytest.mark.parametrize(

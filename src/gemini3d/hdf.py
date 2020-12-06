@@ -32,13 +32,15 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
             lxs = f["lx"][:]
         elif "lx1" in f:
             if f["lx1"].ndim > 0:
-                lxs = (
-                    f["lx1"][:].squeeze()[()],
-                    f["lx2"][:].squeeze()[()],
-                    f["lx3"][:].squeeze()[()],
+                lxs = np.array(
+                    [
+                        f["lx1"][:].squeeze()[()],
+                        f["lx2"][:].squeeze()[()],
+                        f["lx3"][:].squeeze()[()],
+                    ]
                 )
             else:
-                lxs = (f["lx1"][()], f["lx2"][()], f["lx3"][()])
+                lxs = np.array([f["lx1"][()], f["lx2"][()], f["lx3"][()]])
         else:
             raise KeyError(f"could not find '/lxs', '/lx' or '/lx1' in {path.as_posix()}")
 
@@ -177,6 +179,8 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     -------
     grid: dict
         grid parameters
+
+    Transpose on read to undo the transpose operation we had to do in write_grid C => Fortran order.
     """
 
     if h5py is None:
@@ -189,8 +193,11 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
         return grid
 
     with h5py.File(fn, "r") as f:
-        for key in f.keys():
-            grid[key] = f[key][:]
+        for k in f.keys():
+            if f[k].ndim >= 2:
+                grid[k] = f[k][:].transpose()
+            else:
+                grid[k] = f[k][:]
 
     try:
         grid["lxs"] = get_simsize(fn.with_name("simsize.h5"))

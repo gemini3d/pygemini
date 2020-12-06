@@ -37,13 +37,15 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
             lxs = f["lx"][:]
         elif "lx1" in f.variables:
             if f["lx1"].ndim > 0:
-                lxs = (
-                    f["lx1"][:].squeeze()[()],
-                    f["lx2"][:].squeeze()[()],
-                    f["lx3"][:].squeeze()[()],
+                lxs = np.narray(
+                    [
+                        f["lx1"][:].squeeze()[()],
+                        f["lx2"][:].squeeze()[()],
+                        f["lx3"][:].squeeze()[()],
+                    ]
                 )
             else:
-                lxs = (f["lx1"][()], f["lx2"][()], f["lx3"][()])
+                lxs = np.array([f["lx1"][()], f["lx2"][()], f["lx3"][()]])
         else:
             raise KeyError(f"could not find 'lxs', 'lx' or 'lx1' in {path.as_posix()}")
 
