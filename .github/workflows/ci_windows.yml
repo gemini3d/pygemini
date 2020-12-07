@@ -1,0 +1,45 @@
+name: ci_windows
+
+on:
+  push:
+    paths:
+    - "**.py"
+    - "**.cmake"
+    - "**/CMakeLists.txt"
+    - ".github/workflows/ci_windows.yml"
+    pull_request:
+    - "**.py"
+    - "**.cmake"
+    - "**/CMakeLists.txt"
+    - ".github/workflows/ci_windows.yml"
+
+
+jobs:
+
+  windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          git
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-gcc-fortran
+          mingw-w64-x86_64-hdf5
+          mingw-w64-x86_64-lapack
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - run: echo "D:/a/_temp/msys/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - run: python -m pip install .[tests]
+      timeout-minutes: 1
+
+    - run: pytest
+      env:
+        CMAKE_GENERATOR: Ninja
+      timeout-minutes: 5
