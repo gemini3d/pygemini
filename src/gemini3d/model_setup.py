@@ -7,7 +7,7 @@ import typing as T
 import shutil
 
 from .config import read_nml
-from .grid import makegrid_cart3d
+from . import grid
 from .plasma import equilibrium_state, equilibrium_resample
 from .efield import Efield_BCs
 from .particles import particles_BCs
@@ -63,7 +63,7 @@ def model_setup(p: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
 def model_setup_equilibrium(p: T.Dict[str, T.Any]):
     # %% GRID GENERATION
 
-    xg = makegrid_cart3d(p)
+    xg = grid.cart3d(p)
 
     write_grid(p, xg)
 
@@ -78,7 +78,7 @@ def model_setup_equilibrium(p: T.Dict[str, T.Any]):
 
 def model_setup_interp(p: T.Dict[str, T.Any]):
 
-    xg = makegrid_cart3d(p)
+    xg = grid.cart3d(p)
 
     equilibrium_resample(p, xg)
 

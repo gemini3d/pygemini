@@ -12,7 +12,7 @@ from . import read
 pi = math.pi
 
 
-def makegrid_cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
+def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     """make 3D grid and save to disk
 
     Parameters

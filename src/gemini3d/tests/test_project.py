@@ -8,7 +8,7 @@ from pathlib import Path
 
 import gemini3d.web
 from gemini3d.fileio import write_grid
-from gemini3d.grid import makegrid_cart3d
+import gemini3d.grid
 from gemini3d.compare import compare_all, compare_grid, compare_Efield, compare_precip
 import gemini3d.read as read
 from gemini3d.model_setup import model_setup
@@ -26,7 +26,7 @@ def test_grid(name, file_format, tmp_path):
     test_dir = gemini3d.web.download_and_extract(name, R)
     # setup new test data
     cfg = read.config(test_dir)
-    xg = makegrid_cart3d(cfg)
+    xg = gemini3d.grid.cart3d(cfg)
 
     # path patch
     cfg["out_dir"] = tmp_path
