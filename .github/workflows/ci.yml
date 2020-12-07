@@ -30,7 +30,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - run: python -m pip install -e .[lint]
-      timeout-minutes: 1
+      timeout-minutes: 2
 
     - run: flake8
     - run: mypy
@@ -50,9 +50,10 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - run: python -m pip install .[tests]
-      timeout-minutes: 1
+      timeout-minutes: 2
 
     - run: python -m gemini3d.install
+      timeout-minutes: 2
 
     - run: pytest
       timeout-minutes: 5
@@ -78,9 +79,10 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - run: python -m pip install .[tests]
-      timeout-minutes: 1
+      timeout-minutes: 2
 
     - run: python -m gemini3d.install
+      timeout-minutes: 2
 
     - run: pytest
       timeout-minutes: 7
