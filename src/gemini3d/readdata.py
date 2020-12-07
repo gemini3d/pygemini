@@ -5,7 +5,7 @@ https://docs.python.org/3/library/struct.html#struct-format-strings
 
 import numpy as np
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 import typing as T
 
 from . import raw
@@ -296,28 +296,6 @@ def read_state(
         raise ValueError(f"unknown file format {file.suffix}")
 
     return dat
-
-
-def datetime_range(start: datetime, stop: datetime, step: timedelta) -> T.List[datetime]:
-
-    """
-    Generate range of datetime
-
-    Parameters
-    ----------
-    start : datetime
-        start time
-    stop : datetime
-        stop time
-    step : timedelta
-        time step
-
-    Returns
-    -------
-    times : list of datetime
-        times requested
-    """
-    return [start + i * step for i in range((stop - start) // step)]
 
 
 def loadframe(simdir: Path, time: datetime, file_format: str = None) -> T.Dict[str, T.Any]:

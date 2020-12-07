@@ -13,7 +13,6 @@ import sys
 from .readdata import (
     read_config,
     loadframe,
-    datetime_range,
     read_precip,
     read_Efield,
     read_state,
@@ -84,26 +83,14 @@ def compare_all(
     if outdir.samefile(refdir):
         raise OSError(f"reference and output are the same directory: {outdir}")
 
-    # %% READ IN THE SIMULATION INFORMATION
-    params = read_config(outdir)
-    if not params:
-        raise FileNotFoundError(f"{outdir} does not appear to contain config.nml")
-    # %% TIMES OF INTEREST
-    t0 = params["t0"]
-    times = datetime_range(t0, t0 + params["tdur"], params["dtout"])
-    if len(times) <= 1:
-        raise ValueError(
-            f"{outdir} simulation did not run long enough, must run for more than one time step"
-        )
-
     errs = {}
     if not only or only == "out":
-        e = compare_output(outdir, refdir, tol, times, file_format, plot)
+        e = compare_output(outdir, refdir, tol, file_format, plot)
         if e:
             errs["out"] = e
 
     if not only or only == "in":
-        e = compare_input(outdir, refdir, tol, times, file_format, plot)
+        e = compare_input(outdir, refdir, tol, file_format, plot)
         if e:
             errs["in"] = e
 
@@ -113,14 +100,10 @@ def compare_all(
 def compare_input(
     outdir: Path,
     refdir: Path,
-    tol: T.Dict[str, float],
-    times: T.Sequence[datetime],
-    file_format: str,
+    tol: T.Dict[str, float] = TOL,
+    file_format: str = None,
     plot: bool = True,
 ) -> int:
-
-    if len(times) == 0:
-        raise ValueError("Must have at least one time to compare")
 
     ref_params = read_config(refdir)
     if not ref_params:
@@ -131,6 +114,10 @@ def compare_input(
     new_params = read_config(outdir)
     if not new_params:
         raise FileNotFoundError(f"{outdir} does not appear to contain config.nml")
+    if len(new_params["time"]) <= 1:
+        raise ValueError(
+            f"{outdir} simulation did not run long enough, must run for more than one time step"
+        )
     new_indir = outdir / new_params["indat_file"].parts[-2]
     new = read_state(new_indir / new_params["indat_file"].name)
 
@@ -153,17 +140,27 @@ def compare_input(
             logging.error(f"{k}  {err_pct(a, b):.1f} %")
 
             if plot and plotdiff is not None:
-                plotdiff(a, b, k, times[0], outdir, refdir)
+                plotdiff(a, b, k, ref_params["time"][0], outdir, refdir)
 
     if "precdir" in new_params:
         prec_errs = compare_precip(
-            new_indir, new_params, ref_indir, ref_params, tol, times, plot, file_format
+            ref_params["time"],
+            new_indir / new_params["precdir"].name,
+            ref_indir / ref_params["precdir"].name,
+            tol,
+            plot,
+            file_format,
         )
         errs += prec_errs
 
     if "E0dir" in new_params:
         efield_errs = compare_Efield(
-            new_indir, new_params, ref_indir, ref_params, tol, times, plot, file_format
+            ref_params["time"],
+            new_indir / new_params["E0dir"].name,
+            ref_indir / ref_params["E0dir"].name,
+            tol,
+            plot,
+            file_format,
         )
         errs += efield_errs
 
@@ -177,25 +174,20 @@ def err_pct(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def compare_precip(
-    new_indir: Path,
-    new_params: T.Dict[str, T.Any],
-    ref_indir: Path,
-    ref_params: T.Dict[str, T.Any],
-    tol: T.Dict[str, float],
     times: T.Sequence[datetime],
-    plot: bool,
-    file_format: str,
+    newdir: Path,
+    refdir: Path,
+    tol: T.Dict[str, float] = TOL,
+    plot: bool = False,
+    file_format: str = None,
 ) -> int:
 
     prec_errs = 0
-    prec_path = new_indir / new_params["precdir"].name
 
     # often we reuse precipitation inputs without copying over files
     for t in times:
-        ref = read_precip(
-            get_frame_filename(ref_indir / ref_params["precdir"].name, t), file_format
-        )
-        new = read_precip(get_frame_filename(prec_path, t), file_format)
+        ref = read_precip(get_frame_filename(refdir, t), file_format)
+        new = read_precip(get_frame_filename(newdir, t), file_format)
 
         for k in ref.keys():
             b = np.atleast_1d(ref[k])
@@ -207,30 +199,27 @@ def compare_precip(
                 prec_errs += 1
                 logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
                 if plot and plotdiff is not None:
-                    plotdiff(a, b, k, t, new_indir.parent, ref_indir.parent)
+                    plotdiff(a, b, k, t, newdir.parent, refdir.parent)
             if prec_errs == 0:
-                print(f"OK: {k}  {prec_path}")
+                logging.info(f"OK: {k}  {newdir}")
 
     return prec_errs
 
 
 def compare_Efield(
-    new_indir: Path,
-    new_params: T.Dict[str, T.Any],
-    ref_indir: Path,
-    ref_params: T.Dict[str, T.Any],
-    tol: T.Dict[str, float],
     times: T.Sequence[datetime],
-    plot: bool,
-    file_format: str,
+    newdir: Path,
+    refdir: Path,
+    tol: T.Dict[str, float] = TOL,
+    plot: bool = False,
+    file_format: str = None,
 ) -> int:
 
     efield_errs = 0
-    efield_path = new_indir / new_params["E0dir"].name
     # often we reuse Efield inputs without copying over files
     for t in times:
-        ref = read_Efield(get_frame_filename(ref_indir / ref_params["E0dir"].name, t), file_format)
-        new = read_Efield(get_frame_filename(efield_path, t), file_format)
+        ref = read_Efield(get_frame_filename(refdir, t), file_format)
+        new = read_Efield(get_frame_filename(newdir, t), file_format)
         for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
             b = ref[k][1]
             a = new[k][1]
@@ -241,10 +230,10 @@ def compare_Efield(
                 efield_errs += 1
                 logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
                 if plot and plotdiff is not None:
-                    plotdiff(a, b, k, t, new_indir.parent, ref_indir.parent)
+                    plotdiff(a, b, k, t, newdir.parent, refdir.parent)
 
     if efield_errs == 0:
-        print(f"OK: Efield {efield_path}")
+        logging.info(f"OK: Efield {newdir}")
 
     return efield_errs
 
@@ -253,7 +242,6 @@ def compare_output(
     outdir: Path,
     refdir: Path,
     tol: T.Dict[str, float],
-    times: T.Sequence[datetime],
     file_format: str = None,
     plot: bool = True,
 ) -> int:
@@ -263,7 +251,15 @@ def compare_output(
     errs = 0
     a: np.ndarray = None
 
-    for i, t in enumerate(times):
+    params = read_config(outdir)
+    if not params:
+        raise FileNotFoundError(f"{outdir} does not appear to contain config.nml")
+    if len(params["time"]) <= 1:
+        raise ValueError(
+            f"{outdir} simulation did not run long enough, must run for more than one time step"
+        )
+
+    for i, t in enumerate(params["time"]):
         st = f"UTsec {t}"
         A = loadframe(outdir, t, file_format)
         B = loadframe(refdir, t)

@@ -37,7 +37,7 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     xgin = readgrid(p["eqdir"])
     # %% END FRAME time of equilibrium simulation
     # this will be the starting time of the new simulation
-    t_eq_end = peq["t0"] + peq["tdur"]
+    t_eq_end = peq["time"][-1]
 
     # %% LOAD THE last equilibrium frame
     dat = loadframe(p["eqdir"], t_eq_end)
@@ -469,7 +469,7 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     glon = xg["glon"]
     lz = lx1 * lx2 * lx3
     # % CONVERT DATES/TIMES/INDICES INTO MSIS-FRIENDLY FORMAT
-    t0 = p["t0"]
+    t0 = p["time"][0]
     doy = int(t0.strftime("%j"))
     UTsec0 = t0.hour * 3600 + t0.minute * 60 + t0.second + t0.microsecond / 1e6
 

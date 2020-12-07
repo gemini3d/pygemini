@@ -2,6 +2,7 @@ import typing as T
 import numpy as np
 
 from .fileio import write_precip
+from .config import datetime_range
 
 
 def particles_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
@@ -33,8 +34,8 @@ def particles_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
 
     # %% TIME VARIABLE (SECONDS FROM SIMULATION BEGINNING)
     # dtprec is set in config.nml
-    Nt = (p["tdur"] + p["dtE0"]) // p["dtE0"]
-    pg["time"] = [p["t0"] + i * p["dtE0"] for i in range(Nt)]
+    pg["time"] = datetime_range(p["time"][0], p["time"][0] + p["tdur"], p["dtprec"])
+    Nt = len(pg["time"])
 
     # %% CREATE PRECIPITATION INPUT DATA
     # Qit: energy flux [mW m^-2]

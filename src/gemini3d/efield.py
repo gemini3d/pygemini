@@ -8,6 +8,7 @@ import logging
 from scipy.special import erf
 
 from .fileio import write_Efield
+from .config import datetime_range
 
 
 def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
@@ -62,9 +63,8 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
         E["sigx2"] = p["Efield_lonwidth"] * (xg["x2"].max() - xg["x2"].min())
 
     # %% TIME VARIABLE (SECONDS FROM SIMULATION BEGINNING)
-    Nt = (p["tdur"] + p["dtE0"]) // p["dtE0"]
-    E["time"] = [p["t0"] + i * p["dtE0"] for i in range(Nt)]
-    # time given in file is the seconds from UTC midnight
+    E["time"] = datetime_range(p["time"][0], p["time"][0] + p["tdur"], p["dtE0"])
+    Nt = len(E["time"])
 
     # %% CREATE DATA FOR BACKGROUND ELECTRIC FIELDS
     # assign to zero in case not specifically assigned
@@ -144,6 +144,7 @@ def Efield_target(E: dict, xg: dict, lx1: int, lx2: int, lx3: int, Nt: int) -> d
 
     # NOTE: h2, h3 have ghost cells, so we use lx1 instead of -1 to index
     # pk is a scalar.
+
     if lx3 == 1:
         # east-west
         S = E["Etarg"] * E["sigx2"] * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2

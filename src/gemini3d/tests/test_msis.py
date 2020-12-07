@@ -11,7 +11,7 @@ import gemini3d.plasma as gp
 
 def test_msis():
     cfg = {
-        "t0": datetime(2015, 1, 2, 12),
+        "time": [datetime(2015, 1, 2, 12)],
         "f107": 100.0,
         "f107a": 100.0,
         "Ap": 4,

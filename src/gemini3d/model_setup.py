@@ -73,7 +73,7 @@ def model_setup_equilibrium(p: T.Dict[str, T.Any]):
     assert ns.shape[0] == 7
     assert ns.shape[1:] == tuple(xg["lx"])
 
-    write_state(p["t0"], ns, vsx1, Ts, p["indat_file"])
+    write_state(p["time"][0], ns, vsx1, Ts, p["indat_file"])
 
 
 def model_setup_interp(p: T.Dict[str, T.Any]):

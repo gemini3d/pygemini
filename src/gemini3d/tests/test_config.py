@@ -50,7 +50,7 @@ def test_nml_namelist(namelist):
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         params = config.read_namelist(cfn, namelist)
     if "base" in namelist:
-        assert params["t0"] == datetime(2013, 2, 20, 5)
+        assert params["time"][0] == datetime(2013, 2, 20, 5)
 
     if "files" in namelist:
         assert params["format"] == "h5"
@@ -66,11 +66,11 @@ def test_read_config_nml():
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         params = config.read_config(cfn)
-    assert params["t0"] == datetime(2013, 2, 20, 5)
+    assert params["time"][0] == datetime(2013, 2, 20, 5)
 
 
 def test_read_config_ini():
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.ini") as cfn:
         params = config.read_config(cfn)
-    assert params["t0"] == datetime(2013, 2, 20, 5)
+    assert params["time"][0] == datetime(2013, 2, 20, 5)

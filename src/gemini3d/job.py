@@ -29,7 +29,7 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
         raise FileNotFoundError(f"{config_file} does not appear to contain config.nml")
 
     # we don't want to overwrite an expensive simulation output
-    if get_frame_filename(out_dir, p["t0"], p.get("out_format")):
+    if get_frame_filename(out_dir, p["time"][0], p.get("out_format")):
         raise FileExistsError(
             f"a fresh simulation should not have data in output directory: {out_dir}"
         )

@@ -81,7 +81,7 @@ def runner(
 
     # delete previous test run data to avoid restarting milestone and failing test
     if (outdir / "output.nml").is_file():
-        stem = cfg["t0"].strftime("%Y%m%d")
+        stem = cfg["time"][0].strftime("%Y%m%d")
         for f in outdir.glob(f"{stem}*.h5"):
             f.unlink()
 

@@ -38,6 +38,31 @@ def read_config(path: Path) -> T.Dict[str, T.Any]:
     return P
 
 
+def datetime_range(start: datetime, stop: datetime, step: timedelta) -> T.List[datetime]:
+
+    """
+    Generate range of datetime over a closed interval.
+    pandas.date_range also defaults to a closed interval.
+    That means that the start AND stop time are included.
+
+    Parameters
+    ----------
+    start : datetime
+        start time
+    stop : datetime
+        stop time
+    step : timedelta
+        time step
+
+    Returns
+    -------
+    times : list of datetime
+        times requested
+    """
+
+    return [start + i * step for i in range((stop - start) // step + 1)]
+
+
 def get_config_filename(path: Path) -> Path:
     """ given a path or config filename, return the full path to config file """
 
@@ -141,11 +166,14 @@ def parse_namelist(raw: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]
     P: T.Dict[str, T.Any] = {}
 
     if namelist == "base":
-        P["t0"] = datetime(int(raw["ymd"][0]), int(raw["ymd"][1]), int(raw["ymd"][2])) + timedelta(
+        t0 = datetime(int(raw["ymd"][0]), int(raw["ymd"][1]), int(raw["ymd"][2])) + timedelta(
             seconds=float(raw["UTsec0"])
         )
+
         P["tdur"] = timedelta(seconds=float(raw["tdur"]))
         P["dtout"] = timedelta(seconds=float(raw["dtout"]))
+        P["time"] = datetime_range(t0, t0 + P["tdur"], P["dtout"])
+
         P["f107a"] = float(raw["activ"][0])
         P["f107"] = float(raw["activ"][1])
         P["Ap"] = float(raw["activ"][2])
@@ -240,12 +268,10 @@ def read_ini(fn: Path) -> T.Dict[str, T.Any]:
     with fn.open("r") as f:
         date = list(map(int, f.readline().split()[0].split(",")))[::-1]
         sec = float(f.readline().split()[0])
-
-        P["t0"] = datetime(*date) + timedelta(seconds=sec)  # type: ignore  # mypy bug
-
+        t0 = datetime(date[0], date[1], date[2]) + timedelta(seconds=sec)
         P["tdur"] = timedelta(seconds=float(f.readline().split()[0]))
-
         P["dtout"] = timedelta(seconds=float(f.readline().split()[0]))
+        P["time"] = datetime_range(t0, t0 + P["tdur"], P["dtout"])
 
         P["f107a"], P["f107"], P["Ap"] = map(float, f.readline().split()[0].split(","))
 
