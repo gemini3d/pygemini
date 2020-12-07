@@ -76,19 +76,24 @@ jobs:
   windows:
     needs: linux
     runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: [ '3.7' ]
-    name: Windows Python ${{ matrix.python-version }}
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: msys2/setup-msys2@v2
       with:
-        python-version: ${{ matrix.python-version }}
+        update: true
+        install: >-
+          git
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-gcc-fortran
+          mingw-w64-x86_64-hdf5
+          mingw-w64-x86_64-lapack
+          mingw-w64-x86_64-python-h5py
+          mingw-w64-x86_64-python-scipy
 
     - run: python -m pip install .[tests]
-    - run: pip install ninja
 
     - run: pytest
-      env:
-        CMAKE_GENERATOR: Ninja
