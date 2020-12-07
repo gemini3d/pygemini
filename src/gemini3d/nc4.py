@@ -71,7 +71,7 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     grid: T.Dict[str, T.Any] = {}
 
     if not fn.is_file():
-        logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
+        logging.error(f"{fn} grid file is not present.")
         return grid
 
     with Dataset(fn, "r") as f:

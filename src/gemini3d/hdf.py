@@ -79,7 +79,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     if h5py is None:
         raise ImportError("pip install h5py")
 
-    print("hdf:write_state:", fn)
+    logging.info(f"write_state: {fn}")
 
     with h5py.File(fn, "w") as f:
         f["/time/ymd"] = [time.year, time.month, time.day]
@@ -185,7 +185,7 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     grid: T.Dict[str, T.Any] = {}
 
     if not fn.is_file():
-        logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
+        logging.error(f"{fn} grid file is not present.")
         return grid
 
     with h5py.File(fn, "r") as f:
@@ -227,11 +227,11 @@ def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
     if "lx" not in xg:
         xg["lx"] = np.array([xg["x1"].shape, xg["x2"].shape, xg["x3"].shape])
 
-    print("hdf:write_grid:", size_fn)
+    logging.info(f"write_grid: {size_fn}")
     with h5py.File(size_fn, "w") as h:
         h["/lx"] = xg["lx"]
 
-    print("hdf:write_grid:", grid_fn)
+    logging.info(f"write_grid: {grid_fn}")
     with h5py.File(grid_fn, "w") as h:
         for i in (1, 2, 3):
             for k in (

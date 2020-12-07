@@ -111,7 +111,7 @@ def model_resample(
 
     if lx3 > 1 and lx2 > 1:
         # 3-D
-        print("interpolating grid for 3-D simulation")
+        logging.info("interpolating grid for 3-D simulation")
         # X2, X1, X3 = np.meshgrid(xgin['x2'][2:-2], xgin['x1'][2:-2], xgin['x3'][2:-2])
         X2i, X1i, X3i = np.meshgrid(x2i, x1i, x3i)
         assert X2i.shape == tuple(xg["lx"])
@@ -128,7 +128,7 @@ def model_resample(
             )
     elif lx3 == 1:
         # 2-D east-west
-        print("interpolating grid for 2-D simulation in x1, x2")
+        logging.info("interpolating grid for 2-D simulation in x1, x2")
         # [X2,X1]=meshgrid(xgin.x2(3:end-2),xgin.x1(3:end-2));
         # [X2i,X1i]=meshgrid(xg.x2(3:end-2),xg.x1(3:end-2));
         for i in range(lsp):
@@ -142,7 +142,7 @@ def model_resample(
             Tsi[i, :, :, :] = f(x2i, x1i)[:, :, None]
     elif lx2 == 1:
         # 2-D north-south
-        print("interpolating grid for 2-D simulation in x1, x3")
+        logging.info("interpolating grid for 2-D simulation in x1, x3")
         # original grid, a priori the first 2 and last 2 values are ghost cells
         # on each axis
         #
@@ -473,7 +473,7 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     doy = int(t0.strftime("%j"))
     UTsec0 = t0.hour * 3600 + t0.minute * 60 + t0.second + t0.microsecond / 1e6
 
-    print("MSIS00 using DOY:", doy)
+    logging.debug("MSIS00 using DOY:", doy)
     yearshort = t0.year % 100
     iyd = yearshort * 1000 + doy
     # %% KLUDGE THE BELOW-ZERO ALTITUDES SO THAT THEY DON'T GIVE INF

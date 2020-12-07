@@ -2,6 +2,7 @@
 create simulation grids
 """
 
+import logging
 import typing as T
 import math
 import numpy as np
@@ -36,7 +37,7 @@ def makegrid_cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     if set(("alt_min", "alt_max", "alt_scale", "Bincl")) <= p.keys():
         z = altitude_grid(p["alt_min"], p["alt_max"], p["Bincl"], p["alt_scale"])
     elif "eqdir" in p and p["eqdir"].is_file():
-        print("makegrid_cart_3D: reusing grid from", p["eqdir"])
+        logging.info("makegrid_cart_3D: reusing grid from", p["eqdir"])
         xeq = readgrid(p["eqdir"])
         z = xeq["x1"]
         del xeq
