@@ -83,4 +83,4 @@ jobs:
     - run: python -m gemini3d.install
 
     - run: pytest
-      timeout-minutes: 5
+      timeout-minutes: 7
