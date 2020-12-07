@@ -1,4 +1,3 @@
-import functools
 import typing as T
 import re
 from pathlib import Path
@@ -9,7 +8,7 @@ NaN = float("NaN")
 __all__ = ["read_config"]
 
 
-@functools.lru_cache()
+# do NOT use lru_cache--can have weird unexpected effects with complicated setups
 def read_config(path: Path) -> T.Dict[str, T.Any]:
     """
     read simulation input configuration
