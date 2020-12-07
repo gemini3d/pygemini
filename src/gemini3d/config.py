@@ -41,16 +41,16 @@ def read_config(path: Path) -> T.Dict[str, T.Any]:
 def get_config_filename(path: Path) -> Path:
     """ given a path or config filename, return the full path to config file """
 
-    cfg = None
     if not path:
-        return cfg
+        return None
 
-    cfg = Path(path).expanduser().resolve()
+    path = Path(path).expanduser().resolve()
 
-    if cfg.is_file():
-        return cfg
+    if path.is_file():
+        return path
 
-    if cfg.is_dir():
+    cfg = None
+    if path.is_dir():
         for p in (path, path / "inputs"):
             for suff in (".nml", ".ini"):
                 for f in p.glob("config*" + suff):
@@ -58,7 +58,7 @@ def get_config_filename(path: Path) -> Path:
                         cfg = f
                         break
 
-    if not cfg.is_file():
+    if not cfg or not cfg.is_file():
         cfg = None
 
     return cfg
