@@ -5,6 +5,33 @@ import importlib.resources
 import gemini3d.config as config
 
 
+def test_datetime_range():
+    # datetime_range is a closed interval
+    t = config.datetime_range(datetime(2012, 1, 1), datetime(2010, 1, 1), timedelta(seconds=1))
+    assert isinstance(t, list)
+    assert len(t) == 0
+
+    t = config.datetime_range(datetime(2012, 1, 1), datetime(2012, 1, 1), timedelta(seconds=1))
+    assert t == [datetime(2012, 1, 1)]
+
+    t = config.datetime_range(datetime(2012, 1, 1), datetime(2012, 1, 1), timedelta(seconds=-1))
+    assert t == [datetime(2012, 1, 1)]
+
+    # this is how pandas.date_range works
+    t = config.datetime_range(
+        datetime(2012, 1, 1),
+        datetime(2012, 1, 1, 0, 0, 1, microsecond=500000),
+        timedelta(seconds=1),
+    )
+    assert t == [datetime(2012, 1, 1, 0, 0, 0), datetime(2012, 1, 1, 0, 0, 1)]
+
+    # this is how pandas.date_range works
+    t = config.datetime_range(
+        datetime(2012, 1, 1, 0, 0, 0), datetime(2012, 1, 1, 0, 1, 30), timedelta(minutes=1)
+    )
+    assert t == [datetime(2012, 1, 1, 0, 0, 0), datetime(2012, 1, 1, 0, 1, 0)]
+
+
 def test_no_config(tmp_path):
     p = config.read_config(tmp_path)
     assert p == {}
