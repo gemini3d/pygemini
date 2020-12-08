@@ -11,7 +11,7 @@ from datetime import datetime
 import typing as T
 
 from . import read
-from .find import get_frame_filename
+from . import find
 
 try:
     from .plotdiff import plotdiff
@@ -206,8 +206,8 @@ def compare_precip(
 
     # often we reuse precipitation inputs without copying over files
     for t in times:
-        ref = read.precip(get_frame_filename(refdir, t), file_format)
-        new = read.precip(get_frame_filename(newdir, t), file_format)
+        ref = read.precip(find.frame(refdir, t), file_format)
+        new = read.precip(find.frame(newdir, t), file_format)
 
         for k in ref.keys():
             b = np.atleast_1d(ref[k])
@@ -238,8 +238,8 @@ def compare_Efield(
     efield_errs = 0
     # often we reuse Efield inputs without copying over files
     for t in times:
-        ref = read.Efield(get_frame_filename(refdir, t), file_format)
-        new = read.Efield(get_frame_filename(newdir, t), file_format)
+        ref = read.Efield(find.frame(refdir, t), file_format)
+        new = read.Efield(find.frame(newdir, t), file_format)
         for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
             b = ref[k][1]
             a = new[k][1]

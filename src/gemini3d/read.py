@@ -10,7 +10,7 @@ import typing as T
 
 from .config import read_config as config
 from .fileio import get_simsize
-from .find import get_frame_filename, get_grid_filename
+from . import find
 from . import matlab
 
 from .raw import read as raw_read
@@ -20,7 +20,7 @@ from .nc4 import read as ncread
 
 def grid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
 
-    fn = get_grid_filename(path)
+    fn = find.grid(path)
     if not fn:
         return {}
 
@@ -259,4 +259,4 @@ def frame(simdir: Path, time: datetime, file_format: str = None) -> T.Dict[str, 
         simulation output for this time step
     """
 
-    return data(get_frame_filename(simdir, time, file_format), file_format)
+    return data(find.frame(simdir, time, file_format), file_format)

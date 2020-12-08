@@ -4,7 +4,7 @@ import numpy as np
 from datetime import datetime
 import sys
 
-from .find import get_simsize_path
+from . import find
 from .utils import git_meta
 
 from . import matlab
@@ -23,7 +23,7 @@ Pathlike = T.Union[str, Path]
 def get_simsize(path: Path) -> T.Tuple[int, ...]:
     """ get simulation dimensions """
 
-    fn = get_simsize_path(path)
+    fn = find.simsize(path)
     if not fn:
         return None
 

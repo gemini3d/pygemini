@@ -1,9 +1,12 @@
 import typing as T
 import re
+import math
 from pathlib import Path
 from datetime import datetime, timedelta
 
-NaN = float("NaN")
+from . import find
+
+NaN = math.nan
 
 __all__ = ["read_config"]
 
@@ -26,7 +29,7 @@ def read_config(path: Path) -> T.Dict[str, T.Any]:
         simulation parameters from config file
     """
 
-    file = get_config_filename(path)
+    file = find.config(path)
     if not file:
         return {}  # {} instead of None to work with .get()
 
@@ -63,32 +66,6 @@ def datetime_range(start: datetime, stop: datetime, step: timedelta) -> T.List[d
     return [start + i * step for i in range((stop - start) // step + 1)]
 
 
-def get_config_filename(path: Path) -> Path:
-    """ given a path or config filename, return the full path to config file """
-
-    if not path:
-        return None
-
-    path = Path(path).expanduser().resolve()
-
-    if path.is_file():
-        return path
-
-    cfg = None
-    if path.is_dir():
-        for p in (path, path / "inputs"):
-            for suff in (".nml", ".ini"):
-                for f in p.glob("config*" + suff):
-                    if f.is_file():
-                        cfg = f
-                        break
-
-    if not cfg or not cfg.is_file():
-        cfg = None
-
-    return cfg
-
-
 def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     """parse .nml file
     for now we don't use the f90nml package, though maybe we will in the future.
@@ -97,7 +74,7 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
 
     params: T.Dict[str, T.Any] = {}
 
-    fn = get_config_filename(fn)
+    fn = find.config(fn)
     if not fn:
         return params
 
@@ -259,7 +236,7 @@ def read_ini(fn: Path) -> T.Dict[str, T.Any]:
 
     P: T.Dict[str, T.Any] = {}
 
-    fn = get_config_filename(fn)
+    fn = find.config(fn)
 
     if not fn:
         return P

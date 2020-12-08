@@ -6,10 +6,10 @@ import shutil
 from pathlib import Path
 import importlib.resources
 
-from .find import get_frame_filename
+from . import find
 from .build import cmake_build
 from .mpi import get_mpi_count
-from .config import read_config, get_config_filename
+from .config import read_config
 from .hpc import hpc_batch_detect, hpc_batch_create
 from .model_setup import model_setup
 from .fileio import log_meta_nml
@@ -22,14 +22,14 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
 
     out_dir = check_outdir(pr["out_dir"])
 
-    config_file = get_config_filename(pr["config_file"])
+    config_file = find.config(pr["config_file"])
     # load configuration to know what directories to check
     p = read_config(config_file)
     if not p:
         raise FileNotFoundError(f"{config_file} does not appear to contain config.nml")
 
     # we don't want to overwrite an expensive simulation output
-    if get_frame_filename(out_dir, p["time"][0], p.get("out_format")):
+    if find.frame(out_dir, p["time"][0], p.get("out_format")):
         raise FileExistsError(
             f"a fresh simulation should not have data in output directory: {out_dir}"
         )
