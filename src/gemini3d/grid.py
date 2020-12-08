@@ -8,8 +8,7 @@ import math
 import numpy as np
 
 from . import read
-
-pi = math.pi
+from .coord import geog2geomag, geomag2geog
 
 
 def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
@@ -313,77 +312,6 @@ def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     xgf["z"] = xgf["z"][i1, i2, i3]
 
     return xgf
-
-
-def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> T.Tuple[np.ndarray, np.ndarray]:
-    """ geomagnetic to geographic """
-
-    # TODO: is OK to be hardcoded?
-    thetan = math.radians(11)
-    phin = math.radians(289)
-
-    # enforce phit = [0,2pi]
-    i = phit > 2 * pi
-    phitcorrected = phit
-    phitcorrected[i] = phit[i] - 2 * pi
-    i = phit < 0
-    phitcorrected[i] = phit[i] + 2 * pi
-
-    # thetag2p=acos(cos(thetat).*cos(thetan)-sin(thetat).*sin(thetan).*cos(phit));
-    thetag2p = np.arccos(
-        np.cos(thetat) * np.cos(thetan) - np.sin(thetat) * np.sin(thetan) * np.cos(phitcorrected)
-    )
-
-    beta = np.arccos(
-        (np.cos(thetat) - np.cos(thetag2p) * np.cos(thetan)) / (np.sin(thetag2p) * np.sin(thetan))
-    )
-
-    phig2 = np.zeros_like(phitcorrected)
-
-    i = phitcorrected > pi
-    phig2[i] = phin - beta[i]
-
-    i = phitcorrected <= pi
-    phig2[i] = phin + beta[i]
-
-    i = phig2 < 0
-    phig2[i] = phig2[i] + 2 * pi
-
-    i = phig2 >= 2 * pi
-    phig2[i] = phig2[i] - 2 * pi
-
-    thetag2 = pi / 2 - thetag2p
-    lat = np.degrees(thetag2)
-    lon = np.degrees(phig2)
-
-    return lat, lon
-
-
-def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> T.Tuple[np.ndarray, np.ndarray]:
-    """ geographic to geomagnetic """
-
-    # TODO: is this arbitrary or hardcoded OK?
-    thetan = math.radians(11)
-    phin = math.radians(289)
-
-    # enforce [0,360] longitude
-    lon = lon % 360
-
-    thetagp = pi / 2 - np.radians(lat)
-    phig = np.radians(lon)
-
-    thetat = np.arccos(
-        np.cos(thetagp) * np.cos(thetan) + np.sin(thetagp) * np.sin(thetan) * np.cos(phig - phin)
-    )
-    argtmp = (np.cos(thetagp) - np.cos(thetat) * np.cos(thetan)) / (np.sin(thetat) * np.sin(thetan))
-    alpha = np.arccos(max(min(argtmp, 1), -1))
-    phit = np.empty_like(lat)
-
-    i = ((phin > phig) & ((phin - phig) > pi)) | ((phin < phig) & ((phig - phin) < pi))
-    phit[i] = pi - alpha[i]
-    phit[~i] = alpha[~i] + pi
-
-    return thetat, phit
 
 
 def grid1d(dist: float, L: int, parms: T.Sequence[float] = None) -> np.ndarray:
