@@ -46,10 +46,16 @@ def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
 
     # %% TRANSVERSE GRID (BASED ON SIZE OF CURRENT REGION SPECIFIED ABOVE)
     # EAST
-    x = grid1d(p["xdist"], p["lxp"])
+    if "x2parms" in p:
+        x = grid1d(p["xdist"], p["lxp"], p["x2parms"])
+    else:
+        x = grid1d(p["xdist"], p["lxp"])
 
     # NORTH
-    y = grid1d(p["ydist"], p["lyp"])
+    if "x3parms" in p:
+        y = grid1d(p["ydist"], p["lyp"], p["x3parms"])
+    else:
+        y = grid1d(p["ydist"], p["lyp"])
 
     # %% COMPUTE CELL WALL LOCATIONS
     lx2 = x.size
@@ -380,7 +386,7 @@ def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> T.Tuple[np.ndarray, np.ndar
     return thetat, phit
 
 
-def grid1d(dist: float, L: int) -> np.ndarray:
+def grid1d(dist: float, L: int, parms: T.Sequence[float] = None) -> np.ndarray:
     """
     generate 1D grid
 
@@ -402,7 +408,18 @@ def grid1d(dist: float, L: int) -> np.ndarray:
     xmin = -dist / 2
     xmax = dist / 2
 
-    if L == 1:  # degenerate dimension
+    if not parms:
+        x = uniform1d(xmin, xmax, L)
+    else:
+        x = non_uniform1d(xmax, parms)
+
+    return x
+
+
+def uniform1d(xmin: float, xmax: float, L: int) -> np.ndarray:
+
+    if L == 1:
+        # degenerate dimension
         # add 2 ghost cells on each side
         x = np.linspace(xmin, xmax, L + 4)
     else:
@@ -413,6 +430,26 @@ def grid1d(dist: float, L: int) -> np.ndarray:
         # now tack on ghost cells so they are outside user-specified region
         x = np.insert(x, 0, [x[0] - 2 * d0, x[0] - d0])
         x = np.append(x, [x[-1] + d1, x[-1] + 2 * d1])
+
+    return x
+
+
+def non_uniform1d(xmax: float, parms: T.Sequence[float]) -> np.ndarray:
+
+    degdist = parms[0]  # distance from boundary at which we start to degrade resolution
+    dx0 = parms[1]  # min step size for grid
+    dxincr = parms[2]  # max step size increase for grid
+    ell = parms[3]  # transition length of degradation
+    x2 = xmax - degdist
+
+    x = [dx0 / 2.0]
+    # start offset from zero so we can have an even number (better for mpi)
+
+    while x[-1] < xmax:
+        dx = dx0 + dxincr * (1 / 2 + 1 / 2 * math.tanh((x[-1] - x2) / ell))
+        x.append(x[-1] + dx)
+
+    x = np.append(-np.array(x[::-1]), x)
 
     return x
 
