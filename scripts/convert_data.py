@@ -6,7 +6,8 @@ convert Gemini data to HDF5 .h5
 from pathlib import Path
 import argparse
 
-import gemini3d.read
+import gemini3d.read as read
+import gemini3d.write as write
 
 LSP = 7
 CLVL = 6
@@ -46,27 +47,25 @@ def cli():
     if not infiles:
         raise FileNotFoundError(f"no files to convert in {indir}")
 
-    lxs = gemini3d.get_simsize(indir)
+    lxs = read.simsize(indir)
 
     cfg = {"format": P.format}
     if P.flagoutput is not None:
         cfg["flagoutput"] = P.flagoutput
 
+    xg = None
     if P.format == "nc":
-        xg = gemini3d.read.grid(indir)
+        xg = read.grid(indir)
 
     for infile in infiles:
         outfile = outdir / (f"{infile.stem}.{cfg['format']}")
         print(infile, "=>", outfile)
 
-        dat = gemini3d.read.data(infile, cfg=cfg)
+        dat = read.data(infile, cfg=cfg)
         if "lxs" not in dat:
             dat["lxs"] = lxs
 
-        if cfg["format"] == "h5":
-            gemini3d.hdf.write_data(dat, outfile)
-        elif cfg["format"] == "nc":
-            gemini3d.nc4.write_data(dat, xg, outfile)
+        write.data(dat, outfile, P.format, xg)
 
 
 if __name__ == "__main__":

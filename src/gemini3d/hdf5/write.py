@@ -36,7 +36,7 @@ def state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Pa
     if h5py is None:
         raise ImportError("pip install h5py")
 
-    logging.info(f"write_state: {fn}")
+    logging.info(f"state: {fn}")
 
     with h5py.File(fn, "w") as f:
         f["/time/ymd"] = [time.year, time.month, time.day]

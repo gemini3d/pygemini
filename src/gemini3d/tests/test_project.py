@@ -7,7 +7,7 @@ import pytest
 from pathlib import Path
 
 import gemini3d.web
-from gemini3d.fileio import write_grid
+import gemini3d.write as write
 import gemini3d.grid
 from gemini3d.compare import compare_all, compare_grid, compare_Efield, compare_precip
 import gemini3d.read as read
@@ -33,7 +33,7 @@ def test_grid(name, file_format, tmp_path):
     cfg["indat_size"] = cfg["out_dir"] / cfg["indat_size"]
     cfg["indat_grid"] = cfg["out_dir"] / cfg["indat_grid"]
 
-    write_grid(cfg, xg)
+    write.grid(cfg, xg)
 
     assert (
         compare_grid(cfg["indat_grid"], test_dir) == 0

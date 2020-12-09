@@ -7,7 +7,7 @@ import numpy as np
 import logging
 from scipy.special import erf
 
-from .fileio import write_Efield
+from . import write
 from .config import datetime_range
 
 
@@ -113,7 +113,7 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
     # LEAVE THE SPATIAL AND TEMPORAL INTERPOLATION TO THE
     # FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
     # THE EFIELD DATA DO NOT TYPICALLY NEED TO BE SMOOTHED.
-    write_Efield(E, p["E0dir"], p["format"])
+    write.Efield(E, p["E0dir"], p["format"])
 
     return E
 

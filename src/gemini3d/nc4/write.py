@@ -32,7 +32,7 @@ def state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Pa
     if Dataset is None:
         raise ImportError("pip install netcdf4")
 
-    logging.info(f"write_state: {fn}")
+    logging.info(f"state: {fn}")
 
     with Dataset(fn, "w") as f:
         p4 = (0, 3, 2, 1)

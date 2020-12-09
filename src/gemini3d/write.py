@@ -1,45 +1,50 @@
+from datetime import datetime
+import numpy as np
 from pathlib import Path
 import typing as T
-import numpy as np
-from datetime import datetime
 import sys
 
-from . import find
 from .utils import git_meta
-
-from . import matlab
-
-from .raw import read as raw_read
-
 from .hdf5 import write as h5write
-from .hdf5 import read as h5read
-
-from .nc4 import read as ncread
 from .nc4 import write as ncwrite
 
-Pathlike = T.Union[str, Path]
 
+def state(
+    time: datetime,
+    ns: np.ndarray,
+    vs: np.ndarray,
+    Ts: np.ndarray,
+    out_file: Path,
+):
+    """
+     WRITE STATE VARIABLE DATA.
+    NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
+    VARIABLES SINCE THEY ARE NOT NEEDED TO START THINGS
+    UP IN THE FORTRAN CODE.
 
-def get_simsize(path: Path) -> T.Tuple[int, ...]:
-    """ get simulation dimensions """
+    INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
+    I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
+    """
 
-    fn = find.simsize(path)
-    if not fn:
-        return None
-
-    if fn.suffix == ".h5":
-        return h5read.simsize(fn)
-    elif fn.suffix == ".nc":
-        return ncread.simsize(fn)
-    elif fn.suffix == ".dat":
-        return raw_read.simsize(fn)
-    elif fn.suffix == ".mat":
-        return matlab.simsize(fn)
+    if out_file.suffix == ".h5":
+        h5write.state(time, ns, vs, Ts, out_file.with_suffix(".h5"))
+    elif out_file.suffix == ".nc":
+        ncwrite.state(time, ns, vs, Ts, out_file.with_suffix(".nc"))
     else:
-        raise ValueError("unkonwn simsize file type")
+        raise ValueError(f"unknown file format {out_file.suffix}")
 
 
-def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+def data(dat: np.ndarray, out_file: Path, file_format: str, xg: T.Dict[str, T.Any] = None):
+
+    if file_format == "h5":
+        h5write.data(dat, out_file)
+    elif file_format == "nc":
+        ncwrite.data(dat, xg, out_file)
+    else:
+        raise ValueError(f"Unknown file format {file_format}")
+
+
+def grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     """writes grid to disk
 
     Parameters
@@ -70,10 +75,10 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     else:
         raise ValueError(f'unknown file format {p["format"]}')
 
-    log_meta_nml(p["out_dir"] / "setup_meta.nml", git_meta(), "setup_python")
+    meta(p["out_dir"] / "setup_meta.nml", git_meta(), "setup_python")
 
 
-def write_Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
+def Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
     """writes E-field to disk
 
     Parameters
@@ -98,7 +103,7 @@ def write_Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
         raise ValueError(f"unknown file format {file_format}")
 
 
-def write_precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
+def precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
     """writes precipitation to disk
 
     Parameters
@@ -122,32 +127,7 @@ def write_precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
         raise ValueError(f"unknown file format {file_format}")
 
 
-def write_state(
-    time: datetime,
-    ns: np.ndarray,
-    vs: np.ndarray,
-    Ts: np.ndarray,
-    out_file: Path,
-):
-    """
-     WRITE STATE VARIABLE DATA.
-    NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
-    VARIABLES SINCE THEY ARE NOT NEEDED TO START THINGS
-    UP IN THE FORTRAN CODE.
-
-    INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
-    I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
-    """
-
-    if out_file.suffix == ".h5":
-        h5write.state(time, ns, vs, Ts, out_file.with_suffix(".h5"))
-    elif out_file.suffix == ".nc":
-        ncwrite.state(time, ns, vs, Ts, out_file.with_suffix(".nc"))
-    else:
-        raise ValueError(f"unknown file format {out_file.suffix}")
-
-
-def log_meta_nml(fn: Path, meta: T.Dict[str, str], namelist: str):
+def meta(fn: Path, meta: T.Dict[str, str], namelist: str):
     """
     writes Namelist file with metadata
     """

@@ -13,7 +13,7 @@ from scipy.interpolate import interp1d, interp2d, interpn
 
 from .config import read_config
 from . import read
-from .fileio import write_grid, write_state
+from . import write
 
 DictArray = T.Dict[str, T.Any]
 # CONSTANTS
@@ -56,9 +56,9 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     check_temperature(Tsi)
 
     # %% WRITE OUT THE GRID
-    write_grid(p, xg)
+    write.grid(p, xg)
 
-    write_state(t_eq_end, nsi, vs1i, Tsi, p["indat_file"])
+    write.state(t_eq_end, nsi, vs1i, Tsi, p["indat_file"])
 
 
 def model_resample(

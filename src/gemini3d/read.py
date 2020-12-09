@@ -9,13 +9,31 @@ from datetime import datetime
 import typing as T
 
 from .config import read_config as config
-from .fileio import get_simsize
 from . import find
 from . import matlab
 
 from .raw import read as raw_read
 from .hdf5 import read as h5read
 from .nc4 import read as ncread
+
+
+def simsize(path: Path) -> T.Tuple[int, ...]:
+    """ get simulation dimensions """
+
+    fn = find.simsize(path)
+    if not fn:
+        return None
+
+    if fn.suffix == ".h5":
+        return h5read.simsize(fn)
+    elif fn.suffix == ".nc":
+        return ncread.simsize(fn)
+    elif fn.suffix == ".dat":
+        return raw_read.simsize(fn)
+    elif fn.suffix == ".mat":
+        return matlab.simsize(fn)
+    else:
+        raise ValueError("unkonwn simsize file type")
 
 
 def grid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
@@ -96,7 +114,7 @@ def data(
         file_format = fn.suffix[1:]
 
     if file_format == "dat":
-        lxs = get_simsize(fn.parent / "inputs/simsize.dat")
+        lxs = simsize(fn.parent / "inputs/simsize.dat")
 
         flag = cfg.get("flagoutput")
         if flag == 0:

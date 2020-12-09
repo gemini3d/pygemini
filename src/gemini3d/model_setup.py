@@ -11,7 +11,7 @@ from . import grid
 from .plasma import equilibrium_state, equilibrium_resample
 from .efield import Efield_BCs
 from .particles import particles_BCs
-from .fileio import write_state, write_grid
+from . import write
 
 
 def model_setup(p: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
@@ -65,7 +65,7 @@ def model_setup_equilibrium(p: T.Dict[str, T.Any]):
 
     xg = grid.cart3d(p)
 
-    write_grid(p, xg)
+    write.grid(p, xg)
 
     # %% Equilibrium input generation
     [ns, Ts, vsx1] = equilibrium_state(p, xg)
@@ -73,7 +73,7 @@ def model_setup_equilibrium(p: T.Dict[str, T.Any]):
     assert ns.shape[0] == 7
     assert ns.shape[1:] == tuple(xg["lx"])
 
-    write_state(p["time"][0], ns, vsx1, Ts, p["indat_file"])
+    write.state(p["time"][0], ns, vsx1, Ts, p["indat_file"])
 
 
 def model_setup_interp(p: T.Dict[str, T.Any]):

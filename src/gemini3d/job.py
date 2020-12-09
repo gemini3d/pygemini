@@ -12,7 +12,7 @@ from .build import cmake_build
 from .config import read_config
 from .hpc import hpc_batch_detect, hpc_batch_create
 from .model_setup import model_setup
-from .fileio import log_meta_nml
+from . import write
 from .utils import git_meta
 
 Pathlike = T.Union[str, Path]
@@ -77,7 +77,7 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
     if pr.get("dryrun"):
         return None
 
-    log_meta_nml(out_dir / "setup_meta.nml", git_meta(gemexe.parent), "setup_gemini")
+    write.meta(out_dir / "setup_meta.nml", git_meta(gemexe.parent), "setup_gemini")
 
     batcher = hpc_batch_detect()
     if batcher:

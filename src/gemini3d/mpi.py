@@ -3,7 +3,7 @@ import math
 import typing as T
 
 from .utils import get_cpu_count
-from .fileio import get_simsize
+from . import read
 
 
 def count(path: Path, max_cpu: int) -> int:
@@ -20,7 +20,7 @@ def count(path: Path, max_cpu: int) -> int:
         detect number of physical CPU
     """
 
-    return max_mpi(get_simsize(path), max_cpu)
+    return max_mpi(read.simsize(path), max_cpu)
 
 
 def max_mpi(size: T.Tuple[int, ...], max_cpu: int) -> int:
