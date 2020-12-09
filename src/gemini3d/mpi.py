@@ -6,7 +6,7 @@ from .utils import get_cpu_count
 from .fileio import get_simsize
 
 
-def get_mpi_count(path: Path, max_cpu: int) -> int:
+def count(path: Path, max_cpu: int) -> int:
     """get appropriate MPI image count for problem shape
 
     Parameters

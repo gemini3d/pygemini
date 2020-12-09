@@ -11,7 +11,7 @@ import shutil
 
 import gemini3d.web
 import gemini3d.config
-import gemini3d.mpi
+from . import mpi
 
 
 def cli():
@@ -98,7 +98,7 @@ def runner(
         shutil.copytree(ref / cfg["sourcedir"], outdir / cfg["sourcedir"])
 
     if not mpi_count:
-        mpi_count = gemini3d.mpi.get_mpi_count(ref / cfg["indat_size"], 0)
+        mpi_count = mpi.count(ref / cfg["indat_size"], 0)
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()

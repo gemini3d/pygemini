@@ -7,8 +7,8 @@ from pathlib import Path
 import importlib.resources
 
 from . import find
+from . import mpi
 from .build import cmake_build
-from .mpi import get_mpi_count
 from .config import read_config
 from .hpc import hpc_batch_detect, hpc_batch_create
 from .model_setup import model_setup
@@ -56,7 +56,7 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
     mpiexec = check_mpiexec(pr.get("mpiexec"), gemexe)
     if mpiexec:
         logging.info(f"mpiexec: {mpiexec}")
-        Nmpi = get_mpi_count(out_dir / p["indat_size"], pr.get("cpu_count"))
+        Nmpi = mpi.count(out_dir / p["indat_size"], pr.get("cpu_count"))
         mpi_cmd = [mpiexec, "-n", str(Nmpi)]
     else:
         mpi_cmd = []

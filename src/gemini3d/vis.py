@@ -135,7 +135,7 @@ def plot12(
     if ax is None:
         ax = fg.gca()
 
-    hi = ax.pcolormesh(x / 1e3, z / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax, shading='nearest')
+    hi = ax.pcolormesh(x / 1e3, z / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax, shading="nearest")
     ax.yaxis.set_major_locator(MultipleLocator(100))
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("upward dist. (km)")
