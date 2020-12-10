@@ -254,7 +254,6 @@ def frame3d_curv(fn: Path) -> T.Dict[str, T.Any]:
 
 def frame3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     """
-    end users should normally use loadframe() instead
 
     Parameters
     ----------

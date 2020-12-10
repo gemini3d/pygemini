@@ -190,7 +190,12 @@ def frame3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
 
 def frame3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     """
-    end users should normally use loadframe() instead
+
+    Parameters
+    ----------
+
+    fn: pathlib.Path
+        filename of this timestep of simulation output
     """
 
     #    grid = readgrid(fn.parent / "inputs/simgrid.nc")
@@ -262,7 +267,6 @@ def frame3d_curv(fn: Path) -> T.Dict[str, T.Any]:
 
 def frame3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     """
-    end users should normally use loadframe() instead
 
     Parameters
     ----------
