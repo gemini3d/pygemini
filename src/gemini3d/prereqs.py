@@ -31,10 +31,10 @@ MUMPS_TAG = "v5.3.4.2"
 SCALAPACK_TAG = "v2.1.0.11"
 LAPACK_TAG = "v3.9.0.2"
 
-# Note: using OpenMPI 3.x because of legacy configured HPC
-# that break for *any* OpenMPI 4.x app.
+# Note: some HPC systems need OpenMPI 3 instead of 4
 # https://www.open-mpi.org/software/ompi/major-changes.php
-MPI_TAG = "3.1.6"
+MPI_TAG = "4.0.5"
+MPI3_TAG = "3.1.6"
 
 HDF5_DIR = "hdf5"
 LAPACK_DIR = "lapack"
@@ -54,7 +54,7 @@ def cli():
     p.add_argument(
         "libs",
         help="libraries to compile",
-        choices=["netcdf", "openmpi", "hdf5", "lapack", "scalapack", "mumps"],
+        choices=["hdf5", "lapack", "mumps", "netcdf", "openmpi", "openmpi3", "scalapack"],
         nargs="+",
     )
     p.add_argument("-prefix", help="top-level directory to install libraries under")
@@ -115,7 +115,10 @@ def setup_libs(
 
     # Note: OpenMPI needs to be before scalapack and mumps
     if "openmpi" in libs:
-        openmpi(dirs, env=env, dryrun=dryrun)
+        openmpi(dirs, env=env, version=MPI_TAG, dryrun=dryrun)
+    elif "openmpi3" in libs:
+        openmpi(dirs, env=env, version=MPI3_TAG, dryrun=dryrun)
+
     if "lapack" in libs:
         lapack(wipe, dirs, env=env, dryrun=dryrun)
     if "scalapack" in libs:
@@ -194,7 +197,7 @@ def netcdf_fortran(
     elif sys.platform == "darwin":
         netcdf_c = install_dir / "lib/libnetcdf.dylib"
     else:
-        raise NotImplementedError(
+        raise EnvironmentError(
             f"please open a GitHub Issue for your operating system {sys.platform}"
         )
 
@@ -282,13 +285,14 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     subprocess.check_call(cmd2, cwd=source_dir)
 
 
-def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
+def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str], version: str, dryrun: bool = False):
     """ build and install OpenMPI """
     if os.name == "nt":
-        raise NotImplementedError(
+        raise EnvironmentError(
             """
 OpenMPI is not available in native Windows.
-Other options on Windows:
+Use MPI on Windows via any of (choose one):
+
 * Windows Subsystem for Linux
 * MS-MPI with MSYS2: https://www.scivision.dev/windows-mpi-msys2/
 * Intel oneAPI with IntelMPI: https://www.scivision.dev/intel-oneapi-fortran-install/
@@ -296,13 +300,13 @@ Other options on Windows:
 """
         )
 
-    mpi_dir = f"openmpi-{MPI_TAG}"
+    mpi_dir = f"openmpi-{version}"
     install_dir = dirs["prefix"] / mpi_dir
     source_dir = dirs["workdir"] / mpi_dir
 
-    tar_name = f"openmpi-{MPI_TAG}.tar.bz2"
+    tar_name = f"openmpi-{version}.tar.bz2"
     tarfn = dirs["workdir"] / tar_name
-    url = f"https://download.open-mpi.org/release/open-mpi/v{MPI_TAG[:3]}/{tar_name}"
+    url = f"https://download.open-mpi.org/release/open-mpi/v{version[:3]}/{tar_name}"
     url_retrieve(url, tarfn)
     extract_tar(tarfn, source_dir)
 
