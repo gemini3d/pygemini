@@ -114,7 +114,7 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
     if not mpiexec:
         return None
 
-    ret = subprocess.run([mpiexec, "-help"], stdout=subprocess.PIPE, text=True)
+    ret = subprocess.run([mpiexec, "-help"], stdout=subprocess.PIPE, text=True, timeout=5)
     if ret.returncode != 0:
         return None
     # %% check that compiler and MPIexec compatible
@@ -122,7 +122,7 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
         return mpiexec
 
     mpi_msg = ret.stdout.strip()
-    ret = subprocess.run([str(gemexe), "-compiler"], stdout=subprocess.PIPE, text=True)
+    ret = subprocess.run([str(gemexe), "-compiler"], stdout=subprocess.PIPE, text=True, timeout=5)
     if ret.returncode != 0:
         raise EnvironmentError(f"{gemexe} not executable")
 
@@ -167,7 +167,7 @@ def get_gemini_exe(gemexe: Path = None) -> Path:
             if not gemexe.is_file():
                 raise RuntimeError(f"Gemini.bin not found in {build_dir}")
     # %% ensure gemini.bin is runnable
-    ret = subprocess.run([str(gemexe)], stdout=subprocess.DEVNULL)
+    ret = subprocess.run([str(gemexe)], stdout=subprocess.DEVNULL, timeout=5)
     if ret.returncode != 0:
         raise RuntimeError(
             f"\n{gemexe} was not runnable on your platform. Try recompiling on this computer type."

@@ -11,6 +11,7 @@ R = Path(__file__).parents[1] / "tests/data"
 
 
 def test_mpiexec():
+
     exe = job.get_gemini_exe()
     assert isinstance(exe, Path)
 
