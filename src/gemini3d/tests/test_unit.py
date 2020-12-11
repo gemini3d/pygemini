@@ -2,6 +2,7 @@
 unit tests of non-Fortran modules
 """
 
+import pytest
 from pytest import approx
 import numpy as np
 import math
@@ -25,16 +26,23 @@ def test_grid1d():
     )
 
 
-def test_max_mpi():
-    assert gm.max_mpi([48, 1, 40], 5) == 5
-    assert gm.max_mpi([48, 40, 1], 5) == 5
-    assert gm.max_mpi([48, 1, 40], 6) == 5
-    assert gm.max_mpi([48, 40, 1], 6) == 5
-    assert gm.max_mpi([48, 1, 40], 8) == 8
-    assert gm.max_mpi([48, 40, 1], 8) == 8
-    assert gm.max_mpi([48, 1, 40], 28) == 20
-    assert gm.max_mpi([48, 40, 1], 28) == 20
-    assert gm.max_mpi([48, 40, 36], 28) == 18
+@pytest.mark.parametrize(
+    "size,N,M",
+    [
+        ((48, 1, 40), 5, 5),
+        ((48, 40, 1), 5, 5),
+        ((48, 1, 40), 6, 5),
+        ((48, 40, 1), 6, 5),
+        ((48, 1, 40), 8, 8),
+        ((48, 40, 1), 8, 8),
+        ((48, 40, 1), 28, 20),
+        ((48, 40, 36), 28, 28),
+        ((48, 44, 54), 28, 28),
+        ((48, 54, 44), 28, 28),
+    ],
+)
+def test_max_mpi(size, N, M):
+    assert gm.max_mpi(size, N) == M
 
 
 def test_coord():
