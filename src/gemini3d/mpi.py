@@ -88,12 +88,7 @@ def max_gcd2(s: T.Sequence[int], M: int) -> int:
     N = 1
     for i in f2:
         for j in f3:
-            # we do this because 1 CPU along a dimension means don't partition in that dimension
-            if i == 1:
-                i = 0
-            if j == 1:
-                j = 0
-            if M >= i + j > N:
-                N = i + j
-
+            if M >= i * j > N:
+                # print(i,j)
+                N = i * j
     return N
