@@ -11,7 +11,7 @@ from . import mpi
 from .build import cmake_build
 from .config import read_config
 from .hpc import hpc_batch_detect, hpc_batch_create
-from .model_setup import model_setup
+from . import model
 from . import write
 from .utils import git_meta
 
@@ -37,17 +37,17 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
     for k in ("indat_size", "indat_grid", "indat_file"):
         f = out_dir / p[k].expanduser()
         if pr.get("force") or not f.is_file():
-            model_setup(p["nml"], out_dir)
+            model.setup(p["nml"], out_dir)
 
     if "E0dir" in p:
         E0dir = out_dir / p["E0dir"]
         if not E0dir.is_dir():
-            model_setup(p["nml"], out_dir)
+            model.setup(p["nml"], out_dir)
 
     if "precdir" in p:
         precdir = out_dir / p["precdir"]
         if not precdir.is_dir():
-            model_setup(p["nml"], out_dir)
+            model.setup(p["nml"], out_dir)
 
     # build checks
     gemexe = get_gemini_exe(pr.get("gemexe"))

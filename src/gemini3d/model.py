@@ -2,6 +2,7 @@
 setup a new simulation
 """
 
+import argparse
 from pathlib import Path
 import typing as T
 import shutil
@@ -14,7 +15,7 @@ from .particles import particles_BCs
 from . import write
 
 
-def model_setup(p: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
+def setup(p: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
     """
     top-level function to create a new simulation
 
@@ -55,12 +56,12 @@ def model_setup(p: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
 
     # %% is this equilibrium or interpolated simulation
     if "eqdir" in cfg:
-        model_setup_interp(cfg)
+        interp(cfg)
     else:
-        model_setup_equilibrium(cfg)
+        equilibrium(cfg)
 
 
-def model_setup_equilibrium(p: T.Dict[str, T.Any]):
+def equilibrium(p: T.Dict[str, T.Any]):
     # %% GRID GENERATION
 
     xg = grid.cart3d(p)
@@ -76,7 +77,7 @@ def model_setup_equilibrium(p: T.Dict[str, T.Any]):
     write.state(p["time"][0], ns, vsx1, Ts, p["indat_file"])
 
 
-def model_setup_interp(p: T.Dict[str, T.Any]):
+def interp(p: T.Dict[str, T.Any]):
 
     xg = grid.cart3d(p)
 
@@ -89,3 +90,16 @@ def model_setup_interp(p: T.Dict[str, T.Any]):
     # %% aurora
     if "precdir" in p:
         particles_BCs(p, xg)
+
+
+def cli():
+    p = argparse.ArgumentParser()
+    p.add_argument("config_file", help="path to config*.nml file")
+    p.add_argument("out_dir", help="simulation output directory")
+    P = p.parse_args()
+
+    setup(P.config_file, P.out_dir)
+
+
+if __name__ == "__main__":
+    cli()
