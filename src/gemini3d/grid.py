@@ -35,9 +35,9 @@ def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
 
     if set(("alt_min", "alt_max", "alt_scale", "Bincl")) <= p.keys():
         z = altitude_grid(p["alt_min"], p["alt_max"], p["Bincl"], p["alt_scale"])
-    elif "eqdir" in p and p["eqdir"].is_file():
-        logging.info("makegrid_cart_3D: reusing grid from", p["eqdir"])
-        xeq = read.grid(p["eqdir"])
+    elif "eq_dir" in p and p["eq_dir"].is_file():
+        logging.info("makegrid_cart_3D: reusing grid from", p["eq_dir"])
+        xeq = read.grid(p["eq_dir"])
         z = xeq["x1"]
         del xeq
     else:

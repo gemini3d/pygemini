@@ -113,11 +113,11 @@ def test_runner(name, file_format, tmp_path):
         params[k] = params[k].with_suffix("." + file_format)
 
     # patch eq_dir to use reference data
-    if "eqdir" in params:
-        eq_dir = test_dir.parent / params["eqdir"].name
+    if "eq_dir" in params:
+        eq_dir = test_dir.parent / params["eq_dir"].name
         if eq_dir.is_dir():
             print(f"Using {eq_dir} for equilibrium data")
-        params["eqdir"] = eq_dir
+        params["eq_dir"] = eq_dir
 
     # %% generate initial condition files
     gemini3d.model.setup(params, out_dir)

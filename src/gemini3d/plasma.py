@@ -28,19 +28,19 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     """
 
     # %% READ Equilibrium SIMULATION INFO
-    peq = read_config(p["eqdir"])
+    peq = read_config(p["eq_dir"])
     if not peq:
         raise FileNotFoundError(
-            f"equilibrium directory {p['eqdir']} does not appear to contain config.nml"
+            f"equilibrium directory {p['eq_dir']} does not appear to contain config.nml"
         )
 
-    xgin = read.grid(p["eqdir"])
+    xgin = read.grid(p["eq_dir"])
     # %% END FRAME time of equilibrium simulation
     # this will be the starting time of the new simulation
     t_eq_end = peq["time"][-1]
 
     # %% LOAD THE last equilibrium frame
-    dat = read.frame(p["eqdir"], t_eq_end)
+    dat = read.frame(p["eq_dir"], t_eq_end)
 
     # %% sanity check equilibrium simulation input to interpolation
     check_density(dat["ns"][1])
