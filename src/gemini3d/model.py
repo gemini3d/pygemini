@@ -2,6 +2,7 @@
 setup a new simulation
 """
 
+import importlib
 import argparse
 from pathlib import Path
 import typing as T
@@ -45,7 +46,7 @@ def setup(p: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
         cfg[k] = cfg["out_dir"] / cfg[k]
 
     # FIXME: should use is_absolute() ?
-    for k in ("eqdir", "eqzip", "E0dir", "precdir"):
+    for k in ("eq_dir", "eqzip", "E0dir", "precdir"):
         if cfg.get(k):
             cfg[k] = (cfg["out_dir"] / cfg[k]).resolve()
 
@@ -55,7 +56,7 @@ def setup(p: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
     shutil.copy2(cfg["nml"], input_dir)
 
     # %% is this equilibrium or interpolated simulation
-    if "eqdir" in cfg:
+    if "eq_dir" in cfg:
         interp(cfg)
     else:
         equilibrium(cfg)
@@ -77,19 +78,34 @@ def equilibrium(p: T.Dict[str, T.Any]):
     write.state(p["time"][0], ns, vsx1, Ts, p["indat_file"])
 
 
-def interp(p: T.Dict[str, T.Any]):
+def interp(cfg: T.Dict[str, T.Any]) -> None:
 
-    xg = grid.cart3d(p)
+    xg = grid.cart3d(cfg)
 
-    equilibrium_resample(p, xg)
+    equilibrium_resample(cfg, xg)
+
+    postprocess(cfg, xg)
+
+
+def postprocess(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> None:
+
+    if "setup_functions" in cfg:
+        # assume file to import from is in cwd or Python path
+        for name in cfg["setup_functions"]:
+            mod_name = ".".join(name.split(".")[:-1])
+            func_name = name.split(".")[-1]
+            mod = importlib.import_module(mod_name)
+            getattr(mod, func_name)(cfg, xg)
+
+        return
 
     # %% potential boundary conditions
-    if "E0dir" in p:
-        Efield_BCs(p, xg)
+    if "E0dir" in cfg:
+        Efield_BCs(cfg, xg)
 
     # %% aurora
-    if "precdir" in p:
-        particles_BCs(p, xg)
+    if "precdir" in cfg:
+        particles_BCs(cfg, xg)
 
 
 def cli():
