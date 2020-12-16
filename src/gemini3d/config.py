@@ -160,7 +160,7 @@ def parse_namelist(r: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
             P[k] = int(r[k])
     elif namelist == "files":
         for k in ("indat_file", "indat_grid", "indat_size"):
-            P[k] = Path(r[k])
+            P[k] = Path(r[k]).expanduser()
 
         if "file_format" in r:
             P["format"] = r["file_format"]
@@ -177,6 +177,9 @@ def parse_namelist(r: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
                 P["realbits"] = 32
     elif namelist == "setup":
         P["alt_scale"] = list(map(float, r["alt_scale"]))
+
+        if "setup_functions" in r:
+            P["setup_functions"] = [s.strip() for s in r["setup_functions"].split(",")]
 
         for k in ("lxp", "lyp"):
             P[k] = int(r[k])
@@ -203,12 +206,13 @@ def parse_namelist(r: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
         ):
             if k in r:
                 P[k] = float(r[k])
-        for k in ("eqdir",):
-            if k in r:
-                P[k] = Path(r[k])
+        if "eqdir" in r:  # old .nml
+            P["eq_dir"] = Path(r["eqdir"]).expanduser()
+        if "eq_dir" in r:
+            P["eq_dir"] = Path(r["eq_dir"]).expanduser()
     elif namelist == "neutral_perturb":
         P["interptype"] = int(r["interptype"])
-        P["sourcedir"] = Path(r["source_dir"])
+        P["sourcedir"] = Path(r["source_dir"]).expanduser()
 
         for k in ("sourcemlat", "sourcemlon", "dtneu", "dxn", "drhon", "dzn"):
             try:
@@ -217,10 +221,10 @@ def parse_namelist(r: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
                 P[k] = NaN
     elif namelist == "precip":
         P["dtprec"] = timedelta(seconds=float(r["dtprec"]))
-        P["precdir"] = Path(r["prec_dir"])
+        P["precdir"] = Path(r["prec_dir"]).expanduser()
     elif namelist == "efield":
         P["dtE0"] = timedelta(seconds=float(r["dtE0"]))
-        P["E0dir"] = Path(r["E0_dir"])
+        P["E0dir"] = Path(r["E0_dir"]).expanduser()
     elif namelist == "glow":
         P["dtglow"] = timedelta(seconds=float(r["dtglow"]))
         P["dtglowout"] = float(r["dtglowout"])
