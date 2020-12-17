@@ -2,8 +2,9 @@
 functions for finding files
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
+import numpy as np
 
 FILE_FORMATS = [".h5", ".nc", ".dat"]
 
@@ -62,16 +63,33 @@ def frame(simdir: Path, time: datetime, file_format: str = None) -> Path:
     stem = (
         time.strftime("%Y%m%d")
         + f"_{time.hour*3600 + time.minute*60 + time.second:05d}."
-        + f"{time.microsecond:06d}"[:5]
+        + f"{time.microsecond:06d}"
     )
 
     suffixes = [f".{file_format}"] if file_format else FILE_FORMATS
 
     for ext in suffixes:
-        for tick in ("0", "1"):
-            fn = simdir / (stem + tick + ext)
-            if fn.is_file():
-                return fn
+        fn = simdir / (stem + ext)
+        if fn.is_file():
+            return fn
+
+    # %% WORKAROUND for real32 file ticks. This will be removed when datetime-fortran is implemented
+    MAX_OFFSET = timedelta(seconds=0.02)  # 10 ms precision, allow extra accumulated tolerance
+    pat = time.strftime("%Y%m%d") + "_*"
+    for ext in suffixes:
+        file_times = []
+        files = list(simdir.glob(pat + ext))
+        for fn in files:
+            file_times.append(
+                datetime.strptime(fn.name[:8], "%Y%m%d") + timedelta(seconds=float(fn.name[9:21]))
+            )
+
+        if file_times:
+            afile_times = np.array(file_times)
+            i = abs(afile_times - time).argmin()
+
+            if abs(afile_times[i] - time) <= MAX_OFFSET:
+                return files[i]
 
     return None
 

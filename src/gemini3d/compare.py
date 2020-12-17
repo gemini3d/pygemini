@@ -282,6 +282,8 @@ def compare_output(
     for i, t in enumerate(params["time"]):
         st = f"UTsec {t}"
         A = read.frame(outdir, t, file_format)
+        if not A:
+            raise FileNotFoundError(f"{outdir} does not appear to contain data at {t}")
         B = read.frame(refdir, t)
         # don't specify file_format for reference,
         # so that one reference file format can check multiple "out" format
