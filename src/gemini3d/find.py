@@ -74,7 +74,7 @@ def frame(simdir: Path, time: datetime, file_format: str = None) -> Path:
             return fn
 
     # %% WORKAROUND for real32 file ticks. This will be removed when datetime-fortran is implemented
-    MAX_OFFSET = timedelta(seconds=0.02)  # 10 ms precision, allow extra accumulated tolerance
+    MAX_OFFSET = timedelta(seconds=1)  # 10 ms precision, allow extra accumulated tolerance
     pat = time.strftime("%Y%m%d") + "_*"
     for ext in suffixes:
         file_times = []
