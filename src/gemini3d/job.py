@@ -1,3 +1,10 @@
+"""
+functions related to running gemini.bin.
+Either locally (laptop or interactive HPC) or creating an HPC batch script based on template.
+
+Builds gemini.bin if not found.
+"""
+
 import typing as T
 import os
 import logging
@@ -5,6 +12,8 @@ import subprocess
 import shutil
 from pathlib import Path
 import importlib.resources
+import numpy as np
+import psutil
 
 from . import find
 from . import mpi
@@ -13,6 +22,7 @@ from .config import read_config
 from .hpc import hpc_batch_detect, hpc_batch_create
 from . import model
 from . import write
+from . import read
 from .utils import git_meta
 
 Pathlike = T.Union[str, Path]
@@ -34,16 +44,22 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
             f"a fresh simulation should not have data in output directory: {out_dir}"
         )
 
+    # %% setup grid and/or initial ionosphere state if needed
     for k in ("indat_size", "indat_grid", "indat_file"):
         f = out_dir / p[k].expanduser()
         if pr.get("force") or not f.is_file():
             model.setup(p["nml"], out_dir)
 
+    # %% estimate simulation RAM use on root MPI node
+    ram_use_bytes = memory_estimate(out_dir)
+
+    # %% setup Efield if needed
     if "E0dir" in p:
         E0dir = out_dir / p["E0dir"]
         if not E0dir.is_dir():
             model.setup(p["nml"], out_dir)
 
+    # %% setup precip if needed
     if "precdir" in p:
         precdir = out_dir / p["precdir"]
         if not precdir.is_dir():
@@ -85,11 +101,67 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
         # hpc_submit_job(job_file)
         print("Please examine batch file", job_file, "and when ready submit the job as usual.")
     else:
+        avail_memory = psutil.virtual_memory().available
+        if avail_memory < 2 * ram_use_bytes:
+            logging.warning(
+                f"""
+Computer RAM available: {avail_memory/1e9:.1} GB but simulation needs {ram_use_bytes/1e9:.1}
+Gemini3D may run out of RAM on this computer, which may make the run exceedingly slow or fail.
+"""
+            )
         print("\nBEGIN Gemini run with command:")
         print(" ".join(cmd), "\n")
         ret = subprocess.run(cmd).returncode
         if ret != 0:
             raise RuntimeError("Gemini run failed")
+
+
+def memory_estimate(path: Path) -> int:
+    """
+    Estimate how must RAM gemini.bin will need.
+    The current Gemini MPI architecture assumes the root node will use the most RAM,
+    so that is the fundamental constraint.
+    This neglects size of executable and library footprint,
+    which would be miniscule in simulations larger than 1 GB where we
+    are concerned about RAM limits.
+
+    Parameters
+    ----------
+
+    path: pathlib.Path
+        path to simgrid.*
+
+    Returns
+    -------
+
+    memory_used: int
+        estimated RAM usage (bytes)
+
+    """
+
+    SIZE = 8  # number of bytes for each element: real64 => 8 bytes
+    PAD = 2  # factor to assume needed over variable itself (computations, work variables, ...)
+
+    gs = read.grid(path, shape=True)
+
+    grid_size = 0
+
+    for k, v in gs.items():
+        if k == "lxs":
+            continue
+        grid_size += np.prod(v)
+
+    LSP = 7
+    x1 = gs["x1"][0]
+    x2 = gs["x2"][0]
+    x3 = gs["x3"][0]
+
+    Ns = LSP * x1 * x2 * x3
+    Ts = Ns
+
+    memory_used = SIZE * (grid_size + (Ns + Ts) * PAD)
+
+    return memory_used
 
 
 def check_compiler():
@@ -140,8 +212,6 @@ def get_gemini_exe(gemexe: Path = None) -> Path:
     If not given a specific full path to gemini.bin, looks for gemini.bin under:
 
         build
-        build / Release
-        build / Debug
     """
 
     if not gemexe:  # allow for default dict empty

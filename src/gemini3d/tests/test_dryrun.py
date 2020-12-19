@@ -10,6 +10,16 @@ import gemini3d.web
 R = Path(__file__).parents[1] / "tests/data"
 
 
+@pytest.mark.parametrize("name,bref", [("2dew_eq", 1238112), ("3d_eq", 2323072)])
+def test_memory(name, bref):
+
+    ref = gemini3d.web.download_and_extract(name, R)
+
+    est = job.memory_estimate(ref)
+
+    assert est == bref
+
+
 def test_mpiexec():
 
     exe = job.get_gemini_exe()
