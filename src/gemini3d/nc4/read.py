@@ -71,7 +71,7 @@ def flagoutput(fn: Path, cfg: T.Dict[str, T.Any]) -> int:
     return flag
 
 
-def grid(fn: Path) -> T.Dict[str, np.ndarray]:
+def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     """
     get simulation grid
 
@@ -79,6 +79,8 @@ def grid(fn: Path) -> T.Dict[str, np.ndarray]:
     ----------
     fn: pathlib.Path
         filepath to simgrid
+    shape: bool, optional
+        read only the shape of the grid instead of the data iteslf
 
     Returns
     -------
@@ -95,14 +97,22 @@ def grid(fn: Path) -> T.Dict[str, np.ndarray]:
         logging.error(f"{fn} grid file is not present.")
         return grid
 
+    if shape:
+        with Dataset(fn, "r") as f:
+            for key in f.variables:
+                grid[key] = f[key].shpae
+
+        grid["lxs"] = np.array([grid["x1"], grid["x2"], grid["x3"]])
+
+        return grid
+
     with Dataset(fn, "r") as f:
         for key in f.variables:
             grid[key] = f[key][:]
 
-    try:
-        grid["lxs"] = simsize(fn.with_name("simsize.nc"))
-    except FileNotFoundError:
-        grid["lxs"] = np.array([grid["x1"].size, grid["x2"].size, grid["x3"].size])
+    grid["lxs"] = simsize(fn.with_name("simsize.nc"))
+    # FIXME: line below not always work. Why not?
+    # grid["lxs"] = np.array([grid["x1"].size, grid["x2"].size, grid["x3"].size])
 
     return grid
 

@@ -40,7 +40,7 @@ def simsize(fn: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def grid(fn: Path) -> T.Dict[str, np.ndarray]:
+def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     """
     get simulation dimensions
 
@@ -54,6 +54,10 @@ def grid(fn: Path) -> T.Dict[str, np.ndarray]:
     grid: dict
         grid parameters
     """
+
+    if shape:
+        raise NotImplementedError("grid shape for raw would be straightforward.")
+
     lxs = simsize(fn.parent / "simsize.dat")
     if len(lxs) == 2:
         return grid2(fn, lxs)

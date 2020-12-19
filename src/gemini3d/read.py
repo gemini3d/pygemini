@@ -36,8 +36,20 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
         raise ValueError("unkonwn simsize file type")
 
 
-def grid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
+def grid(path: Path, file_format: str = None, shape: bool = False) -> T.Dict[str, np.ndarray]:
+    """
+    get simulation grid
 
+    Parameters
+    ----------
+
+    path: pathlib.Path
+        path to simgrid.*
+    file_format: str, optional
+        force .h5, .nc, .dat (debugging)
+    shape: bool, optional
+        read only the shape of the grid instead of the data iteslf
+    """
     fn = find.grid(path)
     if not fn:
         return {}
@@ -46,13 +58,13 @@ def grid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
         file_format = fn.suffix[1:]
 
     if file_format == "dat":
-        grid = raw_read.grid(fn.with_suffix(".dat"))
+        grid = raw_read.grid(fn.with_suffix(".dat"), shape)
     elif file_format == "h5":
-        grid = h5read.grid(fn.with_suffix(".h5"))
+        grid = h5read.grid(fn.with_suffix(".h5"), shape)
     elif file_format == "nc":
-        grid = ncread.grid(fn.with_suffix(".nc"))
+        grid = ncread.grid(fn.with_suffix(".nc"), shape)
     elif file_format == "mat":
-        grid = matlab.grid(fn.with_suffix(".mat"))
+        grid = matlab.grid(fn.with_suffix(".mat"), shape)
     else:
         raise ValueError(f"Unknown file type {fn}")
 

@@ -7,7 +7,7 @@ import typing as T
 import scipy.io
 
 
-def grid(fn: Path) -> T.Dict[str, T.Any]:
+def grid(fn: Path, shape: bool = False) -> T.Dict[str, T.Any]:
     """
     get simulation grid
 
@@ -21,6 +21,9 @@ def grid(fn: Path) -> T.Dict[str, T.Any]:
     grid: dict
         grid parameters
     """
+
+    if shape:
+        raise NotImplementedError("shape with Matlab")
 
     grid = scipy.io.loadmat(fn, squeeze_me=True)
 
