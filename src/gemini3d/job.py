@@ -237,7 +237,7 @@ def get_gemini_exe(gemexe: Path = None) -> Path:
             if not gemexe.is_file():
                 raise RuntimeError(f"Gemini.bin not found in {build_dir}")
     # %% ensure gemini.bin is runnable
-    ret = subprocess.run([str(gemexe)], stdout=subprocess.DEVNULL, timeout=5)
+    ret = subprocess.run([str(gemexe)], stdout=subprocess.DEVNULL, timeout=15)
     if ret.returncode != 0:
         raise RuntimeError(
             f"\n{gemexe} was not runnable on your platform. Try recompiling on this computer type."
