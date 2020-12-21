@@ -6,7 +6,11 @@ on:
     - "src/gemini3d/prereqs.py"
     - "src/gemini3d/tests/test_prereqs.py"
     - ".github/workflows/ci_prereq.yml"
-
+  pull_request:
+    paths:
+    - "src/gemini3d/prereqs.py"
+    - "src/gemini3d/tests/test_prereqs.py"
+    - ".github/workflows/ci_prereq.yml"
 
 jobs:
 

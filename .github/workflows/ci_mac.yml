@@ -1,0 +1,39 @@
+name: ci_mac
+
+on:
+  push:
+    paths:
+    - "**.py"
+    - "**.cmake"
+    - "**/CMakeLists.txt"
+    - ".github/workflows/ci_mac.yml"
+  pull_request:
+    paths:
+    - "**.py"
+    - "**.cmake"
+    - "**/CMakeLists.txt"
+    - ".github/workflows/ci_mac.yml"
+
+
+jobs:
+
+  macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: [ '3.7' ]
+    name: MacOS Python ${{ matrix.python-version }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - run: python -m pip install .[tests]
+      timeout-minutes: 3
+
+    - run: python -m gemini3d.install
+      timeout-minutes: 2
+
+    - run: pytest
+      timeout-minutes: 7
