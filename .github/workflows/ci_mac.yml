@@ -41,5 +41,3 @@ jobs:
 
     - run: pytest
       timeout-minutes: 7
-      env:
-        FC: /usr/local/bin/gfortran-10
