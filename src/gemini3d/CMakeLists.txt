@@ -9,14 +9,11 @@ if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
   set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
 endif()
 
-set(gemini_url "https://github.com/gemini3d/gemini3d.git")
-set(gemini_tag)
-
 if(NOT gemini_root)
   if(DEFINED ENV{GEMINI_ROOT})
     set(gemini_root $ENV{GEMINI_ROOT})
   else()
-    set(gemini_root ${CMAKE_CURRENT_SOURCE_DIR}/gemini-fortran/)
+    set(gemini_root ${CMAKE_CURRENT_SOURCE_DIR}/gemini-fortran)
   endif()
 endif()
 
@@ -25,10 +22,6 @@ endif()
 get_filename_component(gemini_root ${gemini_root} ABSOLUTE)
 
 set(msis_path ${gemini_root}/src/vendor/msis00)
-
-include(cmake/git.cmake)
-
-git_download(${gemini_root} ${gemini_url} ${gemini_tag})
 
 # --- build msis
 

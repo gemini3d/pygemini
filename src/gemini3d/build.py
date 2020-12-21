@@ -24,9 +24,11 @@ def get_cmake() -> str:
 
 
 def cmake_build(
-    args: T.List[str],
     source_dir: Path,
     build_dir: Path,
+    *,
+    config_args: T.List[str] = None,
+    build_args: T.List[str] = None,
     wipe: bool = False,
     env: T.Mapping[str, str] = None,
     run_test: bool = True,
@@ -41,21 +43,22 @@ def cmake_build(
         if cache_file.is_file():
             cache_file.unlink()
     # %% Configure
-    cmd = [cmake, "-B", str(build_dir), "-S", str(source_dir)]
-    if args:
-        cmd += args
+    cmd = [cmake, f"-B{build_dir}", f"-S{source_dir}"]
+    if config_args:
+        cmd += config_args
     subprocess.check_call(cmd, env=env)
     # %% Build
     cmd = [cmake, "--build", str(build_dir), "--parallel"]
+    if build_args:
+        cmd += build_args
     if dryrun:
         print("DRYRUN: would have run\n", " ".join(cmd))
         return None
 
     subprocess.check_call(cmd)
 
-    Njobs = get_cpu_count()
-
     if run_test:
+        Njobs = get_cpu_count()
         subprocess.check_call(
             ["ctest", "--parallel", str(Njobs), "--output-on-failure"], cwd=str(build_dir)
         )

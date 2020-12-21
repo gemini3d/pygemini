@@ -14,6 +14,7 @@ from scipy.interpolate import interp1d, interp2d, interpn
 from .config import read_config
 from . import read
 from . import write
+from .build import cmake_build
 
 DictArray = T.Dict[str, T.Any]
 # CONSTANTS
@@ -452,13 +453,19 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
 
     """
 
-    msis_name = "msis_setup"
+    msis_stem = "msis_setup"
+    msis_name = msis_stem
     if os.name == "nt":
         msis_name += ".exe"
 
     if not importlib.resources.is_resource(__package__, msis_name):
-        with importlib.resources.path(__package__, "setup.cmake") as setup:
-            subprocess.check_call(["ctest", "-S", str(setup), "-VV"])
+        with importlib.resources.path(__package__, "CMakeLists.txt") as setup:
+            cmake_build(
+                setup.parent,
+                setup.parent / "build",
+                config_args=["-DBUILD_TESTING:BOOL=false"],
+                build_args=["--target", msis_stem],
+            )
 
     # %% SPECIFY SIZES ETC.
     lx1 = xg["lx"][0]

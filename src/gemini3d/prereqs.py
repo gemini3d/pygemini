@@ -168,7 +168,13 @@ def netcdf_c(
         "-DENABLE_DAP4:BOOL=OFF",
     ]
     cmake_build(
-        c_args + lib_args, source_dir, build_dir, wipe, env=env, run_test=False, dryrun=dryrun
+        source_dir,
+        build_dir,
+        wipe=wipe,
+        env=env,
+        run_test=False,
+        dryrun=dryrun,
+        config_args=c_args + lib_args,
     )
 
 
@@ -223,7 +229,9 @@ def netcdf_fortran(
         "-DENABLE_TESTS:BOOL=off",
         "-DBUILD_EXAMPLES:BOOL=OFF",
     ]
-    cmake_build(f_args, source_dir, build_dir, wipe, env=env, run_test=False, dryrun=dryrun)
+    cmake_build(
+        source_dir, build_dir, wipe=wipe, env=env, run_test=False, dryrun=dryrun, config_args=f_args
+    )
 
 
 def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
@@ -342,7 +350,7 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun
     git_download(source_dir, git_url, LAPACK_TAG)
 
     args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
-    cmake_build(args, source_dir, build_dir, wipe, env=env, dryrun=dryrun)
+    cmake_build(source_dir, build_dir, wipe=wipe, env=env, dryrun=dryrun, config_args=args)
 
 
 def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
@@ -365,7 +373,9 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dry
         "-Dautobuild:BOOL=off",
         f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
     ]
-    cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env, dryrun=dryrun)
+    cmake_build(
+        source_dir, build_dir, wipe=wipe, env=env, dryrun=dryrun, config_args=args + lib_args
+    )
 
 
 def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
@@ -395,34 +405,37 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun:
         scalapack(wipe, dirs, env)
 
     args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
-    cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env, dryrun=dryrun)
+    cmake_build(
+        source_dir, build_dir, wipe=wipe, env=env, dryrun=dryrun, config_args=args + lib_args
+    )
 
 
-def git_download(path: Path, repo: str, tag: str):
+def git_download(path: Path, repo: str, tag: str = None):
     """
     Use Git to download code repo.
     """
-    GITEXE = shutil.which("git")
 
-    if not GITEXE:
+    git = shutil.which("git")
+
+    if not git:
         raise FileNotFoundError("Git not found.")
+
+    if not tag:
+        if not path.is_dir():
+            subprocess.check_call([git, "clone", repo, "--depth", "1", str(path)])
+        return
 
     if path.is_dir():
         # don't use "git -C" for old HPC
-        ret = subprocess.run([GITEXE, "checkout", tag], cwd=str(path))
+        ret = subprocess.run([git, "checkout", tag], cwd=str(path))
         if ret.returncode != 0:
-            ret = subprocess.run([GITEXE, "fetch"], cwd=str(path))
+            ret = subprocess.run([git, "fetch"], cwd=str(path))
             if ret.returncode != 0:
                 raise RuntimeError(f"could not fetch {path}  Maybe try removing this directory.")
-            subprocess.check_call([GITEXE, "checkout", tag], cwd=str(path))
+            subprocess.check_call([git, "checkout", tag], cwd=str(path))
     else:
         # shallow clone
-        if tag:
-            subprocess.check_call(
-                [GITEXE, "clone", repo, "--branch", tag, "--single-branch", str(path)]
-            )
-        else:
-            subprocess.check_call([GITEXE, "clone", repo, "--depth", "1", str(path)])
+        subprocess.check_call([git, "clone", repo, "--branch", tag, "--single-branch", str(path)])
 
 
 def get_compilers(compiler_name: str, **kwargs) -> T.Mapping[str, str]:

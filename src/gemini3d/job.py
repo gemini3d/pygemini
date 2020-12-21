@@ -24,6 +24,8 @@ from . import model
 from . import write
 from . import read
 from .utils import git_meta
+from .prereqs import git_download
+
 
 Pathlike = T.Union[str, Path]
 
@@ -219,21 +221,30 @@ def get_gemini_exe(gemexe: Path = None) -> Path:
     gemexe = Path(gemexe).expanduser()  # not .resolve()
 
     src_dir = None
+    build_dir = None
 
     if not gemexe.is_file():
         if os.environ.get("GEMINI_ROOT"):
             src_dir = Path(os.environ["GEMINI_ROOT"]).expanduser()
         if not src_dir or not src_dir.is_dir():
             # step 1: clone Gemini3D and do a test build
-            with importlib.resources.path(__package__, "setup.cmake") as setup:
-                subprocess.check_call(["ctest", "-S", str(setup), "-VV"])
+            with importlib.resources.path(__package__, "CMakeLists.txt") as setup:
                 src_dir = setup.parent / "gemini-fortran"
+                git_download(src_dir, repo="https://github.com/gemini3d/gemini3d.git")
+
         assert src_dir.is_dir(), f"could not find Gemini3D source directory {src_dir}"
         build_dir = src_dir / "build"
         gemexe = build_dir / gemexe.name
 
         if not gemexe.is_file():
-            cmake_build(None, src_dir, build_dir, run_test=False, install=False)
+            cmake_build(
+                src_dir,
+                build_dir,
+                run_test=False,
+                install=False,
+                config_args=["-DBUILD_TESTING:BOOL=false"],
+                build_args=["--target", "gemini.bin"],
+            )
             if not gemexe.is_file():
                 raise RuntimeError(f"Gemini.bin not found in {build_dir}")
     # %% ensure gemini.bin is runnable
