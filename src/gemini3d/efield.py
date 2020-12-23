@@ -96,7 +96,8 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
         E["Jtarg"] = p["Jtarg"]
         E = Jcurrent_target(E, Nt)
     else:
-        raise LookupError("unknown target feature")
+        # background only
+        pass
 
     # %% check for NaNs
     # this is also done in Fortran, but just to help ensure results.
