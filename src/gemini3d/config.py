@@ -113,7 +113,7 @@ def read_namelist(fn: Path, namelist: str) -> T.Dict[str, T.Any]:
     r: T.Dict[str, T.Sequence[str]] = {}
     nml_pat = re.compile(r"^\s*&(" + namelist + r")")
     end_pat = re.compile(r"^\s*/\s*$")
-    val_pat = re.compile(r"^\s*(\w+)\s*=\s*['\"]?([^!'\"]*)['\"]?")
+    val_pat = re.compile(r"^\s*(\w+)\s*=\s*([^!]*)")
 
     with fn.open("r") as f:
         for line in f:
@@ -128,7 +128,8 @@ def read_namelist(fn: Path, namelist: str) -> T.Dict[str, T.Any]:
                 if not val_mat:
                     continue
 
-                key, vals = val_mat.group(1), val_mat.group(2).split(",")
+                key, vals = val_mat.group(1), val_mat.group(2).strip().split(",")
+                vals = [v.strip().replace("'", "").replace('"', "") for v in vals]
                 r[key] = vals[0] if len(vals) == 1 else vals
 
     raise KeyError(f"did not find Namelist {namelist} in {fn}")
@@ -179,7 +180,7 @@ def parse_namelist(r: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
         P["alt_scale"] = list(map(float, r["alt_scale"]))
 
         if "setup_functions" in r:
-            P["setup_functions"] = [s.strip() for s in r["setup_functions"].split(",")]
+            P["setup_functions"] = r["setup_functions"]
 
         for k in ("lxp", "lyp"):
             P[k] = int(r[k])
