@@ -80,6 +80,7 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
     # %% CREATE DATA FOR BOUNDARY CONDITIONS FOR POTENTIAL SOLUTION
 
     # if 0 data is interpreted as FAC, else we interpret it as potential
+    E["flagdirich"] = np.zeros(Nt, dtype=np.int32)
     E["Vminx1it"] = np.zeros((Nt, E["llon"], E["llat"]))
     E["Vmaxx1it"] = np.zeros((Nt, E["llon"], E["llat"]))
     # these are just slices
@@ -127,8 +128,6 @@ def Jcurrent_target(E: dict, Nt: int) -> dict:
         * np.exp(-((E["mlat"] - E["mlatmean"] - 1.5 * E["mlatsig"]) ** 2) / 2 / E["mlatsig"] ** 2)
     )
 
-    E["flagdirich"] = np.zeros(Nt)
-
     for i in range(6, Nt):
         E["flagdirich"][i] = 0
         # could have different boundary types for different times
@@ -163,8 +162,6 @@ def Efield_target(E: dict, xg: dict, lx1: int, lx2: int, lx3: int, Nt: int) -> d
         )
 
     assert S.ndim == 0, "S is a scalar"
-
-    E["flagdirich"] = np.ones(Nt)
 
     for i in range(Nt):
         E["flagdirich"][i] = 1
