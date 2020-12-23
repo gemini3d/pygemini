@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 include(cmake/compiler_find.cmake)
+find_c_fortran()
 
 project(MSIS LANGUAGES Fortran)
 
