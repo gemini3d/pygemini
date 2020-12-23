@@ -88,6 +88,12 @@ def interp(cfg: T.Dict[str, T.Any]) -> None:
 
 
 def postprocess(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> None:
+    """
+    defaults to applying config.nml defined E-field and/or precipitation
+
+    However, the user can also apply their own functions in config.nml
+    &setup setup_functions
+    """
 
     if "setup_functions" in cfg:
         # assume file to import from is in cwd or Python path

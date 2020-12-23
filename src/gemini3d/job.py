@@ -99,8 +99,7 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
 
     batcher = hpc_batch_detect()
     if batcher:
-        job_file = hpc_batch_create(batcher, out_dir, cmd)  # noqa: F841
-        # hpc_submit_job(job_file)
+        job_file = hpc_batch_create(batcher, out_dir, cmd)
         print("Please examine batch file", job_file, "and when ready submit the job as usual.")
     else:
         avail_memory = psutil.virtual_memory().available

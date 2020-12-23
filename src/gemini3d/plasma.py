@@ -35,13 +35,14 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
             f"equilibrium directory {p['eq_dir']} does not appear to contain config.nml"
         )
 
-    xgin = read.grid(p["eq_dir"])
     # %% END FRAME time of equilibrium simulation
     # this will be the starting time of the new simulation
     t_eq_end = peq["time"][-1]
 
     # %% LOAD THE last equilibrium frame
     dat = read.frame(p["eq_dir"], t_eq_end)
+    if not dat:
+        raise FileNotFoundError(f"{p['eq_dir']} does not have data for {t_eq_end}")
 
     # %% sanity check equilibrium simulation input to interpolation
     check_density(dat["ns"][1])
@@ -49,7 +50,11 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     check_temperature(dat["Ts"][1])
 
     # %% DO THE INTERPOLATION
-    nsi, vs1i, Tsi = model_resample(xgin, dat["ns"][1], dat["vs"][1], dat["Ts"][1], xg)
+    xg_in = read.grid(p["eq_dir"])
+    if not xg_in:
+        raise FileNotFoundError(f"{p['eq_dir']} does not have an input simulation grid.")
+
+    nsi, vs1i, Tsi = model_resample(xg_in, dat["ns"][1], dat["vs"][1], dat["Ts"][1], xg)
 
     # %% sanity check interpolated variables
     check_density(nsi)
@@ -90,6 +95,7 @@ def model_resample(
     Tsi: dict
         interpolated temperature of species (4D)
     """
+
     # %% NEW GRID SIZES
     lx1, lx2, lx3 = xg["lx"]
     lsp = ns.shape[0]
