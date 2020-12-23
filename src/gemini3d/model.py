@@ -100,6 +100,9 @@ def postprocess(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> None:
         for name in cfg["setup_functions"]:
             mod_name = ".".join(name.split(".")[:-1])
             func_name = name.split(".")[-1]
+            if not mod_name:
+                # file with single function of same name e.g. perturb.py with function perturb()
+                mod_name = func_name
             mod = importlib.import_module(mod_name)
             getattr(mod, func_name)(cfg, xg)
 
