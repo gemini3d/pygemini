@@ -133,9 +133,9 @@ def data(
     if not file_format:
         file_format = fn.suffix[1:]
 
-    if file_format == "dat":
-        lxs = simsize(fn.parent)
+    lxs = simsize(fn.parent)
 
+    if file_format == "dat":
         flag = cfg.get("flagoutput")
         if flag == 0:
             dat = raw_read.frame3d_curvne(fn, lxs)
@@ -187,6 +187,11 @@ def data(
     if flag == 1:
         if {"ne", "v1", "Ti", "Te"}.intersection(var):
             dat["ne"] = (("x1", "x2", "x3"), dat["ns"][1][LSP - 1, :, :, :])
+            # np.any() in case neither is an np.ndarray
+            if dat["ns"][1].shape[0] != LSP or np.any(dat["ns"][1].shape[1:] != lxs):
+                raise ValueError(
+                    f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {dat['ns'][1].shape}"
+                )
         if "v1" in var:
             dat["v1"] = (
                 ("x1", "x2", "x3"),
@@ -199,6 +204,11 @@ def data(
             )
         if "Te" in var:
             dat["Te"] = (("x1", "x2", "x3"), dat["Ts"][1][LSP - 1, :, :, :])
+
+        if "J1" in var:
+            # np.any() in case neither is an np.ndarray
+            if np.any(dat["J1"][1].shape != lxs):
+                raise ValueError("J1 may have wrong permutation on read")
 
     if E0dir:
         fn_Efield = E0dir / fn.name

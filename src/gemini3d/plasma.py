@@ -490,7 +490,7 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     doy = int(t0.strftime("%j"))
     UTsec0 = t0.hour * 3600 + t0.minute * 60 + t0.second + t0.microsecond / 1e6
 
-    logging.debug("MSIS00 using DOY:", doy)
+    logging.debug(f"MSIS00 using DOY: {doy}")
     yearshort = t0.year % 100
     iyd = yearshort * 1000 + doy
     # %% KLUDGE THE BELOW-ZERO ALTITUDES SO THAT THEY DON'T GIVE INF

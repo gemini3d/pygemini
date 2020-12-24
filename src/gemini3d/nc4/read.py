@@ -8,7 +8,6 @@ import logging
 import numpy as np
 from datetime import datetime, timedelta
 
-from .. import LSP
 from .. import find
 
 
@@ -223,31 +222,23 @@ def frame3d_curv(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
         p3 = (2, 1, 0)
 
     with Dataset(file, "r") as f:
-        ns = f["nsall"][:].transpose(p4)
-        # np.any() in case neither is an np.ndarray
-        if ns.shape[0] != 7 or np.any(ns.shape[1:] != lxs):
-            raise ValueError(
-                f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {ns.shape}"
-            )
-        dat["ns"] = (("lsp", "x1", "x2", "x3"), ns)
-        vs = f["vs1all"][:].transpose(p4)
-        dat["vs"] = (("lsp", "x1", "x2", "x3"), vs)
-        Ts = f["Tsall"][:].transpose(p4)
-        dat["Ts"] = (("lsp", "x1", "x2", "x3"), Ts)
+        if {"ne", "ns", "v1", "Ti"}.intersection(var):
+            dat["ns"] = (("lsp", "x1", "x2", "x3"), f["nsall"][:].transpose(p4))
 
-        dat["Te"] = (("x1", "x2", "x3"), Ts[LSP - 1, :, :, :])
+        if "v1" in var:
+            dat["vs"] = (("lsp", "x1", "x2", "x3"), f["vs1all"][:].transpose(p4))
 
-        dat["J1"] = (("x1", "x2", "x3"), f["J1all"][:].transpose(p3))
-        # np.any() in case neither is an np.ndarray
-        if np.any(dat["J1"][1].shape != lxs):
-            raise ValueError("may have wrong permutation on read")
-        dat["J2"] = (("x1", "x2", "x3"), f["J2all"][:].transpose(p3))
-        dat["J3"] = (("x1", "x2", "x3"), f["J3all"][:].transpose(p3))
+        if {"Te", "Ti", "Ts"}.intersection(var):
+            dat["Ts"] = (("lsp", "x1", "x2", "x3"), f["Tsall"][:].transpose(p4))
 
-        dat["v2"] = (("x1", "x2", "x3"), f["v2avgall"][:].transpose(p3))
-        dat["v3"] = (("x1", "x2", "x3"), f["v3avgall"][:].transpose(p3))
+        for k in {"J1", "J2", "J3"}.intersection(var):
+            dat[k] = (("x1", "x2", "x3"), f[f"{k}all"][:].transpose(p3))
 
-        dat["Phitop"] = (("x2", "x3"), f["Phiall"][:].transpose())
+        for k in {"v2", "v3"}.intersection(var):
+            dat[k] = (("x1", "x2", "x3"), f[f"/{k}avgall"][:].transpose(p3))
+
+        if "Phiall" in f:
+            dat["Phitop"] = (("x2", "x3"), f["Phiall"][:].transpose())
 
     return dat
 
