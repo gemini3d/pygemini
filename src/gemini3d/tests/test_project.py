@@ -23,7 +23,11 @@ R = Path(__file__).parents[1] / "tests/data"
 def test_grid(name, file_format, tmp_path):
 
     # get files if needed
-    test_dir = gemini3d.web.download_and_extract(name, R)
+    try:
+        test_dir = gemini3d.web.download_and_extract(name, R)
+    except ConnectionError as e:
+        pytest.skip(f"failed to download reference data {e}")
+
     # setup new test data
     cfg = gemini3d.read.config(test_dir)
     xg = gemini3d.grid.cart3d(cfg)
@@ -46,7 +50,10 @@ def test_grid(name, file_format, tmp_path):
 def test_Efield(name, file_format, tmp_path):
 
     # get files if needed
-    test_dir = gemini3d.web.download_and_extract(name, R)
+    try:
+        test_dir = gemini3d.web.download_and_extract(name, R)
+    except ConnectionError as e:
+        pytest.skip(f"failed to download reference data {e}")
 
     cfg = gemini3d.read.config(test_dir)
     xg = gemini3d.read.grid(test_dir)
@@ -67,7 +74,10 @@ def test_Efield(name, file_format, tmp_path):
 def test_precip(name, file_format, tmp_path):
 
     # get files if needed
-    test_dir = gemini3d.web.download_and_extract(name, R)
+    try:
+        test_dir = gemini3d.web.download_and_extract(name, R)
+    except ConnectionError as e:
+        pytest.skip(f"failed to download reference data {e}")
 
     cfg = gemini3d.read.config(test_dir)
     xg = gemini3d.read.grid(test_dir)
@@ -101,7 +111,10 @@ def test_runner(name, file_format, tmp_path):
 
     out_dir = tmp_path
     # get files if needed
-    test_dir = gemini3d.web.download_and_extract(name, R)
+    try:
+        test_dir = gemini3d.web.download_and_extract(name, R)
+    except ConnectionError as e:
+        pytest.skip(f"failed to download reference data {e}")
 
     # setup new test data
     params = gemini3d.read.config(test_dir)
@@ -128,6 +141,6 @@ def test_runner(name, file_format, tmp_path):
     )
 
     if errs:
-        for e, v in errs.items():
-            logging.error(f"compare:{e}: {v} errors")
+        for err, v in errs.items():
+            logging.error(f"compare:{err}: {v} errors")
         raise ValueError(f"compare_input: new generated inputs do not match reference for: {name}")

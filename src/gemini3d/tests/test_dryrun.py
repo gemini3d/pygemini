@@ -13,7 +13,10 @@ R = Path(__file__).parents[1] / "tests/data"
 @pytest.mark.parametrize("name,bref", [("2dew_eq", 1238112), ("3d_eq", 2323072)])
 def test_memory(name, bref):
 
-    ref = gemini3d.web.download_and_extract(name, R)
+    try:
+        ref = gemini3d.web.download_and_extract(name, R)
+    except ConnectionError as e:
+        pytest.skip(f"failed to download reference data {e}")
 
     est = job.memory_estimate(ref)
 
@@ -35,7 +38,10 @@ def test_mpiexec():
 @pytest.mark.parametrize("name", ["2dew_eq"])
 def test_dryrun(name, tmp_path):
 
-    ref = gemini3d.web.download_and_extract(name, R)
+    try:
+        ref = gemini3d.web.download_and_extract(name, R)
+    except ConnectionError as e:
+        pytest.skip(f"failed to download reference data {e}")
 
     params = {
         "config_file": ref,
