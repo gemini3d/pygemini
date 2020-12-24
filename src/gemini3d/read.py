@@ -74,7 +74,7 @@ def grid(path: Path, file_format: str = None, shape: bool = False) -> T.Dict[str
 
 def data(
     fn: Path,
-    vars: T.Sequence[str] = None,
+    var: T.Sequence[str] = None,
     *,
     file_format: str = None,
     cfg: T.Dict[str, T.Any] = None,
@@ -121,8 +121,8 @@ def data(
         "1304",
     ]
 
-    if not vars:
-        vars = ["ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3"]
+    if not var:
+        var = ["ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3"]
 
     fn = Path(fn).expanduser()
     fn_aurora = fn.parent / "aurmaps" / fn.name
@@ -156,9 +156,9 @@ def data(
         if flag == 0:
             dat = h5read.frame3d_curvne(fn)
         elif flag == 1:
-            dat = h5read.frame3d_curv(fn, vars)
+            dat = h5read.frame3d_curv(fn, var)
         elif flag == 2:
-            dat = h5read.frame3d_curvavg(fn, vars)
+            dat = h5read.frame3d_curvavg(fn, var)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
@@ -171,9 +171,9 @@ def data(
         if flag == 0:
             dat = ncread.frame3d_curvne(fn)
         elif flag == 1:
-            dat = ncread.frame3d_curv(fn, vars)
+            dat = ncread.frame3d_curv(fn, var)
         elif flag == 2:
-            dat = ncread.frame3d_curvavg(fn, vars)
+            dat = ncread.frame3d_curvavg(fn, var)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
@@ -185,19 +185,19 @@ def data(
 
     # %% dedupe logic by making derived variables here
     if flag == 1:
-        if {"ne", "v1", "Ti", "Te"}.intersection(vars):
+        if {"ne", "v1", "Ti", "Te"}.intersection(var):
             dat["ne"] = (("x1", "x2", "x3"), dat["ns"][1][LSP - 1, :, :, :])
-        if "v1" in vars:
+        if "v1" in var:
             dat["v1"] = (
                 ("x1", "x2", "x3"),
                 (dat["ns"][1][:6, :, :, :] * dat["vs1"][1][:6, :, :, :]).sum(axis=0) / dat["ne"][1],
             )
-        if "Ti" in vars:
+        if "Ti" in var:
             dat["Ti"] = (
                 ("x1", "x2", "x3"),
                 (dat["ns"][1][:6, :, :, :] * dat["Ts"][1][:6, :, :, :]).sum(axis=0) / dat["ne"][1],
             )
-        if "Te" in vars:
+        if "Te" in var:
             dat["Te"] = (("x1", "x2", "x3"), dat["Ts"][1][LSP - 1, :, :, :])
 
     if E0dir:
@@ -292,7 +292,7 @@ def state(file: Path) -> T.Dict[str, T.Any]:
 
 
 def frame(
-    simdir: Path, time: datetime, *, vars: T.Sequence[str] = None, file_format: str = None
+    simdir: Path, time: datetime, *, var: T.Sequence[str] = None, file_format: str = None
 ) -> T.Dict[str, T.Any]:
     """
     This is what users should normally use.
@@ -314,7 +314,7 @@ def frame(
         simulation output for this time step
     """
 
-    return data(find.frame(simdir, time, file_format), vars=vars, file_format=file_format)
+    return data(find.frame(simdir, time, file_format), var=var, file_format=file_format)
 
 
 def time(file: Path) -> np.ndarray:

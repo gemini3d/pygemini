@@ -51,9 +51,9 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def flagoutput(fn: Path, cfg: T.Dict[str, T.Any]) -> int:
+def flagoutput(file: Path, cfg: T.Dict[str, T.Any]) -> int:
 
-    with Dataset(fn, "r") as f:
+    with Dataset(file, "r") as f:
         if "flagoutput" in f.variables:
             flag = f["flagoutput"][()]
         elif "flagoutput" in cfg:
@@ -66,18 +66,18 @@ def flagoutput(fn: Path, cfg: T.Dict[str, T.Any]) -> int:
             elif "neall" in f.variables and f["neall"].ndim == 3:
                 flag = 2
             else:
-                raise ValueError(f"please specify flagoutput in config.nml or {fn}")
+                raise ValueError(f"please specify flagoutput in config.nml or {file}")
 
     return flag
 
 
-def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
+def grid(file: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     """
     get simulation grid
 
     Parameters
     ----------
-    fn: pathlib.Path
+    file: pathlib.Path
         filepath to simgrid
     shape: bool, optional
         read only the shape of the grid instead of the data iteslf
@@ -93,12 +93,12 @@ def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
 
     grid: T.Dict[str, T.Any] = {}
 
-    if not fn.is_file():
-        logging.error(f"{fn} grid file is not present.")
+    if not file.is_file():
+        logging.error(f"{file} grid file is not present.")
         return grid
 
     if shape:
-        with Dataset(fn, "r") as f:
+        with Dataset(file, "r") as f:
             for key in f.variables:
                 grid[key] = f[key].shpae
 
@@ -106,18 +106,18 @@ def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
 
         return grid
 
-    with Dataset(fn, "r") as f:
+    with Dataset(file, "r") as f:
         for key in f.variables:
             grid[key] = f[key][:]
 
-    grid["lxs"] = simsize(fn.with_name("simsize.nc"))
+    grid["lxs"] = simsize(file.with_name("simsize.nc"))
     # FIXME: line below not always work. Why not?
     # grid["lxs"] = np.array([grid["x1"].size, grid["x2"].size, grid["x3"].size])
 
     return grid
 
 
-def state(fn: Path) -> T.Dict[str, T.Any]:
+def state(file: Path) -> T.Dict[str, T.Any]:
     """
     load initial condition data
     """
@@ -125,27 +125,27 @@ def state(fn: Path) -> T.Dict[str, T.Any]:
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    with Dataset(fn, "r") as f:
+    with Dataset(file, "r") as f:
         return {"ns": f["/nsall"][:], "vs": f["/vs1all"][:], "Ts": f["/Tsall"][:]}
 
 
-def Efield(fn: Path) -> T.Dict[str, T.Any]:
+def Efield(file: Path) -> T.Dict[str, T.Any]:
     """
     load electric field
     """
 
     # NOT the whole sim simsize
-    # with Dataset(fn.with_name("simsize.nc") , "r") as f:
+    # with Dataset(file.with_name("simsize.nc") , "r") as f:
     #     E["llon"] = f["/llon"][()]
     #     E["llat"] = f["/llat"][()]
 
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    with Dataset(fn.with_name("simgrid.nc"), "r") as f:
+    with Dataset(file.with_name("simgrid.nc"), "r") as f:
         E = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
 
-    with Dataset(fn, "r") as f:
+    with Dataset(file, "r") as f:
         E["flagdirich"] = f["flagdirich"]
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
             E[p] = (("x2", "x3"), f[p][:])
@@ -157,25 +157,25 @@ def Efield(fn: Path) -> T.Dict[str, T.Any]:
     return E
 
 
-def precip(fn: Path) -> T.Dict[str, T.Any]:
-    # with Dataset(fn.with_name("simsize.nc"), "r") as f:
+def precip(file: Path) -> T.Dict[str, T.Any]:
+    # with Dataset(file.with_name("simsize.nc"), "r") as f:
     #     dat["llon"] = f["/llon"][()]
     #     dat["llat"] = f["/llat"][()]
 
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    with Dataset(fn.with_name("simgrid.nc"), "r") as f:
+    with Dataset(file.with_name("simgrid.nc"), "r") as f:
         dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
 
-    with Dataset(fn, "r") as f:
+    with Dataset(file, "r") as f:
         for k in ("Q", "E0"):
             dat[k] = f[f"/{k}p"][:]
 
     return dat
 
 
-def frame3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
+def frame3d_curvne(file: Path) -> T.Dict[str, T.Any]:
     """
     just Ne
     """
@@ -185,23 +185,25 @@ def frame3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
 
     dat: T.Dict[str, T.Any] = {}
 
-    with Dataset(fn, "r") as f:
+    with Dataset(file, "r") as f:
         dat["ne"] = (("x1", "x2", "x3"), f["/ne"][:])
 
     return dat
 
 
-def frame3d_curv(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
+def frame3d_curv(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
     """
 
     Parameters
     ----------
 
-    fn: pathlib.Path
+    file: pathlib.Path
         filename of this timestep of simulation output
+    var: list of str
+        variable(s) to read
     """
 
-    #    grid = readgrid(fn.parent)
+    #    grid = readgrid(file.parent)
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
@@ -209,7 +211,7 @@ def frame3d_curv(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    lxs = simsize(fn.parent)
+    lxs = simsize(file.parent)
 
     dat: T.Dict[str, T.Any] = {}
 
@@ -220,7 +222,7 @@ def frame3d_curv(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
         p4 = (0, 3, 2, 1)
         p3 = (2, 1, 0)
 
-    with Dataset(fn, "r") as f:
+    with Dataset(file, "r") as f:
         ns = f["nsall"][:].transpose(p4)
         # np.any() in case neither is an np.ndarray
         if ns.shape[0] != 7 or np.any(ns.shape[1:] != lxs):
@@ -250,15 +252,17 @@ def frame3d_curv(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
     return dat
 
 
-def frame3d_curvavg(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
+def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
     """
 
     Parameters
     ----------
-    fn: pathlib.Path
+    file: pathlib.Path
         filename of this timestep of simulation output
+    var: list of str
+        variable(s) to read
     """
-    #    grid = readgrid(fn.parent)
+    #    grid = readgrid(file.parent)
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
@@ -266,12 +270,12 @@ def frame3d_curvavg(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    lxs = simsize(fn.parent)
+    lxs = simsize(file.parent)
 
     dat: T.Dict[str, T.Any] = {}
     p3 = (2, 0, 1)
 
-    with Dataset(fn, "r") as f:
+    with Dataset(file, "r") as f:
         for j, k in zip(
             ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"),
             (
@@ -295,20 +299,20 @@ def frame3d_curvavg(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
     return dat
 
 
-def glow_aurmap(fn: Path) -> T.Dict[str, T.Any]:
+def glow_aurmap(file: Path) -> T.Dict[str, T.Any]:
     """
     read the auroral output from GLOW
 
     Parameters
     ----------
-    fn: pathlib.Path
+    file: pathlib.Path
         filename of this timestep of simulation output
     """
 
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    with Dataset(fn, "r") as h:
+    with Dataset(file, "r") as h:
         dat = {"rayleighs": (("wavelength", "x2", "x3"), h["iverout"][:])}
 
     return dat
