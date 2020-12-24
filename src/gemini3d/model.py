@@ -75,7 +75,7 @@ def equilibrium(p: T.Dict[str, T.Any]):
     assert ns.shape[0] == 7
     assert ns.shape[1:] == tuple(xg["lx"])
 
-    write.state(p["time"][0], ns, vsx1, Ts, p["indat_file"])
+    write.state(p["indat_file"], p["time"][0], ns=ns, vs=vsx1, Ts=Ts)
 
 
 def interp(cfg: T.Dict[str, T.Any]) -> None:

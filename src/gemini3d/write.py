@@ -10,15 +10,17 @@ from .nc4 import write as ncwrite
 
 
 def state(
+    out_file: Path,
     time: datetime,
+    *,
     ns: np.ndarray,
     vs: np.ndarray,
     Ts: np.ndarray,
-    out_file: Path,
+    file_format: str = None,
 ):
     """
-     WRITE STATE VARIABLE DATA.
-    NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
+    WRITE STATE VARIABLE DATA.
+    NOTE: WE don't write ANY OF THE ELECTRODYNAMIC
     VARIABLES SINCE THEY ARE NOT NEEDED TO START THINGS
     UP IN THE FORTRAN CODE.
 
@@ -26,12 +28,14 @@ def state(
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
 
-    if out_file.suffix == ".h5":
+    ext = file_format if file_format else out_file.suffix
+
+    if ext == ".h5":
         h5write.state(time, ns, vs, Ts, out_file.with_suffix(".h5"))
-    elif out_file.suffix == ".nc":
+    elif ext == ".nc":
         ncwrite.state(time, ns, vs, Ts, out_file.with_suffix(".nc"))
     else:
-        raise ValueError(f"unknown file format {out_file.suffix}")
+        raise ValueError(f"unknown file format {ext}")
 
 
 def data(dat: np.ndarray, out_file: Path, file_format: str, xg: T.Dict[str, T.Any] = None):
