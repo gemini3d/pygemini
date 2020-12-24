@@ -106,8 +106,11 @@ def grid(file: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
         return grid
 
     with Dataset(file, "r") as f:
-        for key in f.variables:
-            grid[key] = f[key][:]
+        for k in f.variables:
+            if f[k].ndim >= 2:
+                grid[k] = f[k][:].transpose()
+            else:
+                grid[k] = f[k][:]
 
     grid["lxs"] = simsize(file.with_name("simsize.nc"))
     # FIXME: line below not always work. Why not?
@@ -318,7 +321,7 @@ def time(file: Path) -> np.ndarray:
         raise ImportError("netcdf missing or broken")
 
     with Dataset(file, "r") as f:
-        ymd = datetime(*f["ymd"][:2])
+        ymd = datetime(*f["ymd"][:3])
 
         if "UThour" in f:
             hour = f["UThour"][()]

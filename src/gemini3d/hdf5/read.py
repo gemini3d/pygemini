@@ -324,12 +324,12 @@ def time(file: Path) -> np.ndarray:
         raise ImportError("h5py missing or broken")
 
     with h5py.File(file, "r") as f:
-        ymd = datetime(*f["/time/ymd"][:2])
+        ymd = datetime(*f["/time/ymd"][:3])
 
         if "/time/UThour" in f:
-            hour = f["/time/UThour"][()]
+            hour = f["/time/UThour"][()].item()
         elif "/time/UTsec" in f:
-            hour = f["/time/UTsec"][()] / 3600
+            hour = f["/time/UTsec"][()].item() / 3600
         else:
             raise KeyError(f"did not find time of day in {file}")
 

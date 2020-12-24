@@ -63,6 +63,7 @@ def compare_all(
     outdir: Path,
     refdir: Path,
     tol: T.Dict[str, float] = TOL,
+    *,
     plot: bool = True,
     file_format: str = None,
     only: str = None,
@@ -77,27 +78,29 @@ def compare_all(
         raise OSError(f"reference and output are the same directory: {outdir}")
 
     # %% fail hard if grid doesn't match, because otherwise data is non-sensical
-    if compare_grid(outdir, refdir, tol) != 0:
+    if compare_grid(outdir, refdir, tol, file_format=file_format) != 0:
         raise ValueError("grid values do not match {outdir}  {refdir}")
 
     errs = {}
     if not only or only == "out":
-        e = compare_output(outdir, refdir, tol, file_format, plot)
+        e = compare_output(outdir, refdir, tol, file_format=file_format, plot=plot)
         if e:
             errs["out"] = e
 
     if not only or only == "in":
-        e = compare_input(outdir, refdir, tol, file_format, plot)
+        e = compare_input(outdir, refdir, tol, file_format=file_format, plot=plot)
         if e:
             errs["in"] = e
 
     return errs
 
 
-def compare_grid(outdir: Path, refdir: Path, tol: T.Dict[str, float] = TOL) -> int:
+def compare_grid(
+    outdir: Path, refdir: Path, tol: T.Dict[str, float] = TOL, *, file_format: str = None
+) -> int:
 
     ref = read.grid(refdir)
-    new = read.grid(outdir)
+    new = read.grid(outdir, file_format=file_format)
 
     if not ref:
         raise FileNotFoundError(f"No simulation grid in {refdir}")
@@ -121,6 +124,7 @@ def compare_input(
     outdir: Path,
     refdir: Path,
     tol: T.Dict[str, float] = TOL,
+    *,
     file_format: str = None,
     plot: bool = True,
 ) -> int:
@@ -140,9 +144,6 @@ def compare_input(
         )
     new_indir = outdir / new_params["indat_file"].parts[-2]
     new = read.state(new_indir / new_params["indat_file"].name)
-
-    if not file_format:
-        file_format = new_params["indat_file"].suffix[1:]
 
     errs = 0
     # %% initial conditions
@@ -168,8 +169,8 @@ def compare_input(
             new_indir / new_params["precdir"].name,
             ref_indir / ref_params["precdir"].name,
             tol,
-            plot,
-            file_format,
+            plot=plot,
+            file_format=file_format,
         )
         errs += prec_errs
 
@@ -179,8 +180,8 @@ def compare_input(
             new_indir / new_params["E0dir"].name,
             ref_indir / ref_params["E0dir"].name,
             tol,
-            plot,
-            file_format,
+            plot=plot,
+            file_format=file_format,
         )
         errs += efield_errs
 
@@ -198,6 +199,7 @@ def compare_precip(
     newdir: Path,
     refdir: Path,
     tol: T.Dict[str, float] = TOL,
+    *,
     plot: bool = False,
     file_format: str = None,
 ) -> int:
@@ -206,7 +208,7 @@ def compare_precip(
 
     # often we reuse precipitation inputs without copying over files
     for t in times:
-        ref = read.precip(find.frame(refdir, t), file_format=file_format)
+        ref = read.precip(find.frame(refdir, t))
         new = read.precip(find.frame(newdir, t), file_format=file_format)
 
         for k in ref.keys():
@@ -231,6 +233,7 @@ def compare_Efield(
     newdir: Path,
     refdir: Path,
     tol: T.Dict[str, float] = TOL,
+    *,
     plot: bool = False,
     file_format: str = None,
 ) -> int:
@@ -238,7 +241,7 @@ def compare_Efield(
     efield_errs = 0
     # often we reuse Efield inputs without copying over files
     for t in times:
-        ref = read.Efield(find.frame(refdir, t), file_format=file_format)
+        ref = read.Efield(find.frame(refdir, t))
         new = read.Efield(find.frame(newdir, t), file_format=file_format)
         for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
             b = ref[k][1]
@@ -262,6 +265,7 @@ def compare_output(
     outdir: Path,
     refdir: Path,
     tol: T.Dict[str, float],
+    *,
     file_format: str = None,
     plot: bool = True,
 ) -> int:

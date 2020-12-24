@@ -19,7 +19,10 @@ from gemini3d.particles import particles_BCs
 R = Path(__file__).parents[1] / "tests/data"
 
 
-@pytest.mark.parametrize("name,file_format", [("2dew_fang", "h5"), ("3d_fang", "h5")])
+@pytest.mark.parametrize(
+    "name,file_format",
+    [("2dew_fang", "h5"), ("3d_fang", "h5"), ("2dew_fang", "nc"), ("3d_fang", "nc")],
+)
 def test_grid(name, file_format, tmp_path):
 
     # get files if needed
@@ -37,10 +40,10 @@ def test_grid(name, file_format, tmp_path):
     cfg["indat_size"] = cfg["out_dir"] / cfg["indat_size"]
     cfg["indat_grid"] = cfg["out_dir"] / cfg["indat_grid"]
 
-    write.grid(cfg, xg)
+    write.grid(cfg, xg, file_format=file_format)
 
     assert (
-        compare_grid(cfg["indat_grid"], test_dir) == 0
+        compare_grid(cfg["out_dir"], test_dir, file_format=file_format) == 0
     ), f"grid mismatch {cfg['out_dir']}  {test_dir}"
 
 

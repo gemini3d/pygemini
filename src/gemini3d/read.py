@@ -131,7 +131,7 @@ def data(
         cfg = config(fn.parent)
 
     if not file_format:
-        file_format = fn.suffix[1:]
+        file_format = cfg["file_format"] if "file_format" in cfg else fn.suffix[1:]
 
     lxs = simsize(fn.parent)
 
@@ -183,7 +183,7 @@ def data(
     else:
         raise ValueError(f"Unknown file type {fn}")
 
-    # %% dedupe logic by making derived variables here
+    # %% Derived variables
     if flag == 1:
         if {"ne", "v1", "Ti", "Te"}.intersection(var):
             dat["ne"] = (("x1", "x2", "x3"), dat["ns"][1][LSP - 1, :, :, :])
@@ -209,6 +209,9 @@ def data(
             # np.any() in case neither is an np.ndarray
             if np.any(dat["J1"][1].shape != lxs):
                 raise ValueError("J1 may have wrong permutation on read")
+
+    if "time" not in dat:
+        dat["time"] = time(fn)
 
     if E0dir:
         fn_Efield = E0dir / fn.name
@@ -286,17 +289,20 @@ def precip(fn: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
     return dat
 
 
-def state(file: Path) -> T.Dict[str, T.Any]:
+def state(file: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
     """
     load inital condition data
     """
 
-    if file.suffix == ".h5":
+    if not file_format:
+        file_format = file.suffix[1:]
+
+    if file_format == "h5":
         dat = h5read.state(file)
-    elif file.suffix == ".nc":
+    elif file_format == "nc":
         dat = ncread.state(file)
     else:
-        raise ValueError(f"unknown file format {file.suffix}")
+        raise ValueError(f"unknown file format {file_format}")
 
     return dat
 

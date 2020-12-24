@@ -28,11 +28,11 @@ def state(
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
 
-    ext = file_format if file_format else out_file.suffix
+    ext = file_format if file_format else out_file.suffix[1:]
 
-    if ext == ".h5":
+    if ext == "h5":
         h5write.state(time, ns, vs, Ts, out_file.with_suffix(".h5"))
-    elif ext == ".nc":
+    elif ext == "nc":
         ncwrite.state(time, ns, vs, Ts, out_file.with_suffix(".nc"))
     else:
         raise ValueError(f"unknown file format {ext}")
@@ -48,13 +48,13 @@ def data(dat: np.ndarray, out_file: Path, file_format: str, xg: T.Dict[str, T.An
         raise ValueError(f"Unknown file format {file_format}")
 
 
-def grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+def grid(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], *, file_format: str = None):
     """writes grid to disk
 
     Parameters
     ----------
 
-    p: dict
+    cfg: dict
         simulation parameters
     xg: dict
         grid values
@@ -63,23 +63,23 @@ def grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     that allows writing NetCDF4 and HDF5 by scripts using same input files
     """
 
-    input_dir = p["indat_size"].parent
+    input_dir = cfg["indat_size"].parent
     if input_dir.is_file():
         raise OSError(f"{input_dir} is a file instead of directory")
 
     input_dir.mkdir(parents=True, exist_ok=True)
 
-    if "format" not in p:
-        p["format"] = p["indat_size"].suffix[1:]
+    if not file_format:
+        file_format = cfg["file_format"] if "file_format" in cfg else cfg["indat_size"].suffix[1:]
 
-    if p["format"] in ("hdf5", "h5"):
-        h5write.grid(p["indat_size"].with_suffix(".h5"), p["indat_grid"].with_suffix(".h5"), xg)
-    elif p["format"] in ("netcdf", "nc"):
-        ncwrite.grid(p["indat_size"].with_suffix(".nc"), p["indat_grid"].with_suffix(".nc"), xg)
+    if file_format == "h5":
+        h5write.grid(cfg["indat_size"].with_suffix(".h5"), cfg["indat_grid"].with_suffix(".h5"), xg)
+    elif file_format == "nc":
+        ncwrite.grid(cfg["indat_size"].with_suffix(".nc"), cfg["indat_grid"].with_suffix(".nc"), xg)
     else:
-        raise ValueError(f'unknown file format {p["format"]}')
+        raise ValueError(f'unknown file format {cfg["format"]}')
 
-    meta(p["out_dir"] / "setup_meta.nml", git_meta(), "setup_python")
+    meta(cfg["out_dir"] / "setup_meta.nml", git_meta(), "setup_python")
 
 
 def Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
@@ -99,9 +99,9 @@ def Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
     print("write E-field data to", outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    if file_format in ("hdf5", "h5"):
+    if file_format == "h5":
         h5write.Efield(outdir, E)
-    elif file_format in ("netcdf", "nc"):
+    elif file_format == "nc":
         ncwrite.Efield(outdir, E)
     else:
         raise ValueError(f"unknown file format {file_format}")
@@ -123,9 +123,9 @@ def precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
     print("write precipitation data to", outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    if file_format in ("hdf5", "h5"):
+    if file_format == "h5":
         h5write.precip(outdir, precip)
-    elif file_format in ("netcdf", "nc"):
+    elif file_format == "nc":
         ncwrite.precip(outdir, precip)
     else:
         raise ValueError(f"unknown file format {file_format}")
