@@ -11,6 +11,7 @@ import typing as T
 from .config import read_config as config
 from . import find
 from . import matlab
+from . import LSP
 
 from .raw import read as raw_read
 from .hdf5 import read as h5read
@@ -72,7 +73,12 @@ def grid(path: Path, file_format: str = None, shape: bool = False) -> T.Dict[str
 
 
 def data(
-    fn: Path, file_format: str = None, *, cfg: T.Dict[str, T.Any] = None, E0dir: Path = None
+    fn: Path,
+    vars: T.Sequence[str] = None,
+    *,
+    file_format: str = None,
+    cfg: T.Dict[str, T.Any] = None,
+    E0dir: Path = None,
 ) -> T.Dict[str, T.Any]:
     """
     knowing the filename for a simulation time step, read the data for that time step
@@ -115,18 +121,20 @@ def data(
         "1304",
     ]
 
+    if not vars:
+        vars = ["ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3"]
+
     fn = Path(fn).expanduser()
     fn_aurora = fn.parent / "aurmaps" / fn.name
 
-    input_dir = fn.parent / "inputs"
     if not cfg:
-        cfg = config(input_dir)
+        cfg = config(fn.parent)
 
     if not file_format:
         file_format = fn.suffix[1:]
 
     if file_format == "dat":
-        lxs = simsize(fn.parent / "inputs/simsize.dat")
+        lxs = simsize(fn.parent)
 
         flag = cfg.get("flagoutput")
         if flag == 0:
@@ -148,9 +156,9 @@ def data(
         if flag == 0:
             dat = h5read.frame3d_curvne(fn)
         elif flag == 1:
-            dat = h5read.frame3d_curv(fn)
+            dat = h5read.frame3d_curv(fn, vars)
         elif flag == 2:
-            dat = h5read.frame3d_curvavg(fn)
+            dat = h5read.frame3d_curvavg(fn, vars)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
@@ -163,9 +171,9 @@ def data(
         if flag == 0:
             dat = ncread.frame3d_curvne(fn)
         elif flag == 1:
-            dat = ncread.frame3d_curv(fn)
+            dat = ncread.frame3d_curv(fn, vars)
         elif flag == 2:
-            dat = ncread.frame3d_curvavg(fn)
+            dat = ncread.frame3d_curvavg(fn, vars)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
@@ -175,6 +183,23 @@ def data(
     else:
         raise ValueError(f"Unknown file type {fn}")
 
+    # %% dedupe logic by making derived variables here
+    if flag == 1:
+        if {"ne", "v1", "Ti", "Te"}.intersection(vars):
+            dat["ne"] = (("x1", "x2", "x3"), dat["ns"][1][LSP - 1, :, :, :])
+        if "v1" in vars:
+            dat["v1"] = (
+                ("x1", "x2", "x3"),
+                (dat["ns"][1][:6, :, :, :] * dat["vs1"][1][:6, :, :, :]).sum(axis=0) / dat["ne"][1],
+            )
+        if "Ti" in vars:
+            dat["Ti"] = (
+                ("x1", "x2", "x3"),
+                (dat["ns"][1][:6, :, :, :] * dat["Ts"][1][:6, :, :, :]).sum(axis=0) / dat["ne"][1],
+            )
+        if "Te" in vars:
+            dat["Te"] = (("x1", "x2", "x3"), dat["Ts"][1][LSP - 1, :, :, :])
+
     if E0dir:
         fn_Efield = E0dir / fn.name
         if fn_Efield.is_file():
@@ -183,7 +208,7 @@ def data(
     return dat
 
 
-def Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
+def Efield(fn: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
     """load Efield data "Efield_inputs"
 
     Parameters
@@ -217,7 +242,7 @@ def Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     return E
 
 
-def precip(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
+def precip(fn: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
     """load precipitation to disk
 
     Parameters
@@ -251,9 +276,7 @@ def precip(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     return dat
 
 
-def state(
-    file: Path,
-) -> T.Dict[str, T.Any]:
+def state(file: Path) -> T.Dict[str, T.Any]:
     """
     load inital condition data
     """
@@ -268,7 +291,9 @@ def state(
     return dat
 
 
-def frame(simdir: Path, time: datetime, file_format: str = None) -> T.Dict[str, T.Any]:
+def frame(
+    simdir: Path, time: datetime, *, vars: T.Sequence[str] = None, file_format: str = None
+) -> T.Dict[str, T.Any]:
     """
     This is what users should normally use.
     load a frame of simulation data, automatically selecting the correct
@@ -289,4 +314,19 @@ def frame(simdir: Path, time: datetime, file_format: str = None) -> T.Dict[str, 
         simulation output for this time step
     """
 
-    return data(find.frame(simdir, time, file_format), file_format)
+    return data(find.frame(simdir, time, file_format), vars=vars, file_format=file_format)
+
+
+def time(file: Path) -> np.ndarray:
+    """
+    read simulation time of a file
+    """
+
+    if file.suffix == ".h5":
+        t = h5read.time(file)
+    elif file.suffix == ".nc":
+        t = ncread.time(file)
+    else:
+        raise ValueError(f"unknown file format {file.suffix}")
+
+    return t

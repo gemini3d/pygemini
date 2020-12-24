@@ -30,13 +30,21 @@ def config(path: Path) -> Path:
     return None
 
 
-def simsize(path: Path) -> Path:
+def simsize(path: Path, suffix: str = None) -> Path:
     """ gets path to simsize file """
 
     path = Path(path).expanduser().resolve()
 
+    if suffix:
+        if isinstance(suffix, str):
+            suffixes = [suffix]
+        else:
+            suffixes = suffix
+    else:
+        suffixes = [".h5", ".nc", ".dat", ".mat"]
+
     if path.is_dir():
-        for suffix in [".h5", ".nc", ".dat", ".mat"]:
+        for suffix in suffixes:
             for stem in ["", "inputs/"]:
                 fn = path / (f"{stem}simsize" + suffix)
                 if fn.is_file():

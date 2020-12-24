@@ -3,7 +3,7 @@ import os
 import re
 import shutil
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 import typing as T
 import logging
 
@@ -15,7 +15,7 @@ except ImportError:
 
 Pathlike = T.Union[str, Path]
 
-__all__ = ["git_meta", "get_cpu_count", "ymdhourdec2datetime", "datetime2ymd_hourdec"]
+__all__ = ["git_meta", "get_cpu_count", "datetime2ymd_hourdec"]
 
 
 def git_meta(path: Path = None) -> T.Dict[str, str]:
@@ -124,16 +124,6 @@ def get_cpu_count() -> int:
             max_cpu = 1
 
     return max_cpu // extradiv
-
-
-def ymdhourdec2datetime(year: int, month: int, day: int, hourdec: float) -> datetime:
-    """
-    convert year,month,day + decimal hour HH.hhh to time
-    """
-
-    return datetime(year, month, day, int(hourdec), int((hourdec * 60) % 60)) + timedelta(
-        seconds=(hourdec * 3600) % 60
-    )
 
 
 def datetime2ymd_hourdec(dt: datetime) -> str:

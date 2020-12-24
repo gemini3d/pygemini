@@ -20,11 +20,13 @@ if __name__ == "__main__":
 
     cfg = {"flagoutput": P.flag}
 
-    dat = gemini3d.read.data(P.fn, cfg=cfg)
+    vars = ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3")
+
+    dat = gemini3d.read.data(P.fn, vars=vars, cfg=cfg)
 
     mlab.USE_LOD_ACTOR = True  # this didn't help RAM or performance
 
-    for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
+    for p in vars:
         if p in dat:
             mlab.pipeline.volume(mlab.pipeline.scalar_field(dat[p][1]))
             mlab.title(p)

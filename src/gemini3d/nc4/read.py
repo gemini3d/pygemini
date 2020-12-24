@@ -6,8 +6,10 @@ from pathlib import Path
 import typing as T
 import logging
 import numpy as np
+from datetime import datetime, timedelta
 
-from ..utils import ymdhourdec2datetime
+from .. import LSP
+from .. import find
 
 
 try:
@@ -16,8 +18,6 @@ except ImportError:
     # must be ImportError not ModuleNotFoundError for botched NetCDF4 linkage
     Dataset = None
 
-LSP = 7
-
 
 def simsize(path: Path) -> T.Tuple[int, ...]:
     """
@@ -25,9 +25,9 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
     """
 
     if Dataset is None:
-        raise ImportError("pip install netcdf4")
+        raise ImportError("netcdf missing or broken")
 
-    path = Path(path).expanduser().resolve()
+    path = find.simsize(path, ".nc")
 
     with Dataset(path, "r") as f:
         if "lxs" in f.variables:
@@ -89,7 +89,7 @@ def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     """
 
     if Dataset is None:
-        raise ImportError("pip install netcdf4")
+        raise ImportError("netcdf missing or broken")
 
     grid: T.Dict[str, T.Any] = {}
 
@@ -123,7 +123,7 @@ def state(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     if Dataset is None:
-        raise ImportError("pip install netcdf4")
+        raise ImportError("netcdf missing or broken")
 
     with Dataset(fn, "r") as f:
         return {"ns": f["/nsall"][:], "vs": f["/vs1all"][:], "Ts": f["/Tsall"][:]}
@@ -140,7 +140,7 @@ def Efield(fn: Path) -> T.Dict[str, T.Any]:
     #     E["llat"] = f["/llat"][()]
 
     if Dataset is None:
-        raise ImportError("pip install netcdf4")
+        raise ImportError("netcdf missing or broken")
 
     with Dataset(fn.with_name("simgrid.nc"), "r") as f:
         E = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
@@ -163,7 +163,7 @@ def precip(fn: Path) -> T.Dict[str, T.Any]:
     #     dat["llat"] = f["/llat"][()]
 
     if Dataset is None:
-        raise ImportError("pip install netcdf4")
+        raise ImportError("netcdf missing or broken")
 
     with Dataset(fn.with_name("simgrid.nc"), "r") as f:
         dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
@@ -181,24 +181,17 @@ def frame3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     if Dataset is None:
-        raise ImportError("pip install netcdf4")
+        raise ImportError("netcdf missing or broken")
 
     dat: T.Dict[str, T.Any] = {}
 
     with Dataset(fn, "r") as f:
         dat["ne"] = (("x1", "x2", "x3"), f["/ne"][:])
 
-        try:
-            dat["time"] = ymdhourdec2datetime(
-                f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()]
-            )
-        except IndexError:
-            logging.warning(f"time not found in {fn}, perhaps extract time from filename")
-
     return dat
 
 
-def frame3d_curv(fn: Path) -> T.Dict[str, T.Any]:
+def frame3d_curv(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
     """
 
     Parameters
@@ -208,33 +201,26 @@ def frame3d_curv(fn: Path) -> T.Dict[str, T.Any]:
         filename of this timestep of simulation output
     """
 
-    #    grid = readgrid(fn.parent / "inputs/simgrid.nc")
+    #    grid = readgrid(fn.parent)
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
 
     if Dataset is None:
-        raise ImportError("pip install netcdf4")
+        raise ImportError("netcdf missing or broken")
 
-    lxs = simsize(fn.parent / "simsize.nc")
+    lxs = simsize(fn.parent)
 
     dat: T.Dict[str, T.Any] = {}
 
+    if lxs[2] == 1:  # east-west
+        p4 = (0, 3, 1, 2)
+        p3 = (2, 0, 1)
+    else:  # 3D or north-south, no swap
+        p4 = (0, 3, 2, 1)
+        p3 = (2, 1, 0)
+
     with Dataset(fn, "r") as f:
-        try:
-            dat["time"] = ymdhourdec2datetime(
-                f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()]
-            )
-        except IndexError:
-            logging.warning(f"time not found in {fn}, perhaps extract time from filename")
-
-        if lxs[2] == 1:  # east-west
-            p4 = (0, 3, 1, 2)
-            p3 = (2, 0, 1)
-        else:  # 3D or north-south, no swap
-            p4 = (0, 3, 2, 1)
-            p3 = (2, 1, 0)
-
         ns = f["nsall"][:].transpose(p4)
         # np.any() in case neither is an np.ndarray
         if ns.shape[0] != 7 or np.any(ns.shape[1:] != lxs):
@@ -247,17 +233,6 @@ def frame3d_curv(fn: Path) -> T.Dict[str, T.Any]:
         Ts = f["Tsall"][:].transpose(p4)
         dat["Ts"] = (("lsp", "x1", "x2", "x3"), Ts)
 
-        dat["ne"] = (("x1", "x2", "x3"), ns[LSP - 1, :, :, :])
-
-        dat["v1"] = (
-            ("x1", "x2", "x3"),
-            (ns[:6, :, :, :] * vs[:6, :, :, :]).sum(axis=0) / dat["ne"][1],
-        )
-
-        dat["Ti"] = (
-            ("x1", "x2", "x3"),
-            (ns[:6, :, :, :] * Ts[:6, :, :, :]).sum(axis=0) / dat["ne"][1],
-        )
         dat["Te"] = (("x1", "x2", "x3"), Ts[LSP - 1, :, :, :])
 
         dat["J1"] = (("x1", "x2", "x3"), f["J1all"][:].transpose(p3))
@@ -275,7 +250,7 @@ def frame3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     return dat
 
 
-def frame3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
+def frame3d_curvavg(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
     """
 
     Parameters
@@ -283,28 +258,20 @@ def frame3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     fn: pathlib.Path
         filename of this timestep of simulation output
     """
-    #    grid = readgrid(fn.parent / "inputs/simgrid.nc")
+    #    grid = readgrid(fn.parent)
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
 
     if Dataset is None:
-        raise ImportError("pip install netcdf4")
+        raise ImportError("netcdf missing or broken")
 
-    lxs = simsize(fn.parent / "inputs/simsize.nc")
+    lxs = simsize(fn.parent)
 
     dat: T.Dict[str, T.Any] = {}
+    p3 = (2, 0, 1)
 
     with Dataset(fn, "r") as f:
-        try:
-            dat["time"] = ymdhourdec2datetime(
-                f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()]
-            )
-        except IndexError:
-            logging.warning(f"time not found in {fn}, perhaps extract time from filename")
-
-        p3 = (2, 0, 1)
-
         for j, k in zip(
             ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"),
             (
@@ -339,9 +306,32 @@ def glow_aurmap(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     if Dataset is None:
-        raise ImportError("pip install netcdf4")
+        raise ImportError("netcdf missing or broken")
 
     with Dataset(fn, "r") as h:
         dat = {"rayleighs": (("wavelength", "x2", "x3"), h["iverout"][:])}
 
     return dat
+
+
+def time(file: Path) -> np.ndarray:
+    """
+    reads simulation time
+    """
+
+    if Dataset is None:
+        raise ImportError("netcdf missing or broken")
+
+    with Dataset(file, "r") as f:
+        ymd = datetime(*f["ymd"][:2])
+
+        if "UThour" in f:
+            hour = f["UThour"][()]
+        elif "UTsec" in f:
+            hour = f["UTsec"][()] / 3600
+        else:
+            raise KeyError(f"did not find time of day in {file}")
+
+    t = ymd + timedelta(hours=hour)
+
+    return t

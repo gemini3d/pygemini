@@ -46,7 +46,7 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
 
     # %% sanity check equilibrium simulation input to interpolation
     check_density(dat["ns"][1])
-    check_drift(dat["vs"][1])
+    check_drift(dat["vs1"][1])
     check_temperature(dat["Ts"][1])
 
     # %% DO THE INTERPOLATION
@@ -54,7 +54,9 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     if not xg_in:
         raise FileNotFoundError(f"{p['eq_dir']} does not have an input simulation grid.")
 
-    nsi, vs1i, Tsi = model_resample(xg_in, dat["ns"][1], dat["vs"][1], dat["Ts"][1], xg)
+    nsi, vs1i, Tsi = model_resample(
+        xg_in, ns=dat["ns"][1], vs=dat["vs1"][1], Ts=dat["Ts"][1], xg=xg
+    )
 
     # %% sanity check interpolated variables
     check_density(nsi)
@@ -64,7 +66,9 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     # %% WRITE OUT THE GRID
     write.grid(p, xg)
 
-    write.state(p["indat_file"], t_eq_end, ns=nsi, vs=vs1i, Ts=Tsi, file_format=p.get("file_format"))
+    write.state(
+        p["indat_file"], t_eq_end, ns=nsi, vs=vs1i, Ts=Tsi, file_format=p.get("file_format")
+    )
 
 
 def model_resample(

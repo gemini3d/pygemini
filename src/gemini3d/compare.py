@@ -206,8 +206,8 @@ def compare_precip(
 
     # often we reuse precipitation inputs without copying over files
     for t in times:
-        ref = read.precip(find.frame(refdir, t), file_format)
-        new = read.precip(find.frame(newdir, t), file_format)
+        ref = read.precip(find.frame(refdir, t), file_format=file_format)
+        new = read.precip(find.frame(newdir, t), file_format=file_format)
 
         for k in ref.keys():
             b = np.atleast_1d(ref[k])
@@ -238,8 +238,8 @@ def compare_Efield(
     efield_errs = 0
     # often we reuse Efield inputs without copying over files
     for t in times:
-        ref = read.Efield(find.frame(refdir, t), file_format)
-        new = read.Efield(find.frame(newdir, t), file_format)
+        ref = read.Efield(find.frame(refdir, t), file_format=file_format)
+        new = read.Efield(find.frame(newdir, t), file_format=file_format)
         for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
             b = ref[k][1]
             a = new[k][1]
@@ -281,7 +281,7 @@ def compare_output(
 
     for i, t in enumerate(params["time"]):
         st = f"UTsec {t}"
-        A = read.frame(outdir, t, file_format)
+        A = read.frame(outdir, t, file_format=file_format)
         if not A:
             raise FileNotFoundError(f"{outdir} does not appear to contain data at {t}")
         B = read.frame(refdir, t)

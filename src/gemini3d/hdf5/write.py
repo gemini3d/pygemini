@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import datetime
 import logging
 
-from . import LSP
+from .. import LSP
 from ..utils import datetime2ymd_hourdec
 
 try:

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 NOTE: this is made for very basic plots. The axes quantities are notional and not scaled.
 """

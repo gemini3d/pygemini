@@ -9,7 +9,7 @@ from pathlib import Path
 import logging
 
 from ..utils import datetime2ymd_hourdec
-from . import LSP
+from .. import LSP
 
 try:
     from netCDF4 import Dataset

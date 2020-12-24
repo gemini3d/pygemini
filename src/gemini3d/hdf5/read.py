@@ -2,9 +2,10 @@ from pathlib import Path
 import typing as T
 import numpy as np
 import logging
+from datetime import datetime, timedelta
 
-from . import LSP
-from ..utils import ymdhourdec2datetime
+from .. import LSP
+from .. import find
 
 try:
     import h5py
@@ -19,9 +20,9 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
     """
 
     if h5py is None:
-        raise ImportError("pip install h5py")
+        raise ImportError("h5py missing or broken")
 
-    path = Path(path).expanduser().resolve()
+    path = find.simsize(path, ".h5")
 
     with h5py.File(path, "r") as f:
         if "lxs" in f:
@@ -49,7 +50,7 @@ def flagoutput(fn: Path, cfg: T.Dict[str, T.Any]) -> int:
     """ detect output type """
 
     if h5py is None:
-        raise ImportError("pip install h5py")
+        raise ImportError("h5py missing or broken")
 
     flag = None
     with h5py.File(fn, "r") as f:
@@ -73,7 +74,7 @@ def state(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     if h5py is None:
-        raise ImportError("pip install h5py")
+        raise ImportError("h5py missing or broken")
 
     with h5py.File(fn, "r") as f:
         return {"ns": f["/nsall"][:], "vs": f["/vs1all"][:], "Ts": f["/Tsall"][:]}
@@ -99,7 +100,7 @@ def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     """
 
     if h5py is None:
-        raise ImportError("pip install h5py")
+        raise ImportError("h5py missing or broken")
 
     grid: T.Dict[str, T.Any] = {}
 
@@ -138,7 +139,7 @@ def Efield(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     if h5py is None:
-        raise ImportError("pip install h5py")
+        raise ImportError("h5py missing or broken")
 
     # sizefn = fn.with_name("simsize.h5")  # NOT the whole sim simsize.dat
     # with h5py.File(sizefn, "r") as f:
@@ -168,7 +169,7 @@ def precip(fn: Path) -> T.Dict[str, T.Any]:
     #     dat["llat"] = f["/llat"][()]
 
     if h5py is None:
-        raise ImportError("pip install h5py")
+        raise ImportError("h5py missing or broken")
 
     with h5py.File(fn.with_name("simgrid.h5"), "r") as f:
         dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
@@ -186,7 +187,7 @@ def frame3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     if h5py is None:
-        raise ImportError("pip install h5py")
+        raise ImportError("h5py missing or broken")
 
     with h5py.File(fn, "r") as f:
         dat = {"ne": (("x1", "x2", "x3"), f["/ne"][:])}
@@ -194,7 +195,7 @@ def frame3d_curvne(fn: Path) -> T.Dict[str, T.Any]:
     return dat
 
 
-def frame3d_curv(fn: Path) -> T.Dict[str, T.Any]:
+def frame3d_curv(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
     """
     curvilinear
     """
@@ -205,49 +206,34 @@ def frame3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     #    )
 
     if h5py is None:
-        raise ImportError("pip install h5py")
+        raise ImportError("h5py missing or broken")
 
-    lxs = simsize(fn.parent / "inputs/simsize.h5")
+    lxs = simsize(fn.parent)
 
     dat: T.Dict[str, T.Any] = {}
 
+    if lxs[2] == 1:  # east-west
+        p4 = (0, 3, 1, 2)
+        p3 = (2, 0, 1)
+    else:  # 3D or north-south, no swap
+        p4 = (0, 3, 2, 1)
+        p3 = (2, 1, 0)
+
     with h5py.File(fn, "r") as f:
-        dat["time"] = ymdhourdec2datetime(
-            f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["time/UThour"][()]
-        )
+        if {"ne", "ns", "v1", "Ti"}.intersection(vars):
+            dat["ns"] = (("lsp", "x1", "x2", "x3"), f["/nsall"][:].transpose(p4))
+            # np.any() in case neither is an np.ndarray
+            if dat["ns"][1].shape[0] != LSP or np.any(dat["ns"][1].shape[1:] != lxs):
+                raise ValueError(
+                    f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {dat['ns'][1].shape}"
+                )
 
-        if lxs[2] == 1:  # east-west
-            p4 = (0, 3, 1, 2)
-            p3 = (2, 0, 1)
-        else:  # 3D or north-south, no swap
-            p4 = (0, 3, 2, 1)
-            p3 = (2, 1, 0)
+        if "v1" in vars:
+            dat["vs1"] = (("lsp", "x1", "x2", "x3"), f["/vs1all"][:].transpose(p4))
 
-        ns = f["/nsall"][:].transpose(p4)
-        # np.any() in case neither is an np.ndarray
-        if ns.shape[0] != LSP or np.any(ns.shape[1:] != lxs):
-            raise ValueError(
-                f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {ns.shape}"
-            )
-
-        dat["ns"] = (("lsp", "x1", "x2", "x3"), ns)
-        vs = f["/vs1all"][:].transpose(p4)
-        dat["vs"] = (("lsp", "x1", "x2", "x3"), vs)
-        Ts = f["/Tsall"][:].transpose(p4)
-        dat["Ts"] = (("lsp", "x1", "x2", "x3"), Ts)
-
-        dat["ne"] = (("x1", "x2", "x3"), ns[LSP - 1, :, :, :])
-
-        dat["v1"] = (
-            ("x1", "x2", "x3"),
-            (ns[:6, :, :, :] * vs[:6, :, :, :]).sum(axis=0) / dat["ne"][1],
-        )
-
-        dat["Ti"] = (
-            ("x1", "x2", "x3"),
-            (ns[:6, :, :, :] * Ts[:6, :, :, :]).sum(axis=0) / dat["ne"][1],
-        )
-        dat["Te"] = (("x1", "x2", "x3"), Ts[LSP - 1, :, :, :])
+        if {"Te", "Ti", "Ts"}.intersection(vars):
+            Ts = f["/Tsall"][:].transpose(p4)
+            dat["Ts"] = (("lsp", "x1", "x2", "x3"), Ts)
 
         dat["J1"] = (("x1", "x2", "x3"), f["/J1all"][:].transpose(p3))
         # np.any() in case neither is an np.ndarray
@@ -264,7 +250,7 @@ def frame3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     return dat
 
 
-def frame3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
+def frame3d_curvavg(fn: Path, vars: T.Sequence[str]) -> T.Dict[str, T.Any]:
     """
 
     Parameters
@@ -278,19 +264,14 @@ def frame3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     #    )
 
     if h5py is None:
-        raise ImportError("pip install h5py")
+        raise ImportError("h5py missing or broken")
 
-    lxs = simsize(fn.parent / "inputs/simsize.h5")
+    lxs = simsize(fn.parent)
 
     dat: T.Dict[str, T.Any] = {}
+    p3 = (2, 0, 1)
 
     with h5py.File(fn, "r") as f:
-        dat["time"] = ymdhourdec2datetime(
-            f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["/time/UThour"][()]
-        )
-
-        p3 = (2, 0, 1)
-
         for j, k in zip(
             ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"),
             (
@@ -327,9 +308,32 @@ def glow_aurmap(fn: Path) -> T.Dict[str, T.Any]:
     """
 
     if h5py is None:
-        raise ImportError("pip install h5py")
+        raise ImportError("h5py missing or broken")
 
     with h5py.File(fn, "r") as h:
         dat = {"rayleighs": (("wavelength", "x2", "x3"), h["/aurora/iverout"][:])}
 
     return dat
+
+
+def time(file: Path) -> np.ndarray:
+    """
+    reads simulation time
+    """
+
+    if h5py is None:
+        raise ImportError("h5py missing or broken")
+
+    with h5py.File(file, "r") as f:
+        ymd = datetime(*f["/time/ymd"][:2])
+
+        if "/time/UThour" in f:
+            hour = f["/time/UThour"][()]
+        elif "/time/UTsec" in f:
+            hour = f["/time/UTsec"][()] / 3600
+        else:
+            raise KeyError(f"did not find time of day in {file}")
+
+    t = ymd + timedelta(hours=hour)
+
+    return t
