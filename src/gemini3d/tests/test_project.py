@@ -2,6 +2,7 @@
 these test that PyGemini generates inputs that match expectations
 """
 
+from datetime import datetime
 import logging
 import pytest
 from pathlib import Path
@@ -12,11 +13,26 @@ import gemini3d.grid
 from gemini3d.compare import compare_all, compare_grid, compare_Efield, compare_precip
 import gemini3d.read
 import gemini3d.model
+import gemini3d.find
 from gemini3d.efield import Efield_BCs
 from gemini3d.particles import particles_BCs
 
-
 R = Path(__file__).parents[1] / "tests/data"
+
+
+@pytest.mark.parametrize("name", ["2dew_fang"])
+def test_file_time(name):
+    # get files if needed
+    try:
+        test_dir = gemini3d.web.download_and_extract(name, R)
+    except ConnectionError as e:
+        pytest.skip(f"failed to download reference data {e}")
+
+    t0 = datetime(2013, 2, 20, 5, 0, 0)
+
+    file = gemini3d.find.frame(test_dir, time=t0)
+    time = gemini3d.read.time(file)
+    assert time == t0
 
 
 @pytest.mark.parametrize(
