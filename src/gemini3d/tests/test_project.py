@@ -41,6 +41,9 @@ def test_file_time(name):
 )
 def test_grid(name, file_format, tmp_path):
 
+    if file_format == "nc":
+        pytest.importorskip("netcdf")
+
     # get files if needed
     try:
         test_dir = gemini3d.web.download_and_extract(name, R)
