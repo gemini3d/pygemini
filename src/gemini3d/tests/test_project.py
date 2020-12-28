@@ -141,7 +141,7 @@ def test_runner(name, file_format, tmp_path):
     # setup new test data
     params = gemini3d.read.config(test_dir)
 
-    params["format"] = file_format
+    params["file_format"] = file_format
     params["out_dir"] = out_dir
 
     for k in ("indat_file", "indat_size", "indat_grid"):

@@ -7,6 +7,7 @@ import sys
 from .utils import git_meta
 from .hdf5 import write as h5write
 from .nc4 import write as ncwrite
+from . import namelist
 
 
 def state(
@@ -77,7 +78,7 @@ def grid(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], *, file_format: str = 
     elif file_format == "nc":
         ncwrite.grid(cfg["indat_size"].with_suffix(".nc"), cfg["indat_grid"].with_suffix(".nc"), xg)
     else:
-        raise ValueError(f'unknown file format {cfg["format"]}')
+        raise ValueError(f'unknown file format {cfg["file_format"]}')
 
     meta(cfg["out_dir"] / "setup_meta.nml", git_meta(), "setup_python")
 
@@ -131,7 +132,7 @@ def precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
         raise ValueError(f"unknown file format {file_format}")
 
 
-def meta(fn: Path, meta: T.Dict[str, str], namelist: str):
+def meta(fn: Path, meta: T.Dict[str, str], nml: str):
     """
     writes Namelist file with metadata
     """
@@ -140,15 +141,6 @@ def meta(fn: Path, meta: T.Dict[str, str], namelist: str):
     if fn.is_dir():
         fn = fn / "setup_meta.nml"
 
-    with fn.open(mode="a") as f:
-        f.write(f"&{namelist}\n")
+    meta["python_version"] = sys.version
 
-        # %% variable string values get quoted per NML standard
-        f.write(f'python_version = "{sys.version}"\n')
-        f.write('git_version = "{}"\n'.format(meta["git_version"]))
-        f.write('git_remote = "{}"\n'.format(meta["remote"]))
-        f.write('git_branch = "{}"\n'.format(meta["branch"]))
-        f.write('git_commit = "{}"\n'.format(meta["commit"]))
-        f.write('git_porcelain = "{}"\n'.format(meta["porcelain"]))
-
-        f.write("/\n")
+    namelist.write(fn, nml, meta)

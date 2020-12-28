@@ -115,7 +115,7 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
     # LEAVE THE SPATIAL AND TEMPORAL INTERPOLATION TO THE
     # FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
     # THE EFIELD DATA DO NOT TYPICALLY NEED TO BE SMOOTHED.
-    write.Efield(E, p["E0dir"], p["format"])
+    write.Efield(E, p["E0dir"], p["file_format"])
 
     return E
 

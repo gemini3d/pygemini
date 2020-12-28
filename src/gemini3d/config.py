@@ -5,6 +5,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 
 from . import find
+from . import namelist
 
 NaN = math.nan
 
@@ -80,24 +81,24 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
 
     params["nml"] = fn
     for n in ("base", "files", "flags", "setup"):
-        params.update(read_namelist(fn, n))
+        params.update(parse_namelist(fn, n))
 
     if namelist_exists(fn, "neutral_perturb"):
-        params.update(read_namelist(fn, "neutral_perturb"))
+        params.update(parse_namelist(fn, "neutral_perturb"))
     if namelist_exists(fn, "precip"):
-        params.update(read_namelist(fn, "precip"))
+        params.update(parse_namelist(fn, "precip"))
     if namelist_exists(fn, "efield"):
-        params.update(read_namelist(fn, "efield"))
+        params.update(parse_namelist(fn, "efield"))
     if namelist_exists(fn, "glow"):
-        params.update(read_namelist(fn, "glow"))
+        params.update(parse_namelist(fn, "glow"))
 
     return params
 
 
-def namelist_exists(fn: Path, namelist: str) -> bool:
+def namelist_exists(fn: Path, nml: str) -> bool:
     """ determines if a namelist exists in a file """
 
-    pat = re.compile(r"^\s*&(" + namelist + ")$")
+    pat = re.compile(r"^\s*&(" + nml + ")$")
 
     with fn.open("r") as f:
         for line in f:
@@ -107,43 +108,17 @@ def namelist_exists(fn: Path, namelist: str) -> bool:
     return False
 
 
-def read_namelist(fn: Path, namelist: str) -> T.Dict[str, T.Any]:
-    """ read a namelist from an .nml file """
-
-    r: T.Dict[str, T.Sequence[str]] = {}
-    nml_pat = re.compile(r"^\s*&(" + namelist + r")")
-    end_pat = re.compile(r"^\s*/\s*$")
-    val_pat = re.compile(r"^\s*(\w+)\s*=\s*([^!]*)")
-
-    with fn.open("r") as f:
-        for line in f:
-            if not nml_pat.match(line):
-                continue
-
-            for line in f:
-                if end_pat.match(line):
-                    # end of namelist
-                    return parse_namelist(r, namelist)
-                val_mat = val_pat.match(line)
-                if not val_mat:
-                    continue
-
-                key, vals = val_mat.group(1), val_mat.group(2).strip().split(",")
-                vals = [v.strip().replace("'", "").replace('"', "") for v in vals]
-                r[key] = vals[0] if len(vals) == 1 else vals
-
-    raise KeyError(f"did not find Namelist {namelist} in {fn}")
-
-
-def parse_namelist(r: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
+def parse_namelist(file: Path, nml: str) -> T.Dict[str, T.Any]:
     """
     this is Gemini-specific
     don't resolve absolute paths here because that assumes same machine
     """
 
+    r = namelist.read(file, nml)
+
     P: T.Dict[str, T.Any] = {}
 
-    if namelist == "base":
+    if nml == "base":
         t0 = datetime(int(r["ymd"][0]), int(r["ymd"][1]), int(r["ymd"][2])) + timedelta(
             seconds=float(r["UTsec0"])
         )
@@ -156,27 +131,27 @@ def parse_namelist(r: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
         P["Ap"] = float(r["activ"][2])
         P["tcfl"] = float(r["tcfl"])
         P["Teinf"] = float(r["Teinf"])
-    elif namelist == "flags":
+    elif nml == "flags":
         for k in r:
             P[k] = int(r[k])
-    elif namelist == "files":
+    elif nml == "files":
         for k in ("indat_file", "indat_grid", "indat_size"):
             P[k] = Path(r[k]).expanduser()
 
         if "file_format" in r:
-            P["format"] = r["file_format"]
+            P["file_format"] = r["file_format"]
         else:
             # defaults to type of input
-            P["format"] = P["indat_size"].suffix[1:]
+            P["file_format"] = P["indat_size"].suffix[1:]
 
         if "realbits" in r:
             P["realbits"] = int(r["realbits"])
         else:
-            if P["format"] in ("raw", "dat"):
+            if P["file_format"] in ("raw", "dat"):
                 P["realbits"] = 64
             else:
                 P["realbits"] = 32
-    elif namelist == "setup":
+    elif nml == "setup":
         P["alt_scale"] = list(map(float, r["alt_scale"]))
 
         if "setup_functions" in r:
@@ -211,7 +186,7 @@ def parse_namelist(r: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
             P["eq_dir"] = Path(r["eqdir"]).expanduser()
         if "eq_dir" in r:
             P["eq_dir"] = Path(r["eq_dir"]).expanduser()
-    elif namelist == "neutral_perturb":
+    elif nml == "neutral_perturb":
         P["interptype"] = int(r["interptype"])
         P["sourcedir"] = Path(r["source_dir"]).expanduser()
 
@@ -220,18 +195,18 @@ def parse_namelist(r: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
                 P[k] = float(r[k])
             except KeyError:
                 P[k] = NaN
-    elif namelist == "precip":
+    elif nml == "precip":
         P["dtprec"] = timedelta(seconds=float(r["dtprec"]))
         P["precdir"] = Path(r["prec_dir"]).expanduser()
-    elif namelist == "efield":
+    elif nml == "efield":
         P["dtE0"] = timedelta(seconds=float(r["dtE0"]))
         P["E0dir"] = Path(r["E0_dir"]).expanduser()
-    elif namelist == "glow":
+    elif nml == "glow":
         P["dtglow"] = timedelta(seconds=float(r["dtglow"]))
         P["dtglowout"] = float(r["dtglowout"])
 
     if not P:
-        raise ValueError(f"Not sure how to parse NML namelist {namelist}")
+        raise ValueError(f"Not sure how to parse NML namelist {nml}")
 
     return P
 

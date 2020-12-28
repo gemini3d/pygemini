@@ -49,7 +49,7 @@ def cli():
 
     lxs = read.simsize(indir)
 
-    cfg = {"format": P.format}
+    cfg = {"file_format": P.format}
     if P.flagoutput is not None:
         cfg["flagoutput"] = P.flagoutput
 
@@ -58,7 +58,7 @@ def cli():
         xg = read.grid(indir)
 
     for infile in infiles:
-        outfile = outdir / (f"{infile.stem}.{cfg['format']}")
+        outfile = outdir / (f"{infile.stem}.{cfg['file_format']}")
         print(infile, "=>", outfile)
 
         dat = read.data(infile, cfg=cfg)

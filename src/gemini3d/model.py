@@ -2,6 +2,7 @@
 setup a new simulation
 """
 
+import logging
 import importlib
 import argparse
 from pathlib import Path
@@ -13,12 +14,90 @@ from . import grid
 from .plasma import equilibrium_state, equilibrium_resample
 from .efield import Efield_BCs
 from .particles import particles_BCs
+from . import namelist
 from . import write
 
+__all__ = ["setup", "config"]
 
-def setup(p: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
+
+def config(params: T.Dict[str, T.Any], out_dir: Path):
     """
-    top-level function to create a new simulation
+    top-level API to create a new simulation.
+    This is meant to be a front-end to the model.setup() function, creating
+    files expected by model.setup(), especially config.nml
+
+    PySat and other Python programs will normally use this function, perhaps via a shim
+    to their internal data structures.
+
+    The required namelists are written one-by-one for best modularity.
+    The order of namelists does not matter, nor does the order of variables in a namelist.
+
+    Parameters
+    ----------
+
+    params: dict
+        location, time, and extents thereof
+    """
+
+    nml_file = out_dir / "inputs/config.nml"
+    nml_file.parent.mkdir(parents=True, exist_ok=True)
+
+    logging.info(f"Creating Gemini3D configuration file under {nml_file}")
+
+    file_format = params.get("file_format", "h5")
+
+    # %% base
+    t0 = params["time"][0]
+    tend = params["time"][-1]
+
+    base = {
+        "ymd": [t0.year, t0.month, t0.day],
+        "UTsec0": t0.hour * 3600 + t0.minute * 60 + t0.second + t0.microsecond / 1e6,
+        "tdur": (tend - t0).total_seconds(),
+        "dtout": params["dtout"],
+        "activ": [params["f107a"], params["f107"], params["Ap"]],
+        "tcfl": params.get("tcfl", 0.9),
+        "Teinf": params.get("Teinf", 1500.0),
+    }
+    namelist.write(nml_file, namelist="base", data=base)
+
+    # %% flags
+    flags = {"flagoutput": params.get("flagoutput", 1), "potsolve": params.get("potsolve", 1)}
+    namelist.write(nml_file, "flags", flags)
+
+    # %% files
+    files = {
+        "indat_size": f"inputs/simsize.{file_format}",
+        "indat_grid": f"inputs/simgrid.{file_format}",
+        "indat_file": f"inputs/initial_conditions.{file_format}",
+    }
+    namelist.write(nml_file, "files", files)
+
+    # %% setup
+    setup = {
+        "glat": params["glat"],
+        "glon": params["glon"],
+        "xdist": params["x2dist"],
+        "ydist": params["x3dist"],
+        "alt_min": params["alt_min"],
+        "alt_max": params["alt_max"],
+        "lxp": params["lx2"],
+        "lyp": params["lx3"],
+        "Bincl": params["Bincl"],
+        "nmf": params["Nmf"],
+        "nme": params["Nme"],
+    }
+
+    for k in ("eq_dir"):
+        if k in params:
+            setup[k] = params[k]
+
+    namelist.write(nml_file, "setup", setup)
+
+
+def setup(path: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
+    """
+    top-level function to create a new simulation FROM A FILE config.nml
 
     Parameters
     ----------
@@ -30,10 +109,10 @@ def setup(p: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
     """
 
     # %% read config.nml
-    if isinstance(p, dict):
-        cfg = p
-    elif isinstance(p, (str, Path)):
-        cfg = read_nml(p)
+    if isinstance(path, dict):
+        cfg = path
+    elif isinstance(path, (str, Path)):
+        cfg = read_nml(path)
     else:
         raise TypeError("expected Path to config.nml or dict with parameters")
 

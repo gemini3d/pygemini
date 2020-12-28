@@ -63,7 +63,7 @@ def particles_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     # FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
     # THE EFIELD DATA DO NOT NEED TO BE SMOOTHED.
 
-    write.precip(pg, p["precdir"], p["format"])
+    write.precip(pg, p["precdir"], p["file_format"])
 
 
 def precip_grid(xg: dict, p: dict, pg: dict) -> T.Dict[str, T.Any]:
