@@ -88,7 +88,7 @@ def config(params: T.Dict[str, T.Any], out_dir: Path):
         "nme": params["Nme"],
     }
 
-    for k in ("eq_dir"):
+    for k in "eq_dir":
         if k in params:
             setup[k] = params[k]
 

@@ -47,7 +47,9 @@ def cli():
     )
     P = p.parse_args()
 
-    errs = compare_all(P.outdir, P.refdir, TOL, P.plot, P.file_format, P.only)
+    errs = compare_all(
+        P.outdir, refdir=P.refdir, tol=TOL, plot=P.plot, file_format=P.file_format, only=P.only
+    )
 
     if errs:
         for e, v in errs.items():
