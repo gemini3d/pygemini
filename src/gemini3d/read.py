@@ -289,29 +289,10 @@ def precip(fn: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
     return dat
 
 
-def state(file: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
-    """
-    load inital condition data
-    """
-
-    if not file_format:
-        file_format = file.suffix[1:]
-
-    if file_format == "h5":
-        dat = h5read.state(file)
-    elif file_format == "nc":
-        dat = ncread.state(file)
-    else:
-        raise ValueError(f"unknown file format {file_format}")
-
-    return dat
-
-
 def frame(
     simdir: Path, time: datetime, *, var: T.Sequence[str] = None, file_format: str = None
 ) -> T.Dict[str, T.Any]:
     """
-    This is what users should normally use.
     load a frame of simulation data, automatically selecting the correct
     functions based on simulation parameters
 

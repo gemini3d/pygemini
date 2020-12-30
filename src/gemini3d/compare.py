@@ -131,11 +131,13 @@ def compare_input(
     plot: bool = True,
 ) -> int:
 
+    names = ("ns", "Ts", "vs1")
+
     ref_params = read.config(refdir)
     if not ref_params:
         raise FileNotFoundError(f"{refdir} does not appear to contain config.nml")
     ref_indir = refdir / ref_params["indat_file"].parts[-2]
-    ref = read.state(ref_indir / ref_params["indat_file"].name)
+    ref = read.data(ref_indir / ref_params["indat_file"].name, var=names)
 
     new_params = read.config(outdir)
     if not new_params:
@@ -145,16 +147,15 @@ def compare_input(
             f"{outdir} simulation did not run long enough, must run for more than one time step"
         )
     new_indir = outdir / new_params["indat_file"].parts[-2]
-    new = read.state(new_indir / new_params["indat_file"].name)
+    new = read.data(new_indir / new_params["indat_file"].name, var=names)
 
     errs = 0
     # %% initial conditions
-    names = ("ns", "Ts", "vs")
     itols = ("N", "T", "V")
 
     for k, j in zip(names, itols):
-        b = ref[k]
-        a = new[k]
+        b = ref[k][1]
+        a = new[k][1]
 
         assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
 

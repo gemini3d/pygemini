@@ -119,18 +119,6 @@ def grid(file: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     return grid
 
 
-def state(file: Path) -> T.Dict[str, T.Any]:
-    """
-    load initial condition data
-    """
-
-    if Dataset is None:
-        raise ImportError("netcdf missing or broken")
-
-    with Dataset(file, "r") as f:
-        return {"ns": f["/nsall"][:], "vs": f["/vs1all"][:], "Ts": f["/Tsall"][:]}
-
-
 def Efield(file: Path) -> T.Dict[str, T.Any]:
     """
     load electric field
@@ -228,8 +216,8 @@ def frame3d_curv(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
         if {"ne", "ns", "v1", "Ti"}.intersection(var):
             dat["ns"] = (("lsp", "x1", "x2", "x3"), f["nsall"][:].transpose(p4))
 
-        if "v1" in var:
-            dat["vs"] = (("lsp", "x1", "x2", "x3"), f["vs1all"][:].transpose(p4))
+        if {"v1", "vs1"}.intersection(var):
+            dat["vs1"] = (("lsp", "x1", "x2", "x3"), f["vs1all"][:].transpose(p4))
 
         if {"Te", "Ti", "Ts"}.intersection(var):
             dat["Ts"] = (("lsp", "x1", "x2", "x3"), f["Tsall"][:].transpose(p4))

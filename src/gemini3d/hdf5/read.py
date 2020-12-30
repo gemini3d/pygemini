@@ -67,18 +67,6 @@ def flagoutput(file: Path, cfg: T.Dict[str, T.Any]) -> int:
     return flag
 
 
-def state(file: Path) -> T.Dict[str, T.Any]:
-    """
-    load initial condition data
-    """
-
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
-
-    with h5py.File(file, "r") as f:
-        return {"ns": f["/nsall"][:], "vs": f["/vs1all"][:], "Ts": f["/Tsall"][:]}
-
-
 def grid(file: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     """
     get simulation grid
@@ -229,7 +217,7 @@ def frame3d_curv(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
         if {"ne", "ns", "v1", "Ti"}.intersection(var):
             dat["ns"] = (("lsp", "x1", "x2", "x3"), f["/nsall"][:].transpose(p4))
 
-        if "v1" in var:
+        if {"v1", "vs1"}.intersection(var):
             dat["vs1"] = (("lsp", "x1", "x2", "x3"), f["/vs1all"][:].transpose(p4))
 
         if {"Te", "Ti", "Ts"}.intersection(var):
