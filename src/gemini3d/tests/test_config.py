@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import importlib.resources
 
 import gemini3d.config as config
+import gemini3d.read as read
 import gemini3d.model as model
 
 
@@ -61,7 +62,7 @@ def test_datetime_range():
 
 
 def test_no_config(tmp_path):
-    p = config.read_config(tmp_path)
+    p = read.config(tmp_path)
     assert p == {}
 
 
@@ -120,12 +121,12 @@ def test_nml_namelist(namelist):
 def test_read_config_nml():
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
-        params = config.read_config(cfn)
+        params = read.config(cfn)
     assert params["time"][0] == datetime(2013, 2, 20, 5)
 
 
 def test_read_config_ini():
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.ini") as cfn:
-        params = config.read_config(cfn)
+        params = read.config(cfn)
     assert params["time"][0] == datetime(2013, 2, 20, 5)

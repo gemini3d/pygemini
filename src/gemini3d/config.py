@@ -9,38 +9,6 @@ from . import namelist
 
 NaN = math.nan
 
-__all__ = ["read_config"]
-
-
-# do NOT use lru_cache--can have weird unexpected effects with complicated setups
-def read_config(path: Path) -> T.Dict[str, T.Any]:
-    """
-    read simulation input configuration
-
-    .nml is strongly preferred, .ini is legacy.
-
-    Parameters
-    ----------
-    path: pathlib.Path
-        config file path
-
-    Returns
-    -------
-    params: dict
-        simulation parameters from config file
-    """
-
-    file = find.config(path)
-    if not file:
-        return {}  # {} instead of None to work with .get()
-
-    if file.suffix == ".ini":
-        P = read_ini(file)
-    else:
-        P = read_nml(file)
-
-    return P
-
 
 def datetime_range(start: datetime, stop: datetime, step: timedelta) -> T.List[datetime]:
 

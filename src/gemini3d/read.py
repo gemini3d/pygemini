@@ -8,7 +8,7 @@ from pathlib import Path
 from datetime import datetime
 import typing as T
 
-from .config import read_config as config
+from .config import read_ini, read_nml
 from . import find
 from . import matlab
 from . import LSP
@@ -16,6 +16,36 @@ from . import LSP
 from .raw import read as raw_read
 from .hdf5 import read as h5read
 from .nc4 import read as ncread
+
+
+# do NOT use lru_cache--can have weird unexpected effects with complicated setups
+def config(path: Path) -> T.Dict[str, T.Any]:
+    """
+    read simulation input configuration
+
+    .nml is strongly preferred, .ini is legacy.
+
+    Parameters
+    ----------
+    path: pathlib.Path
+        config file path
+
+    Returns
+    -------
+    params: dict
+        simulation parameters from config file
+    """
+
+    file = find.config(path)
+    if not file:
+        return {}  # {} instead of None to work with .get()
+
+    if file.suffix == ".ini":
+        P = read_ini(file)
+    else:
+        P = read_nml(file)
+
+    return P
 
 
 def simsize(path: Path) -> T.Tuple[int, ...]:

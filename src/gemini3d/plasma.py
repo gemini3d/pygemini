@@ -11,7 +11,6 @@ import importlib.resources
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d, interp2d, interpn
 
-from .config import read_config
 from . import read
 from . import write
 from .build import cmake_build
@@ -29,7 +28,7 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     """
 
     # %% READ Equilibrium SIMULATION INFO
-    peq = read_config(p["eq_dir"])
+    peq = read.config(p["eq_dir"])
     if not peq:
         raise FileNotFoundError(
             f"equilibrium directory {p['eq_dir']} does not appear to contain config.nml"

@@ -18,7 +18,6 @@ import psutil
 from . import find
 from . import mpi
 from .build import cmake_build
-from .config import read_config
 from .hpc import hpc_batch_detect, hpc_batch_create
 from . import model
 from . import write
@@ -36,7 +35,7 @@ def runner(pr: T.Dict[str, T.Any]) -> None:
 
     config_file = find.config(pr["config_file"])
     # load configuration to know what directories to check
-    p = read_config(config_file)
+    p = read.config(config_file)
     if not p:
         raise FileNotFoundError(f"{config_file} does not appear to contain config.nml")
 

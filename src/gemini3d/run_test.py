@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 
 import gemini3d.web
-import gemini3d.config
+import gemini3d.read
 from . import mpi
 
 
@@ -75,7 +75,7 @@ def runner(
     if not (input_dir / "config.nml").is_file():
         shutil.copy2(ref / "inputs/config.nml", input_dir)
 
-    cfg = gemini3d.config.read_config(ref)
+    cfg = gemini3d.read.config(ref)
     if not cfg:
         raise FileNotFoundError(f"{ref} does not appear to contain a config.nml file")
 
