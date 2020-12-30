@@ -56,7 +56,7 @@ jobs:
       timeout-minutes: 2
 
     - run: pytest
-      timeout-minutes: 5
+      timeout-minutes: 7
 
 # codecov coverage
     # - run: pip install codecov pytest-cov
