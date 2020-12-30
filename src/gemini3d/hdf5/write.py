@@ -40,7 +40,7 @@ def state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Pa
 
     with h5py.File(fn, "w") as f:
         f["/time/ymd"] = [time.year, time.month, time.day]
-        f["/time/UTsec"] = (
+        f["/time/UTsec"] = np.float32(
             time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
         )
 
