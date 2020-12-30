@@ -1,15 +1,14 @@
 from datetime import datetime
 import numpy as np
 import math
-from pathlib import Path
 import scipy.interpolate as interp
 
 import matplotlib as mpl
-from matplotlib.pyplot import figure
+from matplotlib.figure import Figure
 from matplotlib.ticker import MultipleLocator
 import typing as T
 
-from .utils import git_meta
+from ..utils import git_meta
 
 
 if T.TYPE_CHECKING:
@@ -37,36 +36,6 @@ CB_LBL = {
     "Phitop": r"$\Phi_{top}$ (V)",
     "Vmaxx1it": r"(V)",
 }
-
-PARAMS = ["ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phitop"]
-
-
-def plotframe(
-    grid: T.Dict[str, np.ndarray],
-    dat: T.Dict[str, T.Any],
-    params: T.Sequence[str] = None,
-    save_dir: Path = None,
-    fg: "mplf.Figure" = None,
-):
-    """
-    if save_dir, plots will not be visible while generating to speed plot writing
-    """
-    if not params:
-        params = PARAMS
-
-    plotfun = grid2plotfun(grid)
-
-    time = dat["time"]
-
-    for k in params:
-        if k not in dat:  # not present at this time step, often just the first time step
-            continue
-        if save_dir is None or fg is None:
-            fg = figure(num=k, constrained_layout=True)
-        fg.clf()
-        plotfun(time, grid, dat[k][1].squeeze(), k, fg, wavelength=dat.get("wavelength"))
-        if save_dir:
-            fg.savefig(save_dir / f"{k}-{time.isoformat().replace(':','')}.png")
 
 
 def grid2plotfun(grid: T.Dict[str, np.ndarray]):
@@ -100,7 +69,7 @@ def plot3D_curv_frames_long(
     grid: T.Dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
-    fg: "mplf.Figure",
+    fg: "mplf.Figure" = None,
     **kwargs,
 ):
     raise NotImplementedError
@@ -111,7 +80,7 @@ def plot2D_curv(
     grid: T.Dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
-    fg: "mplf.Figure",
+    fg: "mplf.Figure" = None,
     **kwargs,
 ):
     raise NotImplementedError
@@ -125,13 +94,15 @@ def plot12(
     cmap: str,
     vmin: float,
     vmax: float,
-    fg: "mplf.Figure",
+    fg: "mplf.Figure" = None,
     ax: "mpla.Axes" = None,
 ) -> "mplc.QuadMesh":
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
 
+    if fg is None:
+        fg = Figure(constrained_layout=True)
     if ax is None:
         ax = fg.gca()
 
@@ -142,7 +113,7 @@ def plot12(
     ax.axhline(REF_ALT, color="w", linestyle="--", linewidth=2)
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
-    return hi
+    return fg
 
 
 def plot13(
@@ -153,23 +124,25 @@ def plot13(
     cmap: str,
     vmin: float,
     vmax: float,
-    fg: "mplf.Figure",
+    fg: "mplf.Figure" = None,
     ax: "mpla.Axes" = None,
 ) -> "mplc.QuadMesh":
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
 
+    if fg is None:
+        fg = Figure(constrained_layout=True)
     if ax is None:
         ax = fg.gca()
 
-    hi = ax.pcolormesh(y / 1e3, z / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax)
+    hi = ax.pcolormesh(y / 1e3, z / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax, shading="nearest")
     ax.yaxis.set_major_locator(MultipleLocator(100))
     ax.set_xlabel("northward dist. (km)")
     ax.set_ylabel("upward dist. (km)")
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
-    return hi
+    return fg
 
 
 def plot23(
@@ -180,29 +153,35 @@ def plot23(
     cmap: str,
     vmin: float,
     vmax: float,
-    fg: "mplf.Figure",
+    fg: "mplf.Figure" = None,
     ax: "mpla.Axes" = None,
 ) -> "mplc.QuadMesh":
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
 
+    if fg is None:
+        fg = Figure(constrained_layout=True)
     if ax is None:
         ax = fg.gca()
 
-    hi = ax.pcolormesh(x / 1e3, y / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax)
+    hi = ax.pcolormesh(x / 1e3, y / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax, shading="nearest")
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("northward dist. (km)")
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
-    return hi
+    return fg
 
 
-def plot1d2(x: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "mpla.Axes" = None):
+def plot1d2(
+    x: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure" = None, ax: "mpla.Axes" = None
+):
 
     if parm.ndim != 1:
         raise ValueError("expecting 1-D data oriented east-west (along latitude)")
 
+    if fg is None:
+        fg = Figure(constrained_layout=True)
     if ax is None:
         ax = fg.gca()
 
@@ -210,12 +189,18 @@ def plot1d2(x: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel(CB_LBL[name])
 
+    return fg
 
-def plot1d3(y: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "mpla.Axes" = None):
+
+def plot1d3(
+    y: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure" = None, ax: "mpla.Axes" = None
+):
 
     if parm.ndim != 1:
         raise ValueError("expecting 1-D data oriented east-west (along latitude)")
 
+    if fg is None:
+        fg = Figure(constrained_layout=True)
     if ax is None:
         ax = fg.gca()
 
@@ -223,13 +208,15 @@ def plot1d3(y: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "
     ax.set_xlabel("northward dist. (km)")
     ax.set_ylabel(CB_LBL[name])
 
+    return fg
+
 
 def plot_interp(
     time: datetime,
     grid: T.Dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
-    fg: "mplf.Figure",
+    fg: "mplf.Figure" = None,
     **kwargs,
 ):
     """
@@ -244,6 +231,9 @@ def plot_interp(
         grid in linspaces below, runs backward from north distance,
         hence the negative sign
     """
+
+    if fg is None:
+        fg = Figure(constrained_layout=True)
 
     meta = git_meta()
 
@@ -317,7 +307,7 @@ def plot_interp(
             f = interp.interp1d(grid["x2"][inds2], parm, axis=1, bounds_error=False)
             # hack for pcolormesh to put labels in center of pixel
             wl = kwargs["wavelength"] + [""]
-            hi = ax.pcolormesh(xp / 1e3, np.arange(len(wl)), f(xp)[:, i])
+            hi = ax.pcolormesh(xp / 1e3, np.arange(len(wl)), f(xp)[:, i], shading="nearest")
             ax.set_yticks(np.arange(len(wl)) + 0.5)
             ax.set_yticklabels(wl)
             ax.set_ylim(0, len(wl) - 1)
@@ -345,7 +335,7 @@ def plot_interp(
             f = interp.interp1d(grid["x3"][inds3], parm, axis=1, bounds_error=False)
             # hack for pcolormesh to put labels in center of pixel
             wl = kwargs["wavelength"] + [""]
-            hi = ax.pcolormesh(np.arange(len(wl)), yp / 1e3, f(yp)[:, i].T)
+            hi = ax.pcolormesh(np.arange(len(wl)), yp / 1e3, f(yp)[:, i].T, shading="nearest")
             ax.set_xticks(np.arange(len(wl)) + 0.5)
             ax.set_xticklabels(wl)
             ax.set_xlim(0, len(wl) - 1)
@@ -426,6 +416,8 @@ def plot_interp(
 
         fg.colorbar(hi, ax=axs, aspect=60, pad=0.01)
 
+    return fg
+
 
 plot3D_cart_frames_long_ENU = plot_interp
 plot2D_cart = plot_interp
@@ -441,7 +433,7 @@ def bright_east_north(
     # arbitrary pick of which emission lines to plot lat/lon slices
     for j, i in enumerate([1, 3, 4, 8]):
         f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm[i, :, :], bounds_error=False)
-        hi = axs[j].pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp))
+        hi = axs[j].pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp), shading="nearest")
         axs[j].set_title(wavelength[i] + r"$\AA$")
         fg.colorbar(hi, ax=axs[j], label="Rayleighs")
     axs[2].set_xlabel("eastward dist. (km)")
@@ -453,7 +445,9 @@ def east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, tim
 
     ax = fg.gca()
     f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm, bounds_error=False)
-    hi = ax.pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp), cmap=cmap, vmin=vmin, vmax=vmax)
+    hi = ax.pcolormesh(
+        xp / 1e3, yp / 1e3, f(yp, xp), cmap=cmap, vmin=vmin, vmax=vmax, shading="nearest"
+    )
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("northward dist. (km)")
     ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
@@ -464,7 +458,9 @@ def mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time):
     meta = git_meta()
 
     ax = fg.gca()
-    hi = ax.pcolormesh(grid["mlon"], grid["mlat"], parm, cmap=cmap, vmin=vmin, vmax=vmax)
+    hi = ax.pcolormesh(
+        grid["mlon"], grid["mlat"], parm, cmap=cmap, vmin=vmin, vmax=vmax, shading="nearest"
+    )
     ax.set_xlabel("magnetic longitude (deg.)")
     ax.set_ylabel("magnetic latitude (deg.)")
     ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")

@@ -16,40 +16,48 @@ from mayavi import mlab
 
 # mlab.options.backend = 'envisage'  # for GUI
 
-from .vis import PARAMS
+from . import PARAMS
+from . import read
 
 PLOTFUN = {"scalar": ("ne", "Ti", "Te", "J1", "J2", "J3"), "vector": ("v1", "v2", "v3")}
 R_EARTH = 6370e3
 
 
-def plotframe(
-    grid: T.Dict[str, np.ndarray],
-    dat: T.Dict[str, T.Any],
-    params: T.Sequence[str] = None,
-    save_dir: Path = None,
+def frame(
+    direc: Path,
+    time: datetime,
+    var: T.Sequence[str] = None,
+    saveplot_fmt: str = None,
+    xg: T.Dict[str, T.Any] = None,
 ):
     """
     plot plasma quantities in 3D
 
     if save_dir, plots will not be visible while generating to speed plot writing
     """
-    if not params:
-        params = PARAMS
+    if not var:
+        var = PARAMS
 
+    if not xg:
+        xg = read.grid(direc)
+
+    dat = read.frame(direc, time)
     time = dat["time"]
 
-    for k in params:
+    for k in var:
         if k not in dat:  # not present at this time step, often just the first time step
             continue
 
         if k in PLOTFUN["scalar"]:
-            scalar(time, grid, dat[k][1].squeeze(), name=k)
+            fg = scalar(time, xg, dat[k][1].squeeze(), name=k)
         elif k in PLOTFUN["vector"]:
             print("TODO: vector plot", k)
 
-        if save_dir:
-            pass
-            # fg.savefig(save_dir / f"{k}-{time.isoformat().replace(':','')}.png")
+        if saveplot_fmt:
+            plot_fn = direc / "plots" / f"{k}-{time.isoformat().replace(':','')}.{saveplot_fmt}"
+            plot_fn.parent.mkdir(exist_ok=True)
+            print(f"{dat['time']} => {plot_fn}")
+            fg.savefig(plot_fn)
 
 
 def scalar(time: datetime, grid: T.Dict[str, np.ndarray], parm: np.ndarray, name: str):
@@ -136,3 +144,5 @@ def scalar(time: datetime, grid: T.Dict[str, np.ndarray], parm: np.ndarray, name
     vol = mlab.pipeline.volume(scf, figure=fig)
     mlab.colorbar(vol, title=name)
     mlab.axes(figure=fig, xlabel="x (km)", ylabel="y (km)", zlabel="z (km)")
+
+    return fig

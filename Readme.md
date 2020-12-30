@@ -52,8 +52,24 @@ For those working with GEMINI Fortran code itself or to work with non-release ve
 
 ## Plot simulation outputs
 
+These commands create plots and save to disk under the "plots/" directory under the specified data directory.
+
+command line:
+
 ```sh
-python -m gemini3d.plot /path_to/sim_data
+python -m gemini3d.plot path/to/data -save png
+```
+
+or from within Python:
+
+```python
+import gemini3d.plot as plot
+
+plot.frame("path/to/data", datetime(2020, 1, 2, 1, 2, 3), saveplot_fmt="png")
+
+# or
+
+plot.plot_all("path/to/data", saveplot_fmt="png")
 ```
 
 ## Convert data files to HDF5
