@@ -14,6 +14,7 @@ from scipy.interpolate import interp1d, interp2d, interpn
 from . import read
 from . import write
 from .build import cmake_build
+from .web import url_retrieve, extract_zip
 
 DictArray = T.Dict[str, T.Any]
 # CONSTANTS
@@ -26,6 +27,15 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     read and interpolate equilibrium simulation data, writing new
     interpolated grid.
     """
+
+    # %% download equilibrium data if needed and specified
+    if not p["eq_dir"].is_dir():
+        if "eq_url" not in p:
+            raise FileNotFoundError(
+                f"{p['eq_dir']} not found and eq_url not specified in {p['nml']}"
+            )
+        url_retrieve(p["eq_url"], p["eq_zip"])
+        extract_zip(p["eq_zip"], p["eq_dir"])
 
     # %% READ Equilibrium SIMULATION INFO
     peq = read.config(p["eq_dir"])
