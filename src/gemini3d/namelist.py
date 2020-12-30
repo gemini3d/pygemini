@@ -49,8 +49,14 @@ def read(file: Path, namelist: str) -> T.Dict[str, T.Any]:
                     continue
 
                 key, vals = val_mat.group(1), val_mat.group(2).strip().split(",")
-                vals = [v.strip().replace("'", "").replace('"', "") for v in vals]
-                r[key] = vals[0] if len(vals) == 1 else vals
+                values: T.List[T.Any] = []
+                for v in vals:
+                    v = v.strip().replace("'", "").replace('"', "")
+                    try:
+                        values.append(float(v))
+                    except ValueError:
+                        values.append(v)
+                r[key] = values[0] if len(values) == 1 else values
 
     raise KeyError(f"did not find Namelist {namelist} in {file}")
 

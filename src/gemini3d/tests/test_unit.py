@@ -16,7 +16,7 @@ pi = math.pi
 
 
 def test_write_nml(tmp_path):
-    dat = {"int": 42, "float": 42.0, "list_float": list(range(5)), "list_str": ["hi", "there"]}
+    dat = {"float": 42.0, "list_float": list(range(5)), "list_str": ["hi", "there"]}
 
     file = tmp_path / "test.nml"
     nml = "test"
@@ -28,9 +28,9 @@ def test_write_nml(tmp_path):
     for k, v in dat.items():
         if isinstance(v, (tuple, list)):
             for i, w in enumerate(v):
-                assert str(w) == dat2[k][i]
+                assert w == dat2[k][i]
         else:
-            assert str(v) == dat2[k]
+            assert v == dat2[k]
 
 
 def test_grid1d():

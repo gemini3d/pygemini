@@ -120,40 +120,15 @@ def parse_namelist(file: Path, nml: str) -> T.Dict[str, T.Any]:
             else:
                 P["realbits"] = 32
     elif nml == "setup":
-        P["alt_scale"] = list(map(float, r["alt_scale"]))
-
-        if "setup_functions" in r:
-            P["setup_functions"] = r["setup_functions"]
-
-        for k in ("lxp", "lyp"):
-            P[k] = int(r[k])
-        for k in (
-            "glat",
-            "glon",
-            "xdist",
-            "ydist",
-            "alt_min",
-            "alt_max",
-            "Bincl",
-            "nmf",
-            "nme",
-            "precip_latwidth",
-            "precip_lonwidth",
-            "Qprecip",
-            "Qprecip_background",
-            "E0precip",
-            "Etarg",
-            "Jtarg",
-            "Efield_latwidth",
-            "Efield_lonwidth",
-            # "Eflagdirich",  # future
-        ):
-            if k in r:
-                P[k] = float(r[k])
-        if "eqdir" in r:  # old .nml
-            P["eq_dir"] = Path(r["eqdir"]).expanduser()
-        if "eq_dir" in r:
-            P["eq_dir"] = Path(r["eq_dir"]).expanduser()
+        for k in r:
+            if k in {"lxp", "lyp"}:
+                P[k] = int(r[k])
+            elif k == "eqdir":  # old .nml
+                P["eq_dir"] = Path(r["eqdir"]).expanduser()
+            elif k == "eq_dir":
+                P["eq_dir"] = Path(r["eq_dir"]).expanduser()
+            else:
+                P[k] = r[k]
     elif nml == "neutral_perturb":
         P["interptype"] = int(r["interptype"])
         P["sourcedir"] = Path(r["source_dir"]).expanduser()
