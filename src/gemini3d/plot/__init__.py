@@ -2,8 +2,10 @@ from pathlib import Path
 from matplotlib.pyplot import close, figure
 import typing as T
 from datetime import datetime
+import numpy as np
 
 from .. import read
+from .. import find
 from .vis import grid2plotfun
 
 
@@ -57,6 +59,58 @@ def grid(xg: T.Dict[str, T.Any], only: T.Sequence[str] = None, saveplot_fmt: str
         ax.set_xlabel("geographic longitude")
         ax.set_ylabel("geographic latitude")
         stitle(fig, xg, "glat, glon")
+
+
+def precip(direc: Path):
+    """plot input precipitation
+
+    Parameters
+    ----------
+
+    direc: pathlib.Path
+        top-level simulation directory
+    """
+
+    cfg = read.config(direc)
+    precip_path = find.precip(direc, cfg.get("precdir"))
+    if not precip_path:
+        raise FileNotFoundError(f"{direc} does not contain precipitation data")
+
+    for t in cfg["time"]:
+        file = find.frame(precip_path, t)
+        dat = read.precip(file)
+
+        E0 = dat["E0"].squeeze()
+        Q = dat["Q"].squeeze()
+
+        fg = figure()
+        axs = fg.subplots(1, 2, sharex=True)
+
+        if E0.ndim == 1:
+            # 2D sim
+            if cfg["lyp"] == 1:
+                x = dat["mlon"]
+                axs[0].set_xlabel("magnetic longitude")
+            else:
+                x = dat["mlat"]
+                axs[0].set_xlabel("magnetic latitude")
+
+            axs[0].plot(x, E0)
+            axs[1].plot(x, Q)
+            axs[0].set_ylabel("ev")
+            axs[1].set_ylabel("flux")
+        else:
+            # 3D sim
+            h0 = axs[0].pcolormesh(dat["mlon"], dat["mlat"], E0, shading="nearest")
+            h1 = axs[1].pcolormesh(dat["mlon"], dat["mlat"], Q, shading="nearest")
+            fg.colorbar(h0, ax=axs[0])
+            fg.colorbar(h1, ax=axs[1])
+            axs[0].set_ylabel("magnetic latitude")
+            axs[0].set_xlabel("magnetic longitude")
+
+        fg.suptitle(f"particle precipitation input: {t}")
+        axs[0].set_title("$E_0$ characteristic energy")
+        axs[1].set_title("$Q$")
 
 
 def basic(xg: T.Dict[str, T.Any]):
@@ -167,7 +221,6 @@ def frame(
 
     if not xg:
         xg = read.grid(direc)
-    plotfun = grid2plotfun(xg)
 
     dat = read.frame(direc, time)
 
@@ -175,11 +228,18 @@ def frame(
         if k not in dat:  # not present at this time step, often just the first time step
             continue
 
-        fg = plotfun(time, xg, dat[k][1].squeeze(), k, wavelength=dat.get("wavelength"))
+        plotfun = grid2plotfun(xg)
 
-        if saveplot_fmt:
-            plot_fn = direc / "plots" / f"{k}-{time.isoformat().replace(':','')}.png"
-            plot_fn.parent.mkdir(exist_ok=True)
-            print(f"{dat['time']} => {plot_fn}")
-            fg.savefig(plot_fn)
-            close(fg)
+        fg = plotfun(dat["time"], xg, dat[k][1].squeeze(), k, wavelength=dat.get("wavelength"))
+        save_fig(fg, direc, k, dat["time"], saveplot_fmt)
+
+
+def save_fig(fg, direc: Path, name: str, time: datetime, fmt: str):
+    if not fmt:
+        return
+
+    plot_fn = direc / "plots" / f"{name}-{time.isoformat().replace(':','')}.{fmt}"
+    plot_fn.parent.mkdir(exist_ok=True)
+    print(f"{time} => {plot_fn}")
+    fg.savefig(plot_fn)
+    close(fg)

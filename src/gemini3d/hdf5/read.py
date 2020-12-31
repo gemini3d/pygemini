@@ -276,7 +276,7 @@ def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
 
             dat[j] = (("x1", "x2", "x3"), f[f"/{k}"][:].transpose(p3))
 
-            if dat[j][1].shape != lxs:
+            if not np.array_equal(dat[j][1].shape, lxs):
                 raise ValueError(f"simsize {lxs} does not match {k} {j} shape {dat[j][1].shape}")
 
         dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:])

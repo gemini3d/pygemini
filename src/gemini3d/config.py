@@ -106,11 +106,8 @@ def parse_namelist(file: Path, nml: str) -> T.Dict[str, T.Any]:
         for k in ("indat_file", "indat_grid", "indat_size"):
             P[k] = Path(r[k]).expanduser()
 
-        if "file_format" in r:
-            P["file_format"] = r["file_format"]
-        else:
-            # defaults to type of input
-            P["file_format"] = P["indat_size"].suffix[1:]
+        P["file_format"] = r.get("file_format", P["indat_size"].suffix[1:])
+        # defaults to type of input
 
         if "realbits" in r:
             P["realbits"] = int(r["realbits"])

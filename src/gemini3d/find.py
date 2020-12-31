@@ -12,53 +12,13 @@ FILE_FORMATS = [".h5", ".nc", ".dat"]
 def config(path: Path) -> Path:
     """ given a path or config filename, return the full path to config file """
 
-    if not path:
-        return None
-
-    path = Path(path).expanduser().resolve()
-
-    if path.is_file():
-        return path
-
-    if path.is_dir():
-        for p in (path, path / "inputs"):
-            for suff in (".nml", ".ini"):
-                for f in p.glob("config*" + suff):
-                    if f.is_file():
-                        return f
-
-    return None
+    return find_stem(path, "config", "nml")
 
 
 def simsize(path: Path, suffix: str = None) -> Path:
     """ gets path to simsize file """
 
-    path = Path(path).expanduser().resolve()
-
-    if suffix:
-        if isinstance(suffix, str):
-            suffixes = [suffix]
-        else:
-            suffixes = suffix
-    else:
-        suffixes = [".h5", ".nc", ".dat", ".mat"]
-
-    if path.is_dir():
-        for suffix in suffixes:
-            for stem in ["", "inputs/"]:
-                fn = path / (f"{stem}simsize" + suffix)
-                if fn.is_file():
-                    return fn
-    elif path.is_file():
-        if path.stem == "simsize":
-            return path
-
-        for stem in ["", "inputs/"]:
-            fn = path.parent / (f"{stem}simsize" + path.suffix)
-            if fn.is_file():
-                return fn
-
-    return None
+    return find_stem(path, "simsize", suffix)
 
 
 def frame(simdir: Path, time: datetime, file_format: str = None) -> Path:
@@ -108,20 +68,51 @@ def grid(path: Path) -> Path:
     file format to be used in this sim.
     """
 
-    path = Path(path).expanduser().resolve()
+    return find_stem(path, "simgrid")
+
+
+def find_stem(path: Path, stem: str, suffix: str = None) -> Path:
+    """find file containing stem """
+
+    path = Path(path).expanduser()
+
+    if path.is_file():
+        if stem in path.stem:
+            return path
+        else:
+            return find_stem(path.parent, stem, path.suffix)
+
+    if suffix:
+        if isinstance(suffix, str):
+            if not suffix.startswith("."):
+                suffix = "." + suffix
+            suffixes = [suffix]
+        else:
+            suffixes = suffix
+    else:
+        suffixes = FILE_FORMATS
 
     if path.is_dir():
         for p in (path, path / "inputs"):
-            for suff in FILE_FORMATS:
-                f = p / ("simgrid" + suff)
+            for suff in suffixes:
+                f = p / (stem + suff)
                 if f.is_file():
                     return f
-    elif path.is_file():
-        name = path.name
-        path = path.parent
-        for p in (path, path / "inputs"):
-            f = p / name
-            if f.is_file():
-                return f
 
     return None
+
+
+def precip(direc: Path, precdir: Path = None) -> Path:
+
+    direc = Path(direc).expanduser()
+    if precdir:
+        precip_path = Path(precdir).expanduser()
+        if not precip_path.is_absolute():
+            precip_path = direc / precip_path
+    else:
+        precip_path = direc
+
+    if not precip_path.is_dir():
+        precip_path = None
+
+    return precip_path
