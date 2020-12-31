@@ -50,7 +50,22 @@ For those working with GEMINI Fortran code itself or to work with non-release ve
     python -m gemini3d.run /path_to/config.nml /path_to/sim_out/
     ```
 
-## Plot simulation outputs
+## Plots
+
+An important part of any simulation is viewing the output.
+Because of the large data involved, most plotting functions automatically save PNG stacks to disk for quick flipping through with your preferred image viewing program.
+
+### Grid
+
+Help ensure the simulation grid is what you intended by the following, which can be used before or after running the simulation.
+
+```python
+import gemini3d.plot
+
+gemini3d.plot.grid("path/to/sim")
+```
+
+### simulation outputs
 
 These commands create plots and save to disk under the "plots/" directory under the specified data directory.
 
