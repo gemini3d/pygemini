@@ -1,5 +1,7 @@
 import argparse
-from . import plot_3d, plot_all
+from matplotlib.pyplot import show
+
+from . import plot_3d, plot_all, grid
 
 
 def cli():
@@ -10,6 +12,9 @@ def cli():
     p.add_argument("-var", help="plot these variables", nargs="+")
     p.add_argument("-save", help="save plot format", default="png")
     p = p.parse_args()
+
+    grid(p.direc)
+    show()
 
     if p.mayavi:
         plot_3d(p.direc, p.var, saveplot_fmt=p.save)
