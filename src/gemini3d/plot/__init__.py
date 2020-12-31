@@ -235,7 +235,7 @@ def frame(
 
 
 def save_fig(fg, direc: Path, name: str, time: datetime, fmt: str):
-    if not fmt:
+    if not fmt or not fg:
         return
 
     plot_fn = direc / "plots" / f"{name}-{time.isoformat().replace(':','')}.{fmt}"

@@ -218,8 +218,12 @@ def plot_interp(
     name: str,
     fg: "mplf.Figure" = None,
     **kwargs,
-):
+) -> "mplf.Figure":
+
     """
+
+    Parameters
+    ----------
 
     xp:  eastward distance (rads.)
         should be interpreted as northward distance (in rads.).
@@ -311,6 +315,7 @@ def plot_interp(
             ax.set_yticks(np.arange(len(wl)) + 0.5)
             ax.set_yticklabels(wl)
             ax.set_ylim(0, len(wl) - 1)
+            fg.colorbar(hi, ax=ax, aspect=60, pad=0.01)
             # end hack
             ax.set_ylabel(r"wavelength $\AA$")
             ax.set_xlabel("eastward dist. (km)")
@@ -339,6 +344,7 @@ def plot_interp(
             ax.set_xticks(np.arange(len(wl)) + 0.5)
             ax.set_xticklabels(wl)
             ax.set_xlim(0, len(wl) - 1)
+            fg.colorbar(hi, ax=ax, aspect=60, pad=0.01)
             # end hack
             ax.set_xlabel(r"wavelength $\AA$")
             ax.set_ylabel("northward dist. (km)")
@@ -369,7 +375,7 @@ def plot_interp(
                 time,
                 kwargs["wavelength"],
             )
-            return
+            return fg
         elif parm.ndim == 3:
             fg.set_size_inches((18, 5))
             axs = fg.subplots(1, 3, sharey=False, sharex=False)
@@ -377,11 +383,11 @@ def plot_interp(
         elif is_Efield:
             # like phitop, SINGLE plot
             mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time)
-            return
+            return fg
         else:
             # like phitop, SINGLE plot
             east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time)
-            return
+            return fg
 
         # %% CONVERT TO DISTANCE UP, EAST, NORTH (left panel)
         # JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT,
@@ -412,9 +418,7 @@ def plot_interp(
         f = interp.interp2d(
             grid["x3"][inds3], grid["x1"][inds1], parm[:, ix2, :], bounds_error=False
         )
-        hi = plot13(yp[iy], zp, f(yp, zp)[:, iy], name, cmap, vmin, vmax, fg, axs[2])
-
-        fg.colorbar(hi, ax=axs, aspect=60, pad=0.01)
+        plot13(yp[iy], zp, f(yp, zp)[:, iy], name, cmap, vmin, vmax, fg, axs[2])
 
     return fg
 

@@ -218,7 +218,7 @@ def data(
         if {"ne", "v1", "Ti", "Te"}.intersection(var):
             dat["ne"] = (("x1", "x2", "x3"), dat["ns"][1][LSP - 1, :, :, :])
             # np.any() in case neither is an np.ndarray
-            if dat["ns"][1].shape[0] != LSP or np.any(dat["ns"][1].shape[1:] != lxs):
+            if dat["ns"][1].shape[0] != LSP or not np.array_equal(dat["ns"][1].shape[1:], lxs):
                 raise ValueError(
                     f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {dat['ns'][1].shape}"
                 )
