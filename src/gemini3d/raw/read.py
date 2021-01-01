@@ -72,11 +72,10 @@ def grid2(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
     if not fn.is_file():
         raise FileNotFoundError(fn)
 
-    read = np.fromfile
     grid: T.Dict[str, T.Any] = {"lx": lxs}
     with fn.open("r") as f:
-        grid["mlon"] = read(f, np.float64, lxs[0])
-        grid["mlat"] = read(f, np.float64, lxs[1])
+        grid["mlon"] = np.fromfile(f, np.float64, lxs[0])
+        grid["mlat"] = np.fromfile(f, np.float64, lxs[1])
 
     return grid
 

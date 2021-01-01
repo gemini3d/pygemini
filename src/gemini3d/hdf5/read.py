@@ -53,14 +53,17 @@ def flagoutput(file: Path, cfg: T.Dict[str, T.Any]) -> int:
 
     flag = None
     with h5py.File(file, "r") as f:
-        if "flagoutput" in f:
+        if "nsall" in f:
+            # milestone or full
+            flag = 1
+        elif "flagoutput" in f:
             flag = f["/flagoutput"][()]
         elif "ne" in f and f["/ne"].ndim == 3:
             flag = 0
-        elif "nsall" in f and f["/nsall"].ndim == 4:
-            flag = 1
-        elif "neall" in f and f["/neall"].ndim == 3:
+        elif "Tavgall" in f:
             flag = 2
+        elif "neall" in f:
+            flag = 3
     if flag is None:
         flag = cfg.get("flagoutput")
 

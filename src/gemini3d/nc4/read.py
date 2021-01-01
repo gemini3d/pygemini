@@ -52,20 +52,23 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
 
 def flagoutput(file: Path, cfg: T.Dict[str, T.Any]) -> int:
 
+    flag = None
+
     with Dataset(file, "r") as f:
-        if "flagoutput" in f.variables:
+        if "nsall" in f.variables:
+            # milestone or full
+            flag = 1
+        elif "flagoutput" in f.variables:
             flag = f["flagoutput"][()]
-        elif "flagoutput" in cfg:
-            flag = cfg["flagoutput"]
-        else:
-            if "ne" in f.variables and f["ne"].ndim == 3:
-                flag = 0
-            elif "nsall" in f.variables and f["nsall"].ndim == 4:
-                flag = 1
-            elif "neall" in f.variables and f["neall"].ndim == 3:
-                flag = 2
-            else:
-                raise ValueError(f"please specify flagoutput in config.nml or {file}")
+        elif "ne" in f.variables and f["ne"].ndim == 3:
+            flag = 0
+        elif "Tavgall" in f.variables:
+            flag = 2
+        elif "neall" in f.variables:
+            flag = 3
+
+    if flag is None:
+        flag = cfg.get("flagoutput")
 
     return flag
 
