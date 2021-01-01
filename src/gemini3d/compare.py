@@ -112,6 +112,9 @@ def compare_grid(
     errs = 0
 
     for k in ref.keys():
+        if not isinstance(ref[k], np.ndarray):
+            continue
+
         assert (
             ref[k].shape == new[k].shape
         ), f"{k}: ref shape {ref[k].shape} != data shape {new[k].shape}"

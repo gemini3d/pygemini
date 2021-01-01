@@ -2,6 +2,7 @@ from pathlib import Path
 from matplotlib.pyplot import close, figure
 import typing as T
 from datetime import datetime
+import logging
 import numpy as np
 
 from .. import read
@@ -12,27 +13,28 @@ from .vis import grid2plotfun
 PARAMS = ["ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phitop"]
 
 
-def grid(xg: T.Dict[str, T.Any], only: T.Sequence[str] = None, saveplot_fmt: str = None):
+def grid(direc: Path, only: T.Sequence[str] = None, saveplot_fmt: str = None):
     """plot 3D grid
 
     Parameters
     ----------
 
-    xg: pathlib.Path or dict of numpy.ndarray
-        simulation grid: filename or dict
+    direc: pathlib.Path
+        top-level path of simulation grid
     """
 
-    if isinstance(xg, (str, Path)):
-        xg = read.grid(xg)
-
-    assert xg, "not a simulation grid"
+    xg = read.grid(direc)
 
     if only is None:
-        only = ("basic", "alt", "ecef", "geog")
+        only = ["basic", "alt", "geog"]
+        if xg["lxs"].prod() < 10000:
+            # gets extremely slow if too many points
+            only.append("ecef")
 
     # %% x1, x2, x3
     if "basic" in only:
-        basic(xg)
+        fg = basic(xg)
+        stitle(fg, xg)
 
     # %% detailed altitude plot
     if "alt" in only:
@@ -51,14 +53,40 @@ def grid(xg: T.Dict[str, T.Any], only: T.Sequence[str] = None, saveplot_fmt: str
         stitle(fig3, xg, "ECEF")
 
     # %% lat lon map
-    # FIXME: use cartopy
     if "geog" in only:
-        fig = figure()
+        grid_geog(xg)
+
+
+def grid_geog(xg: T.Dict[str, T.Any]):
+    """
+    plots grid in geographic map
+    """
+
+    fig = figure()
+
+    glon = xg["glon"]
+    glat = xg["glat"]
+
+    try:
+        import cartopy
+
+        proj = cartopy.crs.PlateCarree()  # arbitrary
+
+        ax = fig.gca(projection=proj)
+        ax.add_feature(cartopy.feature.LAND)
+        ax.add_feature(cartopy.feature.OCEAN)
+        ax.add_feature(cartopy.feature.COASTLINE)
+        ax.add_feature(cartopy.feature.BORDERS, linestyle=":")
+        ax.gridlines(draw_labels=True, x_inline=False, y_inline=False)
+        ax.scatter(glon, glat, transform=proj)
+    except ImportError as e:
+        logging.error(e)
         ax = fig.gca()
-        ax.scatter(xg["glat"], xg["glon"])
-        ax.set_xlabel("geographic longitude")
-        ax.set_ylabel("geographic latitude")
-        stitle(fig, xg, "glat, glon")
+        ax.scatter(glon, glat)
+
+    ax.set_xlabel("geographic longitude")
+    ax.set_ylabel("geographic latitude")
+    stitle(fig, xg, "glat, glon")
 
 
 def precip(direc: Path):
@@ -140,7 +168,7 @@ def basic(xg: T.Dict[str, T.Any]):
     ax.set_xlabel("index (dimensionless)")
     ax.set_title(f"x3 (northward) lx3 = {lx3}")
 
-    stitle(fig, xg)
+    return fig
 
 
 def stitle(fig, xg, ttxt: str = ""):
@@ -149,7 +177,7 @@ def stitle(fig, xg, ttxt: str = ""):
         ttxt += f" {xg['time']}"
 
     if "filename" in xg:
-        ttxt += xg.filename
+        ttxt += f" {xg['filename']}"
 
     fig.suptitle(ttxt)
 

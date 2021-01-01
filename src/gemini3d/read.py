@@ -99,6 +99,8 @@ def grid(path: Path, file_format: str = None, shape: bool = False) -> T.Dict[str
     else:
         raise ValueError(f"Unknown file type {fn}")
 
+    grid["filename"] = fn
+
     return grid
 
 
