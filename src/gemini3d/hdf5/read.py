@@ -259,7 +259,11 @@ def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
     lxs = simsize(file.parent)
 
     dat: T.Dict[str, T.Any] = {}
-    p3 = (2, 0, 1)
+
+    if lxs[2] == 1:  # east-west
+        p3 = (2, 0, 1)
+    else:  # 3D or north-south, no swap
+        p3 = (2, 1, 0)
 
     with h5py.File(file, "r") as f:
         for j, k in zip(
@@ -282,7 +286,7 @@ def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
             if not np.array_equal(dat[j][1].shape, lxs):
                 raise ValueError(f"simsize {lxs} does not match {k} {j} shape {dat[j][1].shape}")
 
-        dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:])
+        dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:].transpose())
 
     return dat
 

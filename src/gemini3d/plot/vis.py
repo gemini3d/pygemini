@@ -448,6 +448,7 @@ def east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, tim
     meta = git_meta()
 
     ax = fg.gca()
+
     f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm, bounds_error=False)
     hi = ax.pcolormesh(
         xp / 1e3, yp / 1e3, f(yp, xp), cmap=cmap, vmin=vmin, vmax=vmax, shading="nearest"
