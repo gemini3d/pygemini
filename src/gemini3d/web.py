@@ -118,7 +118,7 @@ def extract_tar(fn: Pathlike, outpath: Pathlike, overwrite: bool = False):
     try:
         with tarfile.open(fn) as z:
             z.extractall(str(outpath.parent))
-    except Exception as e:
+    except tarfile.TarError as e:
         raise RuntimeError(
             f"""failed to extract {fn} with error {e}.
 This file may be corrupt or system libz may be broken.

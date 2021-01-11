@@ -11,7 +11,7 @@ import typing as T
 from .config import read_ini, read_nml
 from . import find
 from . import matlab
-from . import LSP
+from . import LSP, WAVELEN
 
 from .raw import read as raw_read
 from .hdf5 import read as h5read
@@ -166,7 +166,7 @@ def data(
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
         if fn_aurora.is_file():
-            dat.update(raw_read.glow_aurmap(fn_aurora, lxs, len(wavelength)))
+            dat.update(raw_read.glow_aurmap(fn_aurora, lxs, len(WAVELEN)))
 
     elif file_format == "h5":
         flag = h5read.flagoutput(fn, cfg)
