@@ -4,6 +4,7 @@ import typing as T
 from datetime import datetime
 import logging
 import numpy as np
+import xarray
 
 from .. import read
 from .. import find
@@ -257,9 +258,10 @@ def frame(
             continue
 
         plotfun = grid2plotfun(xg)
+        time = to_datetime(dat["time"])
 
-        fg = plotfun(dat["time"], xg, dat[k][1].squeeze(), k, wavelength=dat.get("wavelength"))
-        save_fig(fg, direc, k, dat["time"], saveplot_fmt)
+        fg = plotfun(time, xg, dat[k].squeeze(), k, wavelength=dat.get("wavelength"))
+        save_fig(fg, direc, k, time, saveplot_fmt)
 
 
 def save_fig(fg, direc: Path, name: str, time: datetime, fmt: str):
@@ -271,3 +273,18 @@ def save_fig(fg, direc: Path, name: str, time: datetime, fmt: str):
     print(f"{time} => {plot_fn}")
     fg.savefig(plot_fn)
     close(fg)
+
+
+def to_datetime(times: xarray.DataArray) -> datetime:
+    """
+    xarray time to python datetime.datetime
+    """
+
+    if isinstance(times, xarray.DataArray):
+        times = times.values  # numpy.datetime64
+    if isinstance(times, np.datetime64):
+        times = times.astype("datetime64[us]").astype(datetime)
+    if isinstance(times, np.ndarray):
+        times = times.squeeze()[()]  # might still be array, but squeezed at least
+
+    return times

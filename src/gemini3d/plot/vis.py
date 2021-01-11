@@ -41,12 +41,9 @@ CB_LBL = {
 def grid2plotfun(grid: T.Dict[str, np.ndarray]):
     plotfun = None
     h1 = grid.get("h1")
-    for k in ("lx", "lxs", "lx1"):
-        if k in grid:
-            if k == "lx1":
-                lxs = (grid["lx1"], grid["lx2"], grid["lx3"])
-            else:
-                lxs = grid[k]
+
+    lxs = get_lxs(grid)
+
     if h1 is not None:
         minh1 = h1.min()
         maxh1 = h1.max()
@@ -265,12 +262,8 @@ def plot_interp(
         vmin = 1e-7
 
     # %% SIZE OF SIMULATION
-    for k in ("lx", "lxs", "lx1"):
-        if k in grid:
-            if k == "lx1":
-                lxs = (grid["lx1"], grid["lx2"], grid["lx3"])
-            else:
-                lxs = grid[k]
+    lxs = get_lxs(grid)
+
     lx1, lx2, lx3 = lxs
     inds1 = slice(2, lx1 + 2)
     inds2 = slice(2, lx2 + 2)
@@ -470,3 +463,15 @@ def mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time):
     ax.set_ylabel("magnetic latitude (deg.)")
     ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+
+
+def get_lxs(xg: T.Dict[str, T.Any]) -> np.ndarray:
+
+    for k in ("lx", "lxs", "lx1"):
+        if k in xg:
+            if k == "lx1":
+                return (xg["lx1"], xg["lx2"], xg["lx3"])
+            else:
+                return xg[k]
+
+    raise KeyError("could not find grid size in grid")
