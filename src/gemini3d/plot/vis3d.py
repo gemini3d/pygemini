@@ -49,7 +49,7 @@ def frame(
             continue
 
         if k in PLOTFUN["scalar"]:
-            fg = scalar(time, xg, dat[k][1].squeeze(), name=k)
+            fg = scalar(time, xg, dat[k].squeeze(), name=k)
         elif k in PLOTFUN["vector"]:
             print("TODO: vector plot", k)
 
@@ -131,7 +131,7 @@ def scalar(time: datetime, grid: T.Dict[str, np.ndarray], parm: np.ndarray, name
     # TODO: check order of interpolated axes (1,2,0) or ?
     # parmp = interp.interpn(
     #     points=(grid["x1"][inds1], grid["x2"][inds2], grid["x3"][inds3]),
-    #     values=parm,
+    #     values=parm.values,
     #     xi=np.column_stack((x3.ravel(), y3.ravel(), z3.ravel())),
     #     bounds_error=False,
     # ).reshape((lxp, lyp, lzp))
