@@ -67,7 +67,9 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
         raise ValueError("unkonwn simsize file type")
 
 
-def grid(path: Path, file_format: str = None, shape: bool = False) -> T.Dict[str, np.ndarray]:
+def grid(
+    path: Path, *, var: T.Sequence[str] = None, file_format: str = None, shape: bool = False
+) -> T.Dict[str, np.ndarray]:
     """
     get simulation grid
 
@@ -76,11 +78,14 @@ def grid(path: Path, file_format: str = None, shape: bool = False) -> T.Dict[str
 
     path: pathlib.Path
         path to simgrid.*
+    var: list of str
+        read only these grid variables
     file_format: str, optional
         force .h5, .nc, .dat (debugging)
     shape: bool, optional
         read only the shape of the grid instead of the data iteslf
     """
+
     fn = find.grid(path)
     if not fn:
         return {}
@@ -89,13 +94,13 @@ def grid(path: Path, file_format: str = None, shape: bool = False) -> T.Dict[str
         file_format = fn.suffix[1:]
 
     if file_format == "dat":
-        grid = raw_read.grid(fn.with_suffix(".dat"), shape)
+        grid = raw_read.grid(fn.with_suffix(".dat"), shape=shape)
     elif file_format == "h5":
-        grid = h5read.grid(fn.with_suffix(".h5"), shape)
+        grid = h5read.grid(fn.with_suffix(".h5"), var=var, shape=shape)
     elif file_format == "nc":
-        grid = ncread.grid(fn.with_suffix(".nc"), shape)
+        grid = ncread.grid(fn.with_suffix(".nc"), var=var, shape=shape)
     elif file_format == "mat":
-        grid = matlab.grid(fn.with_suffix(".mat"), shape)
+        grid = matlab.grid(fn.with_suffix(".mat"), shape=shape)
     else:
         raise ValueError(f"Unknown file type {fn}")
 
@@ -135,24 +140,6 @@ def data(
     if not fn:
         return {}
 
-    wavelength = [
-        "3371",
-        "4278",
-        "5200",
-        "5577",
-        "6300",
-        "7320",
-        "10400",
-        "3466",
-        "7774",
-        "8446",
-        "3726",
-        "LBH",
-        "1356",
-        "1493",
-        "1304",
-    ]
-
     if not var:
         var = ["ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3"]
 
@@ -180,7 +167,6 @@ def data(
 
         if fn_aurora.is_file():
             dat.update(raw_read.glow_aurmap(fn_aurora, lxs, len(wavelength)))
-            dat["wavelength"] = wavelength
 
     elif file_format == "h5":
         flag = h5read.flagoutput(fn, cfg)
@@ -196,7 +182,6 @@ def data(
 
         if fn_aurora.is_file():
             dat.update(h5read.glow_aurmap(fn_aurora))
-            dat["wavelength"] = wavelength
     elif file_format == "nc":
         flag = ncread.flagoutput(fn, cfg)
 
@@ -211,35 +196,34 @@ def data(
 
         if fn_aurora.is_file():
             dat.update(ncread.glow_aurmap(fn_aurora))
-            dat["wavelength"] = wavelength
     else:
         raise ValueError(f"Unknown file type {fn}")
 
     # %% Derived variables
     if flag == 1:
         if {"ne", "v1", "Ti", "Te"}.intersection(var):
-            dat["ne"] = (("x1", "x2", "x3"), dat["ns"][1][LSP - 1, :, :, :])
+            dat["ne"] = (("x1", "x2", "x3"), dat["ns"][LSP - 1, :, :, :])
             # np.any() in case neither is an np.ndarray
-            if dat["ns"][1].shape[0] != LSP or not np.array_equal(dat["ns"][1].shape[1:], lxs):
+            if dat["ns"].shape[0] != LSP or not np.array_equal(dat["ns"].shape[1:], lxs):
                 raise ValueError(
-                    f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {dat['ns'][1].shape}"
+                    f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {dat['ns'].shape}"
                 )
         if "v1" in var:
             dat["v1"] = (
                 ("x1", "x2", "x3"),
-                (dat["ns"][1][:6, :, :, :] * dat["vs1"][1][:6, :, :, :]).sum(axis=0) / dat["ne"][1],
+                (dat["ns"][:6, :, :, :] * dat["vs1"][:6, :, :, :]).sum(axis=0) / dat["ne"],
             )
         if "Ti" in var:
             dat["Ti"] = (
                 ("x1", "x2", "x3"),
-                (dat["ns"][1][:6, :, :, :] * dat["Ts"][1][:6, :, :, :]).sum(axis=0) / dat["ne"][1],
+                (dat["ns"][:6, :, :, :] * dat["Ts"][:6, :, :, :]).sum(axis=0) / dat["ne"],
             )
         if "Te" in var:
-            dat["Te"] = (("x1", "x2", "x3"), dat["Ts"][1][LSP - 1, :, :, :])
+            dat["Te"] = (("x1", "x2", "x3"), dat["Ts"][LSP - 1, :, :, :])
 
         if "J1" in var:
             # np.any() in case neither is an np.ndarray
-            if np.any(dat["J1"][1].shape != lxs):
+            if np.any(dat["J1"].shape != lxs):
                 raise ValueError("J1 may have wrong permutation on read")
 
     if "time" not in dat:

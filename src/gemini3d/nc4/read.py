@@ -2,6 +2,7 @@
 NetCDF4 file reading
 """
 
+import xarray
 from pathlib import Path
 import typing as T
 import logging
@@ -9,6 +10,7 @@ import numpy as np
 from datetime import datetime, timedelta
 
 from .. import find
+from .. import WAVELEN
 
 
 try:
@@ -73,7 +75,9 @@ def flagoutput(file: Path, cfg: T.Dict[str, T.Any]) -> int:
     return flag
 
 
-def grid(file: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
+def grid(
+    file: Path, *, var: T.Sequence[str] = None, shape: bool = False
+) -> T.Dict[str, np.ndarray]:
     """
     get simulation grid
 
@@ -81,6 +85,8 @@ def grid(file: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     ----------
     file: pathlib.Path
         filepath to simgrid
+    var: list of str, optional
+        read only these grid variables
     shape: bool, optional
         read only the shape of the grid instead of the data iteslf
 
@@ -96,79 +102,78 @@ def grid(file: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     grid: T.Dict[str, T.Any] = {}
 
     if not file.is_file():
-        logging.error(f"{file} grid file is not present.")
-        return grid
+        file2 = find.grid(file)
+        if file2 and file2.is_file():
+            file = file2
+        else:
+            logging.error(f"{file} grid file is not present.")
+            return grid
 
     if shape:
         with Dataset(file, "r") as f:
             for key in f.variables:
-                grid[key] = f[key].shpae
+                grid[key] = f[key].shape
 
         grid["lxs"] = np.array([grid["x1"], grid["x2"], grid["x3"]])
 
         return grid
 
     with Dataset(file, "r") as f:
-        for k in f.variables:
+        if not var:
+            var = f.variables
+        for k in var:
             if f[k].ndim >= 2:
                 grid[k] = f[k][:].transpose()
             else:
                 grid[k] = f[k][:]
 
     grid["lxs"] = simsize(file.with_name("simsize.nc"))
-    # FIXME: line below not always work. Why not?
-    # grid["lxs"] = np.array([grid["x1"].size, grid["x2"].size, grid["x3"].size])
 
     return grid
 
 
-def Efield(file: Path) -> T.Dict[str, T.Any]:
+def Efield(file: Path) -> xarray.Dataset:
     """
     load electric field
     """
 
-    # NOT the whole sim simsize
-    # with Dataset(file.with_name("simsize.nc") , "r") as f:
-    #     E["llon"] = f["/llon"][()]
-    #     E["llat"] = f["/llat"][()]
-
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
     with Dataset(file.with_name("simgrid.nc"), "r") as f:
-        E = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
+        E = xarray.Dataset(coords={"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]})
 
     with Dataset(file, "r") as f:
-        E["flagdirich"] = f["flagdirich"]
+        E["flagdirich"] = f["flagdirich"][()]
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-            E[p] = (("x2", "x3"), f[p][:])
+            E[p] = (("mlat", "mlon"), f[p][:])
         for p in ("Vminx2ist", "Vmaxx2ist"):
-            E[p] = (("x2",), f[p][:])
+            E[p] = (("mlat",), f[p][:])
         for p in ("Vminx3ist", "Vmaxx3ist"):
-            E[p] = (("x3",), f[p][:])
+            E[p] = (("mlon",), f[p][:])
 
     return E
 
 
-def precip(file: Path) -> T.Dict[str, T.Any]:
-    # with Dataset(file.with_name("simsize.nc"), "r") as f:
-    #     dat["llon"] = f["/llon"][()]
-    #     dat["llat"] = f["/llat"][()]
+def precip(file: Path) -> xarray.Dataset:
+    """
+    load precipitation
+    """
 
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
     with Dataset(file.with_name("simgrid.nc"), "r") as f:
-        dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
+        dat = xarray.Dataset(coords={"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]})
 
     with Dataset(file, "r") as f:
         for k in ("Q", "E0"):
-            dat[k] = f[f"/{k}p"][:]
+            dat[k] = (("mlat", "mlon"), f[f"/{k}p"][:])
 
     return dat
 
 
-def frame3d_curvne(file: Path) -> T.Dict[str, T.Any]:
+def frame3d_curvne(file: Path) -> xarray.Dataset:
     """
     just Ne
     """
@@ -176,7 +181,8 @@ def frame3d_curvne(file: Path) -> T.Dict[str, T.Any]:
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    dat: T.Dict[str, T.Any] = {}
+    xg = grid(file.parent, var=("x1", "x2", "x3"))
+    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     with Dataset(file, "r") as f:
         dat["ne"] = (("x1", "x2", "x3"), f["/ne"][:])
@@ -184,35 +190,31 @@ def frame3d_curvne(file: Path) -> T.Dict[str, T.Any]:
     return dat
 
 
-def frame3d_curv(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
+def frame3d_curv(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
     """
+    curvilinear
 
     Parameters
     ----------
 
     file: pathlib.Path
-        filename of this timestep of simulation output
+        filename to read
     var: list of str
         variable(s) to read
     """
 
-    #    grid = readgrid(file.parent)
-    #    dat = xarray.Dataset(
-    #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
-    #    )
+    xg = grid(file.parent, var=("x1", "x2", "x3"))
+    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
     lxs = simsize(file.parent)
 
-    dat: T.Dict[str, T.Any] = {}
-
+    p4 = (0, 3, 2, 1)
     if lxs[2] == 1:  # east-west
-        p4 = (0, 3, 1, 2)
         p3 = (2, 0, 1)
     else:  # 3D or north-south, no swap
-        p4 = (0, 3, 2, 1)
         p3 = (2, 1, 0)
 
     with Dataset(file, "r") as f:
@@ -232,12 +234,21 @@ def frame3d_curv(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
             dat[k] = (("x1", "x2", "x3"), f[f"/{k}avgall"][:].transpose(p3))
 
         if "Phiall" in f:
-            dat["Phitop"] = (("x2", "x3"), f["Phiall"][:].transpose())
+            Phiall = f["Phiall"][:]
+            if Phiall.ndim == 2:
+                Phiall = Phiall.transpose()
+            elif Phiall.ndim == 1:
+                if dat.x2.size == 1:
+                    Phiall = Phiall[:, None]
+                else:
+                    Phiall = Phiall[None, :]
+
+            dat["Phitop"] = (("x2", "x3"), Phiall)
 
     return dat
 
 
-def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
+def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
     """
 
     Parameters
@@ -247,17 +258,14 @@ def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
     var: list of str
         variable(s) to read
     """
-    #    grid = readgrid(file.parent)
-    #    dat = xarray.Dataset(
-    #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
-    #    )
+
+    xg = grid(file.parent, var=("x1", "x2", "x3"))
+    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
     lxs = simsize(file.parent)
-
-    dat: T.Dict[str, T.Any] = {}
 
     if lxs[2] == 1:  # east-west
         p3 = (2, 0, 1)
@@ -282,15 +290,15 @@ def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
 
             dat[j] = (("x1", "x2", "x3"), f[k][:].transpose(p3))
 
-            if not np.array_equal(dat[j][1].shape, lxs):
-                raise ValueError(f"simsize {lxs} does not match {k} {j} shape {dat[j][1].shape}")
+            if not np.array_equal(dat[j].shape, lxs):
+                raise ValueError(f"simsize {lxs} does not match {k} {j} shape {dat[j].shape}")
 
         dat["Phitop"] = (("x2", "x3"), f["Phiall"][:].transpose())
 
     return dat
 
 
-def glow_aurmap(file: Path) -> T.Dict[str, T.Any]:
+def glow_aurmap(file: Path) -> xarray.Dataset:
     """
     read the auroral output from GLOW
 
@@ -299,6 +307,9 @@ def glow_aurmap(file: Path) -> T.Dict[str, T.Any]:
     file: pathlib.Path
         filename of this timestep of simulation output
     """
+
+    xg = grid(file.parents[1], var=("x2", "x3"))
+    dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     if Dataset is None:
         raise ImportError("netcdf missing or broken")

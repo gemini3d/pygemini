@@ -1,3 +1,7 @@
+"""
+HDF5 file writing
+"""
+
 import typing as T
 import numpy as np
 from pathlib import Path
@@ -94,7 +98,7 @@ def data(dat: T.Dict[str, T.Any], outfn: Path):
 
             h.create_dataset(
                 k,
-                data=dat[k][1].astype(np.float32),
+                data=dat[k].astype(np.float32),
                 chunks=(1, *lxs[1:], LSP),
                 compression="gzip",
                 compression_opts=1,
@@ -106,7 +110,7 @@ def data(dat: T.Dict[str, T.Any], outfn: Path):
 
             h.create_dataset(
                 k,
-                data=dat[k][1].astype(np.float32),
+                data=dat[k].astype(np.float32),
                 chunks=(1, *lxs[1:]),
                 compression="gzip",
                 compression_opts=1,
@@ -114,8 +118,8 @@ def data(dat: T.Dict[str, T.Any], outfn: Path):
 
         if "Phitop" in dat:
             h.create_dataset(
-                "Phitop",
-                data=dat["Phitop"][1],
+                "Phiall",
+                data=dat["Phitop"],
                 compression="gzip",
                 compression_opts=1,
             )

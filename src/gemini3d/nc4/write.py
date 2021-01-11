@@ -68,9 +68,9 @@ def data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
     lxs = dat["lxs"]
 
     if "ns" in dat:
-        shape = dat["ns"][1].shape
+        shape = dat["ns"].shape
     elif "ne" in dat:
-        shape = dat["ne"][1].shape
+        shape = dat["ne"].shape
     else:
         raise ValueError("what variable should I use to determine dimensions?")
 
@@ -109,15 +109,15 @@ def data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
         for k in ["ns", "vs1", "Ts"]:
             if k not in dat:
                 continue
-            _write_var(f, k, dims, dat[k][1])
+            _write_var(f, k, dims, dat[k])
 
         for k in ["ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"]:
             if k not in dat:
                 continue
-            _write_var(f, k, dims, dat[k][1])
+            _write_var(f, k, dims, dat[k])
 
         if "Phitop" in dat:
-            _write_var(f, "Phitop", dims[-2:], dat["Phitop"][1])
+            _write_var(f, "Phiall", dims[-2:], dat["Phitop"])
 
 
 def grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):

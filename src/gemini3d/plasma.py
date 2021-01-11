@@ -54,18 +54,16 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         raise FileNotFoundError(f"{p['eq_dir']} does not have data for {t_eq_end}")
 
     # %% sanity check equilibrium simulation input to interpolation
-    check_density(dat["ns"][1])
-    check_drift(dat["vs1"][1])
-    check_temperature(dat["Ts"][1])
+    check_density(dat["ns"])
+    check_drift(dat["vs1"])
+    check_temperature(dat["Ts"])
 
     # %% DO THE INTERPOLATION
     xg_in = read.grid(p["eq_dir"])
     if not xg_in:
         raise FileNotFoundError(f"{p['eq_dir']} does not have an input simulation grid.")
 
-    nsi, vs1i, Tsi = model_resample(
-        xg_in, ns=dat["ns"][1], vs=dat["vs1"][1], Ts=dat["Ts"][1], xg=xg
-    )
+    nsi, vs1i, Tsi = model_resample(xg_in, ns=dat["ns"], vs=dat["vs1"], Ts=dat["Ts"], xg=xg)
 
     # %% sanity check interpolated variables
     check_density(nsi)
@@ -137,14 +135,24 @@ def model_resample(
         assert X2i.shape == tuple(xg["lx"])
 
         for i in range(lsp):
+            # the .values are to avoid OutOfMemoryError
             nsi[i, :, :, :] = interpn(
-                points=(X1, X2, X3), values=ns[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True
+                points=(X1, X2, X3),
+                values=ns[i, :, :, :].values,
+                xi=(X1i, X2i, X3i),
+                bounds_error=True,
             )
             vsi[i, :, :, :] = interpn(
-                points=(X1, X2, X3), values=vs[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True
+                points=(X1, X2, X3),
+                values=vs[i, :, :, :].values,
+                xi=(X1i, X2i, X3i),
+                bounds_error=True,
             )
             Tsi[i, :, :, :] = interpn(
-                points=(X1, X2, X3), values=Ts[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True
+                points=(X1, X2, X3),
+                values=Ts[i, :, :, :].values,
+                xi=(X1i, X2i, X3i),
+                bounds_error=True,
             )
     elif lx3 == 1:
         # 2-D east-west

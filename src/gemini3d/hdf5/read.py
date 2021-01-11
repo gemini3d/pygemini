@@ -1,3 +1,8 @@
+"""
+HDF5 file read
+"""
+
+import xarray
 from pathlib import Path
 import typing as T
 import numpy as np
@@ -5,6 +10,7 @@ import logging
 from datetime import datetime, timedelta
 
 from .. import find
+from .. import WAVELEN
 
 try:
     import h5py
@@ -70,14 +76,18 @@ def flagoutput(file: Path, cfg: T.Dict[str, T.Any]) -> int:
     return flag
 
 
-def grid(file: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
+def grid(
+    file: Path, *, var: T.Sequence[str] = None, shape: bool = False
+) -> T.Dict[str, np.ndarray]:
     """
     get simulation grid
 
     Parameters
     ----------
     file: pathlib.Path
-        filepath to simgrid.h5
+        filepath to simgrid
+    var: list of str, optional
+        read only these grid variables
     shape: bool, optional
         read only the shape of the grid instead of the data iteslf
 
@@ -95,8 +105,12 @@ def grid(file: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     grid: T.Dict[str, T.Any] = {}
 
     if not file.is_file():
-        logging.error(f"{file} grid file is not present.")
-        return grid
+        file2 = find.grid(file)
+        if file2 and file2.is_file():
+            file = file2
+        else:
+            logging.error(f"{file} grid file is not present.")
+            return grid
 
     if shape:
         with h5py.File(file, "r") as f:
@@ -110,20 +124,20 @@ def grid(file: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
         return grid
 
     with h5py.File(file, "r") as f:
-        for k in f.keys():
+        if not var:
+            var = f.keys()
+        for k in var:
             if f[k].ndim >= 2:
                 grid[k] = f[k][:].transpose()
             else:
                 grid[k] = f[k][:]
 
     grid["lxs"] = simsize(file.with_name("simsize.h5"))
-    # FIXME: line below not always work. Why not?
-    # grid["lxs"] = np.array([grid["x1"].size, grid["x2"].size, grid["x3"].size])
 
     return grid
 
 
-def Efield(file: Path) -> T.Dict[str, T.Any]:
+def Efield(file: Path) -> xarray.Dataset:
     """
     load electric field
     """
@@ -131,46 +145,40 @@ def Efield(file: Path) -> T.Dict[str, T.Any]:
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
-    # sizefile = file.with_name("simsize.h5")  # NOT the whole sim simsize.dat
-    # with h5py.File(sizefile, "r") as f:
-    #     E["llon"] = f["/llon"][()]
-    #     E["llat"] = f["/llat"][()]
-
     with h5py.File(file.with_name("simgrid.h5"), "r") as f:
-        E = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
+        E = xarray.Dataset(coords={"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]})
 
     with h5py.File(file, "r") as f:
-        E["flagdirich"] = f["flagdirich"]
+        E["flagdirich"] = f["flagdirich"][()].item()
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-            E[p] = (("x2", "x3"), f[p][:])
+            E[p] = (("mlat", "mlon"), f[p][:])
         for p in ("Vminx2ist", "Vmaxx2ist"):
-            E[p] = (("x2",), f[p][:])
+            E[p] = (("mlat",), f[p][:])
         for p in ("Vminx3ist", "Vmaxx3ist"):
-            E[p] = (("x3",), f[p][:])
+            E[p] = (("mlon",), f[p][:])
 
     return E
 
 
-def precip(file: Path) -> T.Dict[str, T.Any]:
-
-    # with h5py.File(path / "simsize.h5", "r") as f:
-    #     dat["llon"] = f["/llon"][()]
-    #     dat["llat"] = f["/llat"][()]
+def precip(file: Path) -> xarray.Dataset:
+    """
+    load precipitation
+    """
 
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
     with h5py.File(file.with_name("simgrid.h5"), "r") as f:
-        dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
+        dat = xarray.Dataset(coords={"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]})
 
     with h5py.File(file, "r") as f:
         for k in ("Q", "E0"):
-            dat[k] = f[f"/{k}p"][:]
+            dat[k] = (("mlat", "mlon"), f[f"/{k}p"][:])
 
     return dat
 
 
-def frame3d_curvne(file: Path) -> T.Dict[str, T.Any]:
+def frame3d_curvne(file: Path) -> xarray.Dataset:
     """
     just Ne
     """
@@ -178,13 +186,23 @@ def frame3d_curvne(file: Path) -> T.Dict[str, T.Any]:
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
+    xg = grid(file.parent, var=("x1", "x2", "x3"))
+    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
+
+    lxs = simsize(file.parent)
+
+    if lxs[2] == 1:  # east-west
+        p3 = (2, 0, 1)
+    else:  # 3D or north-south, no swap
+        p3 = (2, 1, 0)
+
     with h5py.File(file, "r") as f:
-        dat = {"ne": (("x1", "x2", "x3"), f["/ne"][:])}
+        dat["ne"] = (("x1", "x2", "x3"), f["/ne"][:].transpose(p3))
 
     return dat
 
 
-def frame3d_curv(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
+def frame3d_curv(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
     """
     curvilinear
 
@@ -197,24 +215,28 @@ def frame3d_curv(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
         variable(s) to read
     """
 
-    #    xg = grid(file.parent)
-    #    dat = xarray.Dataset(
-    #        coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
-    #    )
+    xg = grid(file.parent, var=("x1", "x2", "x3"))
+    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
     lxs = simsize(file.parent)
 
-    dat: T.Dict[str, T.Any] = {}
+    p4s = (0, 3, 1, 2)
+    p3s = (2, 0, 1)
+    p4n = (0, 3, 2, 1)
+    p3n = (2, 1, 0)
 
-    if lxs[2] == 1:  # east-west
-        p4 = (0, 3, 1, 2)
-        p3 = (2, 0, 1)
-    else:  # 3D or north-south, no swap
-        p4 = (0, 3, 2, 1)
-        p3 = (2, 1, 0)
+    if lxs[1] == 1 or file.name == "initial_conditions.h5":
+        p4 = p4n
+        p3 = p3n
+    elif lxs[2] == 1:  # east-west
+        p4 = p4s
+        p3 = p3s
+    else:  # 3D
+        p4 = p4n
+        p3 = p3n
 
     with h5py.File(file, "r") as f:
         if {"ne", "ns", "v1", "Ti"}.intersection(var):
@@ -233,12 +255,24 @@ def frame3d_curv(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
             dat[k] = (("x1", "x2", "x3"), f[f"/{k}avgall"][:].transpose(p3))
 
         if "Phiall" in f:
-            dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:].transpose())
+            Phiall = f["/Phiall"][:]
+
+            if Phiall.ndim == 1:
+                if lxs[1] == 1:
+                    Phiall = Phiall[None, :]
+                else:
+                    Phiall = Phiall[:, None]
+
+            if (lxs[1] == 1 and not file.name == "initial_conditions.h5") or (
+                lxs[1] != 1 and lxs[2] != 1
+            ):
+                Phiall = Phiall.transpose()
+            dat["Phitop"] = (("x2", "x3"), Phiall)
 
     return dat
 
 
-def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
+def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
     """
 
     Parameters
@@ -248,17 +282,14 @@ def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
     var: list of str
         variable(s) to read
     """
-    #    xg = grid(file.parent)
-    #    dat = xarray.Dataset(
-    #        coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
-    #    )
+
+    xg = grid(file.parent, var=("x1", "x2", "x3"))
+    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
     lxs = simsize(file.parent)
-
-    dat: T.Dict[str, T.Any] = {}
 
     if lxs[2] == 1:  # east-west
         p3 = (2, 0, 1)
@@ -283,15 +314,15 @@ def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> T.Dict[str, T.Any]:
 
             dat[j] = (("x1", "x2", "x3"), f[f"/{k}"][:].transpose(p3))
 
-            if not np.array_equal(dat[j][1].shape, lxs):
-                raise ValueError(f"simsize {lxs} does not match {k} {j} shape {dat[j][1].shape}")
+            if not np.array_equal(dat[j].shape, lxs):
+                raise ValueError(f"simsize {lxs} does not match {k} {j} shape {dat[j].shape}")
 
         dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:].transpose())
 
     return dat
 
 
-def glow_aurmap(file: Path) -> T.Dict[str, T.Any]:
+def glow_aurmap(file: Path) -> xarray.Dataset:
     """
     read the auroral output from GLOW
 
@@ -301,11 +332,21 @@ def glow_aurmap(file: Path) -> T.Dict[str, T.Any]:
         filename of this timestep of simulation output
     """
 
+    xg = grid(file.parents[1], var=("x2", "x3"))
+    dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
+
+    lxs = simsize(file.parents[1])
+
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
+    if lxs[2] == 1:  # east-west
+        p3 = (0, 2, 1)
+    else:  # 3D or north-south, no swap
+        p3 = (0, 2, 1)
+
     with h5py.File(file, "r") as h:
-        dat = {"rayleighs": (("wavelength", "x2", "x3"), h["/aurora/iverout"][:])}
+        dat["rayleighs"] = (("wavelength", "x2", "x3"), h["/aurora/iverout"][:].transpose(p3))
 
     return dat
 

@@ -157,8 +157,8 @@ def compare_input(
     itols = ("N", "T", "V")
 
     for k, j in zip(names, itols):
-        b = ref[k][1]
-        a = new[k][1]
+        b = ref[k]
+        a = new[k]
 
         assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
 
@@ -250,8 +250,8 @@ def compare_Efield(
         ref = read.Efield(find.frame(refdir, t))
         new = read.Efield(find.frame(newdir, t), file_format=file_format)
         for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-            b = ref[k][1]
-            a = new[k][1]
+            b = ref[k]
+            a = new[k]
 
             assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
 
@@ -302,8 +302,8 @@ def compare_output(
         itols = ["N", "V", "V", "V", "T", "T", "J", "J", "J"]
 
         for k, j in zip(names, itols):
-            a = A[k][1]
-            b = B[k][1]
+            a = A[k]
+            b = B[k]
 
             assert a.shape == b.shape, f"{k} time {i} {t}: shape: ref {b.shape} != data {a.shape}"
 
@@ -317,19 +317,19 @@ def compare_output(
             names = ["ne", "v1", "v2", "v3"]
             itols = ["N", "V", "V", "V"]
             for k, j in zip(names, itols):
-                if np.allclose(ref[k][1], a, 0.0001 * tol[f"rtol{j}"], 0.0001 * tol[f"atol{j}"]):
+                if np.allclose(ref[k], a, 0.0001 * tol[f"rtol{j}"], 0.0001 * tol[f"atol{j}"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
         if i == 3:
             for k in ("Ti", "Te"):
-                if np.allclose(ref[k][1], A[k][1], 0.01 * tol["rtolT"], 0.1 * tol["atolT"]):
+                if np.allclose(ref[k], A[k], 0.01 * tol["rtolT"], 0.1 * tol["atolT"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
         if i == 2:
             for k in ("J1", "J2", "J3"):
-                if np.allclose(ref[k][1], a, 0.01 * tol["rtolJ"], 0.1 * tol["atolJ"]):
+                if np.allclose(ref[k], a, 0.01 * tol["rtolJ"], 0.1 * tol["atolJ"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
