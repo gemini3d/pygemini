@@ -237,7 +237,8 @@ def plot_all(direc: Path, var: T.Sequence[str] = None, saveplot_fmt: str = None)
 
 def frame(
     direc: Path,
-    time: datetime,
+    time: datetime = None,
+    *,
     saveplot_fmt: str = None,
     var: T.Sequence[str] = None,
     xg: T.Dict[str, T.Any] = None,
@@ -248,10 +249,23 @@ def frame(
     if not var:
         var = PARAMS
 
+    file = None
+    if time is None:
+        if not direc.is_file():
+            raise ValueError("must either specify directory and time, or single file")
+        file = direc
+        direc = direc.parent
+
     if not xg:
         xg = read.grid(direc)
 
-    dat = read.frame(direc, time)
+    if file is None:
+        dat = read.frame(direc, time)
+    else:
+        dat = read.data(file, var)
+
+    if not dat:
+        raise ValueError(f"No data in {direc} at {time}")
 
     for k in var:
         if k not in dat:  # not present at this time step, often just the first time step
