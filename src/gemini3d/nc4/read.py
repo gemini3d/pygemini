@@ -233,7 +233,7 @@ def frame3d_curv(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
         for k in {"v2", "v3"}.intersection(var):
             dat[k] = (("x1", "x2", "x3"), f[f"/{k}avgall"][:].transpose(p3))
 
-        if "Phiall" in f:
+        if "Phi" in f:
             Phiall = f["Phiall"][:]
             if Phiall.ndim == 2:
                 Phiall = Phiall.transpose()
@@ -293,7 +293,8 @@ def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
             if not np.array_equal(dat[j].shape, lxs):
                 raise ValueError(f"simsize {lxs} does not match {k} {j} shape {dat[j].shape}")
 
-        dat["Phitop"] = (("x2", "x3"), f["Phiall"][:].transpose())
+        if "Phi" in f:
+            dat["Phitop"] = (("x2", "x3"), f["Phiall"][:].transpose())
 
     return dat
 
