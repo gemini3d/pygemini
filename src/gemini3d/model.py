@@ -176,7 +176,13 @@ def postprocess(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> None:
 
     if "setup_functions" in cfg:
         # assume file to import from is in cwd or Python path
-        for name in cfg["setup_functions"]:
+        funcs = (
+            [cfg["setup_functions"]]
+            if isinstance(cfg["setup_functions"], str)
+            else cfg["setup_functions"]
+        )
+
+        for name in funcs:
             mod_name = ".".join(name.split(".")[:-1])
             func_name = name.split(".")[-1]
             if not mod_name:

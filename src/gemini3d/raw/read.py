@@ -230,9 +230,7 @@ def frame3d_curvavg(file: Path) -> xarray.Dataset:
 
     lxs = simsize(file.parent)
     xg = grid(file.parent)
-    dat = xarray.Dataset(
-        coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
-    )
+    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     with file.open("r") as f:
         time(f)
@@ -249,9 +247,7 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
 
     lxs = simsize(file.parent)
     xg = grid(file.parent)
-    dat = xarray.Dataset(
-        coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
-    )
+    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     with file.open("r") as f:
         time(f)
@@ -298,9 +294,7 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
 
     lxs = simsize(file.parent)
     xg = grid(file.parent)
-    dat = xarray.Dataset(
-        coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
-    )
+    dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")

@@ -121,9 +121,11 @@ def parse_namelist(file: Path, nml: str) -> T.Dict[str, T.Any]:
             if k in {"lxp", "lyp"}:
                 P[k] = int(r[k])
             elif k == "eqdir":  # old .nml
-                P["eq_dir"] = Path(r["eqdir"]).expanduser()
+                P["eq_dir"] = Path(r[k]).expanduser()
             elif k == "eq_dir":
-                P["eq_dir"] = Path(r["eq_dir"]).expanduser()
+                P["eq_dir"] = Path(r[k]).expanduser()
+            elif k == "setup_functions":
+                P["setup_functions"] = [r[k]] if isinstance(r[k], str) else r[k]
             else:
                 P[k] = r[k]
     elif nml == "neutral_perturb":
