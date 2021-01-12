@@ -11,7 +11,7 @@ import typing as T
 from .config import read_ini, read_nml
 from . import find
 from . import matlab
-from . import LSP, WAVELEN
+from . import LSP
 
 from .raw import read as raw_read
 from .hdf5 import read as h5read
@@ -152,21 +152,19 @@ def data(
     if not file_format:
         file_format = cfg["file_format"] if "file_format" in cfg else fn.suffix[1:]
 
-    lxs = simsize(fn.parent)
-
     if file_format == "dat":
         flag = cfg.get("flagoutput")
         if flag == 0:
-            dat = raw_read.frame3d_curvne(fn, lxs)
+            dat = raw_read.frame3d_curvne(fn)
         elif flag == 1:
-            dat = raw_read.frame3d_curv(fn, lxs)
+            dat = raw_read.frame3d_curv(fn)
         elif flag == 2:
-            dat = raw_read.frame3d_curvavg(fn, lxs)
+            dat = raw_read.frame3d_curvavg(fn)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
         if fn_aurora.is_file():
-            dat.update(raw_read.glow_aurmap(fn_aurora, lxs, len(WAVELEN)))
+            dat.update(raw_read.glow_aurmap(fn_aurora))
 
     elif file_format == "h5":
         flag = h5read.flagoutput(fn, cfg)
@@ -198,6 +196,8 @@ def data(
             dat.update(ncread.glow_aurmap(fn_aurora))
     else:
         raise ValueError(f"Unknown file type {fn}")
+
+    lxs = simsize(fn.parent)
 
     # %% Derived variables
     if flag == 1:

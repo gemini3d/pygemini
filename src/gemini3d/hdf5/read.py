@@ -22,6 +22,16 @@ except (ImportError, AttributeError):
 def simsize(path: Path) -> T.Tuple[int, ...]:
     """
     get simulation size
+
+    Parameters
+    ----------
+    fn: pathlib.Path
+        filepath to simsize.dat
+
+    Returns
+    -------
+    size: tuple of int, int, int
+        3 integers telling simulation grid size
     """
 
     if h5py is None:

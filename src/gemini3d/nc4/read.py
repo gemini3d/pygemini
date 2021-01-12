@@ -5,13 +5,12 @@ NetCDF4 file reading
 import xarray
 from pathlib import Path
 import typing as T
-import logging
 import numpy as np
+import logging
 from datetime import datetime, timedelta
 
 from .. import find
 from .. import WAVELEN
-
 
 try:
     from netCDF4 import Dataset
@@ -53,9 +52,12 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
 
 
 def flagoutput(file: Path, cfg: T.Dict[str, T.Any]) -> int:
+    """ detect output type """
+
+    if Dataset is None:
+        raise ImportError("netcdf missing or broken")
 
     flag = None
-
     with Dataset(file, "r") as f:
         if "nsall" in f.variables:
             # milestone or full
@@ -68,7 +70,6 @@ def flagoutput(file: Path, cfg: T.Dict[str, T.Any]) -> int:
             flag = 2
         elif "neall" in f.variables:
             flag = 3
-
     if flag is None:
         flag = cfg.get("flagoutput")
 
@@ -115,7 +116,6 @@ def grid(
                 grid[key] = f[key].shape
 
         grid["lxs"] = np.array([grid["x1"], grid["x2"], grid["x3"]])
-
         return grid
 
     with Dataset(file, "r") as f:
@@ -144,7 +144,7 @@ def Efield(file: Path) -> xarray.Dataset:
         E = xarray.Dataset(coords={"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]})
 
     with Dataset(file, "r") as f:
-        E["flagdirich"] = f["flagdirich"][()]
+        E["flagdirich"] = f["flagdirich"][()].item()
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
             E[p] = (("mlat", "mlon"), f[p][:])
         for p in ("Vminx2ist", "Vmaxx2ist"):
@@ -315,7 +315,7 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
         raise ImportError("netcdf missing or broken")
 
     with Dataset(file, "r") as h:
-        dat = {"rayleighs": (("wavelength", "x2", "x3"), h["iverout"][:])}
+        dat["rayleighs"] = (("wavelength", "x2", "x3"), h["iverout"][:])
 
     return dat
 
@@ -332,9 +332,9 @@ def time(file: Path) -> np.ndarray:
         ymd = datetime(*f["ymd"][:3])
 
         if "UThour" in f:
-            hour = f["UThour"][()]
+            hour = f["UThour"][()].item()
         elif "UTsec" in f:
-            hour = f["UTsec"][()] / 3600
+            hour = f["UTsec"][()].item() / 3600
         else:
             raise KeyError(f"did not find time of day in {file}")
 

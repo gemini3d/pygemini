@@ -3,6 +3,7 @@ raw binary file I/O.
 Raw files are deprecated and do not contain most features of Gemini
 """
 
+import xarray
 from pathlib import Path
 import typing as T
 import numpy as np
@@ -10,13 +11,14 @@ import logging
 import struct
 from datetime import datetime, timedelta
 
-LSP = 7
+from .. import find
+from .. import WAVELEN
+from .. import LSP
 
 
-# NOT lru_cache
-def simsize(fn: Path) -> T.Tuple[int, ...]:
+def simsize(path: Path) -> T.Tuple[int, ...]:
     """
-    get simulation dimensions from simsize.dat
+    get simulation size
 
     Parameters
     ----------
@@ -28,26 +30,28 @@ def simsize(fn: Path) -> T.Tuple[int, ...]:
     size: tuple of int, int, int
         3 integers telling simulation grid size
     """
-    fn = Path(fn).expanduser()
-    fsize = fn.stat().st_size
+
+    path = find.simsize(path, ".dat")
+
+    fsize = path.stat().st_size
     if fsize == 12:
-        lxs = struct.unpack("III", fn.open("rb").read(12))
+        lxs = struct.unpack("III", path.open("rb").read(12))
     elif fsize == 8:
-        lxs = struct.unpack("II", fn.open("rb").read(8))
+        lxs = struct.unpack("II", path.open("rb").read(8))
     else:
-        raise ValueError(f"{fn} is not expected 8 bytes (2-D) or 12 bytes (3-D) long")
+        raise ValueError(f"{path} is not expected 8 bytes (2-D) or 12 bytes (3-D) long")
 
     return lxs
 
 
 def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     """
-    get simulation dimensions
+    get simulation grid
 
     Parameters
     ----------
     fn: pathlib.Path
-        filepath to simgrid.dat
+        filepath to simgrid
 
     Returns
     -------
@@ -58,7 +62,7 @@ def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
     if shape:
         raise NotImplementedError("grid shape for raw would be straightforward.")
 
-    lxs = simsize(fn.parent / "simsize.dat")
+    lxs = simsize(fn.parent)
     if len(lxs) == 2:
         return grid2(fn, lxs)
     elif len(lxs) == 3:
@@ -135,69 +139,62 @@ def grid3(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
     return grid
 
 
-def Efield(fn: Path) -> T.Dict[str, T.Any]:
+def Efield(file: Path) -> xarray.Dataset:
     """
     load Efield_inputs files that contain input electric field in V/m
     """
 
-    read = np.fromfile
+    lxs = simsize(file.parent)
 
-    E: T.Dict[str, np.ndarray] = {}
+    assert lxs[0] > 0, "must have strictly positive number of longitude cells"
+    assert lxs[1] > 0, "must have strictly positive number of latitude cells"
 
-    E["Nlon"], E["Nlat"] = simsize(fn.parent / "simsize.dat")
-
-    assert E["Nlon"] > 0, "must have strictly positive number of longitude cells"
-    assert E["Nlat"] > 0, "must have strictly positive number of latitude cells"
-
-    lxs = (0, E["Nlon"], E["Nlat"])
-
-    E.update(grid2(fn.parent / "simgrid.dat", (E["Nlon"], E["Nlat"])))
+    m = grid2(file.parent / "simgrid.dat", lxs)
 
     assert (
-        (E["mlat"] >= -90) & (E["mlat"] <= 90)
-    ).all(), f"impossible latitude, was file read correctly? {fn}"
+        (m["mlat"] >= -90) & (m["mlat"] <= 90)
+    ).all(), f"impossible latitude, was file read correctly? {file}"
 
-    with fn.open("r") as f:
+    dat = xarray.Dataset(coords=m)
+
+    with file.open("r") as f:
         """
         NOTE:
         this is mistakenly a float from Matlab
         to keep compatibility with old files, we left it as real64.
         New work should be using HDF5 instead of raw in any case.
         """
-        E["flagdirich"] = int(read(f, np.float64, 1))
+        dat["flagdirich"] = int(np.fromfile(f, np.float64, 1))
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-            E[p] = (("x2", "x3"), read2D(f, lxs))
+            dat[p] = (("x2", "x3"), read2D(f, lxs))
         for p in ("Vminx2ist", "Vmaxx2ist"):
-            E[p] = (("x2",), read(f, np.float64, E["Nlat"]))
+            dat[p] = (("x2",), np.fromfile(f, np.float64, lxs[1]))
         for p in ("Vminx3ist", "Vmaxx3ist"):
-            E[p] = (("x3",), read(f, np.float64, E["Nlon"]))
-        filesize = fn.stat().st_size
+            dat[p] = (("x3",), np.fromfile(f, np.float64, lxs[0]))
+        filesize = file.stat().st_size
         if f.tell() != filesize:
-            logging.error(f"{fn} size {filesize} != file read position {f.tell()}")
+            logging.error(f"{file} size {filesize} != file read position {f.tell()}")
 
-    return E
+    return dat
 
 
-def frame3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+def frame3d_curv(file: Path) -> xarray.Dataset:
     """
+    curvilinear
 
     Parameters
     ----------
-    fn: pathlib.Path
-        filename of this timestep of simulation output
-    lxs: list of int
-        array dimension
+
+    file: pathlib.Path
+        filename to read
     """
 
-    #    grid = grid(fn.parent / "inputs/simgrid.dat")
-    #    dat = xarray.Dataset(
-    #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
-    #    )
+    xg = grid(file.parent)
+    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
+    lxs = simsize(file.parent)
 
-    dat: T.Dict[str, T.Any] = {}
-
-    with fn.open("r") as f:
-        dat["time"] = time(f)
+    with file.open("r") as f:
+        time(f)
 
         ns = read4D(f, LSP, lxs)
         dat["ne"] = (("x1", "x2", "x3"), ns[:, :, :, LSP - 1])
@@ -205,13 +202,13 @@ def frame3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
         vs1 = read4D(f, LSP, lxs)
         dat["v1"] = (
             ("x1", "x2", "x3"),
-            (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / dat["ne"][1],
+            (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / dat["ne"],
         )
 
         Ts = read4D(f, LSP, lxs)
         dat["Ti"] = (
             ("x1", "x2", "x3"),
-            (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / dat["ne"][1],
+            (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / dat["ne"],
         )
         dat["Te"] = (("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze())
 
@@ -223,24 +220,23 @@ def frame3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     return dat
 
 
-def frame3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+def frame3d_curvavg(file: Path) -> xarray.Dataset:
     """
 
     Parameters
     ----------
-    fn: pathlib.Path
+    file: pathlib.Path
         filename of this timestep of simulation output
-    lxs: list of int
-        array dimension
     """
-    #    grid = grid(fn.parent / "inputs/simgrid.dat")
-    #    dat = xarray.Dataset(
-    #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
-    #    )
-    dat: T.Dict[str, T.Any] = {}
 
-    with fn.open("r") as f:
-        dat["time"] = time(f)
+    lxs = simsize(file.parent)
+    xg = grid(file.parent)
+    dat = xarray.Dataset(
+        coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+    )
+
+    with file.open("r") as f:
+        time(f)
 
         for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
             dat[p] = (("x1", "x2", "x3"), read3D(f, lxs))
@@ -250,12 +246,16 @@ def frame3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     return dat
 
 
-def frame3d_curvne(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+def frame3d_curvne(file: Path) -> xarray.Dataset:
 
-    dat: T.Dict[str, T.Any] = {}
+    lxs = simsize(file.parent)
+    xg = grid(file.parent)
+    dat = xarray.Dataset(
+        coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+    )
 
-    with fn.open("r") as f:
-        dat["time"] = time(f)
+    with file.open("r") as f:
+        time(f)
 
         dat["ne"] = (("x1", "x2", "x3"), read3D(f, lxs))
 
@@ -292,16 +292,26 @@ def read2D(f, lxs: T.Sequence[int]) -> np.ndarray:
     return np.fromfile(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
 
 
-def glow_aurmap(f, lxs: T.Sequence[int], lwave: int) -> T.Dict[str, T.Any]:
+def glow_aurmap(file: Path) -> xarray.Dataset:
     """
     read the auroral output from GLOW
     """
+
+    lxs = simsize(file.parent)
+    xg = grid(file.parent)
+    dat = xarray.Dataset(
+        coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+    )
+
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
-    raw = np.fromfile(f, np.float64, np.prod(lxs[1:]) * lwave).reshape(
-        np.prod(lxs[1:]) * lwave, order="F"
-    )
-    return {"rayleighs": (("wavelength", "x2", "x3"), raw)}
+
+    with file.open("r") as f:
+        raw = np.fromfile(f, np.float64, np.prod(lxs[1:]) * len(WAVELEN)).reshape(
+            np.prod(lxs[1:]) * len(WAVELEN), order="F"
+        )
+
+    dat["rayleighs"] = (("wavelength", "x2", "x3"), raw)
 
 
 def time(f) -> datetime:
