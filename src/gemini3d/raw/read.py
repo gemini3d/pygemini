@@ -12,8 +12,7 @@ import struct
 from datetime import datetime, timedelta
 
 from .. import find
-from .. import WAVELEN
-from .. import LSP
+from .. import WAVELEN, LSP
 
 
 def simsize(path: Path) -> T.Tuple[int, ...]:
