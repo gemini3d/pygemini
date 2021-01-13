@@ -14,10 +14,9 @@ from . import read
 from . import find
 
 try:
-    from .plotdiff import plotdiff
-    from matplotlib.pyplot import show
+    from .plot.diff import plotdiff
 except ImportError:
-    plotdiff = show = None
+    plotdiff = None
 
 TOL = {
     "rtol": 1e-5,
@@ -38,7 +37,6 @@ def cli():
     p = argparse.ArgumentParser(description="Compare simulation file outputs and inputs")
     p.add_argument("outdir", help="directory to compare")
     p.add_argument("refdir", help="reference directory")
-    p.add_argument("-p", "--plot", help="make plots of differences", action="store_true")
     p.add_argument("-only", help="only check in or out", choices=["in", "out"])
     p.add_argument(
         "-file_format",
@@ -47,15 +45,12 @@ def cli():
     )
     P = p.parse_args()
 
-    errs = compare_all(
-        P.outdir, refdir=P.refdir, tol=TOL, plot=P.plot, file_format=P.file_format, only=P.only
-    )
+    errs = compare_all(P.outdir, refdir=P.refdir, tol=TOL, file_format=P.file_format, only=P.only)
 
     if errs:
         for e, v in errs.items():
             print(f"{e} has {v} errors", file=sys.stderr)
-        if P.plot and show is not None:
-            show()
+
         raise SystemExit(f"FAIL: compare {P.outdir}")
 
     print(f"OK: Gemini comparison {P.outdir} {P.refdir}")

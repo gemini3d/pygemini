@@ -5,8 +5,8 @@ from pathlib import Path
 
 try:
     import gemini3d.plot
-except ImportError:
-    pytest.skip("Matplotlib missing", allow_module_level=True)
+except ImportError as e:
+    pytest.skip(f"Matplotlib missing {e}", allow_module_level=True)
 
 R = Path(__file__).parent / "data"
 

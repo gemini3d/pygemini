@@ -3,16 +3,17 @@
 plot electric field input to simulation "Efield_inputs" for a single file
 """
 
+from pathlib import Path
 import argparse
-from matplotlib.pyplot import figure, show
+from matplotlib.figure import Figure
 import gemini3d.read
 import numpy as np
 
 
-def plotVmaxx1it(V: np.ndarray):
+def plotVmaxx1it(V: np.ndarray) -> Figure:
 
     V = V.squeeze()
-    fg = figure()
+    fg = Figure()
     ax = fg.gca()
     ax.set_title("Vmaxx1it: Potential")
     if V.ndim == 1:
@@ -25,14 +26,19 @@ def plotVmaxx1it(V: np.ndarray):
         ax.set_ylabel("mag. latitude [deg.]")
         fg.colorbar(hi, ax=ax).set_label("potential [V]")
 
+    return fg
+
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("fn", help=".dat or .h5 filename to load directly")
     P = p.parse_args()
 
-    dat = gemini3d.read.Efield(P.fn)
+    fn = Path(P.fn).expanduser()
 
-    plotVmaxx1it(dat["Vmaxx1it"][1])
+    dat = gemini3d.read.Efield(fn)
 
-    show()
+    fg = plotVmaxx1it(dat["Vmaxx1it"][1])
+
+    plt_fn = fn.parent / "plots/Vmaxx1it.png"
+    fg.savefig(plt_fn)

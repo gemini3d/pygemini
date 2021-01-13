@@ -1,7 +1,8 @@
-from matplotlib.pyplot import figure, close
+from matplotlib.figure import Figure
 import numpy as np
 from pathlib import Path
 from datetime import datetime
+import logging
 
 
 def plotdiff(
@@ -11,7 +12,6 @@ def plotdiff(
     time: datetime,
     outdir: Path,
     refdir: Path,
-    save: bool = True,
 ):
 
     A = A.squeeze()
@@ -20,19 +20,19 @@ def plotdiff(
     if A.ndim == 3:
         # loop over the species, which are in the first dimension
         for i in range(A.shape[0]):
-            plotdiff(A[i], B[i], f"{name}-{i}", time, outdir, refdir, save)
+            plotdiff(A[i], B[i], f"{name}-{i}", time, outdir, refdir)
 
-    fg = figure(constrained_layout=True, figsize=(12, 5))
+    if A.ndim not in (1, 2):
+        logging.error(f"skipping diff plot: {name}")
+        return None
+
+    fg = Figure(constrained_layout=True, figsize=(12, 5))
     axs = fg.subplots(1, 3)
 
     if A.ndim == 2:
         diff2d(A, B, name, fg, axs)
     elif A.ndim == 1:
         diff1d(A, B, name, fg, axs)
-    else:
-        close(fg)
-        print(f"skipping diff plot: {name}")
-        return None
 
     axs[0].set_title(str(outdir))
     axs[1].set_title(str(refdir))
@@ -43,10 +43,9 @@ def plotdiff(
 
     fg.suptitle(ttxt)
 
-    if save:
-        fn = outdir / f"{name}-diff-{tstr.replace(':','')}.png"
-        print("writing", fn)
-        fg.savefig(fn)
+    fn = outdir / f"{name}-diff-{tstr.replace(':','')}.png"
+    print("writing", fn)
+    fg.savefig(fn)
 
 
 def diff1d(A: np.ndarray, B: np.ndarray, name: str, fg, axs):

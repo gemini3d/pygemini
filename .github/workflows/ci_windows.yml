@@ -36,7 +36,7 @@ jobs:
 
     - run: echo "D:/a/_temp/msys/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-    - run: python -m pip install .[tests]
+    - run: python -m pip install .[tests,plots]
       timeout-minutes: 2
 
     - run: pytest

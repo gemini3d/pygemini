@@ -1,5 +1,5 @@
 from pathlib import Path
-from matplotlib.pyplot import close, figure
+from matplotlib.figure import Figure
 import typing as T
 from datetime import datetime
 import logging
@@ -36,34 +36,38 @@ def grid(direc: Path, only: T.Sequence[str] = None, saveplot_fmt: str = None):
     if "basic" in only:
         fg = basic(xg)
         stitle(fg, xg)
+        save_fig(fg, direc, "grid-basic")
 
     # %% detailed altitude plot
     if "alt" in only:
-        altitude_grid(xg)
+        fg = altitude_grid(xg)
+        save_fig(fg, direc, "grid-altitude")
 
     # %% ECEF surface
     if "ecef" in only:
-        fig3 = figure()
-        ax = fig3.gca(projection="3d")
+        fg = Figure()
+        ax = fg.gca(projection="3d")
         ax.scatter(xg["x"], xg["y"], xg["z"])
 
         ax.set_xlabel("x [m]")
         ax.set_ylabel("y [m]")
         ax.set_zlabel("z [m]")
 
-        stitle(fig3, xg, "ECEF")
+        stitle(fg, xg, "ECEF")
+        save_fig(fg, direc, "grid-ecef")
 
     # %% lat lon map
     if "geog" in only:
-        grid_geog(xg)
+        fg = grid_geog(xg)
+        save_fig(fg, direc, "grid-geog")
 
 
-def grid_geog(xg: T.Dict[str, T.Any]):
+def grid_geog(xg: T.Dict[str, T.Any]) -> Figure:
     """
     plots grid in geographic map
     """
 
-    fig = figure()
+    fig = Figure()
 
     glon = xg["glon"]
     glat = xg["glat"]
@@ -89,6 +93,8 @@ def grid_geog(xg: T.Dict[str, T.Any]):
     ax.set_ylabel("geographic latitude")
     stitle(fig, xg, "glat, glon")
 
+    return fig
+
 
 def precip(direc: Path):
     """plot input precipitation
@@ -112,7 +118,7 @@ def precip(direc: Path):
         E0 = dat["E0"].squeeze()
         Q = dat["Q"].squeeze()
 
-        fg = figure()
+        fg = Figure()
         axs = fg.subplots(1, 2, sharex=True)
 
         if E0.ndim == 1:
@@ -140,10 +146,11 @@ def precip(direc: Path):
         fg.suptitle(f"particle precipitation input: {t}")
         axs[0].set_title("$E_0$ characteristic energy")
         axs[1].set_title("$Q$")
+        save_fig(fg, direc, "precip", time=t)
 
 
-def basic(xg: T.Dict[str, T.Any]):
-    fig = figure()
+def basic(xg: T.Dict[str, T.Any]) -> Figure:
+    fig = Figure()
     axs = fig.subplots(1, 3)
     # %% x1
     lx1 = xg["x1"].size
@@ -172,7 +179,7 @@ def basic(xg: T.Dict[str, T.Any]):
     return fig
 
 
-def stitle(fig, xg, ttxt: str = ""):
+def stitle(fig: Figure, xg: T.Dict[str, T.Any], ttxt: str = ""):
     """suptitle"""
     if "time" in xg:
         ttxt += f" {xg['time']}"
@@ -183,7 +190,7 @@ def stitle(fig, xg, ttxt: str = ""):
     fig.suptitle(ttxt)
 
 
-def altitude_grid(xg: T.Dict[str, T.Any]):
+def altitude_grid(xg: T.Dict[str, T.Any]) -> Figure:
     """
     plot altitude x1 grid
 
@@ -199,7 +206,7 @@ def altitude_grid(xg: T.Dict[str, T.Any]):
 
     x1_km = xg["x1"] / 1000
 
-    fig = figure()
+    fig = Figure()
     ax = fig.gca()
 
     ax.plot(x1_km, marker="*")
@@ -274,18 +281,22 @@ def frame(
     for k, v in dat.items():
         if any(s in k for s in var):
             fg = plotfun(time, xg, v.squeeze(), k, wavelength=dat.get("wavelength"))
-            save_fig(fg, direc, k, time, saveplot_fmt)
+            save_fig(fg, direc, k, saveplot_fmt, time)
 
 
-def save_fig(fg, direc: Path, name: str, time: datetime, fmt: str):
-    if not fmt or not fg:
-        return
+def save_fig(fg: Figure, direc: Path, name: str, fmt: str = "png", time: datetime = None):
+    if not fmt:
+        fmt = "png"
 
-    plot_fn = direc / "plots" / f"{name}-{time.isoformat().replace(':','')}.{fmt}"
+    if time is None:
+        tstr = ""
+    else:
+        tstr = f"-{time.isoformat().replace(':','')}"
+
+    plot_fn = direc / "plots" / f"{name}{tstr}.{fmt}"
     plot_fn.parent.mkdir(exist_ok=True)
     print(f"{time} => {plot_fn}")
     fg.savefig(plot_fn)
-    close(fg)
 
 
 def to_datetime(times: xarray.DataArray) -> datetime:

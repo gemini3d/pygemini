@@ -13,8 +13,6 @@ from ..utils import git_meta
 
 if T.TYPE_CHECKING:
     import matplotlib.axes as mpla
-    import matplotlib.figure as mplf
-    import matplotlib.collections as mplc
 
 mpl.rcParams["axes.formatter.limits"] = (-3, 4)
 mpl.rcParams["axes.formatter.useoffset"] = False
@@ -66,7 +64,7 @@ def plot3D_curv_frames_long(
     grid: T.Dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
-    fg: "mplf.Figure" = None,
+    fg: Figure = None,
     **kwargs,
 ):
     raise NotImplementedError
@@ -77,7 +75,7 @@ def plot2D_curv(
     grid: T.Dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
-    fg: "mplf.Figure" = None,
+    fg: Figure = None,
     **kwargs,
 ):
     raise NotImplementedError
@@ -91,9 +89,9 @@ def plot12(
     cmap: str,
     vmin: float,
     vmax: float,
-    fg: "mplf.Figure" = None,
+    fg: Figure = None,
     ax: "mpla.Axes" = None,
-) -> "mplc.QuadMesh":
+) -> Figure:
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
@@ -121,9 +119,9 @@ def plot13(
     cmap: str,
     vmin: float,
     vmax: float,
-    fg: "mplf.Figure" = None,
+    fg: Figure = None,
     ax: "mpla.Axes" = None,
-) -> "mplc.QuadMesh":
+) -> Figure:
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
@@ -150,9 +148,9 @@ def plot23(
     cmap: str,
     vmin: float,
     vmax: float,
-    fg: "mplf.Figure" = None,
+    fg: Figure = None,
     ax: "mpla.Axes" = None,
-) -> "mplc.QuadMesh":
+) -> Figure:
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
@@ -171,8 +169,8 @@ def plot23(
 
 
 def plot1d2(
-    x: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure" = None, ax: "mpla.Axes" = None
-):
+    x: np.ndarray, parm: np.ndarray, name: str, fg: Figure = None, ax: "mpla.Axes" = None
+) -> Figure:
 
     if parm.ndim != 1:
         raise ValueError("expecting 1-D data oriented east-west (along latitude)")
@@ -190,8 +188,8 @@ def plot1d2(
 
 
 def plot1d3(
-    y: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure" = None, ax: "mpla.Axes" = None
-):
+    y: np.ndarray, parm: np.ndarray, name: str, fg: Figure = None, ax: "mpla.Axes" = None
+) -> Figure:
 
     if parm.ndim != 1:
         raise ValueError("expecting 1-D data oriented east-west (along latitude)")
@@ -213,9 +211,9 @@ def plot_interp(
     grid: T.Dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
-    fg: "mplf.Figure" = None,
+    fg: Figure = None,
     **kwargs,
-) -> "mplf.Figure":
+) -> Figure:
 
     """
 
