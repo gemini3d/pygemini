@@ -2,6 +2,7 @@
 HDF5 file writing
 """
 
+import xarray
 import typing as T
 import numpy as np
 from pathlib import Path
@@ -35,13 +36,6 @@ def state(
 
     INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
-
-    NOTE: The .transpose() reverses the dimension order.
-    The HDF Group never implemented the intended H5T_array_create(..., perm)
-    and it's deprecated.
-    Fortran, including the HDF Group Fortran interfaces and h5fortran as well as
-    Matlab read/write HDF5 in Fortran order. h5py read/write HDF5 in C order so we
-    need the .transpose() for h5py
     """
 
     if h5py is None:
@@ -55,46 +49,52 @@ def state(
             time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
         )
 
-        p4 = (0, 3, 2, 1)
-        # we have to reverse axes order and put lsp at the last dim
-
-        f.create_dataset(
-            "/nsall",
-            data=ns.transpose(p4),
-            dtype=np.float32,
-            compression="gzip",
-            compression_opts=1,
-            shuffle=True,
-            fletcher32=True,
-        )
-        f.create_dataset(
-            "/vs1all",
-            data=vs.transpose(p4),
-            dtype=np.float32,
-            compression="gzip",
-            compression_opts=1,
-            shuffle=True,
-            fletcher32=True,
-        )
-        f.create_dataset(
-            "/Tsall",
-            data=Ts.transpose(p4),
-            dtype=np.float32,
-            compression="gzip",
-            compression_opts=1,
-            shuffle=True,
-            fletcher32=True,
-        )
+        _write_var(f, "/nsall", ns)
+        _write_var(f, "/vs1all", vs)
+        _write_var(f, "/Tsall", Ts)
         if Phitop is not None:
-            f.create_dataset(
-                "/Phiall",
-                data=Phitop.transpose(),
-                dtype=np.float32,
-                compression="gzip",
-                compression_opts=1,
-                shuffle=True,
-                fletcher32=True,
-            )
+            _write_var(f, "/Phiall", Phitop)
+
+
+def _write_var(f, name: str, A: np.ndarray):
+    """
+    NOTE: The .transpose() reverses the dimension order.
+    The HDF Group never implemented the intended H5T_array_create(..., perm)
+    and it's deprecated.
+
+    Fortran, including the HDF Group Fortran interfaces and h5fortran as well as
+    Matlab read/write HDF5 in Fortran order. h5py read/write HDF5 in C order so we
+    need the .transpose() for h5py
+    """
+
+    p4 = (0, 3, 2, 1)
+    p4s = ("lsp", "x3", "x2", "x1")
+
+    if A.ndim == 4:
+        if isinstance(A, np.ndarray):
+            A = A.transpose(p4)
+        elif isinstance(A, xarray.DataArray):
+            A = A.transpose(*p4s)
+        else:
+            raise TypeError("ns needs to be Numpy.ndarray or Xarray.DataArray")
+    elif A.ndim == 2:
+        A = A.transpose()
+    elif A.ndim == 1:
+        pass
+    else:
+        raise ValueError(
+            f"write_hdf5: unexpected number of dimensions {A.ndim}. Please raise a GitHub Issue."
+        )
+
+    f.create_dataset(
+        name,
+        data=A,
+        dtype=np.float32,
+        compression="gzip",
+        compression_opts=1,
+        shuffle=True,
+        fletcher32=True,
+    )
 
 
 def data(outfn: Path, dat: T.Dict[str, T.Any]):

@@ -2,6 +2,7 @@
 NetCDF4 file writing
 """
 
+import xarray
 import typing as T
 from datetime import datetime
 import numpy as np
@@ -41,9 +42,31 @@ def state(
 
     logging.info(f"state: {fn}")
 
-    with Dataset(fn, "w") as f:
-        p4 = (0, 3, 2, 1)
+    p4 = (0, 3, 2, 1)
+    p4s = ("lsp", "x3", "x2", "x1")
 
+    if isinstance(ns, np.ndarray):
+        ns = ns.transpose(p4)
+    elif isinstance(ns, xarray.DataArray):
+        ns = ns.transpose(*p4s)
+    else:
+        raise TypeError("ns needs to be Numpy.ndarray or Xarray.DataArray")
+
+    if isinstance(vs, np.ndarray):
+        vs = vs.transpose(p4)
+    elif isinstance(vs, xarray.DataArray):
+        vs = vs.transpose(*p4s)
+    else:
+        raise TypeError("vs needs to be Numpy.ndarray or Xarray.DataArray")
+
+    if isinstance(Ts, np.ndarray):
+        Ts = Ts.transpose(p4)
+    elif isinstance(Ts, xarray.DataArray):
+        Ts = Ts.transpose(*p4s)
+    else:
+        raise TypeError("Ts needs to be Numpy.ndarray or Xarray.DataArray")
+
+    with Dataset(fn, "w") as f:
         f.createDimension("ymd", 3)
         g = f.createVariable("ymd", np.int32, "ymd")
         g[:] = [time.year, time.month, time.day]
@@ -56,11 +79,11 @@ def state(
         f.createDimension("x2", ns.shape[2])
         f.createDimension("x3", ns.shape[3])
 
-        _write_var(f, "ns", ("species", "x3", "x2", "x1"), ns.transpose(p4))
-        _write_var(f, "vsx1", ("species", "x3", "x2", "x1"), vs.transpose(p4))
-        _write_var(f, "Ts", ("species", "x3", "x2", "x1"), Ts.transpose(p4))
+        _write_var(f, "ns", ("species", "x3", "x2", "x1"), ns)
+        _write_var(f, "vsx1", ("species", "x3", "x2", "x1"), vs)
+        _write_var(f, "Ts", ("species", "x3", "x2", "x1"), Ts)
         if Phitop is not None:
-            _write_var(f, "Phiall", ("x1", "x2"), Phitop.transpose())
+            _write_var(f, "Phiall", ("x2", "x1"), Phitop.transpose())
 
 
 def data(fn: Path, dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):

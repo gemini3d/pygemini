@@ -32,9 +32,6 @@ def state(
 
     ext = file_format if file_format else out_file.suffix[1:]
 
-    if Phitop is None:
-        Phitop = np.zeros(ns.shape[2:])
-
     if ext == "h5":
         h5write.state(out_file.with_suffix(".h5"), time, ns, vs, Ts, Phitop)
     elif ext == "nc":
