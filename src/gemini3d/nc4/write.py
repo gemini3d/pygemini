@@ -18,7 +18,14 @@ except ImportError:
     Dataset = None
 
 
-def state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Path):
+def state(
+    fn: Path,
+    time: datetime,
+    ns: np.ndarray,
+    vs: np.ndarray,
+    Ts: np.ndarray,
+    Phitop: np.ndarray = None,
+):
     """
      WRITE STATE VARIABLE DATA.
     NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
@@ -52,9 +59,11 @@ def state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Pa
         _write_var(f, "ns", ("species", "x3", "x2", "x1"), ns.transpose(p4))
         _write_var(f, "vsx1", ("species", "x3", "x2", "x1"), vs.transpose(p4))
         _write_var(f, "Ts", ("species", "x3", "x2", "x1"), Ts.transpose(p4))
+        if Phitop is not None:
+            _write_var(f, "Phiall", ("x1", "x2"), Phitop.transpose())
 
 
-def data(dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], fn: Path):
+def data(fn: Path, dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     """
     write simulation data
     e.g. for converting a file format from a simulation

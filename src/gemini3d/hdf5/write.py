@@ -18,7 +18,14 @@ except (ImportError, AttributeError):
     h5py = None
 
 
-def state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Path):
+def state(
+    fn: Path,
+    time: datetime,
+    ns: np.ndarray,
+    vs: np.ndarray,
+    Ts: np.ndarray,
+    Phitop: np.ndarray = None,
+):
     """
     write STATE VARIABLE initial conditions
 
@@ -78,9 +85,19 @@ def state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Pa
             shuffle=True,
             fletcher32=True,
         )
+        if Phitop is not None:
+            f.create_dataset(
+                "/Phiall",
+                data=Phitop.transpose(),
+                dtype=np.float32,
+                compression="gzip",
+                compression_opts=1,
+                shuffle=True,
+                fletcher32=True,
+            )
 
 
-def data(dat: T.Dict[str, T.Any], outfn: Path):
+def data(outfn: Path, dat: T.Dict[str, T.Any]):
     """
     write simulation data
     e.g. for converting a file format from a simulation

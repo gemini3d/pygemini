@@ -65,7 +65,7 @@ def cli():
         if "lxs" not in dat:
             dat["lxs"] = lxs
 
-        write.data(dat, outfile, P.format, xg)
+        write.data(outfile, dat, P.format, xg)
 
 
 if __name__ == "__main__":

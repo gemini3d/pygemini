@@ -17,6 +17,7 @@ def state(
     ns: np.ndarray,
     vs: np.ndarray,
     Ts: np.ndarray,
+    Phitop: np.ndarray = None,
     file_format: str = None,
 ):
     """
@@ -31,20 +32,23 @@ def state(
 
     ext = file_format if file_format else out_file.suffix[1:]
 
+    if Phitop is None:
+        Phitop = np.zeros(ns.shape[2:])
+
     if ext == "h5":
-        h5write.state(time, ns, vs, Ts, out_file.with_suffix(".h5"))
+        h5write.state(out_file.with_suffix(".h5"), time, ns, vs, Ts, Phitop)
     elif ext == "nc":
-        ncwrite.state(time, ns, vs, Ts, out_file.with_suffix(".nc"))
+        ncwrite.state(out_file.with_suffix(".nc"), time, ns, vs, Ts, Phitop)
     else:
         raise ValueError(f"unknown file format {ext}")
 
 
-def data(dat: np.ndarray, out_file: Path, file_format: str, xg: T.Dict[str, T.Any] = None):
+def data(out_file: Path, dat: np.ndarray, file_format: str, xg: T.Dict[str, T.Any] = None):
 
     if file_format == "h5":
-        h5write.data(dat, out_file)
+        h5write.data(out_file, dat)
     elif file_format == "nc":
-        ncwrite.data(dat, xg, out_file)
+        ncwrite.data(out_file, dat, xg)
     else:
         raise ValueError(f"Unknown file format {file_format}")
 
