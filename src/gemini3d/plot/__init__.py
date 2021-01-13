@@ -11,7 +11,7 @@ from .. import find
 from .vis import grid2plotfun
 
 
-PARAMS = ["ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phitop"]
+PARAMS = ["ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phi"]
 
 
 def grid(direc: Path, only: T.Sequence[str] = None, saveplot_fmt: str = None):
@@ -246,6 +246,7 @@ def frame(
     """
     if save_dir, plots will not be visible while generating to speed plot writing
     """
+
     if not var:
         var = PARAMS
 
@@ -260,22 +261,20 @@ def frame(
         xg = read.grid(direc)
 
     if file is None:
-        dat = read.frame(direc, time)
+        dat = read.frame(direc, time, var=var)
     else:
         dat = read.data(file, var)
 
     if not dat:
         raise ValueError(f"No data in {direc} at {time}")
 
-    for k in var:
-        if k not in dat:  # not present at this time step, often just the first time step
-            continue
+    time = to_datetime(dat["time"])
+    plotfun = grid2plotfun(xg)
 
-        plotfun = grid2plotfun(xg)
-        time = to_datetime(dat["time"])
-
-        fg = plotfun(time, xg, dat[k].squeeze(), k, wavelength=dat.get("wavelength"))
-        save_fig(fg, direc, k, time, saveplot_fmt)
+    for k, v in dat.items():
+        if any(s in k for s in var):
+            fg = plotfun(time, xg, v.squeeze(), k, wavelength=dat.get("wavelength"))
+            save_fig(fg, direc, k, time, saveplot_fmt)
 
 
 def save_fig(fg, direc: Path, name: str, time: datetime, fmt: str):

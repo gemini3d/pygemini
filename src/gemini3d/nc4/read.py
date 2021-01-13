@@ -233,7 +233,7 @@ def frame3d_curv(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
         for k in {"v2", "v3"}.intersection(var):
             dat[k] = (("x1", "x2", "x3"), f[f"/{k}avgall"][:].transpose(p3))
 
-        if "Phi" in f:
+        if "Phi" in var:
             Phiall = f["Phiall"][:]
             if Phiall.ndim == 2:
                 Phiall = Phiall.transpose()
@@ -272,29 +272,25 @@ def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
     else:  # 3D or north-south, no swap
         p3 = (2, 1, 0)
 
+    v2n = {
+        "ne": "neall",
+        "v1": "v1avgall",
+        "Ti": "Tavgall",
+        "Te": "TEall",
+        "J1": "J1all",
+        "J2": "J2all",
+        "J3": "J3all",
+        "v2": "v2all",
+        "v3": "v3all",
+        "Phi": "Phiall",
+    }
+
     with Dataset(file, "r") as f:
-        for j, k in zip(
-            ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"),
-            (
-                "neall",
-                "v1avgall",
-                "Tavgall",
-                "TEall",
-                "J1all",
-                "J2all",
-                "J3all",
-                "v2avgall",
-                "v3avgall",
-            ),
-        ):
-
-            dat[j] = (("x1", "x2", "x3"), f[k][:].transpose(p3))
-
-            if not np.array_equal(dat[j].shape, lxs):
-                raise ValueError(f"simsize {lxs} does not match {k} {j} shape {dat[j].shape}")
-
-        if "Phi" in f:
-            dat["Phitop"] = (("x2", "x3"), f["Phiall"][:].transpose())
+        for k in var:
+            if k == "Phi":
+                dat["Phitop"] = (("x2", "x3"), f[v2n[k]][:].transpose())
+            else:
+                dat[k] = (("x1", "x2", "x3"), f[v2n[k]][:].transpose(p3))
 
     return dat
 
