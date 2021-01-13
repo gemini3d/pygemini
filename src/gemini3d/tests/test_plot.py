@@ -27,7 +27,7 @@ def test_plot(name, tmp_path):
     except ConnectionError as e:
         pytest.skip(f"failed to download reference data {e}")
 
-    shutil.copytree(test_dir, tmp_path, dirs_exist_ok=True)
+    shutil.copytree(test_dir, tmp_path)
     gemini3d.plot.frame(tmp_path, datetime(2013, 2, 20, 5), saveplot_fmt="png")
 
     plot_files = sorted((tmp_path / "plots").glob("*.png"))
