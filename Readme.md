@@ -5,9 +5,12 @@
 ![ci](https://github.com/gemini3d/pygemini/workflows/ci_windows/badge.svg)
 ![ci](https://github.com/gemini3d/pygemini/workflows/ci_prereq/badge.svg)
 
-A Python interface to [Gemini3D](https://github.com/gemini3d/gemini).
+A Python interface to [Gemini3D](https://github.com/gemini3d/gemini), funded in part by NASA HDEE.
 
 ## Setup
+
+Python &ge; 3.7 is required.
+We recommend Python &ge; 3.8 in general for full features / robustness.
 
 Setup PyGemini by:
 
