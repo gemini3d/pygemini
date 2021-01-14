@@ -102,17 +102,25 @@ def find_stem(path: Path, stem: str, suffix: str = None) -> Path:
     return None
 
 
-def precip(direc: Path, precdir: Path = None) -> Path:
+def inputs(direc: Path, input_dir: Path = None) -> Path:
+    """
+    find input parameter directory
+
+    direc: pathlib.Path
+        top level simulation dir
+    input_dir: pathlib.Path
+        relative to top level, the parameter dir. E.g. inputs/precip, input/Efield
+    """
 
     direc = Path(direc).expanduser()
-    if precdir:
-        precip_path = Path(precdir).expanduser()
-        if not precip_path.is_absolute():
-            precip_path = direc / precip_path
+    if input_dir:
+        input_path = Path(input_dir).expanduser()
+        if not input_path.is_absolute():
+            input_path = direc / input_path
     else:
-        precip_path = direc
+        input_path = direc
 
-    if not precip_path.is_dir():
-        precip_path = None
+    if not input_path.is_dir():
+        input_path = None
 
-    return precip_path
+    return input_path

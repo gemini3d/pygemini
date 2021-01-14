@@ -24,6 +24,8 @@ def grid(direc: Path, only: T.Sequence[str] = None, saveplot_fmt: str = None):
         top-level path of simulation grid
     """
 
+    direc = Path(direc).expanduser()
+
     xg = read.grid(direc)
 
     if only is None:
@@ -96,6 +98,42 @@ def grid_geog(xg: T.Dict[str, T.Any]) -> Figure:
     return fig
 
 
+def Efield(direc: Path):
+    """plot input E-field
+
+    Parameters
+    ----------
+
+    direc: pathlib.Path
+        top-level simulation directory
+    """
+
+    direc = Path(direc).expanduser()
+
+    cfg = read.config(direc)
+    path = find.inputs(direc, cfg.get("E0dir"))
+    if not path:
+        raise FileNotFoundError(f"{direc} does not contain E-field data")
+
+    for t in cfg["time"]:
+        file = find.frame(path, t)
+        if not file:
+            logging.error(f"no E-field data found at {t} in {path}")
+            continue
+
+        dat = read.Efield(file)
+
+        for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+            if dat[k].ndim == 1:
+                fg = plot2d_input(dat[k], cfg)
+            else:
+                fg = plot3d_input(dat[k], cfg)
+
+            fg.suptitle(f"{k}: {t}")
+
+            save_fig(fg, direc, f"Efield-{k}", time=t)
+
+
 def precip(direc: Path):
     """plot input precipitation
 
@@ -106,47 +144,58 @@ def precip(direc: Path):
         top-level simulation directory
     """
 
+    direc = Path(direc).expanduser()
+
     cfg = read.config(direc)
-    precip_path = find.precip(direc, cfg.get("precdir"))
+    precip_path = find.inputs(direc, cfg.get("precdir"))
     if not precip_path:
         raise FileNotFoundError(f"{direc} does not contain precipitation data")
 
     for t in cfg["time"]:
         file = find.frame(precip_path, t)
+        if not file:
+            logging.error(f"no precipitation data found at {t} in {precip_path}")
+            continue
+
         dat = read.precip(file)
 
-        E0 = dat["E0"].squeeze()
-        Q = dat["Q"].squeeze()
-
-        fg = Figure()
-        axs = fg.subplots(1, 2, sharex=True)
-
-        if E0.ndim == 1:
-            # 2D sim
-            if cfg["lyp"] == 1:
-                x = dat["mlon"]
-                axs[0].set_xlabel("magnetic longitude")
+        for k in ("E0", "Q"):
+            if dat[k].ndim == 1:
+                fg = plot2d_input(dat[k], cfg)
             else:
-                x = dat["mlat"]
-                axs[0].set_xlabel("magnetic latitude")
+                fg = plot3d_input(dat[k], cfg)
 
-            axs[0].plot(x, E0)
-            axs[1].plot(x, Q)
-            axs[0].set_ylabel("ev")
-            axs[1].set_ylabel("flux")
-        else:
-            # 3D sim
-            h0 = axs[0].pcolormesh(dat["mlon"], dat["mlat"], E0, shading="nearest")
-            h1 = axs[1].pcolormesh(dat["mlon"], dat["mlat"], Q, shading="nearest")
-            fg.colorbar(h0, ax=axs[0])
-            fg.colorbar(h1, ax=axs[1])
-            axs[0].set_ylabel("magnetic latitude")
-            axs[0].set_xlabel("magnetic longitude")
+            fg.suptitle(f"{k}: {t}")
 
-        fg.suptitle(f"particle precipitation input: {t}")
-        axs[0].set_title("$E_0$ characteristic energy")
-        axs[1].set_title("$Q$")
-        save_fig(fg, direc, "precip", time=t)
+            save_fig(fg, direc, f"precip-{k}", time=t)
+
+
+def plot2d_input(A, cfg: T.Dict[str, T.Any]) -> Figure:
+    fg = Figure()
+    ax = fg.gca()
+
+    if cfg["lyp"] == 1:
+        x = A["mlon"]
+        ax.set_xlabel("magnetic longitude")
+    else:
+        x = A["mlat"]
+        ax.set_xlabel("magnetic latitude")
+
+    ax.plot(x, A)
+
+    return fg
+
+
+def plot3d_input(A, cfg: T.Dict[str, T.Any]) -> Figure:
+    fg = Figure()
+    ax = fg.gca()
+
+    h0 = ax.pcolormesh(A["mlon"], A["mlat"], A, shading="nearest")
+    fg.colorbar(h0, ax=ax)
+    ax.set_ylabel("magnetic latitude")
+    ax.set_xlabel("magnetic longitude")
+
+    return fg
 
 
 def basic(xg: T.Dict[str, T.Any]) -> Figure:
@@ -293,7 +342,7 @@ def save_fig(fg: Figure, direc: Path, name: str, fmt: str = "png", time: datetim
     else:
         tstr = f"-{time.isoformat().replace(':','')}"
 
-    plot_fn = direc / "plots" / f"{name}{tstr}.{fmt}"
+    plot_fn = direc / f"plots/{name}{tstr}.{fmt}"
     plot_fn.parent.mkdir(exist_ok=True)
     print(f"{time} => {plot_fn}")
     fg.savefig(plot_fn)

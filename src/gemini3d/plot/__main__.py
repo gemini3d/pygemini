@@ -1,6 +1,6 @@
 import argparse
 
-from . import plot_all, grid, precip
+from . import plot_all, grid, Efield, precip
 
 
 def cli():
@@ -10,8 +10,8 @@ def cli():
     p.add_argument(
         "which",
         help="which plots to make",
-        choices=["all", "grid", "precip"],
-        nargs="?",
+        choices=["all", "grid", "Efield", "precip"],
+        nargs="+",
         default="all",
     )
     p.add_argument("--mayavi", help="do 3D Mayavi plots", action="store_true")
@@ -27,11 +27,13 @@ def cli():
         plot_3d(p.direc, p.var, saveplot_fmt=p.save)
         return
 
-    if p.which == "all":
+    if "all" in p.which:
         plot_all(p.direc, p.var, saveplot_fmt=p.save)
-    elif p.which == "grid":
+    if "grid" in p.which:
         grid(p.direc)
-    elif p.which == "precip":
+    if "Efield" in p.which:
+        Efield(p.direc)
+    if "precip" in p.which:
         precip(p.direc)
 
 
