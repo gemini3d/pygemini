@@ -192,7 +192,7 @@ def compare_input(
 def err_pct(a: np.ndarray, b: np.ndarray) -> float:
     """ compute maximum error percent """
 
-    return (abs(a - b).max() / abs(b).max()) * 100
+    return (abs(a - b).max() / abs(b).max()).item() * 100
 
 
 def compare_precip(
