@@ -14,6 +14,7 @@ from pathlib import Path
 import importlib.resources
 import numpy as np
 import psutil
+import json
 
 from . import find
 from . import mpi
@@ -228,7 +229,9 @@ def get_gemini_exe(gemexe: Path = None) -> Path:
             # step 1: clone Gemini3D and do a test build
             with importlib.resources.path(__package__, "CMakeLists.txt") as setup:
                 src_dir = setup.parent / "gemini-fortran"
-                git_download(src_dir, repo="https://github.com/gemini3d/gemini3d.git")
+
+            jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
+            git_download(src_dir, repo=jmeta["gemini3d"]["url"], tag=jmeta["gemini3d"]["tag"])
 
         assert src_dir.is_dir(), f"could not find Gemini3D source directory {src_dir}"
         build_dir = src_dir / "build"

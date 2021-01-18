@@ -15,6 +15,8 @@ import subprocess
 import shutil
 import argparse
 import tempfile
+import json
+import importlib.resources
 from pathlib import Path
 
 from .build import cmake_build, cmake_find_library
@@ -23,18 +25,6 @@ from .web import url_retrieve, extract_tar
 
 # ========= user parameters ======================
 BUILDDIR = "build"
-
-NETCDF_C_TAG = "v4.7.4"
-NETCDF_FORTRAN_TAG = "v4.5.3"
-HDF5_TAG = "1.10/master"
-MUMPS_TAG = "v5.3.4.2"
-SCALAPACK_TAG = "v2.1.0.11"
-LAPACK_TAG = "v3.9.0.2"
-
-# Note: some HPC systems need OpenMPI 3 instead of 4
-# https://www.open-mpi.org/software/ompi/major-changes.php
-MPI_TAG = "4.0.5"
-MPI3_TAG = "3.1.6"
 
 HDF5_DIR = "hdf5"
 LAPACK_DIR = "lapack"
@@ -115,9 +105,9 @@ def setup_libs(
 
     # Note: OpenMPI needs to be before scalapack and mumps
     if "openmpi" in libs:
-        openmpi(dirs, env=env, version=MPI_TAG, dryrun=dryrun)
+        openmpi(dirs, env=env, version="", dryrun=dryrun)
     elif "openmpi3" in libs:
-        openmpi(dirs, env=env, version=MPI3_TAG, dryrun=dryrun)
+        openmpi(dirs, env=env, version="3", dryrun=dryrun)
 
     if "lapack" in libs:
         lapack(wipe, dirs, env=env, dryrun=dryrun)
@@ -139,9 +129,7 @@ def netcdf_c(
     source_dir = dirs["workdir"] / "netcdf-c"
     build_dir = source_dir / BUILDDIR
 
-    git_url = "https://github.com/Unidata/netcdf-c.git"
-
-    git_download(source_dir, git_url, NETCDF_C_TAG)
+    git_json(source_dir, "netcdf-c")
 
     hdf5_root = dirs["prefix"] / HDF5_DIR
     if hdf5_root.is_dir():
@@ -187,9 +175,7 @@ def netcdf_fortran(
     source_dir = dirs["workdir"] / "netcdf-fortran"
     build_dir = source_dir / BUILDDIR
 
-    git_url = "https://github.com/Unidata/netcdf-fortran.git"
-
-    git_download(source_dir, git_url, NETCDF_FORTRAN_TAG)
+    git_json(source_dir, "netcdf-fortran")
 
     # NetCDF-Fortran does not yet use NetCDF_ROOT
     if sys.platform == "linux":
@@ -245,9 +231,8 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     install_dir = dirs["prefix"] / name
     source_dir = dirs["workdir"] / name
     build_dir = source_dir / BUILDDIR
-    git_url = "https://github.com/HDFGroup/hdf5.git"
 
-    git_download(source_dir, git_url, HDF5_TAG)
+    git_json(source_dir, "hdf5")
 
     if use_cmake or os.name == "nt":
         # works for Intel oneAPI on Windows and many other systems/compilers.
@@ -308,12 +293,16 @@ Use MPI on Windows via any of (choose one):
 """
         )
 
+    jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
+    version = jmeta[f"openmpi{version}"]["tag"]
+
     mpi_dir = f"openmpi-{version}"
     install_dir = dirs["prefix"] / mpi_dir
     source_dir = dirs["workdir"] / mpi_dir
 
     tar_name = f"openmpi-{version}.tar.bz2"
     tarfn = dirs["workdir"] / tar_name
+
     url = f"https://download.open-mpi.org/release/open-mpi/v{version[:3]}/{tar_name}"
     url_retrieve(url, tarfn)
     extract_tar(tarfn, source_dir)
@@ -345,9 +334,7 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun
     source_dir = dirs["workdir"] / LAPACK_DIR
     build_dir = source_dir / BUILDDIR
 
-    git_url = "https://github.com/scivision/lapack.git"
-
-    git_download(source_dir, git_url, LAPACK_TAG)
+    git_json(source_dir, "lapack")
 
     args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
     cmake_build(source_dir, build_dir, wipe=wipe, env=env, dryrun=dryrun, config_args=args)
@@ -359,9 +346,7 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dry
     source_dir = dirs["workdir"] / SCALAPACK_DIR
     build_dir = source_dir / BUILDDIR
 
-    git_url = "https://github.com/scivision/scalapack.git"
-
-    git_download(source_dir, git_url, SCALAPACK_TAG)
+    git_json(source_dir, "scalapack")
 
     lapack_root = dirs["prefix"] / LAPACK_DIR
     lib_args = [f"-DLAPACK_ROOT={lapack_root.as_posix()}"]
@@ -387,9 +372,7 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun:
     scalapack_lib = dirs["prefix"] / SCALAPACK_DIR
     lapack_lib = dirs["prefix"] / LAPACK_DIR
 
-    git_url = "https://github.com/scivision/mumps.git"
-
-    git_download(source_dir, git_url, MUMPS_TAG)
+    git_json(source_dir, "mumps")
 
     if env["FC"] == "ifort":
         lib_args = []
@@ -408,6 +391,12 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun:
     cmake_build(
         source_dir, build_dir, wipe=wipe, env=env, dryrun=dryrun, config_args=args + lib_args
     )
+
+
+def git_json(path: Path, name: str):
+    jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
+
+    git_download(path, jmeta[name]["url"], tag=jmeta[name].get("tag"))
 
 
 def git_download(path: Path, repo: str, tag: str = None):
