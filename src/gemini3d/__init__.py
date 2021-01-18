@@ -1,3 +1,7 @@
+from pathlib import Path
+
+PYGEMINI_ROOT = Path(__path__[0])  # type: ignore
+
 LSP = 7
 
 WAVELEN = [

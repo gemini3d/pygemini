@@ -11,20 +11,17 @@ import logging
 import subprocess
 import shutil
 from pathlib import Path
-import importlib.resources
 import numpy as np
 import psutil
-import json
 
 from . import find
 from . import mpi
-from .build import cmake_build
+from . import cmake
 from .hpc import hpc_batch_detect, hpc_batch_create
 from . import model
 from . import write
 from . import read
 from .utils import git_meta
-from .prereqs import git_download
 
 
 Pathlike = T.Union[str, Path]
@@ -209,45 +206,13 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
 def get_gemini_exe(gemexe: Path = None) -> Path:
     """
     find and check that Gemini exectuable can run on this system
-
-    If not given a specific full path to gemini.bin, looks for gemini.bin under:
-
-        build
+    download and build Gemini3D if needed
     """
 
     if not gemexe:  # allow for default dict empty
-        gemexe = Path("gemini.bin.exe") if os.name == "nt" else Path("gemini.bin")
-    gemexe = Path(gemexe).expanduser()  # not .resolve()
+        gemexe = Path("gemini.bin")
+    gemexe = cmake.build_gemini3d(gemexe)
 
-    src_dir = None
-    build_dir = None
-
-    if not gemexe.is_file():
-        if os.environ.get("GEMINI_ROOT"):
-            src_dir = Path(os.environ["GEMINI_ROOT"]).expanduser()
-        if not src_dir or not src_dir.is_dir():
-            # step 1: clone Gemini3D and do a test build
-            with importlib.resources.path(__package__, "CMakeLists.txt") as setup:
-                src_dir = setup.parent / "gemini-fortran"
-
-            jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
-            git_download(src_dir, repo=jmeta["gemini3d"]["url"], tag=jmeta["gemini3d"]["tag"])
-
-        assert src_dir.is_dir(), f"could not find Gemini3D source directory {src_dir}"
-        build_dir = src_dir / "build"
-        gemexe = build_dir / gemexe.name
-
-        if not gemexe.is_file():
-            cmake_build(
-                src_dir,
-                build_dir,
-                run_test=False,
-                install=False,
-                config_args=["-DBUILD_TESTING:BOOL=false"],
-                build_args=["--target", "gemini.bin"],
-            )
-            if not gemexe.is_file():
-                raise RuntimeError(f"Gemini.bin not found in {build_dir}")
     # %% ensure gemini.bin is runnable
     ret = subprocess.run([str(gemexe)], stdout=subprocess.DEVNULL, timeout=15)
     if ret.returncode != 0:

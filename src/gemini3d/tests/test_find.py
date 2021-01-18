@@ -3,6 +3,7 @@ import pytest
 from datetime import datetime
 from pathlib import Path
 
+import gemini3d
 import gemini3d.find as find
 import gemini3d.web
 
@@ -21,10 +22,8 @@ def test_grid(name, tmp_path):
     assert find.grid(tmp_path) is None
     assert find.grid(tmp_path / "not_exist") is None
 
-    R = Path(gemini3d.__path__[0])
-
     try:
-        test_dir = gemini3d.web.download_and_extract(name, R / "tests/data")
+        test_dir = gemini3d.web.download_and_extract(name, gemini3d.PYGEMINI_ROOT / "tests/data")
     except ConnectionError as e:
         pytest.skip(f"failed to download reference data {e}")
 

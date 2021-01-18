@@ -4,19 +4,15 @@ plasma functions
 
 import typing as T
 import numpy as np
-import os
 import logging
-import subprocess
-import importlib.resources
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d, interp2d, interpn
 
 from . import read
 from . import write
-from .build import cmake_build
 from .web import url_retrieve, extract_zip
+from .msis import msis_setup
 
-DictArray = T.Dict[str, T.Any]
 # CONSTANTS
 KB = 1.38e-23
 AMU = 1.67e-27
@@ -79,7 +75,7 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
 
 
 def model_resample(
-    xgin: DictArray, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, xg: DictArray
+    xgin: T.Dict[str, T.Any], ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, xg: T.Dict[str, T.Any]
 ) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """resample a grid
     usually used to upsample an equilibrium simulation grid
@@ -235,7 +231,7 @@ def check_temperature(T: np.ndarray):
 
 
 def equilibrium_state(
-    p: T.Dict[str, T.Any], xg: DictArray
+    p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]
 ) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     generate (arbitrary) initial conditions for a grid.
@@ -458,113 +454,3 @@ def chapmana(z: np.ndarray, nm: float, z0: float, H: float) -> np.ndarray:
     ne[ne < 1] = 1
 
     return ne
-
-
-def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
-    """calls MSIS Fortran exectuable
-    compiles if not present
-
-    [f107a, f107, ap] = activ
-        COLUMNS OF DATA:
-          1 - ALT
-          2 - HE NUMBER DENSITY(M-3)
-          3 - O NUMBER DENSITY(M-3)
-          4 - N2 NUMBER DENSITY(M-3)
-          5 - O2 NUMBER DENSITY(M-3)
-          6 - AR NUMBER DENSITY(M-3)
-          7 - TOTAL MASS DENSITY(KG/M3)
-          8 - H NUMBER DENSITY(M-3)
-          9 - N NUMBER DENSITY(M-3)
-          10 - Anomalous oxygen NUMBER DENSITY(M-3)
-          11 - TEMPERATURE AT ALT
-
-    """
-
-    msis_stem = "msis_setup"
-    msis_name = msis_stem
-    if os.name == "nt":
-        msis_name += ".exe"
-
-    if not importlib.resources.is_resource(__package__, msis_name):
-        with importlib.resources.path(__package__, "CMakeLists.txt") as setup:
-            cmake_build(
-                setup.parent,
-                setup.parent / "build",
-                config_args=["-DBUILD_TESTING:BOOL=false"],
-                build_args=["--target", msis_stem],
-            )
-
-    # %% SPECIFY SIZES ETC.
-    lx1 = xg["lx"][0]
-    lx2 = xg["lx"][1]
-    lx3 = xg["lx"][2]
-    alt = xg["alt"] / 1e3
-    glat = xg["glat"]
-    glon = xg["glon"]
-    lz = lx1 * lx2 * lx3
-    # % CONVERT DATES/TIMES/INDICES INTO MSIS-FRIENDLY FORMAT
-    t0 = p["time"][0]
-    doy = int(t0.strftime("%j"))
-    UTsec0 = t0.hour * 3600 + t0.minute * 60 + t0.second + t0.microsecond / 1e6
-
-    logging.debug(f"MSIS00 using DOY: {doy}")
-    yearshort = t0.year % 100
-    iyd = yearshort * 1000 + doy
-    # %% KLUDGE THE BELOW-ZERO ALTITUDES SO THAT THEY DON'T GIVE INF
-    alt[alt <= 0] = 1
-    # %% CREATE INPUT FILE FOR FORTRAN PROGRAM
-    # don't use NamedTemporaryFile because PermissionError on Windows
-    # file_in = tempfile.gettempdir() + "/msis_setup_input.dat"
-
-    # with open(file_in, "w") as f:
-    #     np.array(iyd).astype(np.int32).tofile(f)
-    #     np.array(UTsec0).astype(np.int32).tofile(f)
-    #     np.asarray([p["f107a"], p["f107"], p["Ap"], p["Ap"]]).astype(np.float32).tofile(f)
-    #     np.array(lz).astype(np.int32).tofile(f)
-    #     np.array(glat).astype(np.float32).tofile(f)
-    #     np.array(glon).astype(np.float32).tofile(f)
-    #     np.array(alt).astype(np.float32).tofile(f)
-
-    invals = (
-        f"{iyd}\n{int(UTsec0)}\n{p['f107a']} {p['f107']} {p['Ap']} {p['Ap']}\n{lz}\n"
-        + " ".join(map(str, glat.ravel(order="C")))
-        + "\n"
-        + " ".join(map(str, glon.ravel(order="C")))
-        + "\n"
-        + " ".join(map(str, alt.ravel(order="C")))
-    )
-    # %% CALL MSIS
-    # the "-" means to use stdin, stdout
-
-    with importlib.resources.path(__package__, msis_name) as exe:
-        cmd = [str(exe), "-", "-", str(lz)]
-        logging.info(" ".join(cmd))
-        ret = subprocess.check_output(cmd, input=invals, text=True)
-
-    Nread = lz * 11
-
-    # old code, from before we used stdout
-    # fout_size = Path(file_out).stat().st_size
-    # if fout_size != Nread * 4:
-    #     raise RuntimeError(f"expected {file_out} size {Nread*4} but got {fout_size}")
-
-    msisdat = np.fromstring(ret, np.float32, Nread, sep=" ").reshape((11, lz), order="F")
-
-    # %% ORGANIZE
-    # altitude is a useful sanity check as it's very regular and obvious.
-    alt_km = msisdat[0, :].reshape((lx1, lx2, lx3))
-    if not np.allclose(alt_km, alt, atol=0.02):  # atol due to precision of stdout ~0.01 km
-        raise ValueError("was msis_driver output parsed correctly?")
-
-    nO = msisdat[2, :].reshape((lx1, lx2, lx3))
-    nN2 = msisdat[3, :].reshape((lx1, lx2, lx3))
-    nO2 = msisdat[4, :].reshape((lx1, lx2, lx3))
-    Tn = msisdat[10, :].reshape((lx1, lx2, lx3))
-    nN = msisdat[8, :].reshape((lx1, lx2, lx3))
-
-    nNO = 0.4 * np.exp(-3700 / Tn) * nO2 + 5e-7 * nO
-    # Mitra, 1968
-    nH = msisdat[7, :].reshape((lx1, lx2, lx3))
-    natm = np.stack((nO, nN2, nO2, Tn, nN, nNO, nH), 0)
-
-    return natm
