@@ -349,12 +349,12 @@ def equilibrium_state(
             iref = alt[:, ix2, ix3].argmax()
             n0 = 1e6
 
-        ns[5, i, ix2, ix3] = chapmana(z, n0, alt[iref, ix2, ix3], Hf.mean())
+        ns[5, i, ix2, ix3] = chapmana(z, n0, alt[iref, ix2, ix3], Hf.mean().item())
 
         return ns
 
     # %% SLICE THE FIELD IN HALF IF WE ARE CLOSED
-    natm = msis_setup(p, xg)
+    atmos = msis_setup(p, xg)
 
     closeddip = abs(xg["r"][0, 0, 0] - xg["r"][-1, 0, 0]) < 50e3
     # logical flag marking the grid as closed dipole
@@ -368,7 +368,7 @@ def equilibrium_state(
         lx1 = lalt
         lx2 = xg["lx"][1]
         lx3 = xg["lx"][2]
-        Tn = natm[3, :lalt, :, :]
+        Tn = atmos["Tn"][:lalt, :, :]
         g = abs(xg["gx1"][:lalt, :, :])
         g = max(g, 1)
         for ix3 in range(lx3):
@@ -380,7 +380,7 @@ def equilibrium_state(
     else:
         alt = xg["alt"]
         lx1, lx2, lx3 = xg["lx"]
-        Tn = natm[3, :, :, :]
+        Tn = atmos["Tn"]
         g = abs(xg["gx1"])
 
     ns = np.zeros((7, lx1, lx2, lx3))
@@ -430,7 +430,8 @@ def equilibrium_state(
     ns[6, :, :, :] = ns[:6, :, :, :].sum(axis=0)
 
     vsx1 = np.zeros((7, lx1, lx2, lx3))
-    Ts = np.tile(Tn[None, :, :, :], [7, 1, 1, 1])
+
+    Ts = np.broadcast_to(Tn, [7, lx1, lx2, lx3])
 
     if closeddip:
         # closed dipole grid

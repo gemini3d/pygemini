@@ -23,7 +23,7 @@ def test_msis(version, tmp_path):
 
     (tmp_path / "inputs").mkdir(exist_ok=True)
 
-    lx = [4, 2, 3]
+    lx = (4, 2, 3)
 
     glon, alt, glat = np.meshgrid(
         np.linspace(-147, -145, lx[1]),
@@ -44,30 +44,34 @@ def test_msis(version, tmp_path):
             pytest.skip("MSIS 2.0 wasn't available")
         raise
 
-    assert atmos.shape == (7, *lx)
+    assert atmos["Tn"].shape == lx
 
     truth = {
-        0: [
-            5.8859558e17,
-            9.2224699e18,
-            2.2804600e18,
-            1.8559000e02,
-            2.0134611e11,
-            2.9630136e11,
-            2.3853709e13,
-        ],
-        20: [
-            4.3219809e17,
-            7.6246557e18,
-            1.9486360e18,
-            1.8972000e02,
-            4.4032811e10,
-            2.1874142e11,
-            1.7495320e13,
-        ],
+        0: {
+            "nO": 5.8859558e17,
+            "nN2": 9.2224699e18,
+            "nO2": 2.2804600e18,
+            "Tn": 185.59,
+            "nN": 2.0134611e11,
+            "nNO": 2.9630136e11,
+            "nH": 2.3853709e13,
+        },
+        20: {
+            "nO": 4.3219809e17,
+            "nN2": 7.6246557e18,
+            "nO2": 1.9486360e18,
+            "Tn": 189.72,
+            "nN": 4.4032811e10,
+            "nNO": 2.1874142e11,
+            "nH": 1.7495320e13,
+        },
     }
 
-    assert atmos[:, 0, 1, 2] == approx(
-        truth[version],
-        rel=1e-5,
-    )
+    # pick an arbitrary 3D location
+    a1 = atmos.isel({"alt_km": 0, "glat": 1, "glon": 2})
+
+    for k in a1.data_vars:
+        assert a1[k] == approx(
+            truth[version][k],
+            rel=1e-5,
+        )
