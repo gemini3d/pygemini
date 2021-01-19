@@ -9,7 +9,7 @@ import importlib.resources
 
 from .. import PYGEMINI_ROOT
 from ..utils import get_cpu_count
-from ..prereqs import git_download
+from ..web import git_download
 
 __all__ = ["exe", "build", "find_library"]
 

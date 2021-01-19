@@ -8,8 +8,38 @@ import tarfile
 import typing as T
 from pathlib import Path
 import importlib.resources
+import shutil
+import subprocess
 
 Pathlike = T.Union[str, Path]
+
+
+def git_download(path: Path, repo: str, tag: str = None):
+    """
+    Use Git to download code repo.
+    """
+
+    git = shutil.which("git")
+
+    if not git:
+        raise FileNotFoundError("Git not found.")
+
+    if not tag:
+        if not path.is_dir():
+            subprocess.check_call([git, "clone", repo, "--depth", "1", str(path)])
+        return
+
+    if path.is_dir():
+        # don't use "git -C" for old HPC
+        ret = subprocess.run([git, "checkout", tag], cwd=str(path))
+        if ret.returncode != 0:
+            ret = subprocess.run([git, "fetch"], cwd=str(path))
+            if ret.returncode != 0:
+                raise RuntimeError(f"could not fetch {path}  Maybe try removing this directory.")
+            subprocess.check_call([git, "checkout", tag], cwd=str(path))
+    else:
+        # shallow clone
+        subprocess.check_call([git, "clone", repo, "--branch", tag, "--single-branch", str(path)])
 
 
 def download_and_extract(test_name: str, data_dir: Path) -> Path:

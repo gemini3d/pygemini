@@ -21,7 +21,7 @@ from pathlib import Path
 
 from . import cmake
 from .utils import get_cpu_count
-from .web import url_retrieve, extract_tar
+from .web import url_retrieve, extract_tar, git_download
 
 # ========= user parameters ======================
 BUILDDIR = "build"
@@ -397,34 +397,6 @@ def git_json(path: Path, name: str):
     jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
 
     git_download(path, jmeta[name]["url"], tag=jmeta[name].get("tag"))
-
-
-def git_download(path: Path, repo: str, tag: str = None):
-    """
-    Use Git to download code repo.
-    """
-
-    git = shutil.which("git")
-
-    if not git:
-        raise FileNotFoundError("Git not found.")
-
-    if not tag:
-        if not path.is_dir():
-            subprocess.check_call([git, "clone", repo, "--depth", "1", str(path)])
-        return
-
-    if path.is_dir():
-        # don't use "git -C" for old HPC
-        ret = subprocess.run([git, "checkout", tag], cwd=str(path))
-        if ret.returncode != 0:
-            ret = subprocess.run([git, "fetch"], cwd=str(path))
-            if ret.returncode != 0:
-                raise RuntimeError(f"could not fetch {path}  Maybe try removing this directory.")
-            subprocess.check_call([git, "checkout", tag], cwd=str(path))
-    else:
-        # shallow clone
-        subprocess.check_call([git, "clone", repo, "--branch", tag, "--single-branch", str(path)])
 
 
 def get_compilers(compiler_name: str, **kwargs) -> T.Mapping[str, str]:
