@@ -12,30 +12,24 @@ def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> T.Tuple[np.ndarray, np.
     thetan = math.radians(11)
     phin = math.radians(289)
 
-    phit = np.atleast_1d(phit)
-
     # enforce phit = [0,2pi]
-    i = phit > 2 * pi
-    phitcorrected = phit
-    phitcorrected[i] = phit[i] - 2 * pi
-    i = phit < 0
-    phitcorrected[i] = phit[i] + 2 * pi
+    phit = np.remainder(phit, 2 * pi)
 
     # thetag2p=acos(cos(thetat).*cos(thetan)-sin(thetat).*sin(thetan).*cos(phit));
     thetag2p = np.arccos(
-        np.cos(thetat) * np.cos(thetan) - np.sin(thetat) * np.sin(thetan) * np.cos(phitcorrected)
+        np.cos(thetat) * np.cos(thetan) - np.sin(thetat) * np.sin(thetan) * np.cos(phit)
     )
 
     beta = np.arccos(
         (np.cos(thetat) - np.cos(thetag2p) * np.cos(thetan)) / (np.sin(thetag2p) * np.sin(thetan))
     )
 
-    phig2 = np.zeros_like(phitcorrected)
+    phig2 = np.zeros_like(phit)
 
-    i = phitcorrected > pi
+    i = phit > pi
     phig2[i] = phin - beta[i]
 
-    i = phitcorrected <= pi
+    i = phit <= pi
     phig2[i] = phin + beta[i]
 
     i = phig2 < 0

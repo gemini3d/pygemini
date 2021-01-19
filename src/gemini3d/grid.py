@@ -81,7 +81,7 @@ def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     Me = 5.9722e24
     r = z + Re
     g = G * Me / r ** 2
-    gz = np.tile(-g[:, None, None], (1, lx2, lx3))
+    gz = np.broadcast_to(-g[:, None, None], (g.size, lx2, lx3))
     assert gz.shape == (lx1, lx2, lx3)
 
     # DISTANCE EW AND NS (FROM ENU (or UEN in our case - cyclic permuted) COORD. SYSTEM)
@@ -93,7 +93,7 @@ def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
 
     # %% Center of earth distance
     r = Re + z
-    r = np.tile(r[:, None, None], (1, lx2, lx3))
+    r = np.broadcast_to(r[:, None, None], (r.size, lx2, lx3))
     assert r.shape == (lx1, lx2, lx3)
 
     # %% Northward angular distance
@@ -101,7 +101,7 @@ def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     # must retain the sign of x3
     theta = thetactr - gamma2
     # minus because distance north is against theta's direction
-    theta = np.tile(theta[None, None, :], (lx1, lx2, 1))
+    theta = np.broadcast_to(theta[None, None, :], (lx1, lx2, theta.size))
     assert theta.shape == (lx1, lx2, lx3)
 
     # %% Eastward angular distance
@@ -109,7 +109,7 @@ def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     gamma1 = x / Re / np.sin(thetactr)
     # must retain the sign of x2, just use theta of center of grid
     phi = phictr + gamma1
-    phi = np.tile(phi[None, :, None], (lx1, 1, lx3))
+    phi = np.broadcast_to(phi[None, :, None], (lx1, phi.size, lx3))
     assert phi.shape == (lx1, lx2, lx3)
 
     # %% COMPUTE THE GEOGRAPHIC COORDINATES OF EACH GRID POINT
