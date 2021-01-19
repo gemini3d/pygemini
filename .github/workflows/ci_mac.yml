@@ -36,7 +36,7 @@ jobs:
       run: echo $PATH
 
     - run: python -m pip install .[tests,plots]
-      timeout-minutes: 4
+      timeout-minutes: 5
       # transient CI download speed
 
     - run: python -m gemini3d.install

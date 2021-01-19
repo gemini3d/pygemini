@@ -128,21 +128,25 @@ def build_gemini3d(target: Path) -> Path:
         src_dir = Path(os.environ["GEMINI_ROOT"]).expanduser()
 
     if not src_dir or not src_dir.is_dir():
-        if target.parents[1].is_dir() and (target.parents[1] / "CMakeLists.txt").is_file():
+        if (
+            len(target.parents) >= 2
+            and target.parents[1].is_dir()
+            and (target.parents[1] / "CMakeLists.txt").is_file()
+        ):
             src_dir = target.parents[1]
         else:
             # clone Gemini3D and do a test build
 
             src_dir = PYGEMINI_ROOT / "gemini-fortran"
 
-            jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
+            jmeta = json.loads(importlib.resources.read_text("gemini3d", "libraries.json"))
             git_download(src_dir, repo=jmeta["gemini3d"]["url"], tag=jmeta["gemini3d"]["tag"])
 
     if not src_dir.is_dir():
         raise NotADirectoryError(f"could not find Gemini3D source directory {src_dir}")
 
     build_dir = src_dir / "build"
-    exe = shutil.which(target.name, path=build_dir)
+    exe = shutil.which(target.name, path=str(build_dir))
 
     if not exe:
         build_args = ["--target", target.name]
@@ -155,7 +159,7 @@ def build_gemini3d(target: Path) -> Path:
             config_args=["-DBUILD_TESTING:BOOL=false"],
             build_args=build_args,
         )
-        exe = shutil.which(target.name, path=build_dir)
+        exe = shutil.which(target.name, path=str(build_dir))
 
     if not exe:
         raise RuntimeError(f"{target.name} not found in {build_dir}")

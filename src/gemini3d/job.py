@@ -180,7 +180,7 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
     if mpi_root:
         mpi_root += "/bin"
 
-    mpiexec = shutil.which(mpiexec, path=mpi_root)
+    mpiexec = shutil.which(mpiexec, path=str(mpi_root))
     if not mpiexec:
         return None
 
