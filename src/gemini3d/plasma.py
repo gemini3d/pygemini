@@ -5,10 +5,12 @@ plasma functions
 import typing as T
 import numpy as np
 import logging
+import xarray
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d, interp2d, interpn
 
 from . import read
+from . import LSP, SPECIES
 from . import write
 from .web import url_retrieve, extract_zip
 from .msis import msis_setup
@@ -59,24 +61,22 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     if not xg_in:
         raise FileNotFoundError(f"{p['eq_dir']} does not have an input simulation grid.")
 
-    nsi, vs1i, Tsi = model_resample(xg_in, ns=dat["ns"], vs=dat["vs1"], Ts=dat["Ts"], xg=xg)
+    dat_interp = model_resample(xg_in, dat, xg)
 
     # %% sanity check interpolated variables
-    check_density(nsi)
-    check_drift(vs1i)
-    check_temperature(Tsi)
+    check_density(dat_interp["ns"])
+    check_drift(dat_interp["vs1"])
+    check_temperature(dat_interp["Ts"])
 
     # %% WRITE OUT THE GRID
     write.grid(p, xg)
 
-    write.state(
-        p["indat_file"], t_eq_end, ns=nsi, vs=vs1i, Ts=Tsi, file_format=p.get("file_format")
-    )
+    write.state(p["indat_file"], dat_interp, file_format=p.get("file_format"))
 
 
 def model_resample(
-    xgin: T.Dict[str, T.Any], ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, xg: T.Dict[str, T.Any]
-) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    xgin: T.Dict[str, T.Any], dat: xarray.Dataset, xg: T.Dict[str, T.Any]
+) -> xarray.Dataset:
     """resample a grid
     usually used to upsample an equilibrium simulation grid
 
@@ -85,32 +85,34 @@ def model_resample(
 
     xgin: dict
         original grid (usually equilibrium sim grid)
-    ns: dict
-        number density of species(4D)
-    vs: dict
-        velocity (4D)
-    Ts: dict
-        temperature of species (4D)
+    dat: xarray.Dataset
+        data to interpolate
 
     Returns
     -------
 
-    nsi: dict
-        interpolated number density of species(4D)
-    vsi: dict
-        interpolated velocity (4D)
-    Tsi: dict
-        interpolated temperature of species (4D)
+    dat_interp: xarray.Dataset
+        interpolated data
     """
 
     # %% NEW GRID SIZES
     lx1, lx2, lx3 = xg["lx"]
-    lsp = ns.shape[0]
 
     # %% ALLOCATIONS
-    nsi = np.empty((lsp, lx1, lx2, lx3), dtype=np.float32)
-    vsi = np.empty_like(nsi)
-    Tsi = np.empty_like(nsi)
+
+    dat_interp = xarray.Dataset(
+        coords={
+            "species": SPECIES,
+            "x1": xg["x1"][2:-2],
+            "x2": xg["x2"][2:-2],
+            "x3": xg["x3"][2:-2],
+        }
+    )
+    for k in {"ns", "vs1", "Ts"}:
+        dat_interp[k] = (
+            ("species", "x1", "x2", "x3"),
+            np.empty((LSP, lx1, lx2, lx3), dtype=np.float32),
+        )
 
     # %% INTERPOLATE ONTO NEWER GRID
     # to avoid IEEE754 rounding issues leading to bounds error,
@@ -130,40 +132,26 @@ def model_resample(
         X2i, X1i, X3i = np.meshgrid(x2i, x1i, x3i)
         assert X2i.shape == tuple(xg["lx"])
 
-        for i in range(lsp):
-            # the .values are to avoid OutOfMemoryError
-            nsi[i, :, :, :] = interpn(
-                points=(X1, X2, X3),
-                values=ns[i, :, :, :].values,
-                xi=(X1i, X2i, X3i),
-                bounds_error=True,
-            )
-            vsi[i, :, :, :] = interpn(
-                points=(X1, X2, X3),
-                values=vs[i, :, :, :].values,
-                xi=(X1i, X2i, X3i),
-                bounds_error=True,
-            )
-            Tsi[i, :, :, :] = interpn(
-                points=(X1, X2, X3),
-                values=Ts[i, :, :, :].values,
-                xi=(X1i, X2i, X3i),
-                bounds_error=True,
-            )
+        for i in range(LSP):
+            for k in {"ns", "vs1", "Ts"}:
+                # the .values are to avoid OutOfMemoryError
+                dat_interp[k][i, :, :, :] = interpn(
+                    points=(X1, X2, X3),
+                    values=dat[k][i, :, :, :].values,
+                    xi=(X1i, X2i, X3i),
+                    bounds_error=True,
+                )
+
     elif lx3 == 1:
         # 2-D east-west
         logging.info("interpolating grid for 2-D simulation in x1, x2")
         # [X2,X1]=meshgrid(xgin.x2(3:end-2),xgin.x1(3:end-2));
         # [X2i,X1i]=meshgrid(xg.x2(3:end-2),xg.x1(3:end-2));
-        for i in range(lsp):
-            f = interp2d(X2, X1, ns[i, :, :, :], bounds_error=True)
-            nsi[i, :, :, :] = f(x2i, x1i)[:, :, None]
+        for i in range(LSP):
+            for k in {"ns", "vs1", "Ts"}:
+                f = interp2d(X2, X1, dat[k][i, :, :, :], bounds_error=True)
+                dat_interp[k][i, :, :, :] = f(x2i, x1i)[:, :, None]
 
-            f = interp2d(X2, X1, vs[i, :, :, :], bounds_error=True)
-            vsi[i, :, :, :] = f(x2i, x1i)[:, :, None]
-
-            f = interp2d(X2, X1, Ts[i, :, :, :], bounds_error=True)
-            Tsi[i, :, :, :] = f(x2i, x1i)[:, :, None]
     elif lx2 == 1:
         # 2-D north-south
         logging.info("interpolating grid for 2-D simulation in x1, x3")
@@ -186,20 +174,17 @@ def model_resample(
         x1i = xg["x1"][2:-2].astype(np.float32)
 
         # for each species
-        for i in range(lsp):
-            f = interp2d(X3, X1, ns[i, :, :, :], bounds_error=True)
-            nsi[i, :, :, :] = f(x3i, x1i)[:, None, :]
-
-            f = interp2d(X3, X1, vs[i, :, :, :], bounds_error=True)
-            vsi[i, :, :, :] = f(x3i, x1i)[:, None, :]
-
-            f = interp2d(X3, X1, Ts[i, :, :, :], bounds_error=True)
-            Tsi[i, :, :, :] = f(x3i, x1i)[:, None, :]
+        for i in range(LSP):
+            for k in {"ns", "vs1", "Ts"}:
+                f = interp2d(X3, X1, dat[k][i, :, :, :], bounds_error=True)
+                dat_interp[k][i, :, :, :] = f(x3i, x1i)[:, None, :]
 
     else:
         raise ValueError("Not sure if this is 2-D or 3-D simulation")
 
-    return nsi, vsi, Tsi
+    dat_interp.attrs["time"] = dat.time
+
+    return dat_interp
 
 
 def check_density(n: np.ndarray):
@@ -230,9 +215,7 @@ def check_temperature(T: np.ndarray):
         raise ValueError("too cold maximum temperature")
 
 
-def equilibrium_state(
-    p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]
-) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def equilibrium_state(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> xarray.Dataset:
     """
     generate (arbitrary) initial conditions for a grid.
     NOTE: only works on symmmetric closed grids!
@@ -383,7 +366,7 @@ def equilibrium_state(
         Tn = atmos["Tn"]
         g = abs(xg["gx1"])
 
-    ns = np.zeros((7, lx1, lx2, lx3))
+    ns = np.zeros((7, lx1, lx2, lx3), dtype=np.float32)
     for ix3 in range(lx3):
         for ix2 in range(lx2):
             Hf = KB * Tn[:, ix2, ix3] / AMU / 16 / g[:, ix2, ix3]
@@ -429,7 +412,7 @@ def equilibrium_state(
     ns[:6, :, :, :][ns[:6, :, :, :] < mindens] = mindens
     ns[6, :, :, :] = ns[:6, :, :, :].sum(axis=0)
 
-    vsx1 = np.zeros((7, lx1, lx2, lx3))
+    vsx1 = np.zeros((7, lx1, lx2, lx3), dtype=np.float32)
 
     Ts = np.broadcast_to(Tn, [7, lx1, lx2, lx3])
 
@@ -445,7 +428,22 @@ def equilibrium_state(
             Ts = np.concatenate((Ts, Ts[:, lx1, :, :], Ts[:, ::-1, :, :]), 1)
             vsx1 = np.concatenate((vsx1, vsx1[:, lx1, :, :], vsx1[:, ::-1, :, :]), 1)
 
-    return ns, Ts, vsx1
+    dat = xarray.Dataset(
+        {
+            "ns": (("species", "x1", "x2", "x3"), ns),
+            "vs1": (("species", "x1", "x2", "x3"), vsx1),
+            "Ts": (("species", "x1", "x2", "x3"), Ts),
+        },
+        coords={
+            "species": SPECIES,
+            "x1": xg["x1"][2:-2],
+            "x2": xg["x2"][2:-2],
+            "x3": xg["x3"][2:-2],
+        },
+        attrs={"time": p["time"][0]},
+    )
+
+    return dat
 
 
 def chapmana(z: np.ndarray, nm: float, z0: float, H: float) -> np.ndarray:

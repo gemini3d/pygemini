@@ -149,12 +149,9 @@ def equilibrium(p: T.Dict[str, T.Any]):
     write.grid(p, xg)
 
     # %% Equilibrium input generation
-    [ns, Ts, vsx1] = equilibrium_state(p, xg)
-    assert ns.shape == Ts.shape == vsx1.shape
-    assert ns.shape[0] == 7
-    assert ns.shape[1:] == tuple(xg["lx"])
+    dat = equilibrium_state(p, xg)
 
-    write.state(p["indat_file"], p["time"][0], ns=ns, vs=vsx1, Ts=Ts)
+    write.state(p["indat_file"], dat)
 
 
 def interp(cfg: T.Dict[str, T.Any]) -> None:

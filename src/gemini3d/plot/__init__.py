@@ -324,12 +324,11 @@ def frame(
     if not dat:
         raise ValueError(f"No data in {direc} at {time}")
 
-    time = to_datetime(dat["time"])
     plotfun = grid2plotfun(xg)
 
     for k, v in dat.items():
         if any(s in k for s in var):
-            fg = plotfun(time, xg, v.squeeze(), k, wavelength=dat.get("wavelength"))
+            fg = plotfun(dat.time, xg, v.squeeze(), k, wavelength=dat.get("wavelength"))
             save_fig(fg, direc, k, saveplot_fmt, time)
 
 
@@ -346,18 +345,3 @@ def save_fig(fg: Figure, direc: Path, name: str, fmt: str = "png", time: datetim
     plot_fn.parent.mkdir(exist_ok=True)
     print(f"{time} => {plot_fn}")
     fg.savefig(plot_fn)
-
-
-def to_datetime(times: xarray.DataArray) -> datetime:
-    """
-    xarray time to python datetime.datetime
-    """
-
-    if isinstance(times, xarray.DataArray):
-        times = times.values  # numpy.datetime64
-    if isinstance(times, np.datetime64):
-        times = times.astype("datetime64[us]").astype(datetime)
-    if isinstance(times, np.ndarray):
-        times = times.squeeze()[()]  # might still be array, but squeezed at least
-
-    return times

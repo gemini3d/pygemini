@@ -4,7 +4,6 @@ NetCDF4 file writing
 
 import xarray
 import typing as T
-from datetime import datetime
 import numpy as np
 from pathlib import Path
 import logging
@@ -19,14 +18,7 @@ except ImportError:
     Dataset = None
 
 
-def state(
-    fn: Path,
-    time: datetime,
-    ns: np.ndarray,
-    vs: np.ndarray,
-    Ts: np.ndarray,
-    Phitop: np.ndarray = None,
-):
+def state(fn: Path, dat: xarray.Dataset):
     """
      WRITE STATE VARIABLE DATA.
     NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
@@ -40,31 +32,13 @@ def state(
     if Dataset is None:
         raise ImportError("pip install netcdf4")
 
-    logging.info(f"state: {fn}")
+    time = dat.time
 
-    p4 = (0, 3, 2, 1)
-    p4s = ("lsp", "x3", "x2", "x1")
+    logging.info(f"state: {fn} {time}")
 
-    if isinstance(ns, np.ndarray):
-        ns = ns.transpose(p4)
-    elif isinstance(ns, xarray.DataArray):
-        ns = ns.transpose(*p4s)
-    else:
-        raise TypeError("ns needs to be Numpy.ndarray or Xarray.DataArray")
+    p4s = ("species", "x3", "x2", "x1")
 
-    if isinstance(vs, np.ndarray):
-        vs = vs.transpose(p4)
-    elif isinstance(vs, xarray.DataArray):
-        vs = vs.transpose(*p4s)
-    else:
-        raise TypeError("vs needs to be Numpy.ndarray or Xarray.DataArray")
-
-    if isinstance(Ts, np.ndarray):
-        Ts = Ts.transpose(p4)
-    elif isinstance(Ts, xarray.DataArray):
-        Ts = Ts.transpose(*p4s)
-    else:
-        raise TypeError("Ts needs to be Numpy.ndarray or Xarray.DataArray")
+    dat = dat.transpose(*p4s)
 
     with Dataset(fn, "w") as f:
         f.createDimension("ymd", 3)
@@ -73,17 +47,15 @@ def state(
 
         g = f.createVariable("UTsec", np.float32)
         g[:] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
-
         f.createDimension("species", 7)
-        f.createDimension("x1", ns.shape[1])
-        f.createDimension("x2", ns.shape[2])
-        f.createDimension("x3", ns.shape[3])
+        f.createDimension("x1", dat.x1.size)
+        f.createDimension("x2", dat.x2.size)
+        f.createDimension("x3", dat.x3.size)
 
-        _write_var(f, "ns", ("species", "x3", "x2", "x1"), ns)
-        _write_var(f, "vsx1", ("species", "x3", "x2", "x1"), vs)
-        _write_var(f, "Ts", ("species", "x3", "x2", "x1"), Ts)
-        if Phitop is not None:
-            _write_var(f, "Phiall", ("x2", "x1"), Phitop.transpose())
+        for k in {"ns", "vs1", "Ts"}:
+            _write_var(f, f"{k}all", ("species", "x3", "x2", "x1"), dat[k])
+        if "Phitop" in dat.data_vars:
+            _write_var(f, "Phiall", ("x2", "x1"), dat["Phitop"])
 
 
 def data(fn: Path, dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):

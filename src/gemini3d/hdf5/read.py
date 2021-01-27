@@ -250,13 +250,13 @@ def frame3d_curv(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
 
     with h5py.File(file, "r") as f:
         if {"ne", "ns", "v1", "Ti"}.intersection(var):
-            dat["ns"] = (("lsp", "x1", "x2", "x3"), f["/nsall"][:].transpose(p4))
+            dat["ns"] = (("species", "x1", "x2", "x3"), f["/nsall"][:].transpose(p4))
 
         if {"v1", "vs1"}.intersection(var):
-            dat["vs1"] = (("lsp", "x1", "x2", "x3"), f["/vs1all"][:].transpose(p4))
+            dat["vs1"] = (("species", "x1", "x2", "x3"), f["/vs1all"][:].transpose(p4))
 
         if {"Te", "Ti", "Ts"}.intersection(var):
-            dat["Ts"] = (("lsp", "x1", "x2", "x3"), f["/Tsall"][:].transpose(p4))
+            dat["Ts"] = (("species", "x1", "x2", "x3"), f["/Tsall"][:].transpose(p4))
 
         for k in {"J1", "J2", "J3"}.intersection(var):
             dat[k] = (("x1", "x2", "x3"), f[f"/{k}all"][:].transpose(p3))

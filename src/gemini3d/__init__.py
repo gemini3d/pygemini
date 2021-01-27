@@ -2,8 +2,6 @@ from pathlib import Path
 
 PYGEMINI_ROOT = Path(__path__[0])  # type: ignore
 
-LSP = 7
-
 WAVELEN = [
     "3371",
     "4278",
@@ -21,3 +19,7 @@ WAVELEN = [
     "1493",
     "1304",
 ]
+
+SPECIES = ["O+", "ns1", "ns2", "ns3", "N+", "protons", "electrons"]
+# must be list, not tuple
+LSP = len(SPECIES)

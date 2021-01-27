@@ -7,6 +7,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 import typing as T
+import xarray
 
 from .config import read_ini, read_nml
 from . import find
@@ -116,7 +117,7 @@ def data(
     file_format: str = None,
     cfg: T.Dict[str, T.Any] = None,
     E0dir: Path = None,
-) -> T.Dict[str, T.Any]:
+) -> xarray.Dataset:
     """
     knowing the filename for a simulation time step, read the data for that time step
 
@@ -133,8 +134,8 @@ def data(
 
     Returns
     -------
-    dat: dict
-        simulation outputs as numpy.ndarray
+    dat: xarray.Dataset
+        simulation outputs
     """
 
     if not fn:
@@ -227,7 +228,7 @@ def data(
                 raise ValueError("J1 may have wrong permutation on read")
 
     if "time" not in dat:
-        dat["time"] = time(fn)
+        dat.attrs["time"] = time(fn)
 
     if E0dir:
         fn_Efield = E0dir / fn.name
@@ -307,7 +308,7 @@ def precip(fn: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
 
 def frame(
     simdir: Path, time: datetime, *, var: T.Sequence[str] = None, file_format: str = None
-) -> T.Dict[str, T.Any]:
+) -> xarray.Dataset:
     """
     load a frame of simulation data, automatically selecting the correct
     functions based on simulation parameters
@@ -323,7 +324,7 @@ def frame(
 
     Returns
     -------
-    dat: dict
+    dat: xarray.Dataset
         simulation output for this time step
     """
 

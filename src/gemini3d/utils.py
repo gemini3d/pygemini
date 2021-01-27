@@ -3,6 +3,8 @@ import os
 import re
 import shutil
 from pathlib import Path
+import xarray
+import numpy as np
 from datetime import datetime
 import typing as T
 import logging
@@ -15,7 +17,24 @@ except ImportError:
 
 Pathlike = T.Union[str, Path]
 
-__all__ = ["git_meta", "get_cpu_count", "datetime2ymd_hourdec"]
+__all__ = ["to_datetime", "git_meta", "get_cpu_count", "datetime2ymd_hourdec"]
+
+
+def to_datetime(times: xarray.DataArray) -> datetime:
+    """
+    xarray time to python datetime.datetime
+    """
+
+    if isinstance(times, xarray.DataArray):
+        times = times.values  # numpy.datetime64
+
+    if isinstance(times, np.ndarray):
+        times = times.squeeze()[()]  # might still be array, but squeezed at least
+
+    if isinstance(times, np.datetime64):
+        times = times.astype("datetime64[us]").astype(datetime)
+
+    return times
 
 
 def git_meta(path: Path = None) -> T.Dict[str, str]:

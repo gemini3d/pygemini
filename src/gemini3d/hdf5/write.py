@@ -6,7 +6,6 @@ import xarray
 import typing as T
 import numpy as np
 from pathlib import Path
-from datetime import datetime
 import logging
 
 from .. import LSP
@@ -19,14 +18,7 @@ except (ImportError, AttributeError):
     h5py = None
 
 
-def state(
-    fn: Path,
-    time: datetime,
-    ns: np.ndarray,
-    vs: np.ndarray,
-    Ts: np.ndarray,
-    Phitop: np.ndarray = None,
-):
+def state(fn: Path, dat: xarray.Dataset):
     """
     write STATE VARIABLE initial conditions
 
@@ -41,7 +33,9 @@ def state(
     if h5py is None:
         raise ImportError("pip install h5py")
 
-    logging.info(f"state: {fn}")
+    time = dat.time
+
+    logging.info(f"state: {fn} {time}")
 
     with h5py.File(fn, "w") as f:
         f["/time/ymd"] = [time.year, time.month, time.day]
@@ -49,11 +43,10 @@ def state(
             time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
         )
 
-        _write_var(f, "/nsall", ns)
-        _write_var(f, "/vs1all", vs)
-        _write_var(f, "/Tsall", Ts)
-        if Phitop is not None:
-            _write_var(f, "/Phiall", Phitop)
+        for k in {"ns", "vs1", "Ts"}:
+            _write_var(f, f"/{k}all", dat[k])
+        if "Phitop" in dat.data_vars:
+            _write_var(f, "/Phiall", dat["Phitop"])
 
 
 def _write_var(f, name: str, A: np.ndarray):
@@ -68,7 +61,7 @@ def _write_var(f, name: str, A: np.ndarray):
     """
 
     p4 = (0, 3, 2, 1)
-    p4s = ("lsp", "x3", "x2", "x1")
+    p4s = ("species", "x3", "x2", "x1")
 
     if A.ndim == 4:
         if isinstance(A, np.ndarray):
