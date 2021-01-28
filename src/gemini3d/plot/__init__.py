@@ -9,6 +9,7 @@ import xarray
 from .. import read
 from .. import find
 from .vis import grid2plotfun
+from ..config import datetime_range
 
 
 PARAMS = ["ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phi"]
@@ -115,7 +116,8 @@ def Efield(direc: Path):
     if not path:
         raise FileNotFoundError(f"{direc} does not contain E-field data")
 
-    for t in cfg["time"]:
+    time = datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtE0"])
+    for t in time:
         file = find.frame(path, t)
         if not file:
             logging.error(f"no E-field data found at {t} in {path}")
@@ -123,7 +125,7 @@ def Efield(direc: Path):
 
         dat = read.Efield(file)
 
-        for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+        for k in {"Exit", "Eyit", "Vminx1it", "Vmaxx1it", "Vminx2ist", "Vmaxx2ist"}:
             if dat[k].ndim == 1:
                 fg = plot2d_input(dat[k], cfg)
             else:
@@ -151,7 +153,9 @@ def precip(direc: Path):
     if not precip_path:
         raise FileNotFoundError(f"{direc} does not contain precipitation data")
 
-    for t in cfg["time"]:
+    time = datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtprec"])
+
+    for t in time:
         file = find.frame(precip_path, t)
         if not file:
             logging.error(f"no precipitation data found at {t} in {precip_path}")
@@ -159,7 +163,7 @@ def precip(direc: Path):
 
         dat = read.precip(file)
 
-        for k in ("E0", "Q"):
+        for k in {"E0", "Q"}:
             if dat[k].ndim == 1:
                 fg = plot2d_input(dat[k], cfg)
             else:
