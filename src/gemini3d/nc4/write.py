@@ -18,7 +18,7 @@ except ImportError:
     Dataset = None
 
 
-def state(fn: Path, dat: xarray.Dataset, **kwargs):
+def state(fn: Path, dat: xarray.Dataset):
     """
      WRITE STATE VARIABLE DATA.
     NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
@@ -49,15 +49,10 @@ def state(fn: Path, dat: xarray.Dataset, **kwargs):
         f.createDimension("x3", dat.x3.size)
 
         for k in {"ns", "vs1", "Ts"}:
-            if k in kwargs:
-                # allow overriding "dat"
-                _write_var(f, f"{k}all", kwargs[k])
-            elif k in dat.data_vars:
+            if k in dat.data_vars:
                 _write_var(f, f"{k}all", dat[k])
 
-        if "Phitop" in kwargs:
-            _write_var(f, "Phiall", kwargs["Phitop"])
-        elif "Phitop" in dat.data_vars:
+        if "Phitop" in dat.data_vars:
             _write_var(f, "Phiall", dat["Phitop"])
 
 

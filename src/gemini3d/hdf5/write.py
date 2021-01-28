@@ -18,7 +18,7 @@ except (ImportError, AttributeError):
     h5py = None
 
 
-def state(fn: Path, dat: xarray.Dataset, **kwargs):
+def state(fn: Path, dat: xarray.Dataset):
     """
     write STATE VARIABLE initial conditions
 
@@ -44,15 +44,10 @@ def state(fn: Path, dat: xarray.Dataset, **kwargs):
         )
 
         for k in {"ns", "vs1", "Ts"}:
-            if k in kwargs:
-                # allow overriding "dat"
-                _write_var(f, f"/{k}all", kwargs[k])
-            elif k in dat.data_vars:
+            if k in dat.data_vars:
                 _write_var(f, f"/{k}all", dat[k])
 
-        if "Phitop" in kwargs:
-            _write_var(f, "/Phiall", kwargs["Phitop"])
-        elif "Phitop" in dat.data_vars:
+        if "Phitop" in dat.data_vars:
             _write_var(f, "/Phiall", dat["Phitop"])
 
 

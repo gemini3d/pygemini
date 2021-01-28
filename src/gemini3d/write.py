@@ -23,10 +23,19 @@ def state(out_file: Path, dat: xarray.Dataset, file_format: str = None, **kwargs
 
     ext = file_format if file_format else out_file.suffix[1:]
 
+    # %% allow overriding "dat"
+    for k in {"ns", "vs1", "Ts"}:
+        if k in kwargs:
+            dat[k] = (dat[k].dims, kwargs[k])
+
+    if "Phitop" in kwargs:
+        dat["Phitop"] = (dat["Phitop"].dims, kwargs["Phitop"])
+
+    # %% dispatch to format-specific writers
     if ext == "h5":
-        h5write.state(out_file.with_suffix(".h5"), dat, **kwargs)
+        h5write.state(out_file.with_suffix(".h5"), dat)
     elif ext == "nc":
-        ncwrite.state(out_file.with_suffix(".nc"), dat, **kwargs)
+        ncwrite.state(out_file.with_suffix(".nc"), dat)
     else:
         raise ValueError(f"unknown file format {ext}")
 
