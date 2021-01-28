@@ -144,6 +144,9 @@ def data(
     if not var:
         var = ["ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3", "Phi"]
 
+    if isinstance(var, str):
+        var = [var]
+
     fn = Path(fn).expanduser()
     fn_aurora = fn.parent / "aurmaps" / fn.name
 

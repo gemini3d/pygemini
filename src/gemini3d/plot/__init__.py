@@ -289,6 +289,12 @@ def plot_all(direc: Path, var: T.Sequence[str] = None, saveplot_fmt: str = None)
 
     direc = Path(direc).expanduser().resolve(strict=True)
 
+    if isinstance(var, str):
+        var = [var]
+
+    if set(var).intersection({"png", "pdf", "eps"}):
+        raise ValueError("please use saveplot_fmt='png' or similar for plot format")
+
     cfg = read.config(direc)
     # %% loop over files / time
     for t in cfg["time"]:
