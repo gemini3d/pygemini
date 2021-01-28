@@ -10,11 +10,7 @@ from .nc4 import write as ncwrite
 from . import namelist
 
 
-def state(
-    out_file: Path,
-    dat: xarray.Dataset,
-    file_format: str = None,
-):
+def state(out_file: Path, dat: xarray.Dataset, file_format: str = None, **kwargs):
     """
     WRITE STATE VARIABLE DATA.
     NOTE: WE don't write ANY OF THE ELECTRODYNAMIC
@@ -28,9 +24,9 @@ def state(
     ext = file_format if file_format else out_file.suffix[1:]
 
     if ext == "h5":
-        h5write.state(out_file.with_suffix(".h5"), dat)
+        h5write.state(out_file.with_suffix(".h5"), dat, **kwargs)
     elif ext == "nc":
-        ncwrite.state(out_file.with_suffix(".nc"), dat)
+        ncwrite.state(out_file.with_suffix(".nc"), dat, **kwargs)
     else:
         raise ValueError(f"unknown file format {ext}")
 
@@ -79,7 +75,7 @@ def grid(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], *, file_format: str = 
     meta(cfg["out_dir"] / "setup_meta.nml", git_meta(), "setup_python")
 
 
-def Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
+def Efield(E: xarray.Dataset, outdir: Path, file_format: str):
     """writes E-field to disk
 
     Parameters

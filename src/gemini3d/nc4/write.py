@@ -8,7 +8,7 @@ import numpy as np
 from pathlib import Path
 import logging
 
-from ..utils import datetime2ymd_hourdec
+from ..utils import datetime2ymd_hourdec, to_datetime
 from .. import LSP
 
 try:
@@ -18,7 +18,7 @@ except ImportError:
     Dataset = None
 
 
-def state(fn: Path, dat: xarray.Dataset):
+def state(fn: Path, dat: xarray.Dataset, **kwargs):
     """
      WRITE STATE VARIABLE DATA.
     NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
@@ -36,10 +36,6 @@ def state(fn: Path, dat: xarray.Dataset):
 
     logging.info(f"state: {fn} {time}")
 
-    p4s = ("species", "x3", "x2", "x1")
-
-    dat = dat.transpose(*p4s)
-
     with Dataset(fn, "w") as f:
         f.createDimension("ymd", 3)
         g = f.createVariable("ymd", np.int32, "ymd")
@@ -53,12 +49,19 @@ def state(fn: Path, dat: xarray.Dataset):
         f.createDimension("x3", dat.x3.size)
 
         for k in {"ns", "vs1", "Ts"}:
-            _write_var(f, f"{k}all", ("species", "x3", "x2", "x1"), dat[k])
-        if "Phitop" in dat.data_vars:
-            _write_var(f, "Phiall", ("x2", "x1"), dat["Phitop"])
+            if k in kwargs:
+                # allow overriding "dat"
+                _write_var(f, f"{k}all", kwargs[k])
+            elif k in dat.data_vars:
+                _write_var(f, f"{k}all", dat[k])
+
+        if "Phitop" in kwargs:
+            _write_var(f, "Phiall", kwargs["Phitop"])
+        elif "Phitop" in dat.data_vars:
+            _write_var(f, "Phiall", dat["Phitop"])
 
 
-def data(fn: Path, dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+def data(fn: Path, dat: xarray.Dataset, xg: T.Dict[str, T.Any]):
     """
     write simulation data
     e.g. for converting a file format from a simulation
@@ -69,17 +72,12 @@ def data(fn: Path, dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
 
     logging.info(f"write_data: {fn}")
 
-    lxs = dat["lxs"]
-
     if "ns" in dat:
         shape = dat["ns"].shape
     elif "ne" in dat:
         shape = dat["ne"].shape
     else:
         raise ValueError("what variable should I use to determine dimensions?")
-
-    if not lxs == shape:
-        raise ValueError(f"simsize {lxs} does not match data shape {shape}")
 
     with Dataset(fn, "w") as f:
 
@@ -108,20 +106,20 @@ def data(fn: Path, dat: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
                     x = xg[k]
                 else:
                     raise ValueError(f"{k}:  {xg[k].size} != {f.dimensions[k].size}")
-                _write_var(f, k, (k,), x)
+                _write_var(f, name=k, value=x, dims=k)
 
         for k in ["ns", "vs1", "Ts"]:
             if k not in dat:
                 continue
-            _write_var(f, k, dims, dat[k])
+            _write_var(f, k, dat[k], dims)
 
         for k in ["ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"]:
             if k not in dat:
                 continue
-            _write_var(f, k, dims, dat[k])
+            _write_var(f, k, dat[k], dims)
 
         if "Phitop" in dat:
-            _write_var(f, "Phiall", dims[-2:], dat["Phitop"])
+            _write_var(f, "Phiall", dat["Phitop"], dims[-2:])
 
 
 def grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
@@ -170,27 +168,37 @@ def grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
         f.createDimension("ecef", 3)
 
         for i in (1, 2, 3):
-            _write_var(f, f"x{i}", (f"x{i}ghost",), xg[f"x{i}"])
-            _write_var(f, f"x{i}i", (f"x{i}i",), xg[f"x{i}i"])
-            _write_var(f, f"dx{i}b", (f"x{i}d",), xg[f"dx{i}b"])
-            _write_var(f, f"dx{i}h", (f"x{i}",), xg[f"dx{i}h"])
-            _write_var(f, f"h{i}", ("x3ghost", "x2ghost", "x1ghost"), xg[f"h{i}"].transpose())
-            _write_var(f, f"h{i}x1i", ("x3", "x2", "x1i"), xg[f"h{i}x1i"].transpose())
-            _write_var(f, f"h{i}x2i", ("x3", "x2i", "x1"), xg[f"h{i}x2i"].transpose())
-            _write_var(f, f"h{i}x3i", ("x3i", "x2", "x1"), xg[f"h{i}x3i"].transpose())
-            _write_var(f, f"gx{i}", ("x3", "x2", "x1"), xg[f"gx{i}"].transpose())
-            _write_var(f, f"e{i}", ("ecef", "x3", "x2", "x1"), xg[f"e{i}"].transpose())
+            _write_var(f, f"x{i}", xg[f"x{i}"], dims=f"x{i}ghost")
+            _write_var(f, f"x{i}i", xg[f"x{i}i"], dims=f"x{i}i")
+            _write_var(f, f"dx{i}b", xg[f"dx{i}b"], dims=f"x{i}d")
+            _write_var(f, f"dx{i}h", xg[f"dx{i}h"], dims=f"x{i}")
+            _write_var(f, f"h{i}", xg[f"h{i}"], ("x1ghost", "x2ghost", "x3ghost"))
+            _write_var(f, f"h{i}x1i", xg[f"h{i}x1i"], ("x1i", "x2", "x3"))
+            _write_var(f, f"h{i}x2i", xg[f"h{i}x2i"], ("x1", "x2i", "x3"))
+            _write_var(f, f"h{i}x3i", xg[f"h{i}x3i"], ("x1", "x2", "x3i"))
+            _write_var(f, f"gx{i}", xg[f"gx{i}"], ("x1", "x2", "x3"))
+            _write_var(f, f"e{i}", xg[f"e{i}"], ("x1", "x2", "x3", "ecef"))
 
         for k in ("alt", "glat", "glon", "Bmag", "nullpts", "r", "theta", "phi", "x", "y", "z"):
-            _write_var(f, k, ("x3", "x2", "x1"), xg[k].transpose())
+            _write_var(f, k, xg[k], ("x1", "x2", "x3"))
 
         for k in ("er", "etheta", "ephi"):
-            _write_var(f, k, ("ecef", "x3", "x2", "x1"), xg[k].transpose())
+            _write_var(f, k, xg[k], ("x1", "x2", "x3", "ecef"))
 
-        _write_var(f, "I", ("x3", "x2"), xg["I"].transpose())
+        _write_var(f, "I", xg["I"], ("x2", "x3"))
 
 
-def _write_var(f, name: str, dims: T.Sequence[str], value: np.ndarray):
+def _write_var(
+    f, name: str, value: T.Union[np.ndarray, xarray.DataArray], dims: T.Sequence[str] = None
+):
+
+    if dims is None:
+        dims = value.dims
+    if isinstance(dims, str):
+        dims = [dims]
+
+    dims = dims[::-1]
+
     g = f.createVariable(
         name,
         np.float32,
@@ -201,85 +209,89 @@ def _write_var(f, name: str, dims: T.Sequence[str], value: np.ndarray):
         fletcher32=True,
         fill_value=np.nan,
     )
-    g[:] = value
+
+    if value.ndim > 1:
+        g[:] = value.transpose()
+    else:
+        g[:] = value
 
 
-def Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
+def Efield(outdir: Path, E: xarray.Dataset):
     """
     write Efield to disk
-
-    TODO: verify dimensions vs. data vs. Fortran order
     """
 
     if Dataset is None:
         raise ImportError("pip install netcdf4")
 
     with Dataset(outdir / "simsize.nc", "w") as f:
-        for k in ("llon", "llat"):
-            g = f.createVariable(k, np.int32)
-            g[:] = E[k]
+        g = f.createVariable("llon", np.int32)
+        g[:] = E.mlon.size
+        g = f.createVariable("llat", np.int32)
+        g[:] = E.mlat.size
 
     with Dataset(outdir / "simgrid.nc", "w") as f:
-        f.createDimension("lon", E["mlon"].size)
-        f.createDimension("lat", E["mlat"].size)
-        _write_var(f, "mlon", ("lon",), E["mlon"])
-        _write_var(f, "mlat", ("lat",), E["mlat"])
+        f.createDimension("mlon", E.mlon.size)
+        f.createDimension("mlat", E.mlat.size)
+        _write_var(f, "mlon", E.mlon)
+        _write_var(f, "mlat", E.mlat)
 
-    for i, t in enumerate(E["time"]):
-        fn = outdir / (datetime2ymd_hourdec(t) + ".nc")
+    for t in E.time:
+        time = to_datetime(t)
+        fn = outdir / (datetime2ymd_hourdec(time) + ".nc")
 
         # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
         with Dataset(fn, "w") as f:
-            f.createDimension("lon", E["mlon"].size)
-            f.createDimension("lat", E["mlat"].size)
+            f.createDimension("mlon", E.mlon.size)
+            f.createDimension("mlat", E.mlat.size)
 
             g = f.createVariable("flagdirich", np.int32)
-            g[:] = E["flagdirich"][i]
+            g[:] = E["flagdirich"].loc[time]
 
             f.createDimension("ymd", 3)
             g = f.createVariable("ymd", np.int32, "ymd")
-            g[:] = [t.year, t.month, t.day]
+            g[:] = [time.year, time.month, time.day]
 
             g = f.createVariable("UTsec", np.float32)
-            g[:] = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6
+            g[:] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
 
-            for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-                _write_var(f, k, ("lat", "lon"), E[k][i, :, :].transpose())
+            for k in {"Exit", "Eyit", "Vminx1it", "Vmaxx1it"}:
+                _write_var(f, k, E[k].loc[time])
 
-            for k in ("Vminx2ist", "Vmaxx2ist"):
-                _write_var(f, k, ("lat",), E[k][i, :])
+            for k in {"Vminx2ist", "Vmaxx2ist"}:
+                _write_var(f, k, E[k].loc[time])
 
-            for k in ("Vminx3ist", "Vmaxx3ist"):
-                _write_var(f, k, ("lon",), E[k][i, :])
+            for k in {"Vminx3ist", "Vmaxx3ist"}:
+                _write_var(f, k, E[k].loc[time])
 
 
-def precip(outdir: Path, precip: T.Dict[str, np.ndarray]):
+def precip(outdir: Path, P: xarray.Dataset):
     """
     write precipitation to disk
-
-    TODO: verify dimensions vs. data vs. Fortran order
     """
 
     if Dataset is None:
         raise ImportError("pip install netcdf4")
 
     with Dataset(outdir / "simsize.nc", "w") as f:
-        for k in ("llon", "llat"):
-            g = f.createVariable(k, np.int32)
-            g[:] = precip[k]
+        g = f.createVariable("llon", np.int32)
+        g[:] = P.mlon.size
+        g = f.createVariable("llat", np.int32)
+        g[:] = P.mlat.size
 
     with Dataset(outdir / "simgrid.nc", "w") as f:
-        f.createDimension("lon", precip["mlon"].size)
-        f.createDimension("lat", precip["mlat"].size)
-        _write_var(f, "mlon", ("lon",), precip["mlon"])
-        _write_var(f, "mlat", ("lat",), precip["mlat"])
+        f.createDimension("mlon", P.mlon.size)
+        f.createDimension("mlat", P.mlat.size)
+        _write_var(f, "mlon", P.mlon)
+        _write_var(f, "mlat", P.mlat)
 
-    for i, t in enumerate(precip["time"]):
-        fn = outdir / (datetime2ymd_hourdec(t) + ".nc")
+    for t in P.time:
+        time = to_datetime(t)
+        fn = outdir / (datetime2ymd_hourdec(time) + ".nc")
 
         with Dataset(fn, "w") as f:
-            f.createDimension("lon", precip["mlon"].size)
-            f.createDimension("lat", precip["mlat"].size)
+            f.createDimension("mlon", P.mlon.size)
+            f.createDimension("mlat", P.mlat.size)
 
-            for k in ("Q", "E0"):
-                _write_var(f, f"{k}p", ("lat", "lon"), precip[k][i, :, :].transpose())
+            for k in {"Q", "E0"}:
+                _write_var(f, f"{k}p", P[k].loc[time])

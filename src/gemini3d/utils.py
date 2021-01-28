@@ -20,7 +20,7 @@ Pathlike = T.Union[str, Path]
 __all__ = ["to_datetime", "git_meta", "get_cpu_count", "datetime2ymd_hourdec"]
 
 
-def to_datetime(times: xarray.DataArray) -> datetime:
+def to_datetime(times: T.Union[xarray.DataArray, np.ndarray, np.datetime64, datetime]) -> datetime:
     """
     xarray time to python datetime.datetime
     """
@@ -149,6 +149,8 @@ def datetime2ymd_hourdec(dt: datetime) -> str:
     """
     convert datetime to ymd_hourdec string for filename stem
     """
+
+    dt = to_datetime(dt)
 
     return (
         dt.strftime("%Y%m%d")

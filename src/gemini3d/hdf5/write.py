@@ -9,7 +9,7 @@ from pathlib import Path
 import logging
 
 from .. import LSP
-from ..utils import datetime2ymd_hourdec
+from ..utils import datetime2ymd_hourdec, to_datetime
 
 try:
     import h5py
@@ -18,7 +18,7 @@ except (ImportError, AttributeError):
     h5py = None
 
 
-def state(fn: Path, dat: xarray.Dataset):
+def state(fn: Path, dat: xarray.Dataset, **kwargs):
     """
     write STATE VARIABLE initial conditions
 
@@ -44,8 +44,15 @@ def state(fn: Path, dat: xarray.Dataset):
         )
 
         for k in {"ns", "vs1", "Ts"}:
-            _write_var(f, f"/{k}all", dat[k])
-        if "Phitop" in dat.data_vars:
+            if k in kwargs:
+                # allow overriding "dat"
+                _write_var(f, f"/{k}all", kwargs[k])
+            elif k in dat.data_vars:
+                _write_var(f, f"/{k}all", dat[k])
+
+        if "Phitop" in kwargs:
+            _write_var(f, "/Phiall", kwargs["Phitop"])
+        elif "Phitop" in dat.data_vars:
             _write_var(f, "/Phiall", dat["Phitop"])
 
 
@@ -60,16 +67,10 @@ def _write_var(f, name: str, A: np.ndarray):
     need the .transpose() for h5py
     """
 
-    p4 = (0, 3, 2, 1)
     p4s = ("species", "x3", "x2", "x1")
 
     if A.ndim == 4:
-        if isinstance(A, np.ndarray):
-            A = A.transpose(p4)
-        elif isinstance(A, xarray.DataArray):
-            A = A.transpose(*p4s)
-        else:
-            raise TypeError("ns needs to be Numpy.ndarray or Xarray.DataArray")
+        A = A.transpose(*p4s)
     elif A.ndim == 2:
         A = A.transpose()
     elif A.ndim == 1:
@@ -90,7 +91,7 @@ def _write_var(f, name: str, A: np.ndarray):
     )
 
 
-def data(outfn: Path, dat: T.Dict[str, T.Any]):
+def data(outfn: Path, dat: xarray.Dataset):
     """
     write simulation data
     e.g. for converting a file format from a simulation
@@ -99,10 +100,10 @@ def data(outfn: Path, dat: T.Dict[str, T.Any]):
     if h5py is None:
         raise ImportError("pip install h5py")
 
-    lxs = dat["lxs"]
+    lxs = dat.shape
 
     with h5py.File(outfn, "w") as h:
-        for k in ["ns", "vs1", "Ts"]:
+        for k in {"ns", "vs1", "Ts"}:
             if k not in dat:
                 continue
 
@@ -114,7 +115,7 @@ def data(outfn: Path, dat: T.Dict[str, T.Any]):
                 compression_opts=1,
             )
 
-        for k in ["ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"]:
+        for k in {"ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"}:
             if k not in dat:
                 continue
 
@@ -129,7 +130,7 @@ def data(outfn: Path, dat: T.Dict[str, T.Any]):
         if "Phitop" in dat:
             h.create_dataset(
                 "Phiall",
-                data=dat["Phitop"],
+                data=dat["Phitop"].astype(np.float32),
                 compression="gzip",
                 compression_opts=1,
             )
@@ -233,7 +234,7 @@ def grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
                 h[f"/{k}"] = xg[k].astype(np.float32)
 
 
-def Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
+def Efield(outdir: Path, E: xarray.Dataset):
     """
     write Efield to disk
     """
@@ -242,57 +243,61 @@ def Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
         raise ImportError("pip install h5py")
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
-        f["/llon"] = E["llon"]
-        f["/llat"] = E["llat"]
+        f["/llon"] = E.mlon.size
+        f["/llat"] = E.mlat.size
 
     with h5py.File(outdir / "simgrid.h5", "w") as f:
-        f["/mlon"] = E["mlon"].astype(np.float32)
-        f["/mlat"] = E["mlat"].astype(np.float32)
+        f["/mlon"] = E.mlon.astype(np.float32)
+        f["/mlat"] = E.mlat.astype(np.float32)
 
-    for i, t in enumerate(E["time"]):
-        fn = outdir / (datetime2ymd_hourdec(t) + ".h5")
+    for t in E.time:
+        time = to_datetime(t)
+        fn = outdir / (datetime2ymd_hourdec(time) + ".h5")
 
         # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
         with h5py.File(fn, "w") as f:
-            f["/flagdirich"] = E["flagdirich"][i].astype(np.int32)
-            f["/time/ymd"] = [t.year, t.month, t.day]
-            f["/time/UTsec"] = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6
+            f["/flagdirich"] = E["flagdirich"].loc[time].astype(np.int32)
+            f["/time/ymd"] = [time.year, time.month, time.day]
+            f["/time/UTsec"] = (
+                time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
+            )
 
-            for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+            for k in {"Exit", "Eyit", "Vminx1it", "Vmaxx1it"}:
                 f.create_dataset(
                     f"/{k}",
-                    data=E[k][i, :, :].transpose(),
+                    data=E[k].loc[time].transpose(),
                     dtype=np.float32,
                     compression="gzip",
                     compression_opts=1,
                     shuffle=True,
                     fletcher32=True,
                 )
-            for k in ("Vminx2ist", "Vmaxx2ist", "Vminx3ist", "Vmaxx3ist"):
-                f[f"/{k}"] = E[k][i, :].astype(np.float32)
+            for k in {"Vminx2ist", "Vmaxx2ist", "Vminx3ist", "Vmaxx3ist"}:
+                f[f"/{k}"] = E[k].loc[time].astype(np.float32)
 
 
-def precip(outdir: Path, precip: T.Dict[str, T.Any]):
+def precip(outdir: Path, P: xarray.Dataset):
 
     if h5py is None:
         raise ImportError("pip install h5py")
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
-        f["/llon"] = precip["llon"]
-        f["/llat"] = precip["llat"]
+        f["/llon"] = P.mlon.size
+        f["/llat"] = P.mlat.size
 
     with h5py.File(outdir / "simgrid.h5", "w") as f:
-        f["/mlon"] = precip["mlon"].astype(np.float32)
-        f["/mlat"] = precip["mlat"].astype(np.float32)
+        f["/mlon"] = P.mlon.astype(np.float32)
+        f["/mlat"] = P.mlat.astype(np.float32)
 
-    for i, t in enumerate(precip["time"]):
-        fn = outdir / (datetime2ymd_hourdec(t) + ".h5")
+    for t in P.time:
+        time = to_datetime(t)
+        fn = outdir / (datetime2ymd_hourdec(time) + ".h5")
 
         with h5py.File(fn, "w") as f:
-            for k in ("Q", "E0"):
+            for k in {"Q", "E0"}:
                 f.create_dataset(
                     f"/{k}p",
-                    data=precip[k][i, :, :].transpose(),
+                    data=P[k].loc[time].transpose(),
                     dtype=np.float32,
                     compression="gzip",
                     compression_opts=1,

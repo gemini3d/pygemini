@@ -108,11 +108,14 @@ def test_precip(name, file_format, tmp_path):
     cfg["out_dir"] = tmp_path
     precdir = cfg["precdir"]
     cfg["precdir"] = cfg["out_dir"] / cfg["precdir"]
+
     particles_BCs(cfg, xg)
 
-    compare_precip(
+    errs = compare_precip(
         cfg["time"], cfg["precdir"], refdir=test_dir / precdir, plot=False, file_format=file_format
     )
+
+    assert errs == 0
 
 
 @pytest.mark.parametrize(
