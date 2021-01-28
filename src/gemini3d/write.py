@@ -24,12 +24,15 @@ def state(out_file: Path, dat: xarray.Dataset, file_format: str = None, **kwargs
     ext = file_format if file_format else out_file.suffix[1:]
 
     # %% allow overriding "dat"
+    if "time" in kwargs:
+        dat.attrs["time"] = kwargs["time"]
+
     for k in {"ns", "vs1", "Ts"}:
         if k in kwargs:
-            dat[k] = (dat[k].dims, kwargs[k])
+            dat[k] = (("species", "x1", "x2", "x3"), kwargs[k])
 
     if "Phitop" in kwargs:
-        dat["Phitop"] = (dat["Phitop"].dims, kwargs["Phitop"])
+        dat["Phitop"] = (("x2", "x3"), kwargs["Phitop"])
 
     # %% dispatch to format-specific writers
     if ext == "h5":
