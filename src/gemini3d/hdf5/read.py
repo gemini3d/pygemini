@@ -314,8 +314,8 @@ def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
         "J1": "J1all",
         "J2": "J2all",
         "J3": "J3all",
-        "v2": "v2all",
-        "v3": "v3all",
+        "v2": "v2avgall",
+        "v3": "v3avgall",
         "Phi": "Phiall",
     }
 
