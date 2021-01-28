@@ -289,6 +289,8 @@ def plot_all(direc: Path, var: T.Sequence[str] = None, saveplot_fmt: str = None)
 
     direc = Path(direc).expanduser().resolve(strict=True)
 
+    if not var:
+        var = PARAMS
     if isinstance(var, str):
         var = [var]
 
