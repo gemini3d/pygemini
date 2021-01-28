@@ -61,9 +61,9 @@ def test_grid(name, file_format, tmp_path):
 
     write.grid(cfg, xg, file_format=file_format)
 
-    assert (
-        compare_grid(cfg["out_dir"], test_dir, file_format=file_format) == 0
-    ), f"grid mismatch {cfg['out_dir']}  {test_dir}"
+    errs = compare_grid(cfg["out_dir"], test_dir, file_format=file_format)
+
+    assert errs == 0, f"grid mismatch {cfg['out_dir']}  {test_dir}"
 
 
 @pytest.mark.parametrize(
@@ -85,9 +85,11 @@ def test_Efield(name, file_format, tmp_path):
     E0dir = cfg["E0dir"]
     cfg["E0dir"] = cfg["out_dir"] / cfg["E0dir"]
     Efield_BCs(cfg, xg)
-    compare_Efield(
+    errs = compare_Efield(
         cfg["time"], cfg["E0dir"], refdir=test_dir / E0dir, plot=False, file_format=file_format
     )
+
+    assert errs == 0, f"Efield mismatch {cfg['out_dir']}  {test_dir}"
 
 
 @pytest.mark.parametrize(
@@ -115,7 +117,7 @@ def test_precip(name, file_format, tmp_path):
         cfg["time"], cfg["precdir"], refdir=test_dir / precdir, plot=False, file_format=file_format
     )
 
-    assert errs == 0
+    assert errs == 0, f"precipitation mismatch {cfg['out_dir']}  {test_dir}"
 
 
 @pytest.mark.parametrize(
