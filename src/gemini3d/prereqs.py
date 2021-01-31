@@ -396,7 +396,7 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun:
 def git_json(path: Path, name: str):
     jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
 
-    git_download(path, jmeta[name]["url"], tag=jmeta[name].get("tag"))
+    git_download(path, jmeta[name]["git"], tag=jmeta[name].get("tag"))
 
 
 def get_compilers(compiler_name: str, **kwargs) -> T.Mapping[str, str]:
