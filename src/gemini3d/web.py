@@ -1,3 +1,4 @@
+from __future__ import annotations
 import hashlib
 import urllib.request
 import urllib.error
@@ -66,7 +67,7 @@ def download_and_extract(test_name: str, data_dir: Path) -> Path:
     return z["dir"]
 
 
-def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> T.Dict[str, T.Any]:
+def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> dict[str, T.Any]:
     """ get URL and MD5 for a test name """
     json_str = Path(url_file).expanduser().read_text()
     urls = json.loads(json_str)
@@ -86,7 +87,10 @@ def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> T.Dict[str
 
 
 def url_retrieve(
-    url: str, outfile: Pathlike, filehash: T.Sequence[str] = None, overwrite: bool = False
+    url: str,
+    outfile: Pathlike,
+    filehash: tuple[str, str] | list[str] = None,
+    overwrite: bool = False,
 ):
     """
     Parameters

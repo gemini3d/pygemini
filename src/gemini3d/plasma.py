@@ -2,6 +2,7 @@
 plasma functions
 """
 
+from __future__ import annotations
 import typing as T
 import numpy as np
 import logging
@@ -20,7 +21,7 @@ KB = 1.38e-23
 AMU = 1.67e-27
 
 
-def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+def equilibrium_resample(p: dict[str, T.Any], xg: dict[str, T.Any]):
     """
     read and interpolate equilibrium simulation data, writing new
     interpolated grid.
@@ -75,7 +76,7 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
 
 
 def model_resample(
-    xgin: T.Dict[str, T.Any], dat: xarray.Dataset, xg: T.Dict[str, T.Any]
+    xgin: dict[str, T.Any], dat: xarray.Dataset, xg: dict[str, T.Any]
 ) -> xarray.Dataset:
     """resample a grid
     usually used to upsample an equilibrium simulation grid
@@ -205,17 +206,17 @@ def check_drift(v: np.ndarray):
         raise ValueError("excessive drift velocity")
 
 
-def check_temperature(T: np.ndarray):
+def check_temperature(Ts: np.ndarray):
 
-    if not np.isfinite(T).all():
+    if not np.isfinite(Ts).all():
         raise ValueError("non-finite temperature")
-    if (T < 0).any():
+    if (Ts < 0).any():
         raise ValueError("negative temperature")
-    if T.max() < 500:
+    if Ts.max() < 500:
         raise ValueError("too cold maximum temperature")
 
 
-def equilibrium_state(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> xarray.Dataset:
+def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     """
     generate (arbitrary) initial conditions for a grid.
     NOTE: only works on symmmetric closed grids!

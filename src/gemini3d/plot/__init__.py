@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pathlib import Path
 from matplotlib.figure import Figure
 import typing as T
@@ -15,7 +16,7 @@ from ..config import datetime_range
 PARAMS = ["ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phi"]
 
 
-def grid(direc: Path, only: T.Sequence[str] = None, saveplot_fmt: str = None):
+def grid(direc: Path, only: list[str] = None, saveplot_fmt: str = None):
     """plot 3D grid
 
     Parameters
@@ -65,7 +66,7 @@ def grid(direc: Path, only: T.Sequence[str] = None, saveplot_fmt: str = None):
         save_fig(fg, direc, "grid-geog")
 
 
-def grid_geog(xg: T.Dict[str, T.Any]) -> Figure:
+def grid_geog(xg: dict[str, T.Any]) -> Figure:
     """
     plots grid in geographic map
     """
@@ -174,7 +175,7 @@ def precip(direc: Path):
             save_fig(fg, direc, f"precip-{k}", time=t)
 
 
-def plot2d_input(A, cfg: T.Dict[str, T.Any]) -> Figure:
+def plot2d_input(A, cfg: dict[str, T.Any]) -> Figure:
     fg = Figure()
     ax = fg.gca()
 
@@ -190,7 +191,7 @@ def plot2d_input(A, cfg: T.Dict[str, T.Any]) -> Figure:
     return fg
 
 
-def plot3d_input(A, cfg: T.Dict[str, T.Any]) -> Figure:
+def plot3d_input(A, cfg: dict[str, T.Any]) -> Figure:
     fg = Figure()
     ax = fg.gca()
 
@@ -202,7 +203,7 @@ def plot3d_input(A, cfg: T.Dict[str, T.Any]) -> Figure:
     return fg
 
 
-def basic(xg: T.Dict[str, T.Any]) -> Figure:
+def basic(xg: dict[str, T.Any]) -> Figure:
     fig = Figure()
     axs = fig.subplots(1, 3)
     # %% x1
@@ -232,7 +233,7 @@ def basic(xg: T.Dict[str, T.Any]) -> Figure:
     return fig
 
 
-def stitle(fig: Figure, xg: T.Dict[str, T.Any], ttxt: str = ""):
+def stitle(fig: Figure, xg: dict[str, T.Any], ttxt: str = ""):
     """suptitle"""
     if "time" in xg:
         ttxt += f" {xg['time']}"
@@ -243,7 +244,7 @@ def stitle(fig: Figure, xg: T.Dict[str, T.Any], ttxt: str = ""):
     fig.suptitle(ttxt)
 
 
-def altitude_grid(xg: T.Dict[str, T.Any]) -> Figure:
+def altitude_grid(xg: dict[str, T.Any]) -> Figure:
     """
     plot altitude x1 grid
 
@@ -275,7 +276,7 @@ def altitude_grid(xg: T.Dict[str, T.Any]) -> Figure:
     return fig
 
 
-def plot_3d(direc: Path, var: T.Sequence[str], saveplot_fmt: str = None):
+def plot_3d(direc: Path, var: list[str], saveplot_fmt: str = None):
     from . import vis3d
 
     direc = Path(direc).expanduser().resolve(strict=True)
@@ -285,7 +286,7 @@ def plot_3d(direc: Path, var: T.Sequence[str], saveplot_fmt: str = None):
         vis3d.frame(direc, time=t, var=var, saveplot_fmt=saveplot_fmt)
 
 
-def plot_all(direc: Path, var: T.Sequence[str] = None, saveplot_fmt: str = None):
+def plot_all(direc: Path, var: list[str] = None, saveplot_fmt: str = None):
 
     direc = Path(direc).expanduser().resolve(strict=True)
 
@@ -308,8 +309,8 @@ def frame(
     time: datetime = None,
     *,
     saveplot_fmt: str = None,
-    var: T.Sequence[str] = None,
-    xg: T.Dict[str, T.Any] = None,
+    var: list[str] = None,
+    xg: dict[str, T.Any] = None,
 ):
     """
     if save_dir, plots will not be visible while generating to speed plot writing

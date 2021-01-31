@@ -1,6 +1,6 @@
+from __future__ import annotations
 from pathlib import Path
 import math
-import typing as T
 
 from .utils import get_cpu_count
 from . import read
@@ -23,7 +23,7 @@ def count(path: Path, max_cpu: int) -> int:
     return max_mpi(read.simsize(path), max_cpu)
 
 
-def max_mpi(size: T.Tuple[int, ...], max_cpu: int) -> int:
+def max_mpi(size: tuple[int, ...], max_cpu: int) -> int:
     """
     goal is to find the highest x2 + x3 to maximum CPU core count
     """
@@ -66,7 +66,7 @@ def max_gcd(s: int, M: int) -> int:
     return N
 
 
-def max_gcd2(s: T.Sequence[int], M: int) -> int:
+def max_gcd2(s: tuple[int, ...] | list[int], M: int) -> int:
     """
     find the Greatest Common Factor to evenly partition the simulation grid
 

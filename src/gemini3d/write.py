@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 import xarray
 from pathlib import Path
@@ -43,7 +44,7 @@ def state(out_file: Path, dat: xarray.Dataset, file_format: str = None, **kwargs
         raise ValueError(f"unknown file format {ext}")
 
 
-def data(out_file: Path, dat: np.ndarray, file_format: str, xg: T.Dict[str, T.Any] = None):
+def data(out_file: Path, dat: np.ndarray, file_format: str, xg: dict[str, T.Any] = None):
 
     if file_format == "h5":
         h5write.data(out_file, dat)
@@ -53,7 +54,7 @@ def data(out_file: Path, dat: np.ndarray, file_format: str, xg: T.Dict[str, T.An
         raise ValueError(f"Unknown file format {file_format}")
 
 
-def grid(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any], *, file_format: str = None):
+def grid(cfg: dict[str, T.Any], xg: dict[str, T.Any], *, file_format: str = None):
     """writes grid to disk
 
     Parameters
@@ -112,7 +113,7 @@ def Efield(E: xarray.Dataset, outdir: Path, file_format: str):
         raise ValueError(f"unknown file format {file_format}")
 
 
-def precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
+def precip(precip: dict[str, T.Any], outdir: Path, file_format: str):
     """writes precipitation to disk
 
     Parameters
@@ -136,7 +137,7 @@ def precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
         raise ValueError(f"unknown file format {file_format}")
 
 
-def meta(fn: Path, meta: T.Dict[str, str], nml: str):
+def meta(fn: Path, meta: dict[str, str], nml: str):
     """
     writes Namelist file with metadata
     """

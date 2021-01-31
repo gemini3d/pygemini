@@ -2,6 +2,7 @@
 HDF5 file writing
 """
 
+from __future__ import annotations
 import xarray
 import typing as T
 import numpy as np
@@ -131,7 +132,7 @@ def data(outfn: Path, dat: xarray.Dataset):
             )
 
 
-def grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
+def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
     """writes grid to disk
 
     Parameters

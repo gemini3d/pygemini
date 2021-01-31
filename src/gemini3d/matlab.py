@@ -2,12 +2,13 @@
 functions for interfacing with Matlab or using Matlab data formats
 """
 
+from __future__ import annotations
 from pathlib import Path
 import typing as T
 import scipy.io
 
 
-def grid(fn: Path, shape: bool = False) -> T.Dict[str, T.Any]:
+def grid(fn: Path, shape: bool = False) -> dict[str, T.Any]:
     """
     get simulation grid
 
@@ -30,7 +31,7 @@ def grid(fn: Path, shape: bool = False) -> T.Dict[str, T.Any]:
     return grid
 
 
-def simsize(path: Path) -> T.Tuple[int, ...]:
+def simsize(path: Path) -> tuple[int, ...]:
     """
     get simulation size
     """
@@ -56,7 +57,7 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def state(fn: Path) -> T.Dict[str, T.Any]:
+def state(fn: Path) -> dict[str, T.Any]:
     """
     load initial condition data
     """
@@ -64,7 +65,7 @@ def state(fn: Path) -> T.Dict[str, T.Any]:
     return scipy.io.loadmat(fn, squeeze_me=True)
 
 
-def precip(fn: Path) -> T.Dict[str, T.Any]:
+def precip(fn: Path) -> dict[str, T.Any]:
     """
     load precipitation data
     """

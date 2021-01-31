@@ -1,11 +1,11 @@
+from __future__ import annotations
 import numpy as np
-import typing as T
 import math
 
 pi = math.pi
 
 
-def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> T.Tuple[np.ndarray, np.ndarray]:
+def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """ geomagnetic to geographic """
 
     # FIXME: this is for year 1985, see Schmidt spherical harmonic in MatGemini
@@ -45,7 +45,7 @@ def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> T.Tuple[np.ndarray, np.
     return lat, lon
 
 
-def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> T.Tuple[np.ndarray, np.ndarray]:
+def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """ geographic to geomagnetic """
 
     # FIXME: this is for year 1985, see Schmidt spherical harmonic in MatGemini

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing as T
 import numpy as np
 import xarray
@@ -6,7 +7,7 @@ from . import write
 from .config import datetime_range
 
 
-def particles_BCs(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
     """ write particle precipitation to disk """
 
     pg = precip_grid(cfg, xg)
@@ -47,7 +48,7 @@ def particles_BCs(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     write.precip(pg, cfg["precdir"], cfg["file_format"])
 
 
-def precip_grid(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> xarray.Dataset:
+def precip_grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     """CREATE PRECIPITATION CHARACTERISTICS data
     grid cells will be interpolated to grid, so 100x100 is arbitrary
     """

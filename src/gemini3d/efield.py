@@ -2,6 +2,7 @@
 generate, read, write Electric Field
 """
 
+from __future__ import annotations
 import xarray
 import typing as T
 import numpy as np
@@ -12,7 +13,7 @@ from . import write
 from .config import datetime_range
 
 
-def Efield_BCs(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> xarray.Dataset:
+def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     """ generate E-field """
 
     # %% READ IN THE SIMULATION INFO
@@ -141,7 +142,7 @@ def Jcurrent_target(E: xarray.Dataset) -> xarray.Dataset:
 
 
 def Efield_target(
-    E: xarray.Dataset, xg: T.Dict[str, T.Any], lx1: int, lx2: int, lx3: int
+    E: xarray.Dataset, xg: dict[str, T.Any], lx1: int, lx2: int, lx3: int
 ) -> xarray.Dataset:
     """
     synthesize a feature

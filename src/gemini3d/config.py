@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing as T
 import re
 import math
@@ -10,7 +11,7 @@ from . import namelist
 NaN = math.nan
 
 
-def datetime_range(start: datetime, stop: datetime, step: timedelta) -> T.List[datetime]:
+def datetime_range(start: datetime, stop: datetime, step: timedelta) -> list[datetime]:
 
     """
     Generate range of datetime over a closed interval.
@@ -35,13 +36,13 @@ def datetime_range(start: datetime, stop: datetime, step: timedelta) -> T.List[d
     return [start + i * step for i in range((stop - start) // step + 1)]
 
 
-def read_nml(fn: Path) -> T.Dict[str, T.Any]:
+def read_nml(fn: Path) -> dict[str, T.Any]:
     """parse .nml file
     for now we don't use the f90nml package, though maybe we will in the future.
     Just trying to keep Python prereqs reduced for this simple parsing.
     """
 
-    params: T.Dict[str, T.Any] = {}
+    params: dict[str, T.Any] = {}
 
     fn = find.config(fn)
     if not fn:
@@ -76,7 +77,7 @@ def namelist_exists(fn: Path, nml: str) -> bool:
     return False
 
 
-def parse_namelist(file: Path, nml: str) -> T.Dict[str, T.Any]:
+def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
     """
     this is Gemini-specific
     don't resolve absolute paths here because that assumes same machine
@@ -84,7 +85,7 @@ def parse_namelist(file: Path, nml: str) -> T.Dict[str, T.Any]:
 
     r = namelist.read(file, nml)
 
-    P: T.Dict[str, T.Any] = {}
+    P: dict[str, T.Any] = {}
 
     if nml == "base":
         t0 = datetime(int(r["ymd"][0]), int(r["ymd"][1]), int(r["ymd"][2])) + timedelta(
@@ -153,10 +154,10 @@ def parse_namelist(file: Path, nml: str) -> T.Dict[str, T.Any]:
     return P
 
 
-def read_ini(fn: Path) -> T.Dict[str, T.Any]:
+def read_ini(fn: Path) -> dict[str, T.Any]:
     """ parse .ini file (legacy) """
 
-    P: T.Dict[str, T.Any] = {}
+    P: dict[str, T.Any] = {}
 
     fn = find.config(fn)
 

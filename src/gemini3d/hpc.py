@@ -1,8 +1,8 @@
+from __future__ import annotations
 import os
 import subprocess
 import binascii
 from pathlib import Path
-import typing as T
 import shutil
 import importlib.resources
 
@@ -18,7 +18,7 @@ def hpc_submit_job(batcher: str, job_file: Path):
         raise LookupError(f"batcher {batcher} not yet listed. Please raise a Gemini Github Issue.")
 
 
-def hpc_batch_create(batcher: str, out_dir: Path, cmd: T.Sequence[str]) -> Path:
+def hpc_batch_create(batcher: str, out_dir: Path, cmd: list[str]) -> Path:
     """
     creates HPC batch scripts for known systems
 

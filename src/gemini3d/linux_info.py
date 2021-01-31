@@ -2,13 +2,14 @@
 """
 get Linux system info
 """
+
+from __future__ import annotations
 from configparser import ConfigParser
-import typing as T
 from pathlib import Path
 import sys
 
 
-def os_release() -> T.List[str]:
+def os_release() -> list[str]:
     """
     reads /etc/os-release with fallback to legacy methods
 
@@ -34,7 +35,7 @@ def os_release() -> T.List[str]:
     return parse_os_release("[all]" + fn.read_text())
 
 
-def parse_os_release(txt: str) -> T.List[str]:
+def parse_os_release(txt: str) -> list[str]:
     """ parse /etc/os-release text """
 
     C = ConfigParser(inline_comment_prefixes=("#", ";"))
@@ -47,7 +48,7 @@ def parse_os_release(txt: str) -> T.List[str]:
     return like
 
 
-def get_package_manager(like: T.List[str] = None) -> str:
+def get_package_manager(like: list[str] = None) -> str:
     if not like:
         like = os_release()
     if isinstance(like, str):

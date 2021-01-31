@@ -1,3 +1,4 @@
+from __future__ import annotations
 import subprocess
 import os
 import re
@@ -20,7 +21,7 @@ Pathlike = T.Union[str, Path]
 __all__ = ["to_datetime", "git_meta", "get_cpu_count", "datetime2ymd_hourdec"]
 
 
-def to_datetime(times: T.Union[xarray.DataArray, np.ndarray, np.datetime64, datetime]) -> datetime:
+def to_datetime(times: xarray.DataArray | np.ndarray | np.datetime64 | datetime) -> datetime:
     """
     xarray time to python datetime.datetime
     """
@@ -37,7 +38,7 @@ def to_datetime(times: T.Union[xarray.DataArray, np.ndarray, np.datetime64, date
     return times
 
 
-def git_meta(path: Path = None) -> T.Dict[str, str]:
+def git_meta(path: Path = None) -> dict[str, str]:
     """
     provide metadata about a Git repo in a dictionary
 

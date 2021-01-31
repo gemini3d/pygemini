@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing as T
 from pathlib import Path
 import subprocess
@@ -33,8 +34,8 @@ def build(
     source_dir: Path,
     build_dir: Path,
     *,
-    config_args: T.List[str] = None,
-    build_args: T.List[str] = None,
+    config_args: list[str] = None,
+    build_args: list[str] = None,
     wipe: bool = False,
     env: T.Mapping[str, str] = None,
     run_test: bool = False,
@@ -73,7 +74,7 @@ def build(
         subprocess.check_call([cmake, "--install", str(build_dir)])
 
 
-def find_library(lib_name: str, lib_path: T.List[str], env: T.Mapping[str, str]) -> bool:
+def find_library(lib_name: str, lib_path: list[str], env: T.Mapping[str, str]) -> bool:
     """
     check if library exists with CMake
 
@@ -140,7 +141,7 @@ def build_gemini3d(target: Path) -> Path:
             src_dir = PYGEMINI_ROOT / "gemini-fortran"
 
             jmeta = json.loads(importlib.resources.read_text("gemini3d", "libraries.json"))
-            git_download(src_dir, repo=jmeta["gemini3d"]["url"], tag=jmeta["gemini3d"]["tag"])
+            git_download(src_dir, repo=jmeta["gemini3d"]["git"], tag=jmeta["gemini3d"]["tag"])
 
     if not src_dir.is_dir():
         raise NotADirectoryError(f"could not find Gemini3D source directory {src_dir}")

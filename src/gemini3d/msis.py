@@ -2,6 +2,7 @@
 using MSIS Fortran exectuable from Python
 """
 
+from __future__ import annotations
 import xarray
 from pathlib import Path
 import numpy as np
@@ -13,7 +14,7 @@ import h5py
 from . import cmake
 
 
-def msis_setup(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> xarray.Dataset:
+def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     """
     calls MSIS Fortran executable msis_setup--builds if not present
 

@@ -5,6 +5,7 @@ Either locally (laptop or interactive HPC) or creating an HPC batch script based
 Builds gemini.bin if not found.
 """
 
+from __future__ import annotations
 import typing as T
 import os
 import logging
@@ -27,7 +28,7 @@ from .utils import git_meta
 Pathlike = T.Union[str, Path]
 
 
-def runner(pr: T.Dict[str, T.Any]) -> None:
+def runner(pr: dict[str, T.Any]) -> None:
 
     out_dir = check_outdir(pr["out_dir"])
 

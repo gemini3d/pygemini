@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime
 import numpy as np
 import math
@@ -36,7 +37,7 @@ CB_LBL = {
 }
 
 
-def grid2plotfun(grid: T.Dict[str, np.ndarray]):
+def grid2plotfun(grid: dict[str, np.ndarray]):
     plotfun = None
     h1 = grid.get("h1")
 
@@ -61,7 +62,7 @@ def grid2plotfun(grid: T.Dict[str, np.ndarray]):
 
 def plot3D_curv_frames_long(
     time: datetime,
-    grid: T.Dict[str, np.ndarray],
+    grid: dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
     fg: Figure = None,
@@ -72,7 +73,7 @@ def plot3D_curv_frames_long(
 
 def plot2D_curv(
     time: datetime,
-    grid: T.Dict[str, np.ndarray],
+    grid: dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
     fg: Figure = None,
@@ -208,7 +209,7 @@ def plot1d3(
 
 def plot_interp(
     time: datetime,
-    grid: T.Dict[str, np.ndarray],
+    grid: dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
     fg: Figure = None,
@@ -463,7 +464,7 @@ def mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time):
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
 
-def get_lxs(xg: T.Dict[str, T.Any]) -> np.ndarray:
+def get_lxs(xg: dict[str, T.Any]) -> np.ndarray:
 
     for k in ("lx", "lxs", "lx1"):
         if k in xg:

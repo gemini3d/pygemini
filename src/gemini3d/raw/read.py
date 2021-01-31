@@ -3,6 +3,7 @@ raw binary file I/O.
 Raw files are deprecated and do not contain most features of Gemini
 """
 
+from __future__ import annotations
 import xarray
 from pathlib import Path
 import typing as T
@@ -15,7 +16,7 @@ from .. import find
 from .. import WAVELEN, LSP
 
 
-def simsize(path: Path) -> T.Tuple[int, ...]:
+def simsize(path: Path) -> tuple[int, ...]:
     """
     get simulation size
 
@@ -43,7 +44,7 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
+def grid(fn: Path, shape: bool = False) -> dict[str, np.ndarray]:
     """
     get simulation grid
 
@@ -70,12 +71,12 @@ def grid(fn: Path, shape: bool = False) -> T.Dict[str, np.ndarray]:
         raise ValueError("lxs must be 2-D or 3-D")
 
 
-def grid2(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
+def grid2(fn: Path, lxs: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
     """ for Efield """
     if not fn.is_file():
         raise FileNotFoundError(fn)
 
-    grid: T.Dict[str, T.Any] = {"lx": lxs}
+    grid: dict[str, T.Any] = {"lx": lxs}
     with fn.open("r") as f:
         grid["mlon"] = np.fromfile(f, np.float64, lxs[0])
         grid["mlat"] = np.fromfile(f, np.float64, lxs[1])
@@ -83,12 +84,12 @@ def grid2(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
     return grid
 
 
-def grid3(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
+def grid3(fn: Path, lxs: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
 
     lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 
-    grid: T.Dict[str, T.Any] = {"lx": lxs}
+    grid: dict[str, T.Any] = {"lx": lxs}
 
     if not fn.is_file():
         logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
@@ -257,7 +258,7 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
     return dat
 
 
-def read4D(f, lsp: int, lxs: T.Sequence[int]) -> np.ndarray:
+def read4D(f, lsp: int, lxs: tuple[int, ...] | list[int]) -> np.ndarray:
     """
     read 4D array from raw file
     """
@@ -267,7 +268,7 @@ def read4D(f, lsp: int, lxs: T.Sequence[int]) -> np.ndarray:
     return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape((*lxs, lsp), order="F")
 
 
-def read3D(f, lxs: T.Sequence[int]) -> np.ndarray:
+def read3D(f, lxs: tuple[int, ...] | list[int]) -> np.ndarray:
     """
     read 3D array from raw file
     """
@@ -277,7 +278,7 @@ def read3D(f, lxs: T.Sequence[int]) -> np.ndarray:
     return np.fromfile(f, np.float64, np.prod(lxs)).reshape(*lxs, order="F")
 
 
-def read2D(f, lxs: T.Sequence[int]) -> np.ndarray:
+def read2D(f, lxs: tuple[int, ...] | list[int]) -> np.ndarray:
     """
     read 2D array from raw file
     """

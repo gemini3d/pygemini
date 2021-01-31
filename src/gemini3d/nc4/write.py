@@ -2,6 +2,7 @@
 NetCDF4 file writing
 """
 
+from __future__ import annotations
 import xarray
 import typing as T
 import numpy as np
@@ -56,7 +57,7 @@ def state(fn: Path, dat: xarray.Dataset):
             _write_var(f, "Phiall", dat["Phitop"])
 
 
-def data(fn: Path, dat: xarray.Dataset, xg: T.Dict[str, T.Any]):
+def data(fn: Path, dat: xarray.Dataset, xg: dict[str, T.Any]):
     """
     write simulation data
     e.g. for converting a file format from a simulation
@@ -117,7 +118,7 @@ def data(fn: Path, dat: xarray.Dataset, xg: T.Dict[str, T.Any]):
             _write_var(f, "Phiall", dat["Phitop"], dims[-2:])
 
 
-def grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
+def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
     """writes grid to disk
 
     Parameters
@@ -184,7 +185,10 @@ def grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
 
 
 def _write_var(
-    f, name: str, value: T.Union[np.ndarray, xarray.DataArray], dims: T.Sequence[str] = None
+    f,
+    name: str,
+    value: np.ndarray | xarray.DataArray,
+    dims: str | tuple[str, ...] | list[str] = None,
 ):
 
     if dims is None:

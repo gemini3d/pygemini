@@ -2,6 +2,7 @@
 setup a new simulation
 """
 
+from __future__ import annotations
 import logging
 import importlib
 import argparse
@@ -20,7 +21,7 @@ from . import write
 __all__ = ["setup", "config"]
 
 
-def config(params: T.Dict[str, T.Any], out_dir: Path):
+def config(params: dict[str, T.Any], out_dir: Path):
     """
     top-level API to create a new simulation.
     This is meant to be a front-end to the model.setup() function, creating
@@ -95,7 +96,7 @@ def config(params: T.Dict[str, T.Any], out_dir: Path):
     namelist.write(nml_file, "setup", setup)
 
 
-def setup(path: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
+def setup(path: Path | dict[str, T.Any], out_dir: Path):
     """
     top-level function to create a new simulation FROM A FILE config.nml
 
@@ -141,7 +142,7 @@ def setup(path: T.Union[Path, T.Dict[str, T.Any]], out_dir: Path):
         equilibrium(cfg)
 
 
-def equilibrium(p: T.Dict[str, T.Any]):
+def equilibrium(p: dict[str, T.Any]):
     # %% GRID GENERATION
 
     xg = grid.cart3d(p)
@@ -154,7 +155,7 @@ def equilibrium(p: T.Dict[str, T.Any]):
     write.state(p["indat_file"], dat)
 
 
-def interp(cfg: T.Dict[str, T.Any]) -> None:
+def interp(cfg: dict[str, T.Any]) -> None:
 
     xg = grid.cart3d(cfg)
 
@@ -163,7 +164,7 @@ def interp(cfg: T.Dict[str, T.Any]) -> None:
     postprocess(cfg, xg)
 
 
-def postprocess(cfg: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> None:
+def postprocess(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> None:
     """
     defaults to applying config.nml defined E-field and/or precipitation
 

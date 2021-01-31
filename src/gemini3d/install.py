@@ -8,10 +8,10 @@ installs Gemini3D prerequisite libraries for:
 assumes GCC/Gfortran
 """
 
+from __future__ import annotations
 import subprocess
 import sys
 from argparse import ArgumentParser
-import typing as T
 import shutil
 
 PKG = {
@@ -48,7 +48,7 @@ PKG = {
 
 def main(package_manager: str):
 
-    cmd: T.List[str] = []
+    cmd: list[str] = []
 
     if sys.platform == "linux":
 

@@ -8,6 +8,7 @@ Use the full compiler path if it's not getting the right compiler.
 * CC: C compiler name or path
 """
 
+from __future__ import annotations
 import typing as T
 import sys
 import os
@@ -65,9 +66,7 @@ def cli():
     main(P.compiler, P.libs, P.prefix, P.workdir, P.reuse, P.dryrun)
 
 
-def main(
-    compiler: str, libs: T.Sequence[str], prefix: str, workdir: str, reuse: bool, dryrun: bool
-):
+def main(compiler: str, libs: list[str], prefix: str, workdir: str, reuse: bool, dryrun: bool):
 
     prefix = prefix if prefix else f"~/lib_{compiler}"
 
@@ -80,8 +79,8 @@ def main(
 
 
 def setup_libs(
-    libs: T.Sequence[str],
-    dirs: T.Dict[str, Path],
+    libs: list[str],
+    dirs: dict[str, Path],
     compiler: str,
     *,
     wipe: bool,
@@ -121,7 +120,7 @@ def setup_libs(
 
 
 def netcdf_c(
-    dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False, dryrun: bool = False
+    dirs: dict[str, Path], env: T.Mapping[str, str], wipe: bool = False, dryrun: bool = False
 ):
     """build and install NetCDF-C"""
 
@@ -167,7 +166,7 @@ def netcdf_c(
 
 
 def netcdf_fortran(
-    dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False, dryrun: bool = False
+    dirs: dict[str, Path], env: T.Mapping[str, str], wipe: bool = False, dryrun: bool = False
 ):
     """build and install NetCDF-Fortran"""
 
@@ -220,7 +219,7 @@ def netcdf_fortran(
     )
 
 
-def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
+def hdf5(dirs: dict[str, Path], env: T.Mapping[str, str]):
     """build and install HDF5
     some systems have broken libz and so have trouble extracting tar.bz2 from Python.
     To avoid this, we git clone the release instead.
@@ -278,7 +277,7 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     subprocess.check_call(cmd2, cwd=source_dir)
 
 
-def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str], version: str, dryrun: bool = False):
+def openmpi(dirs: dict[str, Path], env: T.Mapping[str, str], version: str, dryrun: bool = False):
     """ build and install OpenMPI """
     if os.name == "nt":
         raise EnvironmentError(
@@ -328,7 +327,7 @@ Use MPI on Windows via any of (choose one):
     subprocess.check_call(cmd)
 
 
-def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
+def lapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """ build and insall Lapack """
     install_dir = dirs["prefix"] / LAPACK_DIR
     source_dir = dirs["workdir"] / LAPACK_DIR
@@ -340,7 +339,7 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun
     cmake.build(source_dir, build_dir, wipe=wipe, env=env, dryrun=dryrun, config_args=args)
 
 
-def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
+def scalapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """ build and install Scalapack """
     install_dir = dirs["prefix"] / SCALAPACK_DIR
     source_dir = dirs["workdir"] / SCALAPACK_DIR
@@ -363,7 +362,7 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dry
     )
 
 
-def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
+def mumps(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """ build and install Mumps """
     install_dir = dirs["prefix"] / MUMPS_DIR
     source_dir = dirs["workdir"] / MUMPS_DIR

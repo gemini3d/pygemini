@@ -2,6 +2,7 @@
 compare simulation outputs to verify model performance
 """
 
+from __future__ import annotations
 from pathlib import Path
 import numpy as np
 import logging
@@ -59,12 +60,12 @@ def cli():
 def compare_all(
     outdir: Path,
     refdir: Path,
-    tol: T.Dict[str, float] = TOL,
+    tol: dict[str, float] = TOL,
     *,
     plot: bool = True,
     file_format: str = None,
     only: str = None,
-) -> T.Dict[str, int]:
+) -> dict[str, int]:
     """
     compare two directories across time steps
     """
@@ -93,7 +94,7 @@ def compare_all(
 
 
 def compare_grid(
-    outdir: Path, refdir: Path, tol: T.Dict[str, float] = TOL, *, file_format: str = None
+    outdir: Path, refdir: Path, tol: dict[str, float] = TOL, *, file_format: str = None
 ) -> int:
 
     ref = read.grid(refdir)
@@ -123,7 +124,7 @@ def compare_grid(
 def compare_input(
     outdir: Path,
     refdir: Path,
-    tol: T.Dict[str, float] = TOL,
+    tol: dict[str, float] = TOL,
     *,
     file_format: str = None,
     plot: bool = True,
@@ -196,10 +197,10 @@ def err_pct(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def compare_precip(
-    times: T.Sequence[datetime],
+    times: list[datetime],
     newdir: Path,
     refdir: Path,
-    tol: T.Dict[str, float] = TOL,
+    tol: dict[str, float] = TOL,
     *,
     plot: bool = False,
     file_format: str = None,
@@ -230,10 +231,10 @@ def compare_precip(
 
 
 def compare_Efield(
-    times: T.Sequence[datetime],
+    times: list[datetime],
     newdir: Path,
     refdir: Path,
-    tol: T.Dict[str, float] = TOL,
+    tol: dict[str, float] = TOL,
     *,
     plot: bool = False,
     file_format: str = None,
@@ -265,14 +266,14 @@ def compare_Efield(
 def compare_output(
     outdir: Path,
     refdir: Path,
-    tol: T.Dict[str, float],
+    tol: dict[str, float],
     *,
     file_format: str = None,
     plot: bool = True,
 ) -> int:
     """compare simulation outputs"""
 
-    ref: T.Dict[str, T.Any] = {}
+    ref: dict[str, T.Any] = {}
     errs = 0
     a: np.ndarray = None
 

@@ -5,6 +5,8 @@ suggested install:
 
     conda install mayavi
 """
+
+from __future__ import annotations
 from pathlib import Path
 import numpy as np
 from datetime import datetime
@@ -26,9 +28,9 @@ R_EARTH = 6370e3
 def frame(
     direc: Path,
     time: datetime,
-    var: T.Sequence[str] = None,
+    var: list[str] = None,
     saveplot_fmt: str = None,
-    xg: T.Dict[str, T.Any] = None,
+    xg: dict[str, T.Any] = None,
 ):
     """
     plot plasma quantities in 3D
@@ -60,7 +62,7 @@ def frame(
             fg.savefig(plot_fn)
 
 
-def scalar(time: datetime, grid: T.Dict[str, np.ndarray], parm: np.ndarray, name: str):
+def scalar(time: datetime, grid: dict[str, np.ndarray], parm: np.ndarray, name: str):
     """
     plot scalar field data in transparent 3D volume
     """
@@ -74,7 +76,7 @@ def scalar(time: datetime, grid: T.Dict[str, np.ndarray], parm: np.ndarray, name
     # lzp = 100
 
     # %% SIZE OF SIMULATION
-    lxs: T.Tuple[int, int, int] = None
+    lxs: tuple[int, int, int] = None
 
     for k in ("lx", "lxs", "lx1"):
         if k in grid:

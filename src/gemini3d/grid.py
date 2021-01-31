@@ -2,6 +2,7 @@
 create simulation grids
 """
 
+from __future__ import annotations
 import logging
 import typing as T
 import math
@@ -11,7 +12,7 @@ from . import read
 from .coord import geog2geomag, geomag2geog
 
 
-def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
+def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
     """make 3D grid and save to disk
 
     Parameters
@@ -314,7 +315,7 @@ def cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     return xgf
 
 
-def grid1d(dist: float, L: int, parms: T.Sequence[float] = None) -> np.ndarray:
+def grid1d(dist: float, L: int, parms: list[float] = None) -> np.ndarray:
     """
     generate 1D grid
 
@@ -362,7 +363,7 @@ def uniform1d(xmin: float, xmax: float, L: int) -> np.ndarray:
     return x
 
 
-def non_uniform1d(xmax: float, parms: T.Sequence[float]) -> np.ndarray:
+def non_uniform1d(xmax: float, parms: list[float]) -> np.ndarray:
 
     degdist = parms[0]  # distance from boundary at which we start to degrade resolution
     dx0 = parms[1]  # min step size for grid
@@ -383,7 +384,7 @@ def non_uniform1d(xmax: float, parms: T.Sequence[float]) -> np.ndarray:
 
 
 def altitude_grid(
-    alt_min: float, alt_max: float, incl_deg: float, d: T.Tuple[float, float, float, float]
+    alt_min: float, alt_max: float, incl_deg: float, d: tuple[float, float, float, float]
 ) -> np.ndarray:
 
     if alt_min < 0 or alt_max < 0:

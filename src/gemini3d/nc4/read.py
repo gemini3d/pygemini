@@ -2,6 +2,7 @@
 NetCDF4 file reading
 """
 
+from __future__ import annotations
 import xarray
 from pathlib import Path
 import typing as T
@@ -19,7 +20,7 @@ except ImportError:
     Dataset = None
 
 
-def simsize(path: Path) -> T.Tuple[int, ...]:
+def simsize(path: Path) -> tuple[int, ...]:
     """
     get simulation size
     """
@@ -51,7 +52,7 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def flagoutput(file: Path, cfg: T.Dict[str, T.Any]) -> int:
+def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
     """ detect output type """
 
     if Dataset is None:
@@ -77,8 +78,8 @@ def flagoutput(file: Path, cfg: T.Dict[str, T.Any]) -> int:
 
 
 def grid(
-    file: Path, *, var: T.Sequence[str] = None, shape: bool = False
-) -> T.Dict[str, np.ndarray]:
+    file: Path, *, var: tuple[str, ...] | list[str] = None, shape: bool = False
+) -> dict[str, np.ndarray]:
     """
     get simulation grid
 
@@ -100,7 +101,7 @@ def grid(
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    grid: T.Dict[str, T.Any] = {}
+    grid: dict[str, T.Any] = {}
 
     if not file.is_file():
         file2 = find.grid(file)
@@ -190,7 +191,7 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curv(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
+def frame3d_curv(file: Path, var: tuple[str, ...] | list[str]) -> xarray.Dataset:
     """
     curvilinear
 
@@ -248,7 +249,7 @@ def frame3d_curv(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curvavg(file: Path, var: T.Sequence[str]) -> xarray.Dataset:
+def frame3d_curvavg(file: Path, var: tuple[str, ...] | list[str]) -> xarray.Dataset:
     """
 
     Parameters

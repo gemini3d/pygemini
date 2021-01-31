@@ -3,6 +3,7 @@ struct manpage:
 https://docs.python.org/3/library/struct.html#struct-format-strings
 """
 
+from __future__ import annotations
 import numpy as np
 from pathlib import Path
 from datetime import datetime
@@ -20,7 +21,7 @@ from .nc4 import read as ncread
 
 
 # do NOT use lru_cache--can have weird unexpected effects with complicated setups
-def config(path: Path) -> T.Dict[str, T.Any]:
+def config(path: Path) -> dict[str, T.Any]:
     """
     read simulation input configuration
 
@@ -49,7 +50,7 @@ def config(path: Path) -> T.Dict[str, T.Any]:
     return P
 
 
-def simsize(path: Path) -> T.Tuple[int, ...]:
+def simsize(path: Path) -> tuple[int, ...]:
     """ get simulation dimensions """
 
     fn = find.simsize(path)
@@ -69,8 +70,8 @@ def simsize(path: Path) -> T.Tuple[int, ...]:
 
 
 def grid(
-    path: Path, *, var: T.Sequence[str] = None, file_format: str = None, shape: bool = False
-) -> T.Dict[str, np.ndarray]:
+    path: Path, *, var: list[str] = None, file_format: str = None, shape: bool = False
+) -> dict[str, np.ndarray]:
     """
     get simulation grid
 
@@ -112,10 +113,10 @@ def grid(
 
 def data(
     fn: Path,
-    var: T.Sequence[str] = None,
+    var: tuple[str, ...] | list[str] = None,
     *,
     file_format: str = None,
-    cfg: T.Dict[str, T.Any] = None,
+    cfg: dict[str, T.Any] = None,
     E0dir: Path = None,
 ) -> xarray.Dataset:
     """
@@ -241,7 +242,7 @@ def data(
     return dat
 
 
-def Efield(fn: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
+def Efield(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
     """load Efield data "Efield_inputs"
 
     Parameters
@@ -275,7 +276,7 @@ def Efield(fn: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
     return E
 
 
-def precip(fn: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
+def precip(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
     """load precipitation to disk
 
     Parameters
@@ -310,7 +311,7 @@ def precip(fn: Path, *, file_format: str = None) -> T.Dict[str, T.Any]:
 
 
 def frame(
-    simdir: Path, time: datetime, *, var: T.Sequence[str] = None, file_format: str = None
+    simdir: Path, time: datetime, *, var: list[str] = None, file_format: str = None
 ) -> xarray.Dataset:
     """
     load a frame of simulation data, automatically selecting the correct

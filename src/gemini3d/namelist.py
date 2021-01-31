@@ -3,6 +3,7 @@ read and write Fortran standard namelist
 This is very basic--see f90nml Python package.
 """
 
+from __future__ import annotations
 import typing as T
 from pathlib import Path
 import re
@@ -12,7 +13,7 @@ import numpy as np
 __all__ = ["read", "write"]
 
 
-def read(file: Path, namelist: str) -> T.Dict[str, T.Any]:
+def read(file: Path, namelist: str) -> dict[str, T.Any]:
     """read a namelist from an .nml file, as strings
 
     Parameters
@@ -30,7 +31,7 @@ def read(file: Path, namelist: str) -> T.Dict[str, T.Any]:
         data contained in namelist
     """
 
-    r: T.Dict[str, T.Sequence[str]] = {}
+    r: dict[str, list[str]] = {}
     nml_pat = re.compile(r"^\s*&(" + namelist + r")")
     end_pat = re.compile(r"^\s*/\s*$")
     val_pat = re.compile(r"^\s*(\w+)\s*=\s*([^!]*)")
@@ -49,7 +50,7 @@ def read(file: Path, namelist: str) -> T.Dict[str, T.Any]:
                     continue
 
                 key, vals = val_mat.group(1), val_mat.group(2).strip().split(",")
-                values: T.List[T.Any] = []
+                values: list[T.Any] = []
                 for v in vals:
                     v = v.strip().replace("'", "").replace('"', "")
                     try:
@@ -61,7 +62,7 @@ def read(file: Path, namelist: str) -> T.Dict[str, T.Any]:
     raise KeyError(f"did not find Namelist {namelist} in {file}")
 
 
-def write(file: Path, namelist: str, data: T.Dict[str, T.Any], overwrite: bool = False):
+def write(file: Path, namelist: str, data: dict[str, T.Any], overwrite: bool = False):
     """
     writes a basic Fortran namelist to a .nml text file
 
