@@ -89,7 +89,7 @@ def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
 
 def grid(
     file: Path, *, var: tuple[str, ...] | list[str] = None, shape: bool = False
-) -> dict[str, np.ndarray]:
+) -> dict[str, T.Any]:
     """
     get simulation grid
 
@@ -113,7 +113,7 @@ def grid(
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
-    grid: dict[str, T.Any] = {}
+    xg: dict[str, T.Any] = {}
 
     if not file.is_file():
         file2 = find.grid(file)
@@ -121,31 +121,31 @@ def grid(
             file = file2
         else:
             logging.error(f"{file} grid file is not present.")
-            return grid
+            return xg
 
     if shape:
         with h5py.File(file, "r") as f:
             for k in f.keys():
                 if f[k].ndim >= 2:
-                    grid[k] = f[k].shape[::-1]
+                    xg[k] = f[k].shape[::-1]
                 else:
-                    grid[k] = f[k].shape
+                    xg[k] = f[k].shape
 
-        grid["lxs"] = np.array([grid["x1"], grid["x2"], grid["x3"]])
-        return grid
+        xg["lxs"] = np.array([xg["x1"], xg["x2"], xg["x3"]])
+        return xg
 
     with h5py.File(file, "r") as f:
         if not var:
             var = f.keys()
         for k in var:
             if f[k].ndim >= 2:
-                grid[k] = f[k][:].transpose()
+                xg[k] = f[k][:].transpose()
             else:
-                grid[k] = f[k][:]
+                xg[k] = f[k][:]
 
-    grid["lxs"] = simsize(file.with_name("simsize.h5"))
+    xg["lxs"] = simsize(file.with_name("simsize.h5"))
 
-    return grid
+    return xg
 
 
 def Efield(file: Path) -> xarray.Dataset:
@@ -359,7 +359,7 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
     return dat
 
 
-def time(file: Path) -> np.ndarray:
+def time(file: Path) -> datetime:
     """
     reads simulation time
     """

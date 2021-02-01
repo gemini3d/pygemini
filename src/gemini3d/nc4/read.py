@@ -318,7 +318,7 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
     return dat
 
 
-def time(file: Path) -> np.ndarray:
+def time(file: Path) -> datetime:
     """
     reads simulation time
     """

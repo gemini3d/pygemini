@@ -54,7 +54,7 @@ def frame(simdir: Path, time: datetime, file_format: str = None) -> Path:
 
         if file_times:
             afile_times = np.array(file_times)
-            i = abs(afile_times - time).argmin()
+            i = abs(afile_times - time).argmin()  # type: ignore
 
             if abs(afile_times[i] - time) <= MAX_OFFSET:
                 return files[i]

@@ -6,13 +6,25 @@ import pytest
 from pytest import approx
 import numpy as np
 import math
+import xarray
+from datetime import datetime
 
 import gemini3d.mpi as gm
 import gemini3d.grid as grid
 import gemini3d.coord as coord
 import gemini3d.namelist as namelist
+from gemini3d.utils import to_datetime
 
 pi = math.pi
+
+
+def test_to_datetime():
+    x = xarray.Dataset(coords={"time": [datetime(2000, 1, 1)]})
+    assert isinstance(to_datetime(x.time), datetime)
+
+    assert isinstance(to_datetime(np.datetime64("2000-01-01")), datetime)
+
+    assert isinstance(to_datetime(datetime(2000, 1, 1)), datetime)
 
 
 def test_write_nml(tmp_path):

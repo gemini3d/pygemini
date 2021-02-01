@@ -34,10 +34,11 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
     # p.alt_max = 1000e3;
     # p.alt_scale = [10e3, 8e3, 500e3, 150e3];
 
-    if set(("alt_min", "alt_max", "alt_scale", "Bincl")) <= p.keys():
+    if {"alt_min", "alt_max", "alt_scale", "Bincl"} <= p.keys():
+        # https://docs.python.org/3/library/stdtypes.html#frozenset.issubset
         z = altitude_grid(p["alt_min"], p["alt_max"], p["Bincl"], p["alt_scale"])
     elif "eq_dir" in p and p["eq_dir"].is_file():
-        logging.info("makegrid_cart_3D: reusing grid from", p["eq_dir"])
+        logging.info(f"makegrid_cart_3D: reusing grid from {p['eq_dir']}")
         xeq = read.grid(p["eq_dir"])
         z = xeq["x1"]
         del xeq
@@ -157,8 +158,8 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
         "x3i": yi,
     }
 
-    lx = np.array((xg["x1"].size, xg["x2"].size, xg["x3"].size))
-    xg["lx"] = lx
+    lx = (xg["x1"].size, xg["x2"].size, xg["x3"].size)
+    xg["lx"] = np.array(lx)
 
     xg["dx1f"] = np.append(xg["x1"][1:] - xg["x1"][:-1], xg["x1"][-1] - xg["x1"][-2])
     # FWD DIFF
@@ -181,9 +182,9 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
     xg["dx3h"] = xg["x3i"][1:-1] - xg["x3i"][:-2]
     # MIDPOINT DIFFS
 
-    xg["h1"] = np.ones(xg["lx"])
-    xg["h2"] = np.ones(xg["lx"])
-    xg["h3"] = np.ones(xg["lx"])
+    xg["h1"] = np.ones(lx)
+    xg["h2"] = np.ones(lx)
+    xg["h3"] = np.ones(lx)
     xg["h1x1i"] = np.ones((lx[0] + 1, lx[1], lx[2]))
     xg["h2x1i"] = np.ones((lx[0] + 1, lx[1], lx[2]))
     xg["h3x1i"] = np.ones((lx[0] + 1, lx[1], lx[2]))
@@ -221,8 +222,8 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
     # since we need a 3D array use xg.r here...
 
     xg["gx1"] = gz
-    xg["gx2"] = np.zeros(xg["lx"])
-    xg["gx3"] = np.zeros(xg["lx"])
+    xg["gx2"] = np.zeros(lx)
+    xg["gx3"] = np.zeros(lx)
 
     xg["Bmag"] = np.broadcast_to(-50000e-9, xg["lx"])
     # minus for northern hemisphere...
@@ -233,7 +234,7 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
     # xg['xp']=x; xg['zp']=z;
 
     # xg['inull']=[];
-    xg["nullpts"] = np.zeros(xg["lx"])
+    xg["nullpts"] = np.zeros(lx)
 
     # %% TRIM DATA STRUCTRE TO BE THE SIZE FORTRAN EXPECTS
     # note: xgf is xg == True

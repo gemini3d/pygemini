@@ -71,7 +71,7 @@ def simsize(path: Path) -> tuple[int, ...]:
 
 def grid(
     path: Path, *, var: list[str] = None, file_format: str = None, shape: bool = False
-) -> dict[str, np.ndarray]:
+) -> dict[str, T.Any]:
     """
     get simulation grid
 
@@ -96,19 +96,19 @@ def grid(
         file_format = fn.suffix[1:]
 
     if file_format == "dat":
-        grid = raw_read.grid(fn.with_suffix(".dat"), shape=shape)
+        xg = raw_read.grid(fn.with_suffix(".dat"), shape=shape)
     elif file_format == "h5":
-        grid = h5read.grid(fn.with_suffix(".h5"), var=var, shape=shape)
+        xg = h5read.grid(fn.with_suffix(".h5"), var=var, shape=shape)
     elif file_format == "nc":
-        grid = ncread.grid(fn.with_suffix(".nc"), var=var, shape=shape)
+        xg = ncread.grid(fn.with_suffix(".nc"), var=var, shape=shape)
     elif file_format == "mat":
-        grid = matlab.grid(fn.with_suffix(".mat"), shape=shape)
+        xg = matlab.grid(fn.with_suffix(".mat"), shape=shape)
     else:
         raise ValueError(f"Unknown file type {fn}")
 
-    grid["filename"] = fn
+    xg["filename"] = fn
 
-    return grid
+    return xg
 
 
 def data(
@@ -335,7 +335,7 @@ def frame(
     return data(find.frame(simdir, time, file_format), var=var, file_format=file_format)
 
 
-def time(file: Path) -> np.ndarray:
+def time(file: Path) -> datetime:
     """
     read simulation time of a file
     """
@@ -348,3 +348,20 @@ def time(file: Path) -> np.ndarray:
         raise ValueError(f"unknown file format {file.suffix}")
 
     return t
+
+
+def get_lxs(xg: dict[str, T.Any]) -> tuple[int, int, int]:
+
+    lxs = None
+    for k in ("lx", "lxs", "lx1"):
+        if k in xg:
+            if k == "lx1":
+                lxs = [xg["lx1"], xg["lx2"], xg["lx3"]]
+                break
+            else:
+                lxs = xg[k]
+
+    if lxs is None:
+        raise IndexError("Did not find grid size")
+
+    return (lxs[0], lxs[1], lxs[2])

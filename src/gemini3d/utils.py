@@ -21,21 +21,31 @@ Pathlike = T.Union[str, Path]
 __all__ = ["to_datetime", "git_meta", "get_cpu_count", "datetime2ymd_hourdec"]
 
 
-def to_datetime(times: xarray.DataArray | np.ndarray | np.datetime64 | datetime) -> datetime:
-    """
-    xarray time to python datetime.datetime
+def to_datetime(times: xarray.DataArray | np.datetime64 | datetime) -> datetime:
     """
 
-    if isinstance(times, xarray.DataArray):
-        times = times.values  # numpy.datetime64
+    Parameters
+    ----------
+    atimes : xarray time
 
-    if isinstance(times, np.ndarray):
-        times = times.squeeze()[()]  # might still be array, but squeezed at least
+    Returns
+    -------
+    times : list[datetime.datetime]
+    """
 
-    if isinstance(times, np.datetime64):
-        times = times.astype("datetime64[us]").astype(datetime)
+    if isinstance(times, datetime):
+        time = times
+    elif isinstance(times, xarray.DataArray):
+        time = times.values.squeeze()[()]  # numpy.datetime64
+    elif isinstance(times, np.datetime64):
+        time = times.squeeze()[()]
+    else:
+        raise TypeError("expected datetime-like value")
 
-    return times
+    if isinstance(time, np.datetime64):
+        time = time.astype("datetime64[us]").astype(datetime)
+
+    return time
 
 
 def git_meta(path: Path = None) -> dict[str, str]:
@@ -152,6 +162,8 @@ def datetime2ymd_hourdec(dt: datetime) -> str:
     """
 
     dt = to_datetime(dt)
+
+    assert isinstance(dt, datetime), "expect scalar datetime"
 
     return (
         dt.strftime("%Y%m%d")

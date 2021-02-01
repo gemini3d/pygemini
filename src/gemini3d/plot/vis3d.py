@@ -19,7 +19,7 @@ from mayavi import mlab
 # mlab.options.backend = 'envisage'  # for GUI
 
 from . import PARAMS
-from . import read
+from .. import read
 
 PLOTFUN = {"scalar": ("ne", "Ti", "Te", "J1", "J2", "J3"), "vector": ("v1", "v2", "v3")}
 R_EARTH = 6370e3
@@ -62,7 +62,7 @@ def frame(
             fg.savefig(plot_fn)
 
 
-def scalar(time: datetime, grid: dict[str, np.ndarray], parm: np.ndarray, name: str):
+def scalar(time: datetime, xg: dict[str, np.ndarray], parm: np.ndarray, name: str):
     """
     plot scalar field data in transparent 3D volume
     """
@@ -76,18 +76,7 @@ def scalar(time: datetime, grid: dict[str, np.ndarray], parm: np.ndarray, name: 
     # lzp = 100
 
     # %% SIZE OF SIMULATION
-    lxs: tuple[int, int, int] = None
-
-    for k in ("lx", "lxs", "lx1"):
-        if k in grid:
-            if k == "lx1":
-                lxs = (grid["lx1"], grid["lx2"], grid["lx3"])
-            else:
-                lxs = grid[k]
-            break
-
-    if lxs is None:
-        raise ValueError("Grid size information not found")
+    lxs = read.get_lxs(xg)
 
     lx2 = lxs[1]
     # inds1 = slice(2, lx1 + 2)
@@ -95,16 +84,16 @@ def scalar(time: datetime, grid: dict[str, np.ndarray], parm: np.ndarray, name: 
     # inds3 = slice(2, lx3 + 2)
 
     # %% SIZE OF PLOT GRID THAT WE ARE INTERPOLATING ONTO
-    meantheta = grid["theta"].mean()
+    meantheta = xg["theta"].mean()
     # this is a mag colat. coordinate and is only used for defining grid in linspaces below
     # runs backward from north distance, hence the negative sign
 
     # northward distance [m]
-    y = -(grid["theta"] - meantheta) * R_EARTH
+    y = -(xg["theta"] - meantheta) * R_EARTH
     # eastward distance [m]
-    x = grid["x2"][inds2]
+    x = xg["x2"][inds2]
     # upward distance [m]
-    z = grid["alt"]
+    z = xg["alt"]
 
     # Mayavi requires a grid like so:
     # interpolatedz
@@ -123,8 +112,8 @@ def scalar(time: datetime, grid: dict[str, np.ndarray], parm: np.ndarray, name: 
     yp = np.linspace(y.min(), y.max(), parm.shape[1])
     zp = np.linspace(z.min(), z.max(), parm.shape[2])
     x3, y3, z3 = np.mgrid[
-        xp[0] : xp[-1] : xp.size * 1j, yp[0] : yp[-1] : yp.size * 1j, zp[0] : zp[-1] : zp.size * 1j
-    ]  # type: ignore
+        xp[0] : xp[-1] : xp.size * 1j, yp[0] : yp[-1] : yp.size * 1j, zp[0] : zp[-1] : zp.size * 1j  # type: ignore
+    ]
 
     # %% 3-D interpolation for plot
     if ~np.isfinite(parm).all():
@@ -132,7 +121,7 @@ def scalar(time: datetime, grid: dict[str, np.ndarray], parm: np.ndarray, name: 
 
     # TODO: check order of interpolated axes (1,2,0) or ?
     # parmp = interp.interpn(
-    #     points=(grid["x1"][inds1], grid["x2"][inds2], grid["x3"][inds3]),
+    #     points=(xg["x1"][inds1], xg["x2"][inds2], xg["x3"][inds3]),
     #     values=parm.values,
     #     xi=np.column_stack((x3.ravel(), y3.ravel(), z3.ravel())),
     #     bounds_error=False,

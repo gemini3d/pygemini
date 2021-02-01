@@ -1,5 +1,5 @@
 [flake8]
-max-line-length = 110
+max-line-length = 120
 exclude = .git,__pycache__,.eggs/,doc/,docs/,build/,dist/,archive/,subprojects/,src/gemini3d/gemini-fortran/
 per-file-ignores =
     __init__.py:F401

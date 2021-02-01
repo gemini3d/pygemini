@@ -6,6 +6,7 @@ from __future__ import annotations
 import xarray
 import typing as T
 import numpy as np
+from datetime import datetime
 from pathlib import Path
 import logging
 
@@ -191,10 +192,12 @@ def _write_var(
     dims: str | tuple[str, ...] | list[str] = None,
 ):
 
-    if dims is None:
+    if dims is None and isinstance(value, xarray.DataArray):
         dims = value.dims
-    if isinstance(dims, str):
+    elif isinstance(dims, str):
         dims = [dims]
+    else:
+        raise ValueError(f"Please specify dims for {name}")
 
     dims = dims[::-1]
 
@@ -236,7 +239,7 @@ def Efield(outdir: Path, E: xarray.Dataset):
         _write_var(f, "mlat", E.mlat)
 
     for t in E.time:
-        time = to_datetime(t)
+        time: datetime = to_datetime(t)
         fn = outdir / (datetime2ymd_hourdec(time) + ".nc")
 
         # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
@@ -285,7 +288,7 @@ def precip(outdir: Path, P: xarray.Dataset):
         _write_var(f, "mlat", P.mlat)
 
     for t in P.time:
-        time = to_datetime(t)
+        time: datetime = to_datetime(t)
         fn = outdir / (datetime2ymd_hourdec(time) + ".nc")
 
         with Dataset(fn, "w") as f:

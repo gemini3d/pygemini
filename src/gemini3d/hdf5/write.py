@@ -7,6 +7,7 @@ import xarray
 import typing as T
 import numpy as np
 from pathlib import Path
+from datetime import datetime
 import logging
 
 from .. import LSP
@@ -52,7 +53,7 @@ def state(fn: Path, dat: xarray.Dataset):
             _write_var(f, "/Phiall", dat["Phitop"])
 
 
-def _write_var(f, name: str, A: np.ndarray):
+def _write_var(f, name: str, A: xarray.DataArray):
     """
     NOTE: The .transpose() reverses the dimension order.
     The HDF Group never implemented the intended H5T_array_create(..., perm)
@@ -247,7 +248,7 @@ def Efield(outdir: Path, E: xarray.Dataset):
         f["/mlat"] = E.mlat.astype(np.float32)
 
     for t in E.time:
-        time = to_datetime(t)
+        time: datetime = to_datetime(t)
         fn = outdir / (datetime2ymd_hourdec(time) + ".h5")
 
         # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
@@ -286,7 +287,7 @@ def precip(outdir: Path, P: xarray.Dataset):
         f["/mlat"] = P.mlat.astype(np.float32)
 
     for t in P.time:
-        time = to_datetime(t)
+        time: datetime = to_datetime(t)
         fn = outdir / (datetime2ymd_hourdec(time) + ".h5")
 
         with h5py.File(fn, "w") as f:

@@ -44,7 +44,7 @@ def simsize(path: Path) -> tuple[int, ...]:
     return lxs
 
 
-def grid(fn: Path, shape: bool = False) -> dict[str, np.ndarray]:
+def grid(fn: Path, shape: bool = False) -> dict[str, T.Any]:
     """
     get simulation grid
 
