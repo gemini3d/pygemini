@@ -5,7 +5,7 @@
 "mumps": {"git": "https://github.com/scivision/mumps.git", "tag": "v5.3.5.4"},
 "netcdf-c": {"git": "https://github.com/Unidata/netcdf-c.git", "tag": "v4.7.4"},
 "netcdf-fortran": {"git": "https://github.com/Unidata/netcdf-fortran.git", "tag": "v4.5.3"},
-"openmpi": {"tag": "3.1.6"},
-"openmpi3": {"tag": "4.0.5"},
+"openmpi3": {"tag": "3.1.6"},
+"openmpi": {"tag": "4.0.5"},
 "scalapack": {"git": "https://github.com/scivision/scalapack.git", "tag": "v2.1.0.13"}
 }
