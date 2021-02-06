@@ -33,11 +33,12 @@ PKG = {
         "openmpi-bin",
         "libhdf5-dev",
     ],
-    "pacman": ["gcc-fortran", "lapack", "openmpi", "hdf5"],
+    "pacman": ["gcc-fortran", "ninja", "lapack", "openmpi", "hdf5"],
     "brew": ["gcc", "ninja", "cmake", "lapack", "scalapack", "openmpi", "hdf5"],
     "cygwin": ["gcc-fortran", "liblapack-devel", "libopenmpi-devel"],
     "msys": [
         "mingw-w64-x86_64-gcc-fortran",
+        "mingw-w64-x86_64-ninja",
         "mingw-w64-x86_64-hdf5",
         "mingw-w64-x86_64-lapack",
         "mingw-w64-x86_64-scalapack",

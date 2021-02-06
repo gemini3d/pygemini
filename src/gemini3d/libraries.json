@@ -1,5 +1,5 @@
 {
-"gemini3d": {"git": "https://github.com/gemini3d/gemini3d.git", "tag": "master"},
+"gemini3d": {"git": "https://github.com/gemini3d/gemini3d.git", "tag": "v0.9.1"},
 "hdf5": {"git": "https://github.com/HDFGroup/hdf5.git", "tag": "1.10/master"},
 "lapack": {"git": "https://github.com/scivision/lapack.git", "tag": "v3.9.0.3"},
 "mumps": {"git": "https://github.com/scivision/mumps.git", "tag": "v5.3.5.4"},
