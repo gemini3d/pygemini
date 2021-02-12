@@ -234,22 +234,27 @@ def frame3d_curv(file: Path, var: tuple[str, ...] | list[str]) -> xarray.Dataset
 
     lxs = simsize(file.parent)
 
-    p4s = (0, 3, 1, 2)
+    p4s = (0, 3, 1, 2)  # only for Gemini < 0.10.0
     p3s = (2, 0, 1)
     p4n = (0, 3, 2, 1)
     p3n = (2, 1, 0)
 
-    if lxs[1] == 1 or file.name == "initial_conditions.h5":
-        p4 = p4n
-        p3 = p3n
-    elif lxs[2] == 1:  # east-west
-        p4 = p4s
-        p3 = p3s
-    else:  # 3D
-        p4 = p4n
-        p3 = p3n
-
     with h5py.File(file, "r") as f:
+
+        if lxs[1] == 1 or file.name == "initial_conditions.h5":
+            p4 = p4n
+            p3 = p3n
+        elif lxs[2] == 1:  # east-west
+            if f["/nsall"].shape[2] == 1:  # old, Gemini < 0.10.0 data
+                p4 = p4s
+                p3 = p3s
+            else:  # Gemini >= 0.10.0
+                p4 = p4n
+                p3 = p3n
+        else:  # 3D
+            p4 = p4n
+            p3 = p3n
+
         if {"ne", "ns", "v1", "Ti"}.intersection(var):
             dat["ns"] = (("species", "x1", "x2", "x3"), f["/nsall"][:].transpose(p4))
 
@@ -274,10 +279,8 @@ def frame3d_curv(file: Path, var: tuple[str, ...] | list[str]) -> xarray.Dataset
                 else:
                     Phiall = Phiall[:, None]
 
-            if (lxs[1] == 1 and not file.name == "initial_conditions.h5") or (
-                lxs[1] != 1 and lxs[2] != 1
-            ):
-                Phiall = Phiall.transpose()
+            if all(Phiall.shape == lxs[1:][::-1]):
+                Phiall = Phiall.transpose()  # Gemini < 0.10.0
             dat["Phitop"] = (("x2", "x3"), Phiall)
 
     return dat
