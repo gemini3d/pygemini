@@ -1,6 +1,6 @@
 import argparse
 
-from . import plot_all, grid, Efield, precip
+from . import plot_all, grid, Efield, precip, plot_input
 
 
 def cli():
@@ -10,7 +10,7 @@ def cli():
     p.add_argument(
         "which",
         help="which plots to make",
-        choices=["all", "grid", "Efield", "precip"],
+        choices=["all", "grid", "Efield", "precip", "input"],
         nargs="+",
         default="all",
     )
@@ -35,6 +35,8 @@ def cli():
         Efield(p.direc)
     if "precip" in p.which:
         precip(p.direc)
+    if "input" in p.which:
+        plot_input(p.direc, p.var, saveplot_fmt=p.save)
 
 
 if __name__ == "__main__":

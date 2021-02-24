@@ -351,68 +351,105 @@ def plot_interp(
             plot1d3(yp, f(yp), name, fg, ax)
         else:
             raise ValueError(f"{name}: only 2D and 1D data are expected--squeeze data")
-
-    else:  # 3-panel plot, vs. single-panel plots of 2-D cases
-        if name == "rayleighs":
-            bright_east_north(
-                fg,
-                grid,
-                parm,
-                xp,
-                yp,
-                inds2,
-                inds3,
-                cmap,
-                vmin,
-                vmax,
-                name,
-                time,
-                kwargs["wavelength"],
-            )
-            return fg
-        elif parm.ndim == 3:
-            fg.set_size_inches((18, 5))
-            axs = fg.subplots(1, 3, sharey=False, sharex=False)
-            fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.99)
-        elif is_Efield:
-            # like phitop, SINGLE plot
-            mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time)
-            return fg
-        else:
-            # like phitop, SINGLE plot
-            east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time)
-            return fg
-
-        # %% CONVERT TO DISTANCE UP, EAST, NORTH (left panel)
-        # JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT,
-        # AND AN ALTITUDE FOR THE LAT./LON. SLICE
-        ix3 = lx3 // 2 - 1  # arbitrary slice, to match Matlab
-        f = interp.interp2d(
-            grid["x2"][inds2], grid["x1"][inds1], parm[:, :, ix3], bounds_error=False
+    elif parm.ndim == 3:
+        plot3d_slice(
+            fg,
+            name,
+            time,
+            meta,
+            inds1,
+            inds2,
+            inds3,
+            lx2,
+            lx3,
+            lxp,
+            lyp,
+            xp,
+            yp,
+            zp,
+            cmap,
+            vmin,
+            vmax,
+            parm,
+            grid,
         )
-        # CONVERT ANGULAR COORDINATES TO MLAT,MLON
-        ix = np.argsort(xp)
-        iy = np.argsort(yp)
-        plot12(xp[ix], zp, f(xp, zp)[:, ix], name, cmap, vmin, vmax, fg, axs[0])
-        # %% LAT./LONG. SLICE COORDINATES (center panel)
-        zp2 = REF_ALT
-        X3, Y3, Z3 = np.meshgrid(xp, yp, zp2 * 1e3)
-        # transpose: so north dist, east dist., alt.
-        parmp = interp.interpn(
-            points=(grid["x1"][inds1], grid["x2"][inds2], grid["x3"][inds3]),
-            values=parm.values,
-            xi=np.column_stack((Z3.ravel(), X3.ravel(), Y3.ravel())),
-            bounds_error=False,
-        ).reshape((1, lxp, lyp))
-
-        parmp = parmp[:, :, iy]  # must be indexed in two steps
-        plot23(xp[ix], yp[iy], parmp[0, ix, :], name, cmap, vmin, vmax, fg, axs[1])
-        # %% ALT/LAT SLICE (right panel)
-        ix2 = lx2 // 2 - 1  # arbitrary slice, to match Matlab
-        f = interp.interp2d(
-            grid["x3"][inds3], grid["x1"][inds1], parm[:, ix2, :], bounds_error=False
+    elif name == "rayleighs":
+        bright_east_north(
+            fg,
+            grid,
+            parm,
+            xp,
+            yp,
+            inds2,
+            inds3,
+            cmap,
+            vmin,
+            vmax,
+            name,
+            time,
+            kwargs["wavelength"],
         )
-        plot13(yp[iy], zp, f(yp, zp)[:, iy], name, cmap, vmin, vmax, fg, axs[2])
+    elif is_Efield:
+        # single 2D plot
+        mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time)
+    else:
+        # single 2D plot
+        east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time)
+
+    return fg
+
+
+def plot3d_slice(
+    fg,
+    name,
+    time,
+    meta,
+    inds1,
+    inds2,
+    inds3,
+    lx2,
+    lx3,
+    lxp,
+    lyp,
+    xp,
+    yp,
+    zp,
+    cmap,
+    vmin,
+    vmax,
+    parm,
+    grid,
+):
+
+    fg.set_size_inches((18, 5))
+    axs = fg.subplots(1, 3, sharey=False, sharex=False)
+    fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.99)
+    # %% CONVERT TO DISTANCE UP, EAST, NORTH (left panel)
+    # JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT,
+    # AND AN ALTITUDE FOR THE LAT./LON. SLICE
+    ix3 = lx3 // 2 - 1  # arbitrary slice, to match Matlab
+    f = interp.interp2d(grid["x2"][inds2], grid["x1"][inds1], parm[:, :, ix3], bounds_error=False)
+    # CONVERT ANGULAR COORDINATES TO MLAT,MLON
+    ix = np.argsort(xp)
+    iy = np.argsort(yp)
+    plot12(xp[ix], zp, f(xp, zp)[:, ix], name, cmap, vmin, vmax, fg, axs[0])
+    # %% LAT./LONG. SLICE COORDINATES (center panel)
+    zp2 = REF_ALT
+    X3, Y3, Z3 = np.meshgrid(xp, yp, zp2 * 1e3)
+    # transpose: so north dist, east dist., alt.
+    parmp = interp.interpn(
+        points=(grid["x1"][inds1], grid["x2"][inds2], grid["x3"][inds3]),
+        values=parm.values,
+        xi=np.column_stack((Z3.ravel(), X3.ravel(), Y3.ravel())),
+        bounds_error=False,
+    ).reshape((1, lxp, lyp))
+
+    parmp = parmp[:, :, iy]  # must be indexed in two steps
+    plot23(xp[ix], yp[iy], parmp[0, ix, :], name, cmap, vmin, vmax, fg, axs[1])
+    # %% ALT/LAT SLICE (right panel)
+    ix2 = lx2 // 2 - 1  # arbitrary slice, to match Matlab
+    f = interp.interp2d(grid["x3"][inds3], grid["x1"][inds1], parm[:, ix2, :], bounds_error=False)
+    plot13(yp[iy], zp, f(yp, zp)[:, iy], name, cmap, vmin, vmax, fg, axs[2])
 
     return fg
 
@@ -424,6 +461,10 @@ plot2D_cart = plot_interp
 def bright_east_north(
     fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time, wavelength
 ):
+
+    if parm.ndim != 3:
+        raise ValueError(f"Expected 3D data, you gave {parm.ndim}D data.")
+
     meta = git_meta()
 
     axs = fg.subplots(2, 2, sharey=True, sharex=True).ravel()
@@ -439,6 +480,10 @@ def bright_east_north(
 
 
 def east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time):
+
+    if parm.ndim != 2:
+        raise ValueError(f"Expected 2D data, you gave {parm.ndim}D data.")
+
     meta = git_meta()
 
     ax = fg.gca()
@@ -454,6 +499,10 @@ def east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, tim
 
 
 def mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time):
+
+    if parm.ndim != 2:
+        raise ValueError(f"Expected 2D data, you gave {parm.ndim}D data.")
+
     meta = git_meta()
 
     ax = fg.gca()

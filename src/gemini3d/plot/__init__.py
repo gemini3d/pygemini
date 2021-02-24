@@ -345,6 +345,47 @@ def frame(
             save_fig(fg, direc, k, saveplot_fmt, time)
 
 
+def plot_input(
+    direc: Path, var: list[str] = None, saveplot_fmt: str = None, xg: dict[str, T.Any] = None
+):
+    """
+    plot simulation inputs, under "direc/inputs"
+
+    if save_dir defined, plots will not be visible while generating to speed plot writing
+    """
+
+    direc = Path(direc).expanduser().resolve(strict=True)
+
+    if not var:
+        var = ["ns", "Ts", "vs1"]
+
+    cfg = read.config(direc)
+    init_file = direc / cfg["indat_file"]
+
+    if not xg:
+        xg = read.grid(direc)
+
+    dat = read.data(init_file, var=["ns", "Ts", "vs1"])
+
+    if not dat:
+        raise ValueError(f"No data in {init_file}")
+
+    plotfun = grid2plotfun(xg)
+
+    for k, v in dat.items():
+        if any(s in k for s in var):
+            # FIXME: for now we just look at electrons v[-1, ...]
+            cmap_name = {"ns": "ne", "Ts": "Te", "vs1": "v1"}
+            fg = plotfun(
+                dat.time,
+                xg,
+                v[-1, :, :, :].squeeze(),
+                cmap_name[k],
+                wavelength=dat.get("wavelength"),
+            )
+            save_fig(fg, direc, k, saveplot_fmt)
+
+
 def save_fig(fg: Figure, direc: Path, name: str, fmt: str = "png", time: datetime = None):
     if not fmt:
         fmt = "png"
