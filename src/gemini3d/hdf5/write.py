@@ -158,11 +158,11 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
         raise ImportError("pip install h5py")
 
     if "lx" not in xg:
-        xg["lx"] = np.array([xg["x1"].shape, xg["x2"].shape, xg["x3"].shape])
+        xg["lx"] = np.array([xg["x1"].shape, xg["x2"].shape, xg["x3"].shape]).astype(np.int32)
 
     logging.info(f"write_grid: {size_fn}")
     with h5py.File(size_fn, "w") as h:
-        h["/lx"] = xg["lx"]
+        h["/lx"] = np.asarray(xg["lx"]).astype(np.int32)
 
     logging.info(f"write_grid: {grid_fn}")
     with h5py.File(grid_fn, "w") as h:
@@ -240,8 +240,8 @@ def Efield(outdir: Path, E: xarray.Dataset):
         raise ImportError("pip install h5py")
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
-        f["/llon"] = E.mlon.size
-        f["/llat"] = E.mlat.size
+        f["/llon"] = np.asarray(E.mlon.size).astype(np.int32)
+        f["/llat"] = np.asarray(E.mlat.size).astype(np.int32)
 
     with h5py.File(outdir / "simgrid.h5", "w") as f:
         f["/mlon"] = E.mlon.astype(np.float32)
@@ -279,8 +279,8 @@ def precip(outdir: Path, P: xarray.Dataset):
         raise ImportError("pip install h5py")
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
-        f["/llon"] = P.mlon.size
-        f["/llat"] = P.mlat.size
+        f["/llon"] = np.asarray(P.mlon.size).astype(np.int32)
+        f["/llat"] = np.asarray(P.mlat.size).astype(np.int32)
 
     with h5py.File(outdir / "simgrid.h5", "w") as f:
         f["/mlon"] = P.mlon.astype(np.float32)
