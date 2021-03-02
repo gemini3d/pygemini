@@ -40,7 +40,7 @@ def state(fn: Path, dat: xarray.Dataset):
     logging.info(f"state: {fn} {time}")
 
     with h5py.File(fn, "w") as f:
-        f["/time/ymd"] = [time.year, time.month, time.day]
+        f["/time/ymd"] = np.array([time.year, time.month, time.day]).astype(np.int32)
         f["/time/UTsec"] = np.float32(
             time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
         )
@@ -254,7 +254,7 @@ def Efield(outdir: Path, E: xarray.Dataset):
         # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
         with h5py.File(fn, "w") as f:
             f["/flagdirich"] = E["flagdirich"].loc[time].astype(np.int32)
-            f["/time/ymd"] = [time.year, time.month, time.day]
+            f["/time/ymd"] = np.array([time.year, time.month, time.day]).astype(np.int32)
             f["/time/UTsec"] = (
                 time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
             )
