@@ -142,22 +142,32 @@ def setup(path: Path | dict[str, T.Any], out_dir: Path):
         equilibrium(cfg)
 
 
-def equilibrium(p: dict[str, T.Any]):
+def equilibrium(cfg: dict[str, T.Any]):
     # %% GRID GENERATION
 
-    xg = grid.cart3d(p)
+    if "lxp" in cfg and "lyp" in cfg:
+        xg = grid.cart3d(cfg)
+    elif "lq" in cfg and "lp" in cfg and "lphi" in cfg:
+        raise NotImplementedError("TODO: implement gemini3d.grid.tilted_dipole.m")
+    else:
+        raise ValueError("grid does not seem to be cartesian or curvilinear")
 
-    write.grid(p, xg)
+    write.grid(cfg, xg)
 
     # %% Equilibrium input generation
-    dat = equilibrium_state(p, xg)
+    dat = equilibrium_state(cfg, xg)
 
-    write.state(p["indat_file"], dat)
+    write.state(cfg["indat_file"], dat)
 
 
 def interp(cfg: dict[str, T.Any]) -> None:
 
-    xg = grid.cart3d(cfg)
+    if "lxp" in cfg and "lyp" in cfg:
+        xg = grid.cart3d(cfg)
+    elif "lq" in cfg and "lp" in cfg and "lphi" in cfg:
+        raise NotImplementedError("TODO: implement gemini3d.grid.tilted_dipole.m")
+    else:
+        raise ValueError("grid does not seem to be cartesian or curvilinear")
 
     equilibrium_resample(cfg, xg)
 
