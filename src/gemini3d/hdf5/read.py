@@ -131,7 +131,7 @@ def grid(
                 else:
                     xg[k] = f[k].shape
 
-        xg["lxs"] = np.array([xg["x1"], xg["x2"], xg["x3"]])
+        xg["lx"] = np.array([xg["x1"], xg["x2"], xg["x3"]])
         return xg
 
     with h5py.File(file, "r") as f:
@@ -143,7 +143,7 @@ def grid(
             else:
                 xg[k] = f[k][:]
 
-    xg["lxs"] = simsize(file.with_name("simsize.h5"))
+    xg["lx"] = simsize(file.with_name("simsize.h5"))
 
     return xg
 
