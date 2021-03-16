@@ -129,7 +129,9 @@ def test_nml_namelist(namelist):
         assert params["dtE0"] == timedelta(seconds=1)
 
 
-def test_read_config_nml():
+def test_read_config_nml(monkeypatch):
+
+    monkeypatch.setenv("GEMINI_SIMROOT", "abc")
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         params = read.config(cfn)
