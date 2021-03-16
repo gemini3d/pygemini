@@ -2,6 +2,8 @@ name: ci_mac
 
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
+  CC: gcc-10
+  FC: gfortran-10
 
 on:
   push:
