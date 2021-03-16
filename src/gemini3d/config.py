@@ -1,6 +1,7 @@
 from __future__ import annotations
 import typing as T
 import re
+import os
 import math
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -105,9 +106,9 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
             P[k] = int(r[k])
     elif nml == "files":
         for k in ("indat_file", "indat_grid", "indat_size"):
-            P[k] = Path(r[k]).expanduser()
+            P[k] = r[k]
 
-        P["file_format"] = r.get("file_format", P["indat_size"].suffix[1:])
+        P["file_format"] = r.get("file_format", Path(P["indat_size"]).suffix[1:])
         # defaults to type of input
 
         if "realbits" in r:
@@ -122,16 +123,14 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
             if k in {"lxp", "lyp"}:
                 P[k] = int(r[k])
             elif k == "eqdir":  # old .nml
-                P["eq_dir"] = Path(r[k]).expanduser()
-            elif k == "eq_dir":
-                P["eq_dir"] = Path(r[k]).expanduser()
+                P["eq_dir"] = r[k]
             elif k == "setup_functions":
                 P["setup_functions"] = [r[k]] if isinstance(r[k], str) else r[k]
             else:
                 P[k] = r[k]
     elif nml == "neutral_perturb":
         P["interptype"] = int(r["interptype"])
-        P["sourcedir"] = Path(r["source_dir"]).expanduser()
+        P["sourcedir"] = r["source_dir"]
 
         for k in ("sourcemlat", "sourcemlon", "dtneu", "dxn", "drhon", "dzn"):
             try:
@@ -140,13 +139,35 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
                 P[k] = NaN
     elif nml == "precip":
         P["dtprec"] = timedelta(seconds=float(r["dtprec"]))
-        P["precdir"] = Path(r["prec_dir"]).expanduser()
+        P["precdir"] = r["prec_dir"]
     elif nml == "efield":
         P["dtE0"] = timedelta(seconds=float(r["dtE0"]))
-        P["E0dir"] = Path(r["E0_dir"]).expanduser()
+        P["E0dir"] = r["E0_dir"]
     elif nml == "glow":
         P["dtglow"] = timedelta(seconds=float(r["dtglow"]))
         P["dtglowout"] = float(r["dtglowout"])
+
+    simroot_key = "@GEMINI_SIMROOT@"
+    for k in (
+        "indat_file",
+        "indat_grid",
+        "indat_size",
+        "eq_dir",
+        "eq_zip",
+        "E0dir",
+        "precdir",
+        "sourcedir",
+    ):
+        if k in P:
+            if P[k].startswith(simroot_key):
+                root = os.environ.get(simroot_key[1:-1])
+                if not root:
+                    raise EnvironmentError(
+                        f"{k} refers to undefined environment variable GEMINI_SIMROOT."
+                        "Set it to location to store/load Gemini3D simulations."
+                    )
+                P[k] = P[k].replace(simroot_key, root, 1)
+            P[k] = Path(P[k]).expanduser()
 
     if not P:
         raise ValueError(f"Not sure how to parse NML namelist {nml}")

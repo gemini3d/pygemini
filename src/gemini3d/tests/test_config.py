@@ -1,5 +1,6 @@
 import pytest
 from datetime import datetime, timedelta
+from pathlib import Path
 import importlib.resources
 
 import gemini3d.config as config
@@ -98,6 +99,16 @@ def test_namelist_exists(group):
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         assert config.namelist_exists(cfn, "base")
+
+
+def test_nml_gemini_simroot(monkeypatch):
+
+    monkeypatch.setenv("GEMINI_SIMROOT", "abc123")
+    with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
+        cfg = config.parse_namelist(cfn, "setup")
+
+    assert isinstance(cfg["eq_dir"], Path)
+    assert cfg["eq_dir"] == Path("abc123/test2d_eq")
 
 
 @pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])

@@ -10,7 +10,7 @@ import gemini3d.web
 R = Path(__file__).parents[1] / "tests/data"
 
 
-@pytest.mark.parametrize("name,bref", [("2dew_eq", 1238112), ("3d_eq", 2323072)])
+@pytest.mark.parametrize("name,bref", [("2dew_eq", 1271392), ("3d_eq", 2372992)])
 def test_memory(name, bref):
 
     try:
