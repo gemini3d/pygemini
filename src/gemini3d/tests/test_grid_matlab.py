@@ -1,8 +1,13 @@
 """
 because the reference data is gigabyte+, we are trying using known-working Matlab and
 comparing vs. Matlab generated grid.
+This also allows freely changing parameters to test behavior.
 
 We also verify on our self-hosted CI vs. reference data files.
+
+to setup Matlab engine:
+
+  python pygemini/scripts/setup_matlab_engine.py
 """
 
 from pathlib import Path
@@ -63,7 +68,9 @@ def test_tilted_dipole():
     for k in xg.keys():
         amat = np.asarray(xg_matlab[k]).squeeze()
         if xg[k].squeeze() != pytest.approx(amat, rel=0.01):
-            print(f"MISMATCH: {k}: python / matlab shapes:  {xg[k].shape} / {np.shape(xg_matlab[k])}")
+            print(
+                f"MISMATCH: {k}: python / matlab shapes:  {xg[k].shape} / {np.shape(xg_matlab[k])}"
+            )
             fail.append(k)
             print(xg[k].squeeze())
             print(amat)
