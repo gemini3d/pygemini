@@ -52,7 +52,7 @@ def test_grid(name, file_format, tmp_path):
 
     # setup new test data
     cfg = gemini3d.read.config(test_dir)
-    xg = gemini3d.grid.cart3d(cfg)
+    xg = gemini3d.grid.cartesian.cart3d(cfg)
 
     # path patch
     cfg["out_dir"] = tmp_path

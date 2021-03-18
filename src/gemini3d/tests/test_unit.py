@@ -10,7 +10,7 @@ import xarray
 from datetime import datetime
 
 import gemini3d.mpi as gm
-import gemini3d.grid as grid
+import gemini3d.grid.uniform as grid
 import gemini3d.coord as coord
 import gemini3d.namelist as namelist
 from gemini3d.utils import to_datetime

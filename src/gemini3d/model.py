@@ -11,7 +11,7 @@ import typing as T
 import shutil
 
 from .config import read_nml
-from . import grid
+from .grid import cartesian
 from .plasma import equilibrium_state, equilibrium_resample
 from .efield import Efield_BCs
 from .particles import particles_BCs
@@ -146,7 +146,7 @@ def equilibrium(cfg: dict[str, T.Any]):
     # %% GRID GENERATION
 
     if "lxp" in cfg and "lyp" in cfg:
-        xg = grid.cart3d(cfg)
+        xg = cartesian.cart3d(cfg)
     elif "lq" in cfg and "lp" in cfg and "lphi" in cfg:
         raise NotImplementedError("TODO: implement gemini3d.grid.tilted_dipole.m")
     else:
@@ -163,7 +163,7 @@ def equilibrium(cfg: dict[str, T.Any]):
 def interp(cfg: dict[str, T.Any]) -> None:
 
     if "lxp" in cfg and "lyp" in cfg:
-        xg = grid.cart3d(cfg)
+        xg = cartesian.cart3d(cfg)
     elif "lq" in cfg and "lp" in cfg and "lphi" in cfg:
         raise NotImplementedError("TODO: implement gemini3d.grid.tilted_dipole.m")
     else:
