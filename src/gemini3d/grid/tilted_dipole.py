@@ -129,9 +129,10 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     for iq in range(lqg):
         for ip in range(lpg):
             r[iq, ip], theta[iq, ip] = qp2rtheta(q[iq], p[ip])
-    r = np.tile(r.reshape([lqg, lpg, 1]), [1, 1, lphig])  # just tile for longitude to save time
-    theta = np.tile(theta.reshape([lqg, lpg, 1]), [1, 1, lphig])
-    phispher = np.tile(phi.reshape([1, 1, lphig]), [lqg, lpg, 1])
+
+    r = np.broadcast_to(r[:, :, None], (*r.shape, lphig))  # just tile for longitude to save time
+    theta = np.broadcast_to(theta[:, :, None], (*theta.shape, lphig))
+    phispher = np.broadcast_to(phi[None, None, :], (lqg, lpg, phi.size))
 
     # %% define cell interfaces and convert coordinates
     print(" tilted_dipole3d:  converting q interface values to r,theta...")
@@ -143,8 +144,8 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
             rqi[iq, ip], thetaqi[iq, ip] = qp2rtheta(
                 qi[iq], p[ip + 2]
             )  # shift by 2 to exclude ghost
-    rqi = np.tile(rqi.reshape([cfg["lq"] + 1, cfg["lp"], 1]), [1, 1, cfg["lphi"]])
-    thetaqi = np.tile(thetaqi.reshape([cfg["lq"] + 1, cfg["lp"], 1]), [1, 1, cfg["lphi"]])
+    rqi = np.broadcast_to(rqi[:, :, None], (*rqi.shape, cfg["lphi"]))
+    thetaqi = np.broadcast_to(thetaqi[:, :, None], (*thetaqi.shape, cfg["lphi"]))
 
     print(" tilted_dipole3d:  converting p interface values to r,theta...")
     pi = 1 / 2 * (p[1:-2] + p[2:-1])
@@ -155,8 +156,8 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
             rpi[iq, ip], thetapi[iq, ip] = qp2rtheta(
                 q[iq + 2], pi[ip]
             )  # shift non interface index by two to exclude ghost
-    rpi = np.tile(rpi.reshape([cfg["lq"], cfg["lp"] + 1, 1]), [1, 1, cfg["lphi"]])
-    thetapi = np.tile(thetapi.reshape([cfg["lq"], cfg["lp"] + 1, 1]), [1, 1, cfg["lphi"]])
+    rpi = np.broadcast_to(rpi[:, :, None], (*rpi.shape, cfg["lphi"]))
+    thetapi = np.broadcast_to(thetapi[:, :, None], (*thetapi.shape, cfg["lphi"]))
 
     # phii = 1 / 2 * (phi[1:-2] + phi[2:-1])
 
