@@ -126,9 +126,9 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     # qtol = 1e-9  # tolerance for declaring "equator"
     print(" tilted_dipole3d:  converting grid centers to r,theta...")
 
-    for iq in range(0, lqg):
-        for ip in range(0, lpg):
-            [r[iq, ip], theta[iq, ip]] = qp2rtheta(q[iq], p[ip])
+    for iq in range(lqg):
+        for ip in range(lpg):
+            r[iq, ip], theta[iq, ip] = qp2rtheta(q[iq], p[ip])
     r = np.tile(r.reshape([lqg, lpg, 1]), [1, 1, lphig])  # just tile for longitude to save time
     theta = np.tile(theta.reshape([lqg, lpg, 1]), [1, 1, lphig])
     phispher = np.tile(phi.reshape([1, 1, lphig]), [lqg, lpg, 1])
@@ -138,9 +138,9 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     qi = 1 / 2 * (q[1:-2] + q[2:-1])
     rqi = np.zeros((cfg["lq"] + 1, cfg["lp"]))
     thetaqi = np.zeros((cfg["lq"] + 1, cfg["lp"]))
-    for iq in range(0, cfg["lq"] + 1):
-        for ip in range(0, cfg["lp"]):
-            [rqi[iq, ip], thetaqi[iq, ip]] = qp2rtheta(
+    for iq in range(cfg["lq"] + 1):
+        for ip in range(cfg["lp"]):
+            rqi[iq, ip], thetaqi[iq, ip] = qp2rtheta(
                 qi[iq], p[ip + 2]
             )  # shift by 2 to exclude ghost
     rqi = np.tile(rqi.reshape([cfg["lq"] + 1, cfg["lp"], 1]), [1, 1, cfg["lphi"]])
@@ -150,9 +150,9 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     pi = 1 / 2 * (p[1:-2] + p[2:-1])
     rpi = np.zeros((cfg["lq"], cfg["lp"] + 1))
     thetapi = np.zeros((cfg["lq"], cfg["lp"] + 1))
-    for iq in range(0, cfg["lq"]):
-        for ip in range(0, cfg["lp"] + 1):
-            [rpi[iq, ip], thetapi[iq, ip]] = qp2rtheta(
+    for iq in range(cfg["lq"]):
+        for ip in range(cfg["lp"] + 1):
+            rpi[iq, ip], thetapi[iq, ip] = qp2rtheta(
                 q[iq + 2], pi[ip]
             )  # shift non interface index by two to exclude ghost
     rpi = np.tile(rpi.reshape([cfg["lq"], cfg["lp"] + 1, 1]), [1, 1, cfg["lphi"]])
