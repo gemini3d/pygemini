@@ -39,8 +39,8 @@ def test_tilted_dipole():
     # Inputs:  cfg dictionary with same data as provided for matlab generation
     # NOTE: Matlab Engine needs explicit floats where float is intended--put a decimal point.
     parm = {
-        "lq": 32,
-        "lp": 32,
+        "lq": 4,
+        "lp": 6,
         "lphi": 1,
         "dtheta": 7.5,
         "dphi": 12.0,

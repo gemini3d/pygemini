@@ -258,10 +258,10 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     proj = np.sum(xg["er"] * xg["e1"], axis=3)
     Imat = np.arccos(proj)
     if cfg["gridflag"] == 0:  # open dipole
-        xg["I"] = np.average(Imat, axis=0)
+        xg["I"] = Imat.mean(axis=0)
     else:  # closed dipole
-        Imathalf = Imat[0 : int(np.floor(cfg["lq"] / 2)), :, :]
-        xg["I"] = np.average(Imathalf, axis=0)
+        Imathalf = Imat[:cfg["lq"] // 2, :, :]
+        xg["I"] = Imathalf.mean(axis=0)
     xg["I"] = 90 - np.rad2deg(np.minimum(xg["I"], np.pi - xg["I"]))
     # ignore parallel vs. anti-parallel
 
@@ -325,13 +325,13 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     xg["x3i"] = 1 / 2 * (xg["x3"][1:-2] + xg["x3"][2:-1])
 
     # compute and store backward diffs (other diffs recomputed as needed in fortran)
-    xg["dx1b"] = xg["x1"][1:] - xg["x1"][0:-1]
-    xg["dx2b"] = xg["x2"][1:] - xg["x2"][0:-1]
-    xg["dx3b"] = xg["x3"][1:] - xg["x3"][0:-1]
+    xg["dx1b"] = xg["x1"][1:] - xg["x1"][:-1]
+    xg["dx2b"] = xg["x2"][1:] - xg["x2"][:-1]
+    xg["dx3b"] = xg["x3"][1:] - xg["x3"][:-1]
 
     # compute and store centered diffs
-    xg["dx1h"] = xg["x1i"][1:] - xg["x1i"][0:-1]
-    xg["dx2h"] = xg["x2i"][1:] - xg["x2i"][0:-1]
-    xg["dx3h"] = xg["x3i"][1:] - xg["x3i"][0:-1]
+    xg["dx1h"] = xg["x1i"][1:] - xg["x1i"][:-1]
+    xg["dx2h"] = xg["x2i"][1:] - xg["x2i"][:-1]
+    xg["dx3h"] = xg["x3i"][1:] - xg["x3i"][:-1]
 
     return xg
