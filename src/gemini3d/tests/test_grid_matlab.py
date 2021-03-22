@@ -67,7 +67,7 @@ def test_tilted_dipole():
     fail = []
     for k in xg.keys():
         amat = np.asarray(xg_matlab[k]).squeeze()
-        if xg[k].squeeze() != pytest.approx(amat, rel=0.01):
+        if xg[k].squeeze() != pytest.approx(amat, rel=1e-6):
             print(
                 f"MISMATCH: {k}: python / matlab shapes:  {xg[k].shape} / {np.shape(xg_matlab[k])}"
             )

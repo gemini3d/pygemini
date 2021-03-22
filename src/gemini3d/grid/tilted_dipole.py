@@ -297,7 +297,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     )
 
     # determine grid cells that are "null" - i.e. not included in the computations
-    inull = np.where(r[2:-2, 2:-2, 2:-2] < Re + 80e3)
+    inull = r[2:-2, 2:-2, 2:-2] < Re + 79.95e3
     # note addressing of r to produce array sans ghost cells
 
     xg["nullpts"] = np.zeros((cfg["lq"], cfg["lp"], cfg["lphi"]))
