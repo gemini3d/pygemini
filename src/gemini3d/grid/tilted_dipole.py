@@ -252,7 +252,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     else:  # closed dipole
         Imathalf = Imat[:cfg["lq"] // 2, :, :]
         xg["I"] = Imathalf.mean(axis=0)
-    xg["I"] = 90 - np.rad2deg(np.minimum(xg["I"], np.pi - xg["I"]))
+    xg["I"] = 90 - np.degrees(np.minimum(xg["I"], math.pi - xg["I"]))
     # ignore parallel vs. anti-parallel
 
     # compute gravitational field components, exclude ghost cells
