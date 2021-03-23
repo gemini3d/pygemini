@@ -268,14 +268,8 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
 
     # compute magnetic field strength
     print(" tilted_dipole3d:  calculating magnetic field strength over grid...")
-    xg["Bmag"] = (
-        (4 * np.pi * 1e-7)
-        * 7.94e22
-        / 4
-        / np.pi
-        / (r[2:-2, 2:-2, 2:-2] ** 3)
-        * np.sqrt(3 * (np.cos(theta[2:-2, 2:-2, 2:-2])) ** 2 + 1)
-    )
+    # simplified (4 * pi * 1e-7)* 7.94e22 / 4 / pi due to precision issues
+    xg["Bmag"] = 7.94e15 / (r[2:-2, 2:-2, 2:-2] ** 3) * np.sqrt(3 * (np.cos(theta[2:-2, 2:-2, 2:-2])) ** 2 + 1)
 
     # compute Cartesian coordinates
     xg["z"] = r[2:-2, 2:-2, 2:-2] * np.cos(theta[2:-2, 2:-2, 2:-2])
