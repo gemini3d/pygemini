@@ -56,7 +56,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
         pmin = np.sqrt(np.cos(thetax2max) / np.sin(thetax2min) ** 4 / qtmp)
 
     # set the L-shell grid, sans ghost cells
-    p = np.zeros(lpg)
+    p = np.empty(lpg)
     p[2:-2] = np.linspace(pmin, pmax, cfg["lp"])  # sans ghost cells
 
     # find the max zenith angle (theta) for the grid, need to detect grid type and henmisphere
@@ -88,13 +88,13 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
         qtmp = qmax
         qmax = qmin
         qmin = qtmp
-    q = np.zeros(lqg)
+    q = np.empty(lqg)
     q[2:-2] = np.linspace(qmin, qmax, cfg["lq"])
 
     # define phi grid sans ghost cells
     phimin = phid - np.deg2rad(cfg["dphi"] / 2)
     phimax = phid + np.deg2rad(cfg["dphi"] / 2)
-    phi = np.zeros(lphig)
+    phi = np.empty(lphig)
     if cfg["lphi"] != 1:
         phi[2:-2] = np.linspace(phimin, phimax, cfg["lphi"])
     else:
@@ -121,8 +121,8 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     phi[-1] = phi[-3] + 2 * phistride
 
     # %% allocate meridional slice, including ghost cells - this later gets extended into 3D
-    r = np.zeros((lqg, lpg))
-    theta = np.zeros((lqg, lpg))
+    r = np.empty((lqg, lpg))
+    theta = np.empty((lqg, lpg))
     # qtol = 1e-9  # tolerance for declaring "equator"
     print(" tilted_dipole3d:  converting grid centers to r,theta...")
 
@@ -137,25 +137,23 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     # %% define cell interfaces and convert coordinates
     print(" tilted_dipole3d:  converting q interface values to r,theta...")
     qi = 1 / 2 * (q[1:-2] + q[2:-1])
-    rqi = np.zeros((cfg["lq"] + 1, cfg["lp"]))
-    thetaqi = np.zeros((cfg["lq"] + 1, cfg["lp"]))
-    for iq in range(cfg["lq"] + 1):
-        for ip in range(cfg["lp"]):
-            rqi[iq, ip], thetaqi[iq, ip] = qp2rtheta(
-                qi[iq], p[ip + 2]
-            )  # shift by 2 to exclude ghost
+    rqi = np.empty((cfg["lq"] + 1, cfg["lp"]))
+    thetaqi = np.empty((cfg["lq"] + 1, cfg["lp"]))
+    for iq in range(rqi.shape[0]):
+        for ip in range(rqi.shape[1]):
+            rqi[iq, ip], thetaqi[iq, ip] = qp2rtheta(qi[iq], p[ip + 2])
+            # shift by 2 to exclude ghost
     rqi = np.broadcast_to(rqi[:, :, None], (*rqi.shape, cfg["lphi"]))
     thetaqi = np.broadcast_to(thetaqi[:, :, None], (*thetaqi.shape, cfg["lphi"]))
 
     print(" tilted_dipole3d:  converting p interface values to r,theta...")
     pi = 1 / 2 * (p[1:-2] + p[2:-1])
-    rpi = np.zeros((cfg["lq"], cfg["lp"] + 1))
-    thetapi = np.zeros((cfg["lq"], cfg["lp"] + 1))
-    for iq in range(cfg["lq"]):
-        for ip in range(cfg["lp"] + 1):
-            rpi[iq, ip], thetapi[iq, ip] = qp2rtheta(
-                q[iq + 2], pi[ip]
-            )  # shift non interface index by two to exclude ghost
+    rpi = np.empty((cfg["lq"], cfg["lp"] + 1))
+    thetapi = np.empty((cfg["lq"], cfg["lp"] + 1))
+    for iq in range(rpi.shape[0]):
+        for ip in range(rpi.shape[1]):
+            rpi[iq, ip], thetapi[iq, ip] = qp2rtheta(q[iq + 2], pi[ip])
+            # shift non interface index by two to exclude ghost
     rpi = np.broadcast_to(rpi[:, :, None], (*rpi.shape, cfg["lphi"]))
     thetapi = np.broadcast_to(thetapi[:, :, None], (*thetapi.shape, cfg["lphi"]))
 
@@ -169,24 +167,14 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     xg["h3"] = r * np.sin(theta)
 
     xg["h1x3i"] = np.concatenate(
-        (
-            xg["h1"][2:-2, 2:-2, 2:-2],
-            xg["h1"][2:-2, 2:-2, -1].reshape([cfg["lq"], cfg["lp"], 1]),
-        ),
-        axis=2,
+        (xg["h1"][2:-2, 2:-2, 2:-2], xg["h1"][2:-2, 2:-2, -1][:, :, None]), axis=2
     )
     xg["h2x3i"] = np.concatenate(
-        (
-            xg["h2"][2:-2, 2:-2, 2:-2],
-            xg["h2"][2:-2, 2:-2, -1].reshape([cfg["lq"], cfg["lp"], 1]),
-        ),
+        (xg["h2"][2:-2, 2:-2, 2:-2], xg["h2"][2:-2, 2:-2, -1][:, :, None]),
         axis=2,
     )
     xg["h3x3i"] = np.concatenate(
-        (
-            xg["h3"][2:-2, 2:-2, 2:-2],
-            xg["h3"][2:-2, 2:-2, -1].reshape([cfg["lq"], cfg["lp"], 1]),
-        ),
+        (xg["h3"][2:-2, 2:-2, 2:-2], xg["h3"][2:-2, 2:-2, -1][:, :, None]),
         axis=2,
     )
 
@@ -202,50 +190,50 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
 
     # spherical unit vectors (expressed in a Cartesian basis), these should not have ghost cells
     print(" tilted_dipole3d:  calculating spherical unit vectors")
-    xg["er"] = np.zeros((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
-    xg["etheta"] = np.zeros((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
-    xg["ephi"] = np.zeros((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
-    xg["er"][:, :, :, 0] = np.sin(theta[2:-2, 2:-2, 2:-2]) * np.cos(phispher[2:-2, 2:-2, 2:-2])
-    xg["er"][:, :, :, 1] = np.sin(theta[2:-2, 2:-2, 2:-2]) * np.sin(phispher[2:-2, 2:-2, 2:-2])
-    xg["er"][:, :, :, 2] = np.cos(theta[2:-2, 2:-2, 2:-2])
-    xg["etheta"][:, :, :, 0] = np.cos(theta[2:-2, 2:-2, 2:-2]) * np.cos(phispher[2:-2, 2:-2, 2:-2])
-    xg["etheta"][:, :, :, 1] = np.cos(theta[2:-2, 2:-2, 2:-2]) * np.sin(phispher[2:-2, 2:-2, 2:-2])
-    xg["etheta"][:, :, :, 2] = -np.sin(theta[2:-2, 2:-2, 2:-2])
-    xg["ephi"][:, :, :, 0] = -np.sin(phispher[2:-2, 2:-2, 2:-2])
-    xg["ephi"][:, :, :, 1] = np.cos(phispher[2:-2, 2:-2, 2:-2])
-    xg["ephi"][:, :, :, 2] = np.zeros((cfg["lq"], cfg["lp"], cfg["lphi"]))
+    xg["er"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
+    xg["etheta"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
+    xg["ephi"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
+    xg["er"][..., 0] = np.sin(theta[2:-2, 2:-2, 2:-2]) * np.cos(phispher[2:-2, 2:-2, 2:-2])
+    xg["er"][..., 1] = np.sin(theta[2:-2, 2:-2, 2:-2]) * np.sin(phispher[2:-2, 2:-2, 2:-2])
+    xg["er"][..., 2] = np.cos(theta[2:-2, 2:-2, 2:-2])
+    xg["etheta"][..., 0] = np.cos(theta[2:-2, 2:-2, 2:-2]) * np.cos(phispher[2:-2, 2:-2, 2:-2])
+    xg["etheta"][..., 1] = np.cos(theta[2:-2, 2:-2, 2:-2]) * np.sin(phispher[2:-2, 2:-2, 2:-2])
+    xg["etheta"][..., 2] = -np.sin(theta[2:-2, 2:-2, 2:-2])
+    xg["ephi"][..., 0] = -np.sin(phispher[2:-2, 2:-2, 2:-2])
+    xg["ephi"][..., 1] = np.cos(phispher[2:-2, 2:-2, 2:-2])
+    xg["ephi"][..., 2] = 0
 
     # now do the dipole unit vectors
     print(" tilted_dipole3d:  calculating dipole unit vectors")
-    xg["e1"] = np.zeros((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
-    xg["e2"] = np.zeros((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
-    xg["e3"] = np.zeros((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
-    xg["e1"][:, :, :, 0] = (
+    xg["e1"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
+    xg["e2"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
+    xg["e3"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
+    xg["e1"][..., 0] = (
         -3
         * np.cos(theta[2:-2, 2:-2, 2:-2])
         * np.sin(theta[2:-2, 2:-2, 2:-2])
         * np.cos(phispher[2:-2, 2:-2, 2:-2])
         / denom[2:-2, 2:-2, 2:-2]
     )
-    xg["e1"][:, :, :, 1] = (
+    xg["e1"][..., 1] = (
         -3
         * np.cos(theta[2:-2, 2:-2, 2:-2])
         * np.sin(theta[2:-2, 2:-2, 2:-2])
         * np.sin(phispher[2:-2, 2:-2, 2:-2])
         / denom[2:-2, 2:-2, 2:-2]
     )
-    xg["e1"][:, :, :, 2] = (1 - 3 * np.cos(theta[2:-2, 2:-2, 2:-2]) ** 2) / denom[2:-2, 2:-2, 2:-2]
-    xg["e2"][:, :, :, 0] = (
+    xg["e1"][..., 2] = (1 - 3 * np.cos(theta[2:-2, 2:-2, 2:-2]) ** 2) / denom[2:-2, 2:-2, 2:-2]
+    xg["e2"][..., 0] = (
         np.cos(phispher[2:-2, 2:-2, 2:-2])
         * (1 - 3 * np.cos(theta[2:-2, 2:-2, 2:-2]) ** 2)
         / denom[2:-2, 2:-2, 2:-2]
     )
-    xg["e2"][:, :, :, 1] = (
+    xg["e2"][..., 1] = (
         np.sin(phispher[2:-2, 2:-2, 2:-2])
         * (1 - 3 * np.cos(theta[2:-2, 2:-2, 2:-2]) ** 2)
         / denom[2:-2, 2:-2, 2:-2]
     )
-    xg["e2"][:, :, :, 2] = (
+    xg["e2"][..., 2] = (
         3
         * np.sin(theta[2:-2, 2:-2, 2:-2])
         * np.cos(theta[2:-2, 2:-2, 2:-2])
