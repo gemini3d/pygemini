@@ -120,7 +120,7 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
                 P["realbits"] = 32
     elif nml == "setup":
         for k in r:
-            if k in {"lxp", "lyp"}:
+            if k in {"lxp", "lyp", "lq", "lp", "lphi", "gridflag"}:
                 P[k] = int(r[k])
             elif k == "eqdir":  # old .nml
                 P["eq_dir"] = r[k]

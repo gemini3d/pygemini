@@ -10,6 +10,8 @@ from pathlib import Path
 import typing as T
 import shutil
 
+from gemini3d.grid import tilted_dipole
+
 from .config import read_nml
 from .grid import cartesian
 from .plasma import equilibrium_state, equilibrium_resample
@@ -148,7 +150,7 @@ def equilibrium(cfg: dict[str, T.Any]):
     if "lxp" in cfg and "lyp" in cfg:
         xg = cartesian.cart3d(cfg)
     elif "lq" in cfg and "lp" in cfg and "lphi" in cfg:
-        raise NotImplementedError("TODO: implement gemini3d.grid.tilted_dipole.m")
+        xg = tilted_dipole.tilted_dipole3d(cfg)
     else:
         raise ValueError("grid does not seem to be cartesian or curvilinear")
 
