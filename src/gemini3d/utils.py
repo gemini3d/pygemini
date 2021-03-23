@@ -36,7 +36,7 @@ def to_datetime(times: xarray.DataArray | np.datetime64 | datetime) -> datetime:
     if isinstance(times, datetime):
         time = times
     elif isinstance(times, xarray.DataArray):
-        time = times.values.squeeze()[()]  # numpy.datetime64
+        time = times.data.squeeze()[()]  # numpy.datetime64
     elif isinstance(times, np.datetime64):
         time = times.squeeze()[()]
     else:

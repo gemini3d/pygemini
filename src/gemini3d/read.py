@@ -207,7 +207,7 @@ def data(
     # %% Derived variables
     if flag == 1:
         if {"ne", "v1", "Ti", "Te"}.intersection(var):
-            dat["ne"] = (("x1", "x2", "x3"), dat["ns"][LSP - 1, :, :, :])
+            dat["ne"] = (("x1", "x2", "x3"), dat["ns"][LSP - 1, :, :, :].data)
             # np.any() in case neither is an np.ndarray
             if dat["ns"].shape[0] != LSP or not np.array_equal(dat["ns"].shape[1:], lxs):
                 raise ValueError(
@@ -216,15 +216,15 @@ def data(
         if "v1" in var:
             dat["v1"] = (
                 ("x1", "x2", "x3"),
-                (dat["ns"][:6, :, :, :] * dat["vs1"][:6, :, :, :]).sum(axis=0) / dat["ne"],
+                (dat["ns"][:6, :, :, :] * dat["vs1"][:6, :, :, :]).sum(axis=0).data / dat["ne"].data,
             )
         if "Ti" in var:
             dat["Ti"] = (
                 ("x1", "x2", "x3"),
-                (dat["ns"][:6, :, :, :] * dat["Ts"][:6, :, :, :]).sum(axis=0) / dat["ne"],
+                (dat["ns"][:6, :, :, :] * dat["Ts"][:6, :, :, :]).sum(axis=0).data / dat["ne"].data,
             )
         if "Te" in var:
-            dat["Te"] = (("x1", "x2", "x3"), dat["Ts"][LSP - 1, :, :, :])
+            dat["Te"] = (("x1", "x2", "x3"), dat["Ts"][LSP - 1, :, :, :].data)
 
         if "J1" in var:
             # np.any() in case neither is an np.ndarray

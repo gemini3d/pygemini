@@ -122,7 +122,7 @@ def scalar(time: datetime, xg: dict[str, np.ndarray], parm: np.ndarray, name: st
     # TODO: check order of interpolated axes (1,2,0) or ?
     # parmp = interp.interpn(
     #     points=(xg["x1"][inds1], xg["x2"][inds2], xg["x3"][inds3]),
-    #     values=parm.values,
+    #     values=parm.data,
     #     xi=np.column_stack((x3.ravel(), y3.ravel(), z3.ravel())),
     #     bounds_error=False,
     # ).reshape((lxp, lyp, lzp))

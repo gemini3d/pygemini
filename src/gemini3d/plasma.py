@@ -135,10 +135,10 @@ def model_resample(
 
         for i in range(LSP):
             for k in {"ns", "vs1", "Ts"}:
-                # the .values are to avoid OutOfMemoryError
+                # the .data is to avoid OutOfMemoryError
                 dat_interp[k][i, :, :, :] = interpn(
                     points=(X1, X2, X3),
-                    values=dat[k][i, :, :, :].values,
+                    values=dat[k][i, :, :, :].data,
                     xi=(X1i, X2i, X3i),
                     bounds_error=True,
                 )

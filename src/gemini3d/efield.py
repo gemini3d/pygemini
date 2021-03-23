@@ -157,17 +157,17 @@ def Efield_target(
     if lx3 == 1:
         # east-west
         S = E.Etarg * E.sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
-        taper = erf((E.mlon - E.mlonmean) / E.mlonsig).values[:, None]
+        taper = erf((E.mlon - E.mlonmean) / E.mlonsig).data[:, None]
     elif lx2 == 1:
         # north-south
         S = E.Etarg * E.sigx3 * xg["h3"][lx1, 0, lx3 // 2] * np.sqrt(np.pi) / 2
-        taper = erf((E.mlat - E.mlatmean) / E.mlatsig).values[None, :]
+        taper = erf((E.mlat - E.mlatmean) / E.mlatsig).data[None, :]
     else:
         # 3D
         S = E.Etarg * E.sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
         taper = (
-            erf((E.mlon - E.mlonmean) / E.mlonsig).values[:, None]
-            * erf((E.mlat - E.mlatmean) / E.mlatsig).values[None, :]
+            erf((E.mlon - E.mlonmean) / E.mlonsig).data[:, None]
+            * erf((E.mlat - E.mlatmean) / E.mlatsig).data[None, :]
         )
 
     assert S.ndim == 0, "S is a scalar"

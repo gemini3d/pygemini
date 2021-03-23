@@ -17,7 +17,7 @@ def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
     # E0: characteristic energy [eV]
 
     # did user specify on/off time? if not, assume always on.
-    t0 = pg.time[0].values
+    t0 = pg.time[0].data
 
     if "precip_startsec" in cfg:
         t = t0 + np.timedelta64(cfg["precip_startsec"])
@@ -112,13 +112,13 @@ def precip_gaussian2d(pg: xarray.Dataset, Qpeak: float, Qbackground: float) -> n
     if "mlon_sigma" in pg.attrs and "mlat_sigma" in pg.attrs:
         Q = (
             Qpeak
-            * np.exp(-((pg.mlon.values[:, None] - mlon_mean) ** 2) / (2 * pg.mlon_sigma ** 2))
-            * np.exp(-((pg.mlat.values[None, :] - mlat_mean) ** 2) / (2 * pg.mlat_sigma ** 2))
+            * np.exp(-((pg.mlon.data[:, None] - mlon_mean) ** 2) / (2 * pg.mlon_sigma ** 2))
+            * np.exp(-((pg.mlat.data[None, :] - mlat_mean) ** 2) / (2 * pg.mlat_sigma ** 2))
         )
     elif "mlon_sigma" in pg.attrs:
-        Q = Qpeak * np.exp(-((pg.mlon.values[:, None] - mlon_mean) ** 2) / (2 * pg.mlon_sigma ** 2))
+        Q = Qpeak * np.exp(-((pg.mlon.data[:, None] - mlon_mean) ** 2) / (2 * pg.mlon_sigma ** 2))
     elif "mlat_sigma" in pg.attrs:
-        Q = Qpeak * np.exp(-((pg.mlat.values[None, :] - mlat_mean) ** 2) / (2 * pg.mlat_sigma ** 2))
+        Q = Qpeak * np.exp(-((pg.mlat.data[None, :] - mlat_mean) ** 2) / (2 * pg.mlat_sigma ** 2))
     else:
         raise LookupError("precipation must be defined in latitude, longitude or both")
 

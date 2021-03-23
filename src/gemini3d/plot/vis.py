@@ -439,7 +439,7 @@ def plot3d_slice(
     # transpose: so north dist, east dist., alt.
     parmp = interp.interpn(
         points=(grid["x1"][inds1], grid["x2"][inds2], grid["x3"][inds3]),
-        values=parm.values,
+        values=parm.data,
         xi=np.column_stack((Z3.ravel(), X3.ravel(), Y3.ravel())),
         bounds_error=False,
     ).reshape((1, lxp, lyp))
