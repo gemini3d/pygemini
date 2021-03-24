@@ -41,9 +41,11 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         f["/f107"] = p["f107"]
         f["/Ap"] = [p["Ap"]] * 7
         # astype(float32) just to save disk I/O time/space
-        f["/glat"] = xg["glat"].astype(np.float32)
-        f["/glon"] = xg["glon"].astype(np.float32)
-        f["/alt"] = alt_km.astype(np.float32)
+        # we must give full shape to work with Fortran/h5fortran
+        # this is how MatGemini does it
+        f.create_dataset("/glat", shape=xg["lx"], dtype=np.float32, data=xg["glat"])
+        f.create_dataset("/glon", shape=xg["lx"], dtype=np.float32, data=xg["glon"])
+        f.create_dataset("/alt", shape=xg["lx"], dtype=np.float32, data=alt_km)
     # %% run MSIS
     args = [str(msis_infile), str(msis_outfile)]
 
@@ -57,13 +59,15 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         raise RuntimeError("Need to compile with 'cmake -Dmsis20=true'")
     if ret.returncode != 0:
         raise RuntimeError(f"MSIS failed to run: return code {ret.returncode}. See console for additional error info.")
-    # %% load MSIS output
-    alt1 = alt_km[:, 0, 0]
-    glat1 = xg["glat"][0, :, 0]
-    glon1 = xg["glon"][0, 0, :]
-    atmos = xarray.Dataset(coords={"alt_km": alt1, "glat": glat1, "glon": glon1})
 
+    # %% load MSIS output
+    # use disk coordinates for tracability
     with h5py.File(msis_outfile, "r") as f:
+        alt1 = f["/alt"][:, 0, 0]
+        glat1 = f["/glat"][0, :, 0]
+        glon1 = f["/glon"][0, 0, :]
+        atmos = xarray.Dataset(coords={"alt_km": alt1, "glat": glat1, "glon": glon1})
+
         for k in {"nO", "nN2", "nO2", "Tn", "nN", "nH"}:
             atmos[k] = (("alt_km", "glat", "glon"), f[f"/{k}"][:])
 
