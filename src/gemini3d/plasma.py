@@ -354,7 +354,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
         lx3 = xg["lx"][2]
         Tn = atmos["Tn"][:lalt, :, :]
         g = abs(xg["gx1"][:lalt, :, :])
-        g = max(g, 1)
+        g[g < 1] = 1
         for ix3 in range(lx3):
             for ix2 in range(lx2):
                 ialt = abs(g[:, ix2, ix3] - 1).argmin()
