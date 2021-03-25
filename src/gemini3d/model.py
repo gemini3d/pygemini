@@ -167,7 +167,7 @@ def interp(cfg: dict[str, T.Any]) -> None:
     if "lxp" in cfg and "lyp" in cfg:
         xg = cartesian.cart3d(cfg)
     elif "lq" in cfg and "lp" in cfg and "lphi" in cfg:
-        raise NotImplementedError("TODO: implement gemini3d.grid.tilted_dipole.m")
+        xg = tilted_dipole.tilted_dipole3d(cfg)
     else:
         raise ValueError("grid does not seem to be cartesian or curvilinear")
 
