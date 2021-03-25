@@ -58,7 +58,9 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     if ret.returncode == 20:
         raise RuntimeError("Need to compile with 'cmake -Dmsis20=true'")
     if ret.returncode != 0:
-        raise RuntimeError(f"MSIS failed to run: return code {ret.returncode}. See console for additional error info.")
+        raise RuntimeError(
+            f"MSIS failed to run: return code {ret.returncode}. See console for additional error info."
+        )
 
     # %% load MSIS output
     # use disk coordinates for tracability

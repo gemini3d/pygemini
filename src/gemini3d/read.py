@@ -216,7 +216,8 @@ def data(
         if "v1" in var:
             dat["v1"] = (
                 ("x1", "x2", "x3"),
-                (dat["ns"][:6, :, :, :] * dat["vs1"][:6, :, :, :]).sum(axis=0).data / dat["ne"].data,
+                (dat["ns"][:6, :, :, :] * dat["vs1"][:6, :, :, :]).sum(axis=0).data
+                / dat["ne"].data,
             )
         if "Ti" in var:
             dat["Ti"] = (

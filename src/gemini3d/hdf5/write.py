@@ -154,6 +154,8 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
     need the .transpose() for h5py
     """
 
+    CLVL = 1
+
     if h5py is None:
         raise ImportError("pip install h5py")
 
@@ -176,8 +178,6 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
                 f"h{i}x1i",
                 f"h{i}x2i",
                 f"h{i}x3i",
-                f"gx{i}",
-                f"e{i}",
             ):
                 if k not in xg:
                     logging.info(f"SKIP: {k}")
@@ -189,23 +189,23 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
                         data=xg[k].transpose(),
                         dtype=np.float32,
                         compression="gzip",
-                        compression_opts=1,
+                        compression_opts=CLVL,
                         shuffle=True,
                         fletcher32=True,
                     )
                 else:
                     h[f"/{k}"] = xg[k].astype(np.float32)
 
+        # 3-D same as grid
         for k in (
+            "gx1",
+            "gx2",
+            "gx3",
             "alt",
             "glat",
             "glon",
             "Bmag",
-            "I",
             "nullpts",
-            "er",
-            "etheta",
-            "ephi",
             "r",
             "theta",
             "phi",
@@ -217,18 +217,50 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
                 logging.info(f"SKIP: {k}")
                 continue
 
-            if xg[k].ndim >= 2:
-                h.create_dataset(
-                    f"/{k}",
-                    data=xg[k].transpose(),
-                    dtype=np.float32,
-                    compression="gzip",
-                    compression_opts=1,
-                    shuffle=True,
-                    fletcher32=True,
-                )
-            else:
-                h[f"/{k}"] = xg[k].astype(np.float32)
+            h.create_dataset(
+                f"/{k}",
+                shape=xg["lx"][::-1],
+                data=xg[k].transpose(),
+                dtype=np.float32,
+                compression="gzip",
+                compression_opts=CLVL,
+                shuffle=True,
+                fletcher32=True,
+            )
+
+        # %% 2-D
+        for k in ("I",):
+            if k not in xg:
+                logging.info(f"SKIP: {k}")
+                continue
+
+            h.create_dataset(
+                f"/{k}",
+                shape=(xg["lx"][1], xg["lx"][2])[::-1],
+                data=xg[k].transpose(),
+                dtype=np.float32,
+                compression="gzip",
+                compression_opts=CLVL,
+                shuffle=True,
+                fletcher32=True,
+            )
+
+        # %% 4-D
+        for k in ("e1", "e2", "e3", "er", "etheta", "ephi"):
+            if k not in xg:
+                logging.info(f"SKIP: {k}")
+                continue
+
+            h.create_dataset(
+                f"/{k}",
+                shape=(*xg["lx"], 3)[::-1],
+                data=xg[k].transpose(),
+                dtype=np.float32,
+                compression="gzip",
+                compression_opts=CLVL,
+                shuffle=True,
+                fletcher32=True,
+            )
 
 
 def Efield(outdir: Path, E: xarray.Dataset):
