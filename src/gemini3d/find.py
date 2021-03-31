@@ -68,7 +68,7 @@ def grid(path: Path) -> Path:
     file format to be used in this sim.
     """
 
-    return find_stem(path, "simgrid")
+    return find_stem(path, stem="simgrid")
 
 
 def find_stem(path: Path, stem: str, suffix: str = None) -> Path:
