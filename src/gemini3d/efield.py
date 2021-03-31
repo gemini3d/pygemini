@@ -14,7 +14,12 @@ from .config import datetime_range
 
 
 def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
-    """ generate E-field """
+    """generate E-field
+
+    Set input potential/FAC boundary conditions and write these to a set of
+    files that can be used an input to GEMINI.  This is a basic example that
+    can make Gaussian shaped potential or FAC inputs using an input width.
+    """
 
     # %% READ IN THE SIMULATION INFO
     lx1 = None
@@ -28,15 +33,38 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     if lx1 is None:
         raise ValueError("size data not in Efield grid")
 
+    # %% For current density boundary conditions we need to determin top v bottom of the grid
+    if xg["alt"][0, 0, 0] > xg["alt"][1, 0, 0]:
+        # inverted
+        gridflag = 1
+        logging.info("Detected an inverted grid")
+    else:
+        # non-inverted or closed
+        gridflag = 2
+        logging.info("Detected a non-inverted grid")
+
+    # %% determine what type of grid (cartesian or dipole) we are dealing with
+    if (xg["h1"] > 1.01).any():
+        flagdip = True
+        logging.info("Dipole grid detected")
+    else:
+        flagdip = False
+        logging.info("Cartesian grid detected")
+
     # %% CREATE ELECTRIC FIELD DATASET
     # the Efield is interpolated from these, 100 x 100 is arbitrary
     llon = 100
     llat = 100
-    # NOTE: cartesian-specific code
-    if lx2 == 1:
-        llon = 1
-    elif lx3 == 1:
-        llat = 1
+    if flagdip:
+        if lx3 == 1:
+            llon = 1
+        elif lx2 == 1:
+            llat = 1
+    else:
+        if lx2 == 1:
+            llon = 1
+        elif lx3 == 1:
+            llat = 1
 
     thetamin = xg["theta"].min()
     thetamax = xg["theta"].max()
@@ -63,11 +91,24 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
     # %% WIDTH OF THE DISTURBANCE
     if "Efield_latwidth" in cfg:
-        E.attrs["mlatsig"] = cfg["Efield_latwidth"] * (mlatmax - mlatmin)
-        E.attrs["sigx3"] = cfg["Efield_latwidth"] * (xg["x3"].max() - xg["x3"].min())
+        if flagdip:
+            E.attrs["mlatsig"], E.attrs["sigx2"] = Esigma(
+                cfg["Efield_latwidth"], mlatmax, mlatmin, xg["x2"]
+            )
+        else:
+            E.attrs["mlatsig"], E.attrs["sigx3"] = Esigma(
+                cfg["Efield_latwidth"], mlatmax, mlatmin, xg["x3"]
+            )
+
     if "Efield_lonwidth" in cfg:
-        E.attrs["mlonsig"] = cfg["Efield_lonwidth"] * (mlonmax - mlonmin)
-        E.attrs["sigx2"] = cfg["Efield_lonwidth"] * (xg["x2"].max() - xg["x2"].min())
+        if flagdip:
+            E.attrs["mlonsig"], E.attrs["sigx3"] = Esigma(
+                cfg["Efield_lonwidth"], mlonmax, mlonmin, xg["x3"]
+            )
+        else:
+            E.attrs["mlonsig"], E.attrs["sigx2"] = Esigma(
+                cfg["Efield_lonwidth"], mlonmax, mlonmin, xg["x2"]
+            )
 
     # %% CREATE DATA FOR BACKGROUND ELECTRIC FIELDS
     # assign to zero in case not specifically assigned
@@ -95,10 +136,10 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     # %% synthesize feature
     if "Etarg" in cfg:
         E.attrs["Etarg"] = cfg["Etarg"]
-        E = Efield_target(E, xg, lx1, lx2, lx3)
+        E = Efield_target(E, xg, lx1, lx2, lx3, gridflag, flagdip)
     elif "Jtarg" in cfg:
         E.attrs["Jtarg"] = cfg["Jtarg"]
-        E = Jcurrent_target(E)
+        E = Jcurrent_target(E, gridflag)
     else:
         # background only
         pass
@@ -123,7 +164,7 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     return E
 
 
-def Jcurrent_target(E: xarray.Dataset) -> xarray.Dataset:
+def Jcurrent_target(E: xarray.Dataset, gridflag: int) -> xarray.Dataset:
 
     S = (
         E["Jtarg"]
@@ -134,15 +175,26 @@ def Jcurrent_target(E: xarray.Dataset) -> xarray.Dataset:
     for t in E.time[6:]:
         E["flagdirich"].loc[t] = 0
         # could have different boundary types for different times
-        E["Vmaxx1it"].loc[t] = S - E.Jtarg * np.exp(
-            -((E.mlon - E.mlonmean) ** 2) / 2 / E.mlonsig ** 2
-        ) * np.exp(-((E.mlat - E.mlatmean + 1.5 * E.mlatsig) ** 2) / 2 / E.mlatsig ** 2)
+        J = S - E.Jtarg * np.exp(-((E.mlon - E.mlonmean) ** 2) / 2 / E.mlonsig ** 2) * np.exp(
+            -((E.mlat - E.mlatmean + 1.5 * E.mlatsig) ** 2) / 2 / E.mlatsig ** 2
+        )
+
+        if gridflag == 1:
+            E["Vminx1it"].loc[t] = J
+        else:
+            E["Vmaxx1it"].loc[t] = J
 
     return E
 
 
 def Efield_target(
-    E: xarray.Dataset, xg: dict[str, T.Any], lx1: int, lx2: int, lx3: int
+    E: xarray.Dataset,
+    xg: dict[str, T.Any],
+    lx1: int,
+    lx2: int,
+    lx3: int,
+    gridflag: int,
+    flagdip: bool,
 ) -> xarray.Dataset:
     """
     synthesize a feature
@@ -154,29 +206,57 @@ def Efield_target(
     # NOTE: h2, h3 have ghost cells, so we use lx1 instead of -1 to index
     # pk is a scalar.
 
-    if lx3 == 1:
-        # east-west
-        S = E.Etarg * E.sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
-        taper = erf((E.mlon - E.mlonmean) / E.mlonsig).data[:, None]
-    elif lx2 == 1:
-        # north-south
-        S = E.Etarg * E.sigx3 * xg["h3"][lx1, 0, lx3 // 2] * np.sqrt(np.pi) / 2
-        taper = erf((E.mlat - E.mlatmean) / E.mlatsig).data[None, :]
+    if flagdip:
+        if lx3 == 1:
+            # meridional
+            S = E.Etarg * E.sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
+            taper = erf((E.mlat - E.mlatmean) / E.mlatsig).data[:, None]
+        elif lx2 > 1 and lx3 > 1:
+            # 3-D
+            S = E.Etarg * E.sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
+            taper = (
+                erf((E.mlon - E.mlonmean) / E.mlonsig).data[None, :]
+                * erf((E.mlat - E.mlatmean) / E.mlatsig).data[None, :]
+            )
+        else:
+            raise ValueError("zonal ribbon grid is not yet supported")
     else:
-        # 3D
-        S = E.Etarg * E.sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
-        taper = (
-            erf((E.mlon - E.mlonmean) / E.mlonsig).data[:, None]
-            * erf((E.mlat - E.mlatmean) / E.mlatsig).data[None, :]
-        )
+        if lx3 == 1:
+            # east-west
+            S = E.Etarg * E.sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
+            taper = erf((E.mlon - E.mlonmean) / E.mlonsig).data[:, None]
+        elif lx2 == 1:
+            # north-south
+            S = E.Etarg * E.sigx3 * xg["h3"][lx1, 0, lx3 // 2] * np.sqrt(np.pi) / 2
+            taper = erf((E.mlat - E.mlatmean) / E.mlatsig).data[None, :]
+        else:
+            # 3D
+            S = E.Etarg * E.sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
+            taper = (
+                erf((E.mlon - E.mlonmean) / E.mlonsig).data[:, None]
+                * erf((E.mlat - E.mlatmean) / E.mlatsig).data[None, :]
+            )
 
     assert S.ndim == 0, "S is a scalar"
 
     for t in E.time:
         E["flagdirich"].loc[t] = 1
-        E["Vmaxx1it"].loc[t] = S * taper
+
+        if gridflag == 1:
+            E["Vminx1it"].loc[t] = S * taper
+        else:
+            E["Vmaxx1it"].loc[t] = S * taper
 
     return E
+
+
+def Esigma(pwidth: float, pmax: float, pmin: float, px: np.ndarray) -> tuple[float, T.Any]:
+    """ Set width given a fraction of the coordinate an extent """
+
+    wsig = pwidth * (pmax - pmin)
+    xsig = pwidth * (px.max() - px.min())
+
+    return wsig, xsig
 
 
 def check_finite(v: np.ndarray, name: str):
