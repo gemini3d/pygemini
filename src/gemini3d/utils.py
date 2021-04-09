@@ -1,7 +1,6 @@
 from __future__ import annotations
 import subprocess
 import os
-import re
 import shutil
 from pathlib import Path
 import xarray
@@ -60,7 +59,7 @@ def git_meta(path: Path = None) -> dict[str, str]:
 
     git = shutil.which("git")
     meta = {
-        "git_version": None,
+        "version": None,
         "remote": None,
         "branch": None,
         "commit": None,
@@ -80,7 +79,7 @@ def git_meta(path: Path = None) -> dict[str, str]:
         logging.error("Git was not available or is too old")
         return meta
 
-    meta["git_version"] = ret.stdout.strip()
+    meta["version"] = ret.stdout.strip()
 
     ret = subprocess.run([git, "-C", str(path), "rev-parse"])
     if ret.returncode != 0:
@@ -97,19 +96,23 @@ def git_meta(path: Path = None) -> dict[str, str]:
         return meta
     meta["branch"] = ret.stdout.strip()
 
-    ret = subprocess.run([git, "-C", str(path), "remote", "-v"], stdout=subprocess.PIPE, text=True)
+    ret = subprocess.run(
+        [git, "-C", str(path), "remote", "get-url", "origin"], stdout=subprocess.PIPE, text=True
+    )
     if ret.returncode != 0:
         logging.error(f"{path} could not determine Git remote")
         return meta
-
-    pat = re.compile(r"^origin\s+(.*)\s+\(fetch\)")
-    mat = pat.match(ret.stdout.strip())
-    if mat:
-        meta["remote"] = mat.group(1)
+    meta["remote"] = ret.stdout.strip()
 
     ret = subprocess.run(
-        [git, "-C", str(path), "rev-parse", "--short", "HEAD"], stdout=subprocess.PIPE, text=True
+        [git, "-C", str(path), "describe", "--tags"], stdout=subprocess.PIPE, text=True
     )
+    if ret.returncode != 0:
+        ret = subprocess.run(
+            [git, "-C", str(path), "rev-parse", "--short", "HEAD"],
+            stdout=subprocess.PIPE,
+            text=True,
+        )
     if ret.returncode != 0:
         logging.error(f"{path} could not determine Git commit")
         return meta

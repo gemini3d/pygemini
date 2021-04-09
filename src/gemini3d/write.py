@@ -4,11 +4,11 @@ import xarray
 from pathlib import Path
 import typing as T
 import sys
+import json
 
 from .utils import git_meta
 from .hdf5 import write as h5write
 from .nc4 import write as ncwrite
-from . import namelist
 
 
 def state(out_file: Path, dat: xarray.Dataset, file_format: str = None, **kwargs):
@@ -85,7 +85,7 @@ def grid(cfg: dict[str, T.Any], xg: dict[str, T.Any], *, file_format: str = None
     else:
         raise ValueError(f'unknown file format {cfg["file_format"]}')
 
-    meta(cfg["out_dir"] / "setup_meta.nml", git_meta(), "setup_python")
+    meta(cfg["out_dir"] / "setup_grid.json", git_meta(), cfg)
 
 
 def Efield(E: xarray.Dataset, outdir: Path, file_format: str):
@@ -137,15 +137,24 @@ def precip(precip: dict[str, T.Any], outdir: Path, file_format: str):
         raise ValueError(f"unknown file format {file_format}")
 
 
-def meta(fn: Path, meta: dict[str, str], nml: str):
+def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]):
     """
-    writes Namelist file with metadata
+    writes JSON file with sim setup metadata
     """
 
     fn = fn.expanduser()
     if fn.is_dir():
-        fn = fn / "setup_meta.nml"
+        raise FileNotFoundError(f"{fn} is a directory, but I need a JSON file name to write.")
 
-    meta["python_version"] = sys.version
+    jm = {"python": {"platform": sys.platform, "version": sys.version}, "git": git_meta}
 
-    namelist.write(fn, nml, meta)
+    if "eq_dir" in cfg:
+        # JSON does not allow unescaped backslash
+        jm["equilibrium"] = {"eq_dir": cfg["eq_dir"].as_posix()}
+        md5f = cfg["eq_dir"] / "md5sum.txt"
+        if md5f.is_file():
+            jm["eq"]["md5"] = md5f.read_text().strip()
+
+    js = json.dumps(jm, sort_keys=True, indent=2)
+
+    fn.write_text(js)

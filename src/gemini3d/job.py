@@ -93,7 +93,7 @@ def runner(pr: dict[str, T.Any]) -> None:
     if pr.get("dryrun"):
         return None
 
-    write.meta(out_dir / "setup_meta.nml", git_meta(gemexe.parent), "setup_gemini")
+    write.meta(out_dir / "setup_run.json", git_meta(gemexe.parent), p)
 
     batcher = hpc_batch_detect()
     if batcher:
