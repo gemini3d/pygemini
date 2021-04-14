@@ -233,7 +233,7 @@ def data(
                 raise ValueError("J1 may have wrong permutation on read")
 
     if "time" not in dat:
-        dat.attrs["time"] = time(fn)
+        dat = dat.assign_coords({"time": time(fn)})
 
     if E0dir:
         fn_Efield = E0dir / fn.name

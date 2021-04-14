@@ -34,7 +34,7 @@ def state(fn: Path, dat: xarray.Dataset):
     if Dataset is None:
         raise ImportError("pip install netcdf4")
 
-    time = dat.time
+    time = to_datetime(dat.time)
 
     logging.info(f"state: {fn} {time}")
 

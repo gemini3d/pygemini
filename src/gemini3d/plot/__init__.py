@@ -9,6 +9,7 @@ import xarray
 
 from .. import read
 from .. import find
+from ..utils import to_datetime
 from .vis import grid2plotfun
 from ..config import datetime_range
 
@@ -341,7 +342,9 @@ def frame(
 
     for k, v in dat.items():
         if any(s in k for s in var):
-            fg = plotfun(dat.time, xg, v.squeeze(), k, wavelength=dat.get("wavelength"))
+            fg = plotfun(
+                to_datetime(dat.time), xg, v.squeeze(), k, wavelength=dat.get("wavelength")
+            )
             save_fig(fg, direc, k, saveplot_fmt, time)
 
 
@@ -377,7 +380,7 @@ def plot_input(
             # FIXME: for now we just look at electrons v[-1, ...]
             cmap_name = {"ns": "ne", "Ts": "Te", "vs1": "v1"}
             fg = plotfun(
-                dat.time,
+                to_datetime(dat.time),
                 xg,
                 v[-1, :, :, :].squeeze(),
                 cmap_name[k],

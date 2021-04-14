@@ -35,7 +35,7 @@ def state(fn: Path, dat: xarray.Dataset):
     if h5py is None:
         raise ImportError("pip install h5py")
 
-    time = dat.time
+    time = to_datetime(dat.time)
 
     logging.info(f"state: {fn} {time}")
 
