@@ -36,7 +36,7 @@ TOL = {
 def cli():
 
     p = argparse.ArgumentParser(description="Compare simulation file outputs and inputs")
-    p.add_argument("outdir", help="directory to compare")
+    p.add_argument("new_dir", help="directory to compare")
     p.add_argument("refdir", help="reference directory")
     p.add_argument("-only", help="only check in or out", choices=["in", "out"])
     p.add_argument(
@@ -46,19 +46,19 @@ def cli():
     )
     P = p.parse_args()
 
-    errs = compare_all(P.outdir, refdir=P.refdir, tol=TOL, file_format=P.file_format, only=P.only)
+    errs = compare_all(P.new_dir, refdir=P.refdir, tol=TOL, file_format=P.file_format, only=P.only)
 
     if errs:
         for e, v in errs.items():
             print(f"{e} has {v} errors", file=sys.stderr)
 
-        raise SystemExit(f"FAIL: compare {P.outdir}")
+        raise SystemExit(f"FAIL: compare {P.new_dir}")
 
-    print(f"OK: Gemini comparison {P.outdir} {P.refdir}")
+    print(f"OK: Gemini comparison {P.new_dir} {P.refdir}")
 
 
 def compare_all(
-    outdir: Path,
+    new_dir: Path,
     refdir: Path,
     tol: dict[str, float] = TOL,
     *,
@@ -69,24 +69,24 @@ def compare_all(
     """
     compare two directories across time steps
     """
-    outdir = Path(outdir).expanduser()
+    new_dir = Path(new_dir).expanduser()
     refdir = Path(refdir).expanduser()
 
-    if outdir.samefile(refdir):
-        raise OSError(f"reference and output are the same directory: {outdir}")
+    if new_dir.samefile(refdir):
+        raise OSError(f"reference and output are the same directory: {new_dir}")
 
     # %% fail hard if grid doesn't match, because otherwise data is non-sensical
-    if compare_grid(outdir, refdir, tol, file_format=file_format) != 0:
-        raise ValueError("grid values do not match {outdir}  {refdir}")
+    if compare_grid(new_dir, refdir, tol, file_format=file_format) != 0:
+        raise ValueError("grid values do not match {new_dir}  {refdir}")
 
     errs = {}
     if not only or only == "out":
-        e = compare_output(outdir, refdir, tol, file_format=file_format, plot=plot)
+        e = compare_output(new_dir, refdir, tol, file_format=file_format, plot=plot)
         if e:
             errs["out"] = e
 
     if not only or only == "in":
-        e = compare_input(outdir, refdir, tol, file_format=file_format, plot=plot)
+        e = compare_input(new_dir, refdir, tol, file_format=file_format, plot=plot)
         if e:
             errs["in"] = e
 
@@ -94,16 +94,16 @@ def compare_all(
 
 
 def compare_grid(
-    outdir: Path, refdir: Path, tol: dict[str, float] = TOL, *, file_format: str = None
+    new_dir: Path, refdir: Path, tol: dict[str, float] = TOL, *, file_format: str = None
 ) -> int:
 
     ref = read.grid(refdir)
-    new = read.grid(outdir, file_format=file_format)
+    new = read.grid(new_dir, file_format=file_format)
 
     if not ref:
         raise FileNotFoundError(f"No simulation grid in {refdir}")
     if not new:
-        raise FileNotFoundError(f"No simulation grid in {outdir}")
+        raise FileNotFoundError(f"No simulation grid in {new_dir}")
 
     errs = 0
 
@@ -122,7 +122,7 @@ def compare_grid(
 
 
 def compare_input(
-    outdir: Path,
+    new_dir: Path,
     refdir: Path,
     tol: dict[str, float] = TOL,
     *,
@@ -138,14 +138,14 @@ def compare_input(
     ref_indir = refdir / ref_params["indat_file"].parts[-2]
     ref = read.data(ref_indir / ref_params["indat_file"].name, var=names)
 
-    new_params = read.config(outdir)
+    new_params = read.config(new_dir)
     if not new_params:
-        raise FileNotFoundError(f"{outdir} does not appear to contain config.nml")
+        raise FileNotFoundError(f"{new_dir} does not appear to contain config.nml")
     if len(new_params["time"]) <= 1:
         raise ValueError(
-            f"{outdir} simulation did not run long enough, must run for more than one time step"
+            f"{new_dir} simulation did not run long enough, must run for more than one time step"
         )
-    new_indir = outdir / new_params["indat_file"].parts[-2]
+    new_indir = new_dir / new_params["indat_file"].parts[-2]
     new = read.data(new_indir / new_params["indat_file"].name, var=names)
 
     errs = 0
@@ -163,7 +163,7 @@ def compare_input(
             logging.error(f"{k}  {err_pct(a, b):.1f} %")
 
             if plot and plotdiff is not None:
-                plotdiff(a, b, k, ref_params["time"][0], outdir, refdir)
+                plotdiff(a, b, k, ref_params["time"][0], new_dir, refdir)
 
     if "precdir" in new_params:
         prec_errs = compare_precip(
@@ -264,7 +264,7 @@ def compare_Efield(
 
 
 def compare_output(
-    outdir: Path,
+    new_dir: Path,
     refdir: Path,
     tol: dict[str, float],
     *,
@@ -277,19 +277,19 @@ def compare_output(
     errs = 0
     a: np.ndarray = None
 
-    params = read.config(outdir)
+    params = read.config(new_dir)
     if not params:
-        raise FileNotFoundError(f"{outdir} does not appear to contain config.nml")
+        raise FileNotFoundError(f"{new_dir} does not appear to contain config.nml")
     if len(params["time"]) <= 1:
         raise ValueError(
-            f"{outdir} simulation did not run long enough, must run for more than one time step"
+            f"{new_dir} simulation did not run long enough, must run for more than one time step"
         )
 
     for i, t in enumerate(params["time"]):
         st = f"UTsec {t}"
-        A = read.frame(outdir, t, file_format=file_format)
+        A = read.frame(new_dir, t, file_format=file_format)
         if not A:
-            raise FileNotFoundError(f"{outdir} does not appear to contain data at {t}")
+            raise FileNotFoundError(f"{new_dir} does not appear to contain data at {t}")
         B = read.frame(refdir, t)
         # don't specify file_format for reference,
         # so that one reference file format can check multiple "out" format
@@ -307,7 +307,7 @@ def compare_output(
                 errs += 1
                 logging.error(f"{k} {st}   {err_pct(a, b):.1f}")
                 if plot and plotdiff is not None:
-                    plotdiff(a, b, k, t, outdir, refdir)
+                    plotdiff(a, b, k, t, new_dir, refdir)
         # %% assert time steps have unique output (earth always rotating...)
         if i > 1:
             names = ["ne", "v1", "v2", "v3"]
