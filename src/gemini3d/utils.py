@@ -59,10 +59,10 @@ def git_meta(path: Path = None) -> dict[str, str]:
 
     git = shutil.which("git")
     meta = {
-        "version": None,
-        "remote": None,
-        "branch": None,
-        "commit": None,
+        "version": "",
+        "remote": "",
+        "branch": "",
+        "commit": "",
         "porcelain": "false",
     }
     if not git:
