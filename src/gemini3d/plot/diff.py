@@ -48,8 +48,11 @@ def plotdiff(
 
     fg.suptitle(ttxt)
 
-    fn = new_dir / f"{name}-diff-{tstr.replace(':','')}.png"
-    print("writing", fn)
+    plot_dir = new_dir / "plot_diff"
+    plot_dir.mkdir(exist_ok=True)
+
+    fn = plot_dir / f"{name}-{tstr.replace(':','')}.png"
+    print("write: ", fn)
     fg.savefig(fn)
 
 
