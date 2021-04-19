@@ -26,8 +26,8 @@ def str2func(name: str) -> T.Callable:
     expects one of (in priority order):
 
     1. os.getcwd()/name.py containing function name()
-    2. gemini3d.<foo> <foo>/__init__.py containing function name()
-    3. gemiin3d.<foo> <foo>/name.py module file containing function name()
+    2. gemiin3d.<foo> <foo>/name.py module file containing function name()
+    3. gemini3d.<foo> <foo>/__init__.py containing function name()
 
 
     Examples:
@@ -41,12 +41,12 @@ def str2func(name: str) -> T.Callable:
 
     if mod_name:
         try:
-            # __init__.py with function
-            mod = importlib.import_module(mod_name)
-            return getattr(mod, func_name)
-        except AttributeError:
             # file with function of same name
             mod = importlib.import_module(name)
+            return getattr(mod, func_name)
+        except AttributeError:
+            # __init__.py with function
+            mod = importlib.import_module(mod_name)
             return getattr(mod, func_name)
     else:
         # file in current working directory
