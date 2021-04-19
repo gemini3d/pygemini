@@ -2,6 +2,7 @@ from __future__ import annotations
 import typing as T
 import xarray
 import numpy as np
+import logging
 
 from ..config import datetime_range
 
@@ -11,23 +12,50 @@ def precip_grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     grid cells will be interpolated to grid, so 100x100 is arbitrary
     """
 
+    # %% determine what type of grid (cartesian or dipole) we are dealing with
+    if (xg["h1"] > 1.01).any():
+        flagdip = True
+        logging.info('Dipole grid detected')
+    else:
+        flagdip = False
+        logging.info('Cartesian grid detected')
+
+    llon = cfg.get("precip_llon", 100)
+    llat = cfg.get("precip_llat", 100)
+
     lx2 = None
     lx3 = None
-
-    llon = 100
-    llat = 100
-    # NOTE: cartesian-specific code
     for k in ("lx", "lxs"):
         if k in xg:
             _, lx2, lx3 = xg[k]
             break
-    if lx2 == 1:
-        llon = 1
-    elif lx3 == 1:
-        llat = 1
+
+    if flagdip:
+        # dipole
+        if lx2 == 1:
+            llat = 1
+        elif lx3 == 1:
+            llon = 1
+    else:
+        if lx2 == 1:
+            llon = 1
+        elif lx3 == 1:
+            llat = 1
 
     if lx2 is None:
         raise ValueError("size data not in Efield grid")
+
+    # %% CREATE PRECIPITATION INPUT DATA
+    """
+    Qit: energy flux [mW m^-2]
+    E0it: characteristic energy [eV]
+    NOTE: since Fortran Gemini interpolates between time steps,
+    having E0 default to zero is NOT appropriate, as the file before and/or
+    after precipitation would interpolate from E0=0 to desired value, which
+    is decidely non-physical.
+    We default E0 to NaN so that it's obvious (by Gemini emitting an
+    error) that an unexpected input has occurred.
+    """
 
     thetamin = xg["theta"].min()
     thetamax = xg["theta"].max()
