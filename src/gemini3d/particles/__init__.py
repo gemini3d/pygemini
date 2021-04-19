@@ -37,6 +37,9 @@ def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
         pg["Q"][i, :, :] = gaussian2d(pg, cfg["Qprecip"], cfg["Qprecip_background"])
         pg["E0"][i, :, :] = cfg["E0precip"]
 
+    assert np.isfinite(pg["Q"]).all(), "Q flux must be finite"
+    assert (pg["Q"] >= 0).all(), "Q flux must be non-negative"
+
     # %% CONVERT THE ENERGY TO EV
     # E0 = max(E0,0.100);
     # E0 = E0*1e3;

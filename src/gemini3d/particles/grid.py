@@ -15,10 +15,10 @@ def precip_grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     # %% determine what type of grid (cartesian or dipole) we are dealing with
     if (xg["h1"] > 1.01).any():
         flagdip = True
-        logging.info('Dipole grid detected')
+        logging.info("Dipole grid detected")
     else:
         flagdip = False
-        logging.info('Cartesian grid detected')
+        logging.info("Cartesian grid detected")
 
     llon = cfg.get("precip_llon", 100)
     llat = cfg.get("precip_llat", 100)
