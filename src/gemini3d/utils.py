@@ -8,6 +8,7 @@ import numpy as np
 from datetime import datetime
 import typing as T
 import logging
+import importlib
 
 try:
     import psutil
@@ -18,6 +19,40 @@ except ImportError:
 Pathlike = T.Union[str, Path]
 
 __all__ = ["to_datetime", "git_meta", "get_cpu_count", "datetime2ymd_hourdec"]
+
+
+def str2func(name: str) -> T.Callable:
+    """
+    expects one of (in priority order):
+
+    1. os.getcwd()/name.py containing function name()
+    2. gemini3d.<foo> <foo>/__init__.py containing function name()
+    3. gemiin3d.<foo> <foo>/name.py module file containing function name()
+
+
+    Examples:
+
+    1. os.getcwd()/perturb.py with function perturb()
+    2. gemini3d.efield.Efield_erf returns function Efield_erf()
+    """
+
+    mod_name = ".".join(name.split(".")[:-1])
+    func_name = name.split(".")[-1]
+
+    if mod_name:
+        try:
+            # __init__.py with function
+            mod = importlib.import_module(mod_name)
+            return getattr(mod, func_name)
+        except AttributeError:
+            # file with function of same name
+            mod = importlib.import_module(name)
+            return getattr(mod, func_name)
+    else:
+        # file in current working directory
+        mod = importlib.import_module(func_name)
+
+    return getattr(mod, func_name)
 
 
 def to_datetime(times: xarray.DataArray | np.datetime64 | datetime) -> datetime:

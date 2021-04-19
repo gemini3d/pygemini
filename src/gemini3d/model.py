@@ -4,7 +4,6 @@ setup a new simulation
 
 from __future__ import annotations
 import logging
-import importlib
 import argparse
 from pathlib import Path
 import typing as T
@@ -17,6 +16,7 @@ from .grid import cartesian
 from .plasma import equilibrium_state, equilibrium_resample
 from .efield import Efield_BCs
 from .particles import particles_BCs
+from .utils import str2func
 from . import namelist
 from . import write
 
@@ -193,13 +193,8 @@ def postprocess(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> None:
         )
 
         for name in funcs:
-            mod_name = ".".join(name.split(".")[:-1])
-            func_name = name.split(".")[-1]
-            if not mod_name:
-                # file with single function of same name e.g. perturb.py with function perturb()
-                mod_name = func_name
-            mod = importlib.import_module(mod_name)
-            getattr(mod, func_name)(cfg, xg)
+            func = str2func(name)
+            func(cfg, xg)
 
         return
 
