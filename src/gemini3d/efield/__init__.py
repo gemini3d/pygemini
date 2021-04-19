@@ -147,8 +147,9 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         if "Jtarg_function" in cfg:
             func = str2func(cfg["Jtarg_function"])
         else:
-            func = Jcurrent_gaussian
-        E = Jcurrent_gaussian(E, gridflag)
+            func = str2func("gemini3d.efield.Jcurrent_gaussian")
+
+        E = func(E, gridflag)
     else:
         # background only
         pass
@@ -169,29 +170,6 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     # FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
     # THE EFIELD DATA DO NOT TYPICALLY NEED TO BE SMOOTHED.
     write.Efield(E, cfg["E0dir"], cfg["file_format"])
-
-    return E
-
-
-def Jcurrent_gaussian(E: xarray.Dataset, gridflag: int) -> xarray.Dataset:
-
-    S = (
-        E["Jtarg"]
-        * np.exp(-((E.mlon - E.mlonmean) ** 2) / 2 / E.mlonsig ** 2)
-        * np.exp(-((E.mlat - E.mlatmean - 1.5 * E.mlatsig) ** 2) / 2 / E.mlatsig ** 2)
-    )
-
-    for t in E.time[6:]:
-        E["flagdirich"].loc[t] = 0
-        # could have different boundary types for different times
-        J = S - E.Jtarg * np.exp(-((E.mlon - E.mlonmean) ** 2) / 2 / E.mlonsig ** 2) * np.exp(
-            -((E.mlat - E.mlatmean + 1.5 * E.mlatsig) ** 2) / 2 / E.mlatsig ** 2
-        )
-
-        if gridflag == 1:
-            E["Vminx1it"].loc[t] = J
-        else:
-            E["Vmaxx1it"].loc[t] = J
 
     return E
 
