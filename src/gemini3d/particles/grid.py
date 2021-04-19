@@ -68,13 +68,15 @@ def precip_grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     latbuf = 0.01 * (mlatmax - mlatmin)
     lonbuf = 0.01 * (mlonmax - mlonmin)
 
+    time = datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtprec"])
+
     pg = xarray.Dataset(
         {
-            "Q": (("time", "mlon", "mlat"), np.zeros((len(cfg["time"]), llon, llat))),
-            "E0": (("time", "mlon", "mlat"), np.zeros((len(cfg["time"]), llon, llat))),
+            "Q": (("time", "mlon", "mlat"), np.zeros((len(time), llon, llat))),
+            "E0": (("time", "mlon", "mlat"), np.zeros((len(time), llon, llat))),
         },
         coords={
-            "time": datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtprec"]),
+            "time": time,
             "mlat": np.linspace(mlatmin - latbuf, mlatmax + latbuf, llat),
             "mlon": np.linspace(mlonmin - lonbuf, mlonmax + lonbuf, llon),
         },
