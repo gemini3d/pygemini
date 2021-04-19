@@ -5,6 +5,7 @@ import xarray
 
 from .. import write
 from .grid import precip_grid
+from .gaussian2d import gaussian2d
 
 
 def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
@@ -33,7 +34,7 @@ def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
 
     # NOTE: in future, E0 could be made time-dependent in config.nml as 1D array
     for i in range(i_on, i_off):
-        pg["Q"][i, :, :] = precip_gaussian2d(pg, cfg["Qprecip"], cfg["Qprecip_background"])
+        pg["Q"][i, :, :] = gaussian2d(pg, cfg["Qprecip"], cfg["Qprecip_background"])
         pg["E0"][i, :, :] = cfg["E0precip"]
 
     # %% CONVERT THE ENERGY TO EV
@@ -46,26 +47,3 @@ def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
     # THE EFIELD DATA DO NOT NEED TO BE SMOOTHED.
 
     write.precip(pg, cfg["precdir"], cfg["file_format"])
-
-
-def precip_gaussian2d(pg: xarray.Dataset, Qpeak: float, Qbackground: float) -> np.ndarray:
-
-    mlon_mean = pg.mlon.mean().item()
-    mlat_mean = pg.mlat.mean().item()
-
-    if "mlon_sigma" in pg.attrs and "mlat_sigma" in pg.attrs:
-        Q = (
-            Qpeak
-            * np.exp(-((pg.mlon.data[:, None] - mlon_mean) ** 2) / (2 * pg.mlon_sigma ** 2))
-            * np.exp(-((pg.mlat.data[None, :] - mlat_mean) ** 2) / (2 * pg.mlat_sigma ** 2))
-        )
-    elif "mlon_sigma" in pg.attrs:
-        Q = Qpeak * np.exp(-((pg.mlon.data[:, None] - mlon_mean) ** 2) / (2 * pg.mlon_sigma ** 2))
-    elif "mlat_sigma" in pg.attrs:
-        Q = Qpeak * np.exp(-((pg.mlat.data[None, :] - mlat_mean) ** 2) / (2 * pg.mlat_sigma ** 2))
-    else:
-        raise LookupError("precipation must be defined in latitude, longitude or both")
-
-    Q[Q < Qbackground] = Qbackground
-
-    return Q
