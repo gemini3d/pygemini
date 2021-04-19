@@ -2,7 +2,6 @@ from matplotlib.figure import Figure
 import numpy as np
 from pathlib import Path
 from datetime import datetime
-import logging
 import argparse
 from dateutil.parser import parse
 
@@ -19,32 +18,47 @@ def plotdiff(
     refdir: Path,
 ):
 
+    assert A.shape == B.shape, "size of new and ref arrays don't match"
+    assert A.ndim <= 3, "for 3D or 2D arrays only"
+
+    lx = read.simsize(new_dir)
+    is3d = lx[1] != 1 and lx[2] != 1
+
     A = A.squeeze()
     B = B.squeeze()
 
     if A.ndim == 3:
-        # loop over the species, which are in the first dimension
-        for i in range(A.shape[0]):
-            plotdiff(A[i], B[i], f"{name}-{i}", time, new_dir, refdir)
+        if A.shape[0] == 7:
+            # loop over the species, which are in the first dimension
+            for i in range(A.shape[0]):
+                plotdiff(A[i], B[i], f"{name}-{i}", time, new_dir, refdir)
+        elif is3d:
+            # pick x2 and x3 slice halfway
+            i = round(A.shape[2] / 2)
+            plotdiff(A[:, :, i], B[:, :, i], name + "-x2", time, new_dir, refdir)
+            i = round(A.shape[1] / 2)
+            plotdiff(A[:, i, :], B[:, i, :], name + "-x3", time, new_dir, refdir)
+        else:
+            raise ValueError("unexpected case, 2D data but in if-tree only for 3D")
 
-    if A.ndim not in (1, 2):
-        logging.error(f"skipping diff plot: {name}")
-        return None
+        return
 
     fg = Figure(constrained_layout=True, figsize=(12, 5))
     axs = fg.subplots(1, 3)
 
     if A.ndim == 2:
-        diff2d(A, B, name, fg, axs)
+        maxdiff = diff2d(A, B, name, fg, axs)
     elif A.ndim == 1:
-        diff1d(A, B, name, fg, axs)
+        maxdiff = diff1d(A, B, name, fg, axs)
+    else:
+        raise ValueError("expected 2D or 1D")
 
     axs[0].set_title(str(new_dir))
     axs[1].set_title(str(refdir))
     axs[2].set_title(f"diff: {name}")
 
     tstr = time.isoformat()
-    ttxt = f"{name}  {tstr}"
+    ttxt = f"{name}  {tstr}  maxDiff: {maxdiff}"
 
     fg.suptitle(ttxt)
 
@@ -56,16 +70,20 @@ def plotdiff(
     fg.savefig(fn)
 
 
-def diff1d(A: np.ndarray, B: np.ndarray, name: str, fg, axs):
+def diff1d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
 
     axs[0].plot(A)
 
     axs[1].plot(B)
 
-    axs[2].plot(A - B)
+    d = A - B
+
+    axs[2].plot(d)
+
+    return abs(d.max())
 
 
-def diff2d(A: np.ndarray, B: np.ndarray, name: str, fg, axs):
+def diff2d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
 
     cmap = "bwr" if name.startswith(("J", "v")) else None
 
@@ -83,6 +101,8 @@ def diff2d(A: np.ndarray, B: np.ndarray, name: str, fg, axs):
 
     hi = axs[2].pcolormesh(A - B, cmap="bwr", vmin=-b, vmax=b)
     fg.colorbar(hi, ax=axs[2])
+
+    return abs(dAB.max())
 
 
 if __name__ == "__main__":
