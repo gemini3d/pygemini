@@ -1,9 +1,9 @@
 from __future__ import annotations
 import typing as T
 import numpy as np
-import xarray
 
 from .. import write
+from ..utils import str2func
 from .grid import precip_grid
 from .gaussian2d import gaussian2d
 
@@ -32,9 +32,19 @@ def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
     else:
         i_off = pg.time.size
 
+    assert np.isfinite(cfg["E0precip"]), "E0 precipitation must be finite"
+    assert cfg["E0precip"] > 0, "E0 precip must be positive"
+    assert cfg["E0precip"] < 100e6, "E0 precip must not be relativistic 100 MeV"
+
     # NOTE: in future, E0 could be made time-dependent in config.nml as 1D array
+
+    if "Qprecip_function" in cfg:
+        Qfunc = str2func(cfg["Qprecip_function"])
+    else:
+        Qfunc = str2func("gemini3d.particles.gaussian2d")
+
     for i in range(i_on, i_off):
-        pg["Q"][i, :, :] = gaussian2d(pg, cfg["Qprecip"], cfg["Qprecip_background"])
+        pg["Q"][i, :, :] = Qfunc(pg, cfg["Qprecip"], cfg["Qprecip_background"])
         pg["E0"][i, :, :] = cfg["E0precip"]
 
     assert np.isfinite(pg["Q"]).all(), "Q flux must be finite"
