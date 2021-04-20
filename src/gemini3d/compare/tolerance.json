@@ -1,0 +1,12 @@
+{
+  "rtol": 1e-5,
+  "rtolN": 1e-5,
+  "rtolT": 1e-5,
+  "rtolJ": 1e-5,
+  "rtolV": 1e-5,
+  "atol": 1e-8,
+  "atolN": 1e9,
+  "atolT": 100,
+  "atolJ": 1e-7,
+  "atolV": 50
+}

@@ -1,12 +1,17 @@
-from matplotlib.figure import Figure
 import numpy as np
 from pathlib import Path
 from datetime import datetime
 import argparse
+import logging
 from dateutil.parser import parse
 
-from . import read
+from .. import read
 from ..utils import to_datetime
+
+try:
+    from matplotlib.figure import Figure
+except ImportError:
+    Figure = None
 
 
 def plotdiff(
@@ -17,6 +22,10 @@ def plotdiff(
     new_dir: Path,
     refdir: Path,
 ):
+
+    if Figure is None:
+        logging.error("Matplotlib not available")
+        return
 
     assert A.shape == B.shape, "size of new and ref arrays don't match"
     assert A.ndim <= 3, "for 3D or 2D arrays only"
