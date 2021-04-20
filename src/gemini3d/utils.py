@@ -44,7 +44,7 @@ def str2func(name: str) -> T.Callable:
             # file with function of same name
             mod = importlib.import_module(name)
             return getattr(mod, func_name)
-        except AttributeError:
+        except (ModuleNotFoundError, AttributeError):
             # __init__.py with function
             mod = importlib.import_module(mod_name)
             return getattr(mod, func_name)
