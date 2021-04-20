@@ -153,7 +153,7 @@ def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]):
         jm["equilibrium"] = {"eq_dir": cfg["eq_dir"].as_posix()}
         md5f = cfg["eq_dir"] / "md5sum.txt"
         if md5f.is_file():
-            jm["eq"]["md5"] = md5f.read_text().strip()
+            jm["equilibrium"]["md5"] = md5f.read_text().strip()
 
     js = json.dumps(jm, sort_keys=True, indent=2)
 
