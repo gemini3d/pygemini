@@ -89,7 +89,7 @@ def diff1d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
 
     axs[2].plot(d)
 
-    return abs(d.max())
+    return abs(d.max().data)
 
 
 def diff2d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
@@ -111,7 +111,7 @@ def diff2d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
     hi = axs[2].pcolormesh(A - B, cmap="bwr", vmin=-b, vmax=b)
     fg.colorbar(hi, ax=axs[2])
 
-    return abs(dAB.max())
+    return abs(dAB.max().data)
 
 
 if __name__ == "__main__":

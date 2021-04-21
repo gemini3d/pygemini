@@ -56,6 +56,10 @@ def compare_input(
             logging.error(f"{k}  {err_pct(a, b):.1f} %")
 
             if plot:
+                if k == "ns":
+                    # just plot electron density
+                    a = a[-1]
+                    b = b[-1]
                 plotdiff(a, b, k, ref_params["time"][0], new_dir, refdir)
 
     if "precdir" in new_params:
