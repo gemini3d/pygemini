@@ -1,4 +1,5 @@
 import numpy as np
+import xarray
 from pathlib import Path
 from datetime import datetime
 import argparse
@@ -15,13 +16,22 @@ except ImportError:
 
 
 def plotdiff(
-    A: np.ndarray,
-    B: np.ndarray,
+    A: xarray.DataArray,
+    B: xarray.DataArray,
     name: str,
     time: datetime,
     new_dir: Path,
     refdir: Path,
+    imax: int = None,
 ):
+    """
+
+    Parameters
+    ----------
+
+    imax: int, optional
+        index of maximum difference
+    """
 
     if Figure is None:
         logging.error("Matplotlib not available")
@@ -42,11 +52,12 @@ def plotdiff(
             for i in range(A.shape[0]):
                 plotdiff(A[i], B[i], f"{name}-{i}", time, new_dir, refdir)
         elif is3d:
-            # pick x2 and x3 slice halfway
-            i = round(A.shape[2] / 2)
-            plotdiff(A[:, :, i], B[:, :, i], name + "-x2", time, new_dir, refdir)
-            i = round(A.shape[1] / 2)
-            plotdiff(A[:, i, :], B[:, i, :], name + "-x3", time, new_dir, refdir)
+            # pick x2 and x3 slice at maximum difference
+            im = abs(A - B).argmax(dim=A.dims)
+            ix2 = im["x2"].data
+            ix3 = im["x3"].data
+            plotdiff(A[:, :, ix3], B[:, :, ix3], name + "-x2", time, new_dir, refdir, ix3)
+            plotdiff(A[:, ix2, :], B[:, ix2, :], name + "-x3", time, new_dir, refdir, ix2)
         else:
             raise ValueError("unexpected case, 2D data but in if-tree only for 3D")
 
@@ -67,7 +78,9 @@ def plotdiff(
     axs[2].set_title(f"diff: {name}")
 
     tstr = time.isoformat()
-    ttxt = f"{name}  {tstr}  maxDiff: {maxdiff}"
+    ttxt = f"{name}  {tstr}  maxDiff: {maxdiff:.1e}"
+    if imax is not None:
+        ttxt += f" maxIndex: {imax}"
 
     fg.suptitle(ttxt)
 
@@ -89,7 +102,7 @@ def diff1d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
 
     axs[2].plot(d)
 
-    return abs(d.max().data)
+    return abs(d).max().data
 
 
 def diff2d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
@@ -111,7 +124,7 @@ def diff2d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
     hi = axs[2].pcolormesh(A - B, cmap="bwr", vmin=-b, vmax=b)
     fg.colorbar(hi, ax=axs[2])
 
-    return abs(dAB.max().data)
+    return abs(dAB).max().data
 
 
 if __name__ == "__main__":
