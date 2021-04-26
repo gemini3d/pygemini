@@ -2,6 +2,7 @@
 compare simulation outputs to verify model performance
 """
 
+from __future__ import annotations
 from pathlib import Path
 
 from .input import compare_input
