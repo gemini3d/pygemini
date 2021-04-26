@@ -14,6 +14,18 @@ Pathlike = T.Union[str, Path]
 
 
 def extract_zst(archive: Pathlike, out_path: Pathlike):
+    """extract .zst file
+    works on Windows, Linux, MacOS, etc.
+
+    Parameters
+    ----------
+
+    archive: pathlib.Path or str
+      .zst file to extract
+
+    out_path: pathlib.Path or str
+      directory to extract files and directories to
+    """
     if zstandard is None:
         raise ImportError("pip install zstandard")
 
