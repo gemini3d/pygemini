@@ -51,7 +51,7 @@ def config(path: Path) -> dict[str, T.Any]:
 
 
 def simsize(path: Path) -> tuple[int, ...]:
-    """ get simulation dimensions """
+    """get simulation dimensions"""
 
     fn = find.simsize(path)
     if not fn:

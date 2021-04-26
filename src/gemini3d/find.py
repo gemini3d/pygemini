@@ -10,13 +10,13 @@ FILE_FORMATS = [".h5", ".nc", ".dat"]
 
 
 def config(path: Path) -> Path:
-    """ given a path or config filename, return the full path to config file """
+    """given a path or config filename, return the full path to config file"""
 
     return find_stem(path, "config", "nml")
 
 
 def simsize(path: Path, suffix: str = None) -> Path:
-    """ gets path to simsize file """
+    """gets path to simsize file"""
 
     return find_stem(path, "simsize", suffix)
 
@@ -72,7 +72,7 @@ def grid(path: Path) -> Path:
 
 
 def find_stem(path: Path, stem: str, suffix: str = None) -> Path:
-    """find file containing stem """
+    """find file containing stem"""
 
     path = Path(path).expanduser()
 

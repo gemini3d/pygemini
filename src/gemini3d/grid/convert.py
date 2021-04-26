@@ -84,7 +84,7 @@ def geog2geomag(glon: np.ndarray, glat: np.ndarray) -> tuple[np.ndarray, np.ndar
 
 
 def geomag2geog(phi: np.ndarray, theta: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """ convert from geomagnetic to geographic """
+    """convert from geomagnetic to geographic"""
 
     theta = np.atleast_1d(theta)
     phi = np.atleast_1d(phi)

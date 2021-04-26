@@ -42,7 +42,7 @@ def build(
     dryrun: bool = False,
     install: bool = True,
 ):
-    """ build and install with CMake """
+    """build and install with CMake"""
     cmake = exe()
 
     cache_file = build_dir / "CMakeCache.txt"

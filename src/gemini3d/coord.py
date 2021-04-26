@@ -7,7 +7,7 @@ tau = math.tau
 
 
 def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """ geomagnetic to geographic """
+    """geomagnetic to geographic"""
 
     # FIXME: this is for year 1985, see Schmidt spherical harmonic in MatGemini
     thetan = math.radians(11)
@@ -47,7 +47,7 @@ def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> tuple[np.ndarray, np.nd
 
 
 def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """ geographic to geomagnetic """
+    """geographic to geomagnetic"""
 
     # FIXME: this is for year 1985, see Schmidt spherical harmonic in MatGemini
     thetan = math.radians(11)

@@ -36,7 +36,7 @@ def os_release() -> list[str]:
 
 
 def parse_os_release(txt: str) -> list[str]:
-    """ parse /etc/os-release text """
+    """parse /etc/os-release text"""
 
     C = ConfigParser(inline_comment_prefixes=("#", ";"))
     C.read_string(txt)

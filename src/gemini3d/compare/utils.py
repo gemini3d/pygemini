@@ -5,7 +5,7 @@ import json
 
 
 def err_pct(a: np.ndarray, b: np.ndarray) -> float:
-    """ compute maximum error percent """
+    """compute maximum error percent"""
 
     return (abs(a - b).max() / abs(b).max()).item() * 100
 

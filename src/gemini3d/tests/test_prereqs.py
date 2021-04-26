@@ -35,7 +35,7 @@ def test_cmake_notfound():
 
 @pytest.mark.parametrize("name", ["lapack", "scalapack"])
 def test_libs(name, tmp_path):
-    """ test that exception isn't raised for dryrun """
+    """test that exception isn't raised for dryrun"""
     dirs = {"prefix": tmp_path / f"install/{name}", "workdir": tmp_path / f"build/{name}"}
 
     gcp.setup_libs(name, dirs, compiler="gcc", wipe=True, dryrun=True)

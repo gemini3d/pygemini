@@ -9,7 +9,7 @@ from .gaussian2d import gaussian2d
 
 
 def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
-    """ write particle precipitation to disk """
+    """write particle precipitation to disk"""
 
     pg = precip_grid(cfg, xg)
 

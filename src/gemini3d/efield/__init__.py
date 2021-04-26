@@ -175,7 +175,7 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
 
 def Esigma(pwidth: float, pmax: float, pmin: float, px: np.ndarray) -> tuple[float, T.Any]:
-    """ Set width given a fraction of the coordinate an extent """
+    """Set width given a fraction of the coordinate an extent"""
 
     wsig = pwidth * (pmax - pmin)
     xsig = pwidth * (px.max() - px.min())

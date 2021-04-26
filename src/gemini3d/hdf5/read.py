@@ -63,7 +63,7 @@ def simsize(path: Path) -> tuple[int, ...]:
 
 
 def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
-    """ detect output type """
+    """detect output type"""
 
     if h5py is None:
         raise ImportError("h5py missing or broken")
