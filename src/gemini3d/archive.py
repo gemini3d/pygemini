@@ -13,13 +13,13 @@ except ImportError:
 Pathlike = T.Union[str, Path]
 
 
-def extract_zst(archive: Pathlike, out_path: Pathlike, overwrite: bool = False):
+def extract_zst(archive: Pathlike, out_path: Pathlike):
     if zstandard is None:
         raise ImportError("pip install zstandard")
 
     archive = Path(archive).expanduser().resolve()
-    out_path = Path(out_path).expanduser()
-    out_path.mkdir(exist_ok=True)
+    out_path = Path(out_path).expanduser().resolve()
+    # need .resolve() in case intermediate relative dir doesn't exist
 
     dctx = zstandard.ZstdDecompressor()
 
@@ -31,22 +31,18 @@ def extract_zst(archive: Pathlike, out_path: Pathlike, overwrite: bool = False):
             z.extractall(out_path)
 
 
-def extract_zip(archive: Pathlike, outpath: Pathlike, overwrite: bool = False):
+def extract_zip(archive: Pathlike, outpath: Pathlike):
     outpath = Path(outpath).expanduser().resolve()
     # need .resolve() in case intermediate relative dir doesn't exist
-    if outpath.is_dir() and not overwrite:
-        return
 
     archive = Path(archive).expanduser().resolve()
     with zipfile.ZipFile(archive) as z:
         z.extractall(outpath)
 
 
-def extract_tar(archive: Pathlike, outpath: Pathlike, overwrite: bool = False):
+def extract_tar(archive: Pathlike, outpath: Pathlike):
     outpath = Path(outpath).expanduser().resolve()
     # need .resolve() in case intermediate relative dir doesn't exist
-    if outpath.is_dir() and not overwrite:
-        return
 
     archive = Path(archive).expanduser().resolve()
     if not archive.is_file():
