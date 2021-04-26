@@ -13,7 +13,8 @@ from scipy.interpolate import interp1d, interp2d, interpn
 from . import read
 from . import LSP, SPECIES
 from . import write
-from .web import url_retrieve, extract_zip
+from .web import url_retrieve
+from .archive import extract_zst
 from .msis import msis_setup
 
 # CONSTANTS
@@ -33,8 +34,8 @@ def equilibrium_resample(p: dict[str, T.Any], xg: dict[str, T.Any]):
             raise FileNotFoundError(
                 f"{p['eq_dir']} not found and eq_url not specified in {p['nml']}"
             )
-        url_retrieve(p["eq_url"], p["eq_zip"])
-        extract_zip(p["eq_zip"], p["eq_dir"])
+        url_retrieve(p["eq_url"], p["eq_archive"])
+        extract_zst(p["eq_archive"], p["eq_dir"])
 
     # %% READ Equilibrium SIMULATION INFO
     peq = read.config(p["eq_dir"])

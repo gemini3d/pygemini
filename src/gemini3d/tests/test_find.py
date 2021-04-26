@@ -63,4 +63,4 @@ def test_frame(name, tmp_path):
         pytest.skip(f"failed to download reference data {e}")
 
     fn = find.frame(test_dir, t)
-    assert fn.name == "20130220_18000.000001.h5"
+    assert fn.name == "20130220_18000.000000.h5"

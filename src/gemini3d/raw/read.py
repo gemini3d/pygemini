@@ -72,7 +72,7 @@ def grid(fn: Path, shape: bool = False) -> dict[str, T.Any]:
 
 
 def grid2(fn: Path, lxs: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
-    """ for Efield """
+    """for Efield"""
     if not fn.is_file():
         raise FileNotFoundError(fn)
 

@@ -22,7 +22,8 @@ from pathlib import Path
 
 from . import cmake
 from .utils import get_cpu_count
-from .web import url_retrieve, extract_tar, git_download
+from .web import url_retrieve, git_download
+from .archive import extract_tar
 
 # ========= user parameters ======================
 BUILDDIR = "build"
@@ -278,7 +279,7 @@ def hdf5(dirs: dict[str, Path], env: T.Mapping[str, str]):
 
 
 def openmpi(dirs: dict[str, Path], env: T.Mapping[str, str], version: str, dryrun: bool = False):
-    """ build and install OpenMPI """
+    """build and install OpenMPI"""
     if os.name == "nt":
         raise EnvironmentError(
             """
@@ -328,7 +329,7 @@ Use MPI on Windows via any of (choose one):
 
 
 def lapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
-    """ build and insall Lapack """
+    """build and insall Lapack"""
     install_dir = dirs["prefix"] / LAPACK_DIR
     source_dir = dirs["workdir"] / LAPACK_DIR
     build_dir = source_dir / BUILDDIR
@@ -340,7 +341,7 @@ def lapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: 
 
 
 def scalapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
-    """ build and install Scalapack """
+    """build and install Scalapack"""
     install_dir = dirs["prefix"] / SCALAPACK_DIR
     source_dir = dirs["workdir"] / SCALAPACK_DIR
     build_dir = source_dir / BUILDDIR
@@ -363,7 +364,7 @@ def scalapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryru
 
 
 def mumps(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
-    """ build and install Mumps """
+    """build and install Mumps"""
     install_dir = dirs["prefix"] / MUMPS_DIR
     source_dir = dirs["workdir"] / MUMPS_DIR
     build_dir = source_dir / BUILDDIR

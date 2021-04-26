@@ -1,16 +1,16 @@
 from __future__ import annotations
-import hashlib
 import urllib.request
 import urllib.error
+import hashlib
 import socket
 import json
-import zipfile
-import tarfile
 import typing as T
 from pathlib import Path
 import importlib.resources
 import shutil
 import subprocess
+
+from .archive import extract_zst, extract_zip, extract_tar
 
 Pathlike = T.Union[str, Path]
 
@@ -45,43 +45,44 @@ def git_download(path: Path, repo: str, tag: str = None):
 
 def download_and_extract(test_name: str, data_dir: Path) -> Path:
 
-    with importlib.resources.path("gemini3d.tests", "gemini3d_url.json") as url_ini:
+    with importlib.resources.path("gemini3d.tests", "ref_data.json") as url_ini:
         z = get_test_params(test_name, url_ini, data_dir)
 
         if z["dir"].is_dir():
             return z["dir"]
 
         try:
-            url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
+            url_retrieve(z["url"], z["archive"], ("sha256", z["sha256"]))
         except (ConnectionError, ValueError) as e:
             raise ConnectionError(f"problem downloading reference data {e}")
 
-        try:
-            extract_zip(z["zip"], z["dir"])
-        except zipfile.BadZipFile:
-            # bad download, delete and try again (maybe someone hit Ctrl-C during download)
-            z["zip"].unlink()
-            url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
-            extract_zip(z["zip"], z["dir"])
+        if z["archive"].suffix == ".zst":
+            extract_zst(z["archive"], z["dir"])
+        elif z["archive"].suffix == ".zip":
+            extract_zip(z["archive"], z["dir"])
+        else:
+            extract_tar(z["archive"], z["dir"])
 
     return z["dir"]
 
 
 def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> dict[str, T.Any]:
-    """ get URL and MD5 for a test name """
-    json_str = Path(url_file).expanduser().read_text()
-    urls = json.loads(json_str)
+    """get URL and hash for a test name"""
+
+    urls = json.loads(Path(url_file).expanduser().read_text())
+
+    tests = urls["tests"][test_name]
 
     z = {
-        "url": urls[test_name]["url"],
-        "dir": ref_dir / f"test{test_name}",
-        "zip": ref_dir / f"test{test_name}.zip",
+        "url": tests["url"],
+        "dir": ref_dir / test_name,
+        "archive": ref_dir / tests["archive"],
     }
 
-    if urls[test_name].get("md5"):
-        z["md5"] = urls[test_name]["md5"]
+    if tests.get("sha256"):
+        z["sha256"] = tests["sha256"]
     else:
-        z["md5"] = None
+        z["sha256"] = None
 
     return z
 
@@ -100,7 +101,7 @@ def url_retrieve(
     outfile: pathlib.Path
         output filepath (including name)
     filehash: tuple of str, str
-        hash type (md5, sha1, etc.) and hash
+        hash type (md5, sha256, etc.) and hash
     overwrite: bool
         overwrite if file exists
     """
@@ -125,36 +126,3 @@ def file_checksum(fn: Path, mode: str, filehash: str) -> bool:
     h = hashlib.new(mode)
     h.update(fn.read_bytes())
     return h.hexdigest() == filehash
-
-
-def extract_zip(fn: Pathlike, outpath: Pathlike, overwrite: bool = False):
-    outpath = Path(outpath).expanduser().resolve()
-    # need .resolve() in case intermediate relative dir doesn't exist
-    if outpath.is_dir() and not overwrite:
-        return
-
-    fn = Path(fn).expanduser().resolve()
-    with zipfile.ZipFile(fn) as z:
-        z.extractall(str(outpath.parent))
-
-
-def extract_tar(fn: Pathlike, outpath: Pathlike, overwrite: bool = False):
-    outpath = Path(outpath).expanduser().resolve()
-    # need .resolve() in case intermediate relative dir doesn't exist
-    if outpath.is_dir() and not overwrite:
-        return
-
-    fn = Path(fn).expanduser().resolve()
-    if not fn.is_file():
-        # tarfile gives confusing error on missing file
-        raise FileNotFoundError(fn)
-
-    try:
-        with tarfile.open(fn) as z:
-            z.extractall(str(outpath.parent))
-    except tarfile.TarError as e:
-        raise RuntimeError(
-            f"""failed to extract {fn} with error {e}.
-This file may be corrupt or system libz may be broken.
-Try deleting {fn} or manually extracting it."""
-        )

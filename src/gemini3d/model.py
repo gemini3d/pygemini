@@ -128,7 +128,7 @@ def setup(path: Path | dict[str, T.Any], out_dir: Path):
         cfg[k] = cfg["out_dir"] / cfg[k]
 
     # FIXME: should use is_absolute() ?
-    for k in ("eq_dir", "eqzip", "E0dir", "precdir"):
+    for k in ("eq_dir", "eq_archive", "E0dir", "precdir"):
         if cfg.get(k):
             cfg[k] = (cfg["out_dir"] / cfg[k]).resolve()
 

@@ -66,7 +66,7 @@ def read_nml(fn: Path) -> dict[str, T.Any]:
 
 
 def namelist_exists(fn: Path, nml: str) -> bool:
-    """ determines if a namelist exists in a file """
+    """determines if a namelist exists in a file"""
 
     pat = re.compile(r"^\s*&(" + nml + ")$")
 
@@ -153,7 +153,7 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
         "indat_grid",
         "indat_size",
         "eq_dir",
-        "eq_zip",
+        "eq_archive",
         "E0dir",
         "precdir",
         "sourcedir",
@@ -176,7 +176,7 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
 
 
 def read_ini(fn: Path) -> dict[str, T.Any]:
-    """ parse .ini file (legacy) """
+    """parse .ini file (legacy)"""
 
     P: dict[str, T.Any] = {}
 

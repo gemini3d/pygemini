@@ -1,0 +1,75 @@
+{
+  "library" :
+  {
+    "lapack" : "/home/michael/code/gemini3d/build/local/lib/liblapack.a,/home/michael/code/gemini3d/build/local/lib/libblas.a,-pthread",
+    "mpi" : "/home/michael/lib_gcc/openmpi-4.1.0/lib/libmpi.so",
+    "mumps" : "/home/michael/code/gemini3d/build/local/lib/libdmumps.a,/home/michael/code/gemini3d/build/local/lib/libmumps_common.a,/home/michael/code/gemini3d/build/local/lib/libpord.a",
+    "scalapack" : "/home/michael/code/gemini3d/build/local/lib/libscalapack.a,/home/michael/code/gemini3d/build/local/lib/libblacs.a"
+  },
+  "system" :
+  {
+    "c_compiler" : "GNU:8.4.1",
+    "cmake_version" : "3.20.1",
+    "cpu" : "32 core Intel(R) Xeon(R) Gold 6226R CPU @ 2.90GHz",
+    "fortran_compiler" : "GNU:8.4.1",
+    "memory_ram_MB" : 772419,
+    "operating_system" : "Linux"
+  },
+  "tests" :
+  {
+    "2dew_eq" :
+    {
+      "archive" : "2dew_eq.zst",
+      "md5" : "ffdcb9787eb95caabe0beeb99e014979",
+      "url" : "https://www.dropbox.com/s/trgh5pnfz0nniwv/2dew_eq.zst?dl=1"
+    },
+    "2dns_eq" :
+    {
+      "archive" : "2dns_eq.zst",
+      "md5" : "31f57ab201a85ffdcb97da53585b5202",
+      "url" : "https://www.dropbox.com/s/bqnys3h3x6mc7rk/2dns_eq.zst?dl=1"
+    },
+    "2dew_fang" :
+    {
+      "archive" : "2dew_fang.zst",
+      "md5" : "85af89f4cf26ac11b9a31216739ca385",
+      "url" : "https://www.dropbox.com/s/p2x3wqp14jqlvn6/2dew_fang.zst?dl=1"
+    },
+    "2dew_glow" :
+    {
+      "archive" : "2dew_glow.zst",
+      "md5" : "e01ac0e3c804173027d9a52d9258dde3",
+      "url" : "https://www.dropbox.com/s/ei7nplk2rm7xf39/2dew_glow.zst?dl=1"
+    },
+    "2dns_fang" :
+    {
+      "archive" : "2dns_fang.zst",
+      "md5" : "fb165e186872b70032da609885046391",
+      "url" : "https://www.dropbox.com/s/1xpbp51ay0flwpg/2dns_fang.zst?dl=1"
+    },
+    "2dns_glow" :
+    {
+      "archive" : "2dns_glow.zst",
+      "md5" : "0cd9114ed752a58c11f0bc154e33c125",
+      "url" : "https://www.dropbox.com/s/1m7mscs0g3uuhim/2dns_glow.zst?dl=1"
+    },
+    "3d_eq" :
+    {
+      "archive" : "3d_eq.zst",
+      "md5" : "46169022f5a942c80cb13c381ddc6e5d",
+      "url" : "https://www.dropbox.com/s/4evo057b7lvbfef/3d_eq.zst?dl=1"
+    },
+    "3d_fang" :
+    {
+      "archive" : "3d_fang.zst",
+      "md5" : "13d07259b334f9928c48d1ea78eeba80",
+      "url" : "https://www.dropbox.com/s/5p0p0soihl6dbwi/3d_fang.zst?dl=1"
+    },
+    "3d_glow" :
+    {
+      "archive" : "3d_glow.zst",
+      "md5" : "aaf4e6ef2478b3b13859ce87dfb98083",
+      "url" : "https://www.dropbox.com/s/8p6h6a5u1nn653i/3d_glow.zst?dl=1"
+    }
+  }
+}

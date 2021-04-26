@@ -11,24 +11,24 @@ from pathlib import Path
 
 def zip_dirs(path: Path, pattern: str):
     """
-    recursively .zip a directory
+    recursively archive a directory
     """
 
     path = Path(path).expanduser().resolve()
 
     dlist = [d for d in path.glob(pattern) if d.is_dir()]
     if len(dlist) == 0:
-        raise FileNotFoundError(f"no directories to zip under {path} with {pattern}")
+        raise FileNotFoundError(f"no directories to archive under {path} with {pattern}")
 
     for d in dlist:
-        zip_name = d.with_suffix(".zip")
-        with zipfile.ZipFile(zip_name, mode="w", compression=zipfile.ZIP_LZMA) as z:
+        arc_name = d.with_suffix(".zip")
+        with zipfile.ZipFile(arc_name, mode="w", compression=zipfile.ZIP_LZMA) as z:
             for root, _, files in os.walk(d):
                 for file in files:
                     fn = Path(root, file)
                     afn = fn.relative_to(path)
                     z.write(fn, arcname=afn)
-        print("write", zip_name)
+        print("write", arc_name)
 
 
 if __name__ == "__main__":
