@@ -42,6 +42,11 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
         xeq = read.grid(p["eq_dir"])
         z = xeq["x1"]
         del xeq
+    elif {"alt_min", "alt_max", "lzp"} <= p.keys():
+        logging.info("make uniform altitude grid")
+        z = np.linspace(p["alt_min"], p["alt_max"], p["lzp"])
+        dz = z[1] - z[0]
+        z = np.concatenate((z[0] - 2 * dz, z[0] - dz, z, z[-1] + dz, z[-1] + 2 * dz))
     else:
         raise ValueError("must specify altitude grid parameters or grid file to reuse")
 
