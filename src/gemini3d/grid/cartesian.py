@@ -38,7 +38,7 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
         # https://docs.python.org/3/library/stdtypes.html#frozenset.issubset
         z = altitude_grid(p["alt_min"], p["alt_max"], p["Bincl"], p["alt_scale"])
     elif "eq_dir" in p and p["eq_dir"].is_file():
-        logging.info(f"makegrid_cart_3D: reusing grid from {p['eq_dir']}")
+        logging.info(f"reusing grid from {p['eq_dir']}")
         xeq = read.grid(p["eq_dir"])
         z = xeq["x1"]
         del xeq
