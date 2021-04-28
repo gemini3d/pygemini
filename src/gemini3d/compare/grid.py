@@ -27,6 +27,8 @@ def compare_grid(
     for k in ref.keys():
         if not isinstance(ref[k], np.ndarray):
             continue
+        if k in ("lx", "lxs"):
+            continue
 
         assert (
             ref[k].shape == new[k].shape
