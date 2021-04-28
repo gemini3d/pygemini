@@ -7,16 +7,9 @@ from pathlib import Path
 from matplotlib.pyplot import figure, show, close
 import argparse
 
-import gemini3d.vis as vis
+import gemini3d.plot.slices as slices
 import gemini3d.find as find
 import gemini3d.read as read
-
-try:
-    import seaborn as sns
-
-    sns.set_context("talk")
-except ImportError:
-    pass
 
 
 if __name__ == "__main__":
@@ -66,19 +59,19 @@ if __name__ == "__main__":
             # %% left panel
             ax = fg.add_subplot(1, 3, 1)
             ix3 = x3.size // 2 - 1  # arbitrary slice
-            vis.plot12(
+            slices.plot12(
                 x2, x1, dat[p][1][:, :, ix3], name=p, cmap=None, vmin=None, vmax=None, fg=fg, ax=ax
             )
             # %% middle panel
             ax = fg.add_subplot(1, 3, 2)
             ix1 = x1.size // 2 - 1  # arbitrary slice
-            vis.plot23(
+            slices.plot23(
                 x3, x2, dat[p][1][ix1, :, :], name=p, cmap=None, vmin=None, vmax=None, fg=fg, ax=ax
             )
             # %% right panel
             ax = fg.add_subplot(1, 3, 3)
             ix2 = x2.size // 2 - 1  # arbitrary slice
-            vis.plot13(
+            slices.plot13(
                 x3,
                 x1,
                 dat[p][1][:, ix2, :],

@@ -18,11 +18,19 @@ from mayavi import mlab
 
 # mlab.options.backend = 'envisage'  # for GUI
 
-from . import PARAMS
+from .constants import PARAMS, R_EARTH
 from .. import read
 
 PLOTFUN = {"scalar": ("ne", "Ti", "Te", "J1", "J2", "J3"), "vector": ("v1", "v2", "v3")}
-R_EARTH = 6370e3
+
+
+def plot3_all(direc: Path, var: list[str], saveplot_fmt: str = None):
+
+    direc = Path(direc).expanduser().resolve(strict=True)
+
+    cfg = read.config(direc)
+    for t in cfg["time"]:
+        frame(direc, time=t, var=var, saveplot_fmt=saveplot_fmt)
 
 
 def frame(

@@ -29,14 +29,14 @@ def cli():
     outfile = outdir / (infile.stem + suffix)
     print(infile, "=>", outfile)
 
-    xg = gemini3d.readgrid(infile)
+    xg = gemini3d.read.grid(infile)
 
     cfg = {
         "indat_size": infile.with_name(f"simsize{suffix}"),
         "indat_grid": infile.with_suffix(suffix),
     }
 
-    gemini3d.fileio.write_grid(cfg, xg)
+    gemini3d.write.grid(cfg, xg)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 import argparse
 
-from . import plot_all, grid, Efield, precip, plot_input
+from . import plot_all, grid, input
 
 
 def cli():
@@ -22,9 +22,9 @@ def cli():
     p = p.parse_args()
 
     if p.mayavi:
-        from . import plot_3d
+        from .render import plot3d_all
 
-        plot_3d(p.direc, p.var, saveplot_fmt=p.save)
+        plot3d_all(p.direc, p.var, saveplot_fmt=p.save)
         return
 
     if "all" in p.which:
@@ -32,11 +32,11 @@ def cli():
     if "grid" in p.which:
         grid(p.direc)
     if "Efield" in p.which:
-        Efield(p.direc)
+        input.Efield(p.direc)
     if "precip" in p.which:
-        precip(p.direc)
+        input.precip(p.direc)
     if "input" in p.which:
-        plot_input(p.direc, p.var, saveplot_fmt=p.save)
+        input.plot_all(p.direc, p.var, saveplot_fmt=p.save)
 
 
 if __name__ == "__main__":
