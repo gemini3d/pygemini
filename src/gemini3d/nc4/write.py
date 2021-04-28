@@ -192,12 +192,13 @@ def _write_var(
     dims: str | tuple[str, ...] | list[str] = None,
 ):
 
-    if dims is None and isinstance(value, xarray.DataArray):
-        dims = value.dims
-    elif isinstance(dims, str):
+    if isinstance(dims, str):
         dims = [dims]
-    else:
-        raise ValueError(f"Please specify dims for {name}")
+    elif dims is None:
+        if isinstance(value, xarray.DataArray):
+            dims = value.dims
+        else:
+            raise ValueError(f"Please specify dims for {name}")
 
     dims = dims[::-1]
 
