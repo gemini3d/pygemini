@@ -54,16 +54,20 @@ def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = None):
     if set(var).intersection({"png", "pdf", "eps"}):
         raise ValueError("please use saveplot_fmt='png' or similar for plot format")
 
+    xg = read.grid(direc)
+    plotfun = grid2plotfun(xg)
+
     cfg = read.config(direc)
     # %% loop over files / time
     for t in cfg["time"]:
-        frame(direc, time=t, var=var, saveplot_fmt=saveplot_fmt)
+        frame(direc, time=t, var=var, saveplot_fmt=saveplot_fmt, xg=xg, plotfun=plotfun)
 
 
 def frame(
     direc: Path,
     time: datetime = None,
     *,
+    plotfun: T.Callable = None,
     saveplot_fmt: str = None,
     var: set[str] = None,
     xg: dict[str, T.Any] = None,
@@ -93,7 +97,8 @@ def frame(
     if not dat:
         raise ValueError(f"No data in {direc} at {time}")
 
-    plotfun = grid2plotfun(xg)
+    if plotfun is None:
+        plotfun = grid2plotfun(xg)
 
     for k, v in dat.items():
         if any(s in k for s in var):
