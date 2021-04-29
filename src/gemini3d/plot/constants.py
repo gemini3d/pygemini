@@ -1,4 +1,4 @@
-PARAMS = ["ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phi"]
+PARAMS = {"ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phi"}
 
 R_EARTH = 6370e3
 REF_ALT = 300  # km

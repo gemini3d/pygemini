@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     cfg = {"flagoutput": P.flag}
 
-    var = ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3")
+    var = {"ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"}
 
     dat = gemini3d.read.data(P.fn, var=var, cfg=cfg)
 

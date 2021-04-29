@@ -87,9 +87,7 @@ def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
     return flag
 
 
-def grid(
-    file: Path, *, var: tuple[str, ...] | list[str] = None, shape: bool = False
-) -> dict[str, T.Any]:
+def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, T.Any]:
     """
     get simulation grid
 
@@ -197,7 +195,7 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
-    xg = grid(file.parent, var=("x1", "x2", "x3"))
+    xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     lxs = simsize(file.parent)
@@ -213,7 +211,7 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curv(file: Path, var: tuple[str, ...] | list[str]) -> xarray.Dataset:
+def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
     """
     curvilinear
 
@@ -226,7 +224,7 @@ def frame3d_curv(file: Path, var: tuple[str, ...] | list[str]) -> xarray.Dataset
         variable(s) to read
     """
 
-    xg = grid(file.parent, var=("x1", "x2", "x3"))
+    xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     if h5py is None:
@@ -255,19 +253,19 @@ def frame3d_curv(file: Path, var: tuple[str, ...] | list[str]) -> xarray.Dataset
             p4 = p4n
             p3 = p3n
 
-        if {"ne", "ns", "v1", "Ti"}.intersection(var):
+        if {"ne", "ns", "v1", "Ti"} & var:
             dat["ns"] = (("species", "x1", "x2", "x3"), f["/nsall"][:].transpose(p4))
 
-        if {"v1", "vs1"}.intersection(var):
+        if {"v1", "vs1"} & var:
             dat["vs1"] = (("species", "x1", "x2", "x3"), f["/vs1all"][:].transpose(p4))
 
-        if {"Te", "Ti", "Ts"}.intersection(var):
+        if {"Te", "Ti", "Ts"} & var:
             dat["Ts"] = (("species", "x1", "x2", "x3"), f["/Tsall"][:].transpose(p4))
 
-        for k in {"J1", "J2", "J3"}.intersection(var):
+        for k in {"J1", "J2", "J3"} & var:
             dat[k] = (("x1", "x2", "x3"), f[f"/{k}all"][:].transpose(p3))
 
-        for k in {"v2", "v3"}.intersection(var):
+        for k in {"v2", "v3"} & var:
             dat[k] = (("x1", "x2", "x3"), f[f"/{k}avgall"][:].transpose(p3))
 
         if "Phi" in var:
@@ -286,18 +284,18 @@ def frame3d_curv(file: Path, var: tuple[str, ...] | list[str]) -> xarray.Dataset
     return dat
 
 
-def frame3d_curvavg(file: Path, var: tuple[str, ...] | list[str]) -> xarray.Dataset:
+def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
     """
 
     Parameters
     ----------
     file: pathlib.Path
         filename of this timestep of simulation output
-    var: list of str
+    var: set of str
         variable(s) to read
     """
 
-    xg = grid(file.parent, var=("x1", "x2", "x3"))
+    xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     if h5py is None:
@@ -343,7 +341,7 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
         filename of this timestep of simulation output
     """
 
-    xg = grid(file.parents[1], var=("x2", "x3"))
+    xg = grid(file.parents[1], var={"x2", "x3"})
     dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     lxs = simsize(file.parents[1])

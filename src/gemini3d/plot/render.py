@@ -24,7 +24,7 @@ from .. import read
 PLOTFUN = {"scalar": ("ne", "Ti", "Te", "J1", "J2", "J3"), "vector": ("v1", "v2", "v3")}
 
 
-def plot3_all(direc: Path, var: list[str], saveplot_fmt: str = None):
+def plot3_all(direc: Path, var: set[str], saveplot_fmt: str = None):
 
     direc = Path(direc).expanduser().resolve(strict=True)
 
@@ -36,7 +36,7 @@ def plot3_all(direc: Path, var: list[str], saveplot_fmt: str = None):
 def frame(
     direc: Path,
     time: datetime,
-    var: list[str] = None,
+    var: set[str] = None,
     saveplot_fmt: str = None,
     xg: dict[str, T.Any] = None,
 ):

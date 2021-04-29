@@ -149,7 +149,7 @@ def test_runner(name, file_format, tmp_path):
     params["file_format"] = file_format
     params["out_dir"] = out_dir
 
-    for k in ("indat_file", "indat_size", "indat_grid"):
+    for k in {"indat_file", "indat_size", "indat_grid"}:
         params[k] = params[k].with_suffix("." + file_format)
 
     # patch eq_dir to use reference data

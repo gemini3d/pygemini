@@ -14,7 +14,7 @@ from ..config import datetime_range
 
 
 def plot_all(
-    direc: Path, var: list[str] = None, saveplot_fmt: str = None, xg: dict[str, T.Any] = None
+    direc: Path, var: set[str] = None, saveplot_fmt: str = None, xg: dict[str, T.Any] = None
 ):
     """
     plot simulation inputs, under "direc/inputs"
@@ -25,7 +25,7 @@ def plot_all(
     direc = Path(direc).expanduser().resolve(strict=True)
 
     if not var:
-        var = ["ns", "Ts", "vs1"]
+        var = {"ns", "Ts", "vs1"}
 
     cfg = read.config(direc)
     init_file = direc / cfg["indat_file"]
@@ -33,7 +33,7 @@ def plot_all(
     if not xg:
         xg = read.grid(direc)
 
-    dat = read.data(init_file, var=["ns", "Ts", "vs1"])
+    dat = read.data(init_file, var={"ns", "Ts", "vs1"})
 
     if not dat:
         raise ValueError(f"No data in {init_file}")

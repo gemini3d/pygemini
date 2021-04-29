@@ -42,14 +42,14 @@ def grid2plotfun(xg: dict[str, np.ndarray]):
     return plotfun
 
 
-def plot_all(direc: Path, var: list[str] = None, saveplot_fmt: str = None):
+def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = None):
 
     direc = Path(direc).expanduser().resolve(strict=True)
 
     if not var:
         var = PARAMS
     if isinstance(var, str):
-        var = [var]
+        var = {var}
 
     if set(var).intersection({"png", "pdf", "eps"}):
         raise ValueError("please use saveplot_fmt='png' or similar for plot format")
@@ -65,7 +65,7 @@ def frame(
     time: datetime = None,
     *,
     saveplot_fmt: str = None,
-    var: list[str] = None,
+    var: set[str] = None,
     xg: dict[str, T.Any] = None,
 ):
     """

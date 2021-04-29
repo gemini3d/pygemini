@@ -54,9 +54,11 @@ def get_package_manager(like: list[str] = None) -> str:
     if isinstance(like, str):
         like = [like]
 
-    if {"centos", "rhel", "fedora"}.intersection(like):
+    sl = set(like)
+
+    if {"centos", "rhel", "fedora"} & sl:
         return "yum"
-    elif {"debian", "ubuntu"}.intersection(like):
+    elif {"debian", "ubuntu"} & sl:
         return "apt"
     elif like == "arch":
         return "pacman"

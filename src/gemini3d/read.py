@@ -70,7 +70,7 @@ def simsize(path: Path) -> tuple[int, ...]:
 
 
 def grid(
-    path: Path, *, var: list[str] = None, file_format: str = None, shape: bool = False
+    path: Path, *, var: set[str] = None, file_format: str = None, shape: bool = False
 ) -> dict[str, T.Any]:
     """
     get simulation grid
@@ -80,7 +80,7 @@ def grid(
 
     path: pathlib.Path
         path to simgrid.*
-    var: list of str
+    var: set of str
         read only these grid variables
     file_format: str, optional
         force .h5, .nc, .dat (debugging)
@@ -113,7 +113,7 @@ def grid(
 
 def data(
     fn: Path,
-    var: tuple[str, ...] | list[str] = None,
+    var: set[str] = None,
     *,
     file_format: str = None,
     cfg: dict[str, T.Any] = None,
@@ -126,6 +126,8 @@ def data(
     ----------
     fn: pathlib.Path
         filename for this timestep
+    var: set of set
+        variables to use
     file_format: str
         specify file extension of data files
     cfg: dict
@@ -143,7 +145,7 @@ def data(
         return {}
 
     if not var:
-        var = ["ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3", "Phi"]
+        var = {"ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3", "Phi"}
 
     if isinstance(var, str):
         var = [var]
@@ -206,7 +208,7 @@ def data(
 
     # %% Derived variables
     if flag == 1:
-        if {"ne", "v1", "Ti", "Te"}.intersection(var):
+        if {"ne", "v1", "Ti", "Te"} & var:
             dat["ne"] = (("x1", "x2", "x3"), dat["ns"][LSP - 1, :, :, :].data)
             # np.any() in case neither is an np.ndarray
             if dat["ns"].shape[0] != LSP or not np.array_equal(dat["ns"].shape[1:], lxs):
@@ -312,7 +314,7 @@ def precip(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
 
 
 def frame(
-    simdir: Path, time: datetime, *, var: list[str] = None, file_format: str = None
+    simdir: Path, time: datetime, *, var: set[str] = None, file_format: str = None
 ) -> xarray.Dataset:
     """
     load a frame of simulation data, automatically selecting the correct
