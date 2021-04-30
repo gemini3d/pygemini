@@ -26,7 +26,7 @@ def glow(
         fg = Figure(constrained_layout=True)
 
     B = read.glow(fn)
-    t_str = time.strftime("%Y%m%dT%H%M%S") + " UT"
+    t_str = time.strftime("%Y-%m-%dT%H:%M:%S") + " UT"
 
     if xg["lx"][1] > 1 and xg["lx"][2] > 1:
         # 3D sim
@@ -71,18 +71,20 @@ def emission_line(B: xarray.Dataset, time_str: str, fg: Figure):
     # arbitrary pick of which emission lines to plot lat/lon slices
     inds = [1, 3, 4, 8]
 
-    axs = fg.subplots(len(inds), 1)
+    axs = fg.subplots(len(inds), 1, sharex=True, sharey=True)
 
     for i, j in enumerate(inds):
         ax = axs[i]
         R = B["rayleighs"][j].transpose()
         hi = ax.pcolormesh(B.x2 / 1e3, B.x3 / 1e3, R, shading="nearest")
-        fg.colorbar(hi, ax=ax).set_label("Intensity (R)")
+        hc = fg.colorbar(hi, ax=ax)
         # set(cb,'yticklabel',sprintf('10^{%g}|', get(cb,'ytick')))
-        ax.set_title(B.wavelength[j] + r"$\AA$  intensity: " + time_str)
+        ax.set_title(rf"{B.wavelength[j].item()} $\AA$")
 
-        ax.set_xlabel("Eastward Distance (km)")
-        ax.set_ylabel("Northward Distance (km)")
+    hc.set_label("Intensity (R)")
+    ax.set_xlabel("Eastward Distance (km)")
+    ax.set_ylabel("Northward Distance (km)")
+    fg.suptitle(f"intensity: {time_str}")
 
 
 def save_glowframe(fg: Figure, filename: Path, saveplot_fmt: str):
