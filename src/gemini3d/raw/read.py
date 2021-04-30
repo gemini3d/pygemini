@@ -293,8 +293,8 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
     read the auroral output from GLOW
     """
 
-    lxs = simsize(file.parent)
-    xg = grid(file.parent)
+    lxs = simsize(file.parents[1])
+    xg = grid(file.parents[1])
     dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     if not len(lxs) == 3:

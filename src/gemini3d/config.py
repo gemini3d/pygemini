@@ -144,6 +144,11 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
         P["dtE0"] = timedelta(seconds=float(r["dtE0"]))
         P["E0dir"] = r["E0_dir"]
     elif nml == "glow":
+        if r.get("aurmap_dir"):
+            P["aurmap_dir"] = r["aurmap_dir"]
+        else:
+            # DEPRECATED: workaround for old hard-coded path
+            P["aurmap_dir"] = "aurmaps"
         P["dtglow"] = timedelta(seconds=float(r["dtglow"]))
         P["dtglowout"] = float(r["dtglowout"])
 
@@ -157,6 +162,7 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
         "E0dir",
         "precdir",
         "sourcedir",
+        "aurmap_dir",
     ):
         if k in P:
             if P[k].startswith(simroot_key):

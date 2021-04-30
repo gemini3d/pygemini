@@ -9,6 +9,7 @@ import matplotlib as mpl
 from .. import read
 from ..utils import to_datetime
 from .core import save_fig
+from .glow import glow
 from .constants import PARAMS
 from . import cartesian
 from . import curvilinear
@@ -56,11 +57,20 @@ def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = None):
 
     xg = read.grid(direc)
     plotfun = grid2plotfun(xg)
-
     cfg = read.config(direc)
+
+    aurmap_dir = None
+    if cfg.get("aurmap_dir"):
+        # handle relative or absolute path to GLOW data
+        if cfg["aurmap_dir"].is_absolute():
+            aurmap_dir = cfg["aurmap_dir"]
+        else:
+            aurmap_dir = direc / cfg["aurmap_dir"]
+
     # %% loop over files / time
     for t in cfg["time"]:
         frame(direc, time=t, var=var, saveplot_fmt=saveplot_fmt, xg=xg, plotfun=plotfun)
+        glow(aurmap_dir, t, saveplot_fmt, xg=xg)
 
 
 def frame(

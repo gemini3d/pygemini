@@ -112,12 +112,7 @@ def grid(
 
 
 def data(
-    fn: Path,
-    var: set[str] = None,
-    *,
-    file_format: str = None,
-    cfg: dict[str, T.Any] = None,
-    E0dir: Path = None,
+    fn: Path, var: set[str] = None, *, file_format: str = None, cfg: dict[str, T.Any] = None
 ) -> xarray.Dataset:
     """
     knowing the filename for a simulation time step, read the data for that time step
@@ -151,7 +146,6 @@ def data(
         var = [var]
 
     fn = Path(fn).expanduser()
-    fn_aurora = fn.parent / "aurmaps" / fn.name
 
     if not cfg:
         cfg = config(fn.parent)
@@ -169,10 +163,6 @@ def data(
             dat = raw_read.frame3d_curvavg(fn)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
-
-        if fn_aurora.is_file():
-            dat.update(raw_read.glow_aurmap(fn_aurora))
-
     elif file_format == "h5":
         flag = h5read.flagoutput(fn, cfg)
 
@@ -184,9 +174,6 @@ def data(
             dat = h5read.frame3d_curvavg(fn, var)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
-
-        if fn_aurora.is_file():
-            dat.update(h5read.glow_aurmap(fn_aurora))
     elif file_format == "nc":
         flag = ncread.flagoutput(fn, cfg)
 
@@ -198,9 +185,6 @@ def data(
             dat = ncread.frame3d_curvavg(fn, var)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
-
-        if fn_aurora.is_file():
-            dat.update(ncread.glow_aurmap(fn_aurora))
     else:
         raise ValueError(f"Unknown file type {fn}")
 
@@ -237,10 +221,21 @@ def data(
     if "time" not in dat:
         dat = dat.assign_coords({"time": time(fn)})
 
-    if E0dir:
-        fn_Efield = E0dir / fn.name
-        if fn_Efield.is_file():
-            dat.update(Efield(fn_Efield))
+    return dat
+
+
+def glow(fn: Path) -> xarray.DataArray:
+
+    fmt = fn.suffix
+
+    if fmt == ".h5":
+        dat = h5read.glow_aurmap(fn)
+    elif fmt == ".nc":
+        dat = ncread.glow_aurmap(fn)
+    elif fmt == ".dat":
+        dat = raw_read.glow_aurmap(fn)
+    else:
+        raise ValueError(f"Unknown file type {fn}")
 
     return dat
 
