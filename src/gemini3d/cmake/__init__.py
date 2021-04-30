@@ -134,9 +134,10 @@ def build_gemini3d(target: Path) -> Path:
             and target.parents[1].is_dir()
             and (target.parents[1] / "CMakeLists.txt").is_file()
         ):
+            # we've already git cloned Gemini3D somewhere
             src_dir = target.parents[1]
         else:
-            # clone Gemini3D and do a test build
+            # git clone Gemini3D here
 
             src_dir = PYGEMINI_ROOT / "gemini-fortran"
 
