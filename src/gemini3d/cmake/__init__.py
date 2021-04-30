@@ -129,18 +129,13 @@ def build_gemini3d(target: Path) -> Path:
         src_dir = Path(os.environ["GEMINI_ROOT"]).expanduser()
 
     if not src_dir or not src_dir.is_dir():
-        if (
-            len(target.parents) >= 2
-            and target.parents[1].is_dir()
-            and (target.parents[1] / "CMakeLists.txt").is_file()
-        ):
-            # we've already git cloned Gemini3D somewhere
-            src_dir = target.parents[1]
+        if len(target.parents) >= 2:
+            # user-specified location
+            src_dir = target.parents[1] / "gemini-fortran"
         else:
-            # git clone Gemini3D here
-
             src_dir = PYGEMINI_ROOT / "gemini-fortran"
 
+        if not (src_dir / "CMakeLists.txt").is_file():
             jmeta = json.loads(importlib.resources.read_text("gemini3d", "libraries.json"))
             git_download(src_dir, repo=jmeta["gemini3d"]["git"], tag=jmeta["gemini3d"]["tag"])
 

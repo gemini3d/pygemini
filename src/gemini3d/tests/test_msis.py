@@ -7,7 +7,21 @@ import numpy as np
 from pytest import approx
 from datetime import datetime
 
+import gemini3d.cmake as cmake
 import gemini3d.msis as gp
+
+
+def test_build_msis(tmp_path, monkeypatch):
+
+    monkeypatch.setenv("GEMINI_ROOT", "")
+    monkeypatch.setenv("h5fortran_ROOT", "")
+    monkeypatch.setenv("glow_ROOT", "")
+
+    tgt = tmp_path / "build/msis_setup"
+
+    msis_exe = cmake.build_gemini3d(tgt)
+
+    assert msis_exe.is_file()
 
 
 @pytest.mark.parametrize("version", [0, 20])
