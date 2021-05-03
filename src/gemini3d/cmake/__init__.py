@@ -9,7 +9,6 @@ import tempfile
 import importlib.resources
 
 from .. import PYGEMINI_ROOT
-from ..utils import get_cpu_count
 from ..web import git_download
 
 __all__ = ["exe", "build", "find_library"]
@@ -65,9 +64,8 @@ def build(
     subprocess.check_call(cmd)
 
     if run_test:
-        Njobs = get_cpu_count()
         subprocess.check_call(
-            ["ctest", "--parallel", str(Njobs), "--output-on-failure"], cwd=str(build_dir)
+            ["ctest", "--output-on-failure"], cwd=str(build_dir)
         )
 
     if install:
