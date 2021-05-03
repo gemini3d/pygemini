@@ -1,9 +1,9 @@
 name: ci_mac
-
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   CC: gcc-10
   FC: gfortran-10
+  CTEST_PARALLEL_LEVEL: 2
 
 on:
   push:
@@ -45,5 +45,10 @@ jobs:
       timeout-minutes: 5
       # transient CI download speed
 
-    - run: pytest
+    - name: Unit Tests
+      run: pytest --pyargs gemini3d.tests.unit
+      timeout-minutes: 2
+
+    - name: Integration Tests
+      run: pytest --pyargs gemini3d.tests.intg
       timeout-minutes: 7

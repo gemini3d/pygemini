@@ -1,4 +1,6 @@
 name: ci
+env:
+  CTEST_PARALLEL_LEVEL: 2
 
 on:
   push:
@@ -55,7 +57,12 @@ jobs:
     - run: python -m gemini3d.install
       timeout-minutes: 2
 
-    - run: pytest
+    - name: Unit Tests
+      run: pytest --pyargs gemini3d.tests.unit
+      timeout-minutes: 2
+
+    - name: Integration Tests
+      run: pytest --pyargs gemini3d.tests.intg
       timeout-minutes: 7
 
 # codecov coverage
