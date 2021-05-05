@@ -64,9 +64,7 @@ def build(
     subprocess.check_call(cmd)
 
     if run_test:
-        subprocess.check_call(
-            ["ctest", "--output-on-failure"], cwd=str(build_dir)
-        )
+        subprocess.check_call(["ctest", "--output-on-failure"], cwd=str(build_dir))
 
     if install:
         subprocess.check_call([cmake, "--install", str(build_dir)])
