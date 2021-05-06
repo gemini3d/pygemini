@@ -7,7 +7,7 @@ import gemini3d.run
 import gemini3d.job as job
 import gemini3d.web
 
-R = Path(gemini3d.__path__[0]) / "tests/data"
+R = Path(gemini3d.__path__[0]) / "tests/data"  # type: ignore
 
 
 @pytest.mark.parametrize("name,bref", [("2dew_eq", 1271392), ("3d_eq", 2372992)])

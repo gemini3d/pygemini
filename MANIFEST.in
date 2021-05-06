@@ -1,2 +1,2 @@
 include src/gemini3d/templates/qsub_template.job
-include src/gemini3d/libraries.json src/gemini3d/compare/tolerance.json
+include src/gemini3d/libraries.json src/gemini3d/compare/tolerance.json src/gemini3d/tests/ref_data.json
