@@ -1,15 +1,16 @@
 import shutil
 from datetime import datetime
 import pytest
-from pathlib import Path
+import importlib.resources
 import sys
 
 try:
-    import gemini3d.plot
+    import matplotlib  # noqa: F401
 except ImportError as e:
     pytest.skip(f"Matplotlib missing {e}", allow_module_level=True)
 
-R = Path(__file__).parent / "data"
+import gemini3d.web
+import gemini3d.plot
 
 
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="Python >= 3.8 needed for copytree test")
@@ -24,10 +25,8 @@ R = Path(__file__).parent / "data"
 def test_plot(name, tmp_path):
 
     # get files if needed
-    try:
-        test_dir = gemini3d.web.download_and_extract(name, R)
-    except ConnectionError as e:
-        pytest.skip(f"failed to download reference data {e}")
+    with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
+        test_dir = gemini3d.web.download_and_extract(name, fn.parent)
 
     shutil.copytree(test_dir, tmp_path, dirs_exist_ok=True)
     gemini3d.plot.frame(tmp_path, datetime(2013, 2, 20, 5), saveplot_fmt="png")

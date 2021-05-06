@@ -74,6 +74,6 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
             atmos[k] = (("alt_km", "glat", "glon"), f[f"/{k}"][:])
 
     # Mitra, 1968
-    atmos["nNO"] = 0.4 * np.exp(-3700. / atmos["Tn"]) * atmos["nO2"] + 5e-7 * atmos["nO"]
+    atmos["nNO"] = 0.4 * np.exp(-3700.0 / atmos["Tn"]) * atmos["nO2"] + 5e-7 * atmos["nO"]
 
     return atmos

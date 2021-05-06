@@ -4,8 +4,8 @@ these test that PyGemini generates inputs that match expectations
 
 from datetime import datetime
 import logging
+import importlib.resources
 import pytest
-from pathlib import Path
 
 import gemini3d.web
 import gemini3d.write as write
@@ -17,16 +17,12 @@ import gemini3d.find
 from gemini3d.efield import Efield_BCs
 from gemini3d.particles import particles_BCs
 
-R = Path(gemini3d.__path__[0]) / "tests/data"  # type: ignore
-
 
 @pytest.mark.parametrize("name", ["2dew_fang"])
 def test_file_time(name):
     # get files if needed
-    try:
-        test_dir = gemini3d.web.download_and_extract(name, R)
-    except ConnectionError as e:
-        pytest.skip(f"failed to download reference data {e}")
+    with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
+        test_dir = gemini3d.web.download_and_extract(name, fn.parent)
 
     t0 = datetime(2013, 2, 20, 5, 0, 0)
 
@@ -45,10 +41,8 @@ def test_grid(name, file_format, tmp_path):
         pytest.importorskip("netCDF4")
 
     # get files if needed
-    try:
-        test_dir = gemini3d.web.download_and_extract(name, R)
-    except ConnectionError as e:
-        pytest.skip(f"failed to download reference data {e}")
+    with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
+        test_dir = gemini3d.web.download_and_extract(name, fn.parent)
 
     # setup new test data
     cfg = gemini3d.read.config(test_dir)
@@ -72,10 +66,8 @@ def test_grid(name, file_format, tmp_path):
 def test_Efield(name, file_format, tmp_path):
 
     # get files if needed
-    try:
-        test_dir = gemini3d.web.download_and_extract(name, R)
-    except ConnectionError as e:
-        pytest.skip(f"failed to download reference data {e}")
+    with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
+        test_dir = gemini3d.web.download_and_extract(name, fn.parent)
 
     cfg = gemini3d.read.config(test_dir)
     xg = gemini3d.read.grid(test_dir)
@@ -98,10 +90,8 @@ def test_Efield(name, file_format, tmp_path):
 def test_precip(name, file_format, tmp_path):
 
     # get files if needed
-    try:
-        test_dir = gemini3d.web.download_and_extract(name, R)
-    except ConnectionError as e:
-        pytest.skip(f"failed to download reference data {e}")
+    with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
+        test_dir = gemini3d.web.download_and_extract(name, fn.parent)
 
     cfg = gemini3d.read.config(test_dir)
     xg = gemini3d.read.grid(test_dir)
@@ -138,10 +128,8 @@ def test_runner(name, file_format, tmp_path):
 
     out_dir = tmp_path
     # get files if needed
-    try:
-        test_dir = gemini3d.web.download_and_extract(name, R)
-    except ConnectionError as e:
-        pytest.skip(f"failed to download reference data {e}")
+    with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
+        test_dir = gemini3d.web.download_and_extract(name, fn.parent)
 
     # setup new test data
     params = gemini3d.read.config(test_dir)
