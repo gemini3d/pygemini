@@ -101,14 +101,14 @@ def test_namelist_exists(group):
         assert config.namelist_exists(cfn, "base")
 
 
-def test_nml_gemini_simroot(monkeypatch):
+def test_nml_gemini_simroot(monkeypatch, tmp_path):
 
-    monkeypatch.setenv("GEMINI_SIMROOT", "abc123")
+    monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path))
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         cfg = config.parse_namelist(cfn, "setup")
 
     assert isinstance(cfg["eq_dir"], Path)
-    assert cfg["eq_dir"] == Path("abc123/test2d_eq")
+    assert cfg["eq_dir"] == tmp_path / "test2d_eq"
 
 
 @pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])
@@ -129,9 +129,9 @@ def test_nml_namelist(namelist):
         assert params["dtE0"] == timedelta(seconds=1)
 
 
-def test_read_config_nml(monkeypatch):
+def test_read_config_nml(monkeypatch, tmp_path):
 
-    monkeypatch.setenv("GEMINI_SIMROOT", "abc")
+    monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path))
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         params = read.config(cfn)
