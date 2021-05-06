@@ -12,8 +12,12 @@ import gemini3d.msis as gp
 
 
 def test_build_msis(tmp_path, monkeypatch):
+    """
+    blanking out some env vars to help ensure self-building is tested
+    """
 
     monkeypatch.setenv("GEMINI_ROOT", "")
+    monkeypatch.setenv("HDF5_ROOT", "")
     monkeypatch.setenv("h5fortran_ROOT", "")
     monkeypatch.setenv("glow_ROOT", "")
 
