@@ -6,13 +6,13 @@ We choose to halt execution on error to avoid wasting CPU time.
 The test scenarios should all generate perfectly.
 
 Normally this scripts is run from the top-level gemini/ directory, outputting
-the test reference data to gemini/tests/data/:
+the test reference data to gemini/test_data/:
 
     python scripts/generate_reference_data.py tests/data
 
 If you wish to generate reference data for only one or a few test case(s), do like:
 
-    python scripts/generate_reference_data.py tests/data/ -only test2dew_fang
+    python scripts/generate_reference_data.py test_data/ -only test2dew_fang
 """
 
 from pathlib import Path
@@ -25,7 +25,7 @@ TOP_DIR = Path(__file__).resolve().parents[1] / "src/unit_tests/config"
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Generate Gemini reference data")
-    p.add_argument("out_dir", help="reference file output directory (typically tests/data/)")
+    p.add_argument("out_dir", help="reference file output directory (typically test_data/)")
     p.add_argument("-only", help="test cases (pattern) to run (default all)")
     p.add_argument("-mpiexec", help="path to desired mpiexec executable")
     p.add_argument("-gemexe", help="path to desired gemini.bin")

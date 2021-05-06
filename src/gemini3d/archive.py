@@ -8,7 +8,7 @@ import tempfile
 try:
     import zstandard
 except ImportError:
-    zstandard = None
+    zstandard = None  # type: ignore
 
 Pathlike = T.Union[str, Path]
 

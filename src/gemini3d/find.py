@@ -5,23 +5,24 @@ functions for finding files
 from datetime import datetime, timedelta
 from pathlib import Path
 import numpy as np
+import typing as T
 
 FILE_FORMATS = [".h5", ".nc", ".dat"]
 
 
-def config(path: Path) -> Path:
+def config(path: Path) -> T.Optional[Path]:
     """given a path or config filename, return the full path to config file"""
 
     return find_stem(path, "config", "nml")
 
 
-def simsize(path: Path, suffix: str = None) -> Path:
+def simsize(path: Path, suffix: str = None) -> T.Optional[Path]:
     """gets path to simsize file"""
 
     return find_stem(path, "simsize", suffix)
 
 
-def frame(simdir: Path, time: datetime, file_format: str = None) -> Path:
+def frame(simdir: Path, time: datetime, file_format: str = None) -> T.Optional[Path]:
     """
     the frame filenames can have different file formats
     """
@@ -62,7 +63,7 @@ def frame(simdir: Path, time: datetime, file_format: str = None) -> Path:
     return None
 
 
-def grid(path: Path) -> Path:
+def grid(path: Path) -> T.Optional[Path]:
     """given a path or filename, return the full path to simgrid file
     we don't override FILE_FORMATS to allow outputs from a prior sim in a different
     file format to be used in this sim.
@@ -71,7 +72,7 @@ def grid(path: Path) -> Path:
     return find_stem(path, stem="simgrid")
 
 
-def find_stem(path: Path, stem: str, suffix: str = None) -> Path:
+def find_stem(path: Path, stem: str, suffix: str = None) -> T.Optional[Path]:
     """find file containing stem"""
 
     path = Path(path).expanduser()
@@ -102,7 +103,7 @@ def find_stem(path: Path, stem: str, suffix: str = None) -> Path:
     return None
 
 
-def inputs(direc: Path, input_dir: Path = None) -> Path:
+def inputs(direc: Path, input_dir: T.Optional[Path] = None) -> T.Optional[Path]:
     """
     find input parameter directory
 

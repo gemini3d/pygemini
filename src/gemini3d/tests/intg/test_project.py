@@ -17,7 +17,7 @@ import gemini3d.find
 from gemini3d.efield import Efield_BCs
 from gemini3d.particles import particles_BCs
 
-R = Path(__file__).parent / "data"
+R = Path(gemini3d.__path__[0]) / "tests/data"  # type: ignore
 
 
 @pytest.mark.parametrize("name", ["2dew_fang"])

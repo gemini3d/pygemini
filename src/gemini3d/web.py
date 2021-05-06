@@ -90,7 +90,7 @@ def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> dict[str, 
 def url_retrieve(
     url: str,
     outfile: Pathlike,
-    filehash: tuple[str, str] | list[str] = None,
+    filehash: T.Optional[tuple[str, str]] = None,
     overwrite: bool = False,
 ):
     """

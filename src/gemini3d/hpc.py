@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import typing as T
 import subprocess
 import binascii
 from pathlib import Path
@@ -50,7 +51,7 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: list[str]) -> Path:
     return job_file
 
 
-def hpc_batch_detect() -> str:
+def hpc_batch_detect() -> T.Optional[str]:
     """
     Assuming a known job batching system, we will create a template for the user
     to verify and then the user will run.
