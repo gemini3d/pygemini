@@ -58,6 +58,9 @@ def cli():
         xg = read.grid(indir)
 
     for infile in infiles:
+        if infile.name in {"simsize", "simgrid", "initial_conditions"}:
+            continue
+
         outfile = outdir / (f"{infile.stem}.{cfg['file_format']}")
         print(infile, "=>", outfile)
 
