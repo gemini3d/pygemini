@@ -7,7 +7,6 @@ import xarray
 from pathlib import Path
 import typing as T
 import numpy as np
-import logging
 from datetime import datetime, timedelta
 
 from .. import find
@@ -38,7 +37,7 @@ def simsize(path: Path) -> tuple[int, ...]:
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
-    path = find.simsize(path, ".h5")
+    path = find.simsize(path, ".h5", required=True)
 
     with h5py.File(path, "r") as f:
         if "lxs" in f:
@@ -114,12 +113,9 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
     xg: dict[str, T.Any] = {}
 
     if not file.is_file():
-        file2 = find.grid(file)
+        file2 = find.grid(file, required=True)
         if file2 and file2.is_file():
             file = file2
-        else:
-            logging.error(f"{file} grid file is not present.")
-            return xg
 
     if shape:
         with h5py.File(file, "r") as f:

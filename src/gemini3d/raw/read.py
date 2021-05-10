@@ -31,7 +31,7 @@ def simsize(path: Path) -> tuple[int, ...]:
         3 integers telling simulation grid size
     """
 
-    path = find.simsize(path, ".dat")
+    path = find.simsize(path, ".dat", required=True)
 
     fsize = path.stat().st_size
     if fsize == 12:

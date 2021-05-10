@@ -10,16 +10,16 @@ import typing as T
 FILE_FORMATS = [".h5", ".nc", ".dat"]
 
 
-def config(path: Path) -> T.Optional[Path]:
+def config(path: Path, required: bool = False) -> T.Optional[Path]:
     """given a path or config filename, return the full path to config file"""
 
-    return find_stem(path, "config", "nml")
+    return find_stem(path, stem="config", suffix="nml", required=required)
 
 
-def simsize(path: Path, suffix: str = None) -> T.Optional[Path]:
+def simsize(path: Path, suffix: str = None, required: bool = False) -> T.Optional[Path]:
     """gets path to simsize file"""
 
-    return find_stem(path, "simsize", suffix)
+    return find_stem(path, stem="simsize", suffix=suffix, required=required)
 
 
 def frame(simdir: Path, time: datetime, file_format: str = None) -> T.Optional[Path]:
@@ -63,16 +63,18 @@ def frame(simdir: Path, time: datetime, file_format: str = None) -> T.Optional[P
     return None
 
 
-def grid(path: Path) -> T.Optional[Path]:
+def grid(path: Path, required: bool = False) -> T.Optional[Path]:
     """given a path or filename, return the full path to simgrid file
     we don't override FILE_FORMATS to allow outputs from a prior sim in a different
     file format to be used in this sim.
     """
 
-    return find_stem(path, stem="simgrid")
+    return find_stem(path, stem="simgrid", required=required)
 
 
-def find_stem(path: Path, stem: str, suffix: str = None) -> T.Optional[Path]:
+def find_stem(
+    path: Path, stem: str, suffix: str = None, required: bool = False
+) -> T.Optional[Path]:
     """find file containing stem"""
 
     path = Path(path).expanduser()
@@ -81,7 +83,10 @@ def find_stem(path: Path, stem: str, suffix: str = None) -> T.Optional[Path]:
         if stem in path.stem:
             return path
         else:
-            return find_stem(path.parent, stem, path.suffix)
+            found = find_stem(path.parent, stem, path.suffix)
+            if required and not found:
+                raise FileNotFoundError(f"{stem} not found in {path.parent}")
+            return found
 
     if suffix:
         if isinstance(suffix, str):
@@ -99,6 +104,9 @@ def find_stem(path: Path, stem: str, suffix: str = None) -> T.Optional[Path]:
                 f = p / (stem + suff)
                 if f.is_file():
                     return f
+
+    if required:
+        raise FileNotFoundError(f"{stem} not found in {path}")
 
     return None
 

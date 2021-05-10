@@ -7,7 +7,6 @@ import xarray
 from pathlib import Path
 import typing as T
 import numpy as np
-import logging
 from datetime import datetime, timedelta
 
 from .. import find
@@ -28,7 +27,7 @@ def simsize(path: Path) -> tuple[int, ...]:
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    path = find.simsize(path, ".nc")
+    path = find.simsize(path, ".nc", required=True)
 
     with Dataset(path, "r") as f:
         if "lxs" in f.variables:
@@ -102,12 +101,9 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
     grid: dict[str, T.Any] = {}
 
     if not file.is_file():
-        file2 = find.grid(file)
+        file2 = find.grid(file, required=True)
         if file2 and file2.is_file():
             file = file2
-        else:
-            logging.error(f"{file} grid file is not present.")
-            return grid
 
     if shape:
         with Dataset(file, "r") as f:
