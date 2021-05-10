@@ -76,12 +76,12 @@ def grid2(fn: Path, lxs: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
     if not fn.is_file():
         raise FileNotFoundError(fn)
 
-    grid: dict[str, T.Any] = {"lx": lxs}
+    xg: dict[str, T.Any] = {"lx": lxs}
     with fn.open("r") as f:
-        grid["mlon"] = np.fromfile(f, np.float64, lxs[0])
-        grid["mlat"] = np.fromfile(f, np.float64, lxs[1])
+        xg["mlon"] = np.fromfile(f, np.float64, lxs[0])
+        xg["mlat"] = np.fromfile(f, np.float64, lxs[1])
 
-    return grid
+    return xg
 
 
 def grid3(fn: Path, lxs: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
@@ -89,54 +89,54 @@ def grid3(fn: Path, lxs: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
     lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 
-    grid: dict[str, T.Any] = {"lx": lxs}
+    xg: dict[str, T.Any] = {"lx": lxs}
 
     if not fn.is_file():
         logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
-        return grid
+        return xg
 
     read = np.fromfile
 
     with fn.open("r") as f:
         for i in (1, 2, 3):
-            grid[f"x{i}"] = read(f, np.float64, lxs[i - 1] + 4)
-            grid[f"x{i}i"] = read(f, np.float64, lxs[i - 1] + 1)
-            grid[f"dx{i}b"] = read(f, np.float64, lxs[i - 1] + 3)
-            grid[f"dx{i}h"] = read(f, np.float64, lxs[i - 1])
+            xg[f"x{i}"] = read(f, np.float64, lxs[i - 1] + 4)
+            xg[f"x{i}i"] = read(f, np.float64, lxs[i - 1] + 1)
+            xg[f"dx{i}b"] = read(f, np.float64, lxs[i - 1] + 3)
+            xg[f"dx{i}h"] = read(f, np.float64, lxs[i - 1])
         for i in (1, 2, 3):
-            grid[f"h{i}"] = read(f, np.float64, lgridghost).reshape(gridsizeghost)
+            xg[f"h{i}"] = read(f, np.float64, lgridghost).reshape(gridsizeghost)
         L = [lxs[0] + 1, lxs[1], lxs[2]]
         for i in (1, 2, 3):
-            grid[f"h{i}x1i"] = read(f, np.float64, np.prod(L)).reshape(L)
+            xg[f"h{i}x1i"] = read(f, np.float64, np.prod(L)).reshape(L)
         L = [lxs[0], lxs[1] + 1, lxs[2]]
         for i in (1, 2, 3):
-            grid[f"h{i}x2i"] = read(f, np.float64, np.prod(L)).reshape(L)
+            xg[f"h{i}x2i"] = read(f, np.float64, np.prod(L)).reshape(L)
         L = [lxs[0], lxs[1], lxs[2] + 1]
         for i in (1, 2, 3):
-            grid[f"h{i}x3i"] = read(f, np.float64, np.prod(L)).reshape(L)
+            xg[f"h{i}x3i"] = read(f, np.float64, np.prod(L)).reshape(L)
         for i in (1, 2, 3):
-            grid[f"gx{i}"] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
+            xg[f"gx{i}"] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
         for k in ("alt", "glat", "glon", "Bmag"):
-            grid[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
-        grid["Bincl"] = read(f, np.float64, lxs[1] * lxs[2]).reshape(lxs[1:])
-        grid["nullpts"] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
+            xg[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
+        xg["Bincl"] = read(f, np.float64, lxs[1] * lxs[2]).reshape(lxs[1:])
+        xg["nullpts"] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
         if f.tell() == fn.stat().st_size:  # not EOF
-            return grid
+            return xg
 
         L = [lxs[0], lxs[1], lxs[2], 3]
         for i in (1, 2, 3):
-            grid[f"e{i}"] = read(f, np.float64, np.prod(L)).reshape(L)
+            xg[f"e{i}"] = read(f, np.float64, np.prod(L)).reshape(L)
         for k in ("er", "etheta", "ephi"):
-            grid[k] = read(f, np.float64, np.prod(L)).reshape(L)
+            xg[k] = read(f, np.float64, np.prod(L)).reshape(L)
         for k in ("r", "theta", "phi"):
-            grid[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
+            xg[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
         if f.tell() == fn.stat().st_size:  # not EOF
-            return grid
+            return xg
 
         for k in ("x", "y", "z"):
-            grid[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
+            xg[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
 
-    return grid
+    return xg
 
 
 def Efield(file: Path) -> xarray.Dataset:
