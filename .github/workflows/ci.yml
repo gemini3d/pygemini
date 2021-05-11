@@ -1,6 +1,7 @@
 name: ci
 env:
   CTEST_PARALLEL_LEVEL: 2
+  GEMINI_ROOT: ~/gemini3d
 
 on:
   push:

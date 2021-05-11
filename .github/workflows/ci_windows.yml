@@ -1,6 +1,8 @@
 name: ci_windows
 env:
   CTEST_PARALLEL_LEVEL: 2
+  CMAKE_GENERATOR: Ninja
+  GEMINI_ROOT: ~/gemini3d
 
 on:
   push:
@@ -50,6 +52,4 @@ jobs:
 
     - name: Integration Tests
       run: pytest --pyargs gemini3d.tests.intg
-      env:
-        CMAKE_GENERATOR: Ninja
       timeout-minutes: 7

@@ -10,6 +10,7 @@ import subprocess
 import logging
 import typing as T
 import h5py
+import shutil
 
 from . import cmake
 
@@ -21,7 +22,12 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     [f107a, f107, ap] = activ
     """
 
-    msis_exe = cmake.build_gemini3d(Path("msis_setup"))
+    msis_exe = shutil.which("msis_setup", path=str(cmake.get_gemini_root() / "build"))
+    if not msis_exe:
+        raise EnvironmentError(
+            "Did not find gemini3d/build/msis_setup--build by:\n"
+            "gemini3d.cmake.build_gemini3d('msis_setup')\n"
+        )
 
     alt_km = xg["alt"] / 1e3
     # % CONVERT DATES/TIMES/INDICES INTO MSIS-FRIENDLY FORMAT
@@ -51,9 +57,9 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
     if "msis_version" in p:
         args.append(str(p["msis_version"]))
-    cmd = [str(msis_exe)] + args
+    cmd = [msis_exe] + args
     logging.info(" ".join(cmd))
-    ret = subprocess.run(cmd, text=True, cwd=msis_exe.parent)
+    ret = subprocess.run(cmd, text=True, cwd=Path(msis_exe).parent)
 
     if ret.returncode == 20:
         raise RuntimeError("Need to compile with 'cmake -Dmsis20=true'")

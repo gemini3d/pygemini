@@ -1,9 +1,11 @@
 """ test dryrun, that PyGemini can correctly invoke Gemini3D """
 
+import shutil
 import pytest
 from pathlib import Path
 import importlib.resources
 
+import gemini3d
 import gemini3d.run
 import gemini3d.job as job
 import gemini3d.web
@@ -20,7 +22,10 @@ def test_memory(name, bref):
     assert est == bref
 
 
+@pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 def test_mpiexec():
+
+    gemini3d.setup("gemini.bin")
 
     exe = job.get_gemini_exe()
     assert isinstance(exe, Path)
@@ -34,6 +39,8 @@ def test_mpiexec():
 
 @pytest.mark.parametrize("name", ["2dew_eq"])
 def test_dryrun(name, tmp_path):
+
+    gemini3d.setup()
 
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
         ref = gemini3d.web.download_and_extract(name, fn.parent)

@@ -200,15 +200,19 @@ def netcdf_fortran(
         f"-DNETCDF_C_LIBRARY:FILEPATH={netcdf_c}",
         f"-DNETCDF_INCLUDE_DIR:PATH={install_dir / 'include'}",
     ]
-    f_args = patch + lib_args + [
-        f"-DNetCDF_ROOT:PATH={install_dir}",
-        f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
-        "-DCMAKE_BUILD_TYPE:STRING=Release",
-        "-DBUILD_SHARED_LIBS:BOOL=ON",
-        "-DBUILD_UTILITIES:BOOL=OFF",
-        "-DENABLE_TESTS:BOOL=off",
-        "-DBUILD_EXAMPLES:BOOL=OFF",
-    ]
+    f_args = (
+        patch
+        + lib_args
+        + [
+            f"-DNetCDF_ROOT:PATH={install_dir}",
+            f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
+            "-DCMAKE_BUILD_TYPE:STRING=Release",
+            "-DBUILD_SHARED_LIBS:BOOL=ON",
+            "-DBUILD_UTILITIES:BOOL=OFF",
+            "-DENABLE_TESTS:BOOL=off",
+            "-DBUILD_EXAMPLES:BOOL=OFF",
+        ]
+    )
     cmake.build(
         source_dir, build_dir, wipe=wipe, env=env, run_test=False, dryrun=dryrun, config_args=f_args
     )

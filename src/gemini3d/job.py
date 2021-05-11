@@ -17,11 +17,11 @@ import psutil
 
 from . import find
 from . import mpi
-from . import cmake
 from .hpc import hpc_batch_detect, hpc_batch_create
 from . import model
 from . import write
 from . import read
+from . import cmake
 from .utils import git_meta
 
 
@@ -177,7 +177,7 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
 
     if not mpiexec:
         mpiexec = "mpiexec"
-    mpi_root = os.environ.get("MPI_ROOT")
+    mpi_root = os.environ.get("MPI_ROOT", "")
     if mpi_root:
         mpi_root += "/bin"
 
@@ -204,25 +204,31 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
     return mpiexec
 
 
-def get_gemini_exe(gemexe: Path = None) -> Path:
+def get_gemini_exe(exe: str | Path = None) -> Path:
     """
-    find and check that Gemini exectuable can run on this system
+    find and check that Gemini executable can run on this system
     download and build Gemini3D if needed
     """
 
-    if not gemexe:  # allow for default dict empty
-        gemexe = Path("gemini.bin")
-    gemexe = cmake.build_gemini3d(gemexe)
-
-    # %% ensure gemini.bin is runnable
-    ret = subprocess.run([str(gemexe)], stdout=subprocess.DEVNULL, timeout=15)
-    if ret.returncode != 0:
-        raise RuntimeError(
-            f"\n{gemexe} was not runnable on your platform. Try recompiling on this computer type."
-            "E.g. different HPC nodes may not have the CPU feature sets."
+    if not exe:  # allow for default dict empty
+        src_dir = Path(cmake.get_gemini_root()).expanduser()
+        exe = shutil.which("gemini.bin", path=str(src_dir / "build"))
+    if not exe:
+        raise EnvironmentError(
+            "Gemini.bin not found. Please run:\n gemini3d.cmake.build_gemini3d('gemini.bin')"
         )
 
-    return gemexe
+    # %% ensure gemini.bin is runnable
+    if exe is not None:
+        ret = subprocess.run([str(exe)], stdout=subprocess.DEVNULL, timeout=10)
+    if ret.returncode != 0:
+        raise EnvironmentError(
+            f"\n{exe} was not runnable on your platform. Different HPC nodes may not have the CPU feature sets."
+            "\nTry recompiling on this computer type.\n"
+            f"gemini3d.cmake.build_gemini3d('gemini.bin')\n"
+        )
+
+    return Path(exe)
 
 
 def check_outdir(out_dir: Pathlike) -> Path:

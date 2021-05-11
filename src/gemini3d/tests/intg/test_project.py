@@ -7,6 +7,7 @@ import logging
 import importlib.resources
 import pytest
 
+import gemini3d
 import gemini3d.web
 import gemini3d.write as write
 import gemini3d.grid
@@ -125,6 +126,8 @@ def test_precip(name, file_format, tmp_path):
     ],
 )
 def test_runner(name, file_format, tmp_path):
+
+    gemini3d.setup()
 
     out_dir = tmp_path
     # get files if needed

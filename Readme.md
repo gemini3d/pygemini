@@ -23,8 +23,7 @@ pip install -e pygemini
 ### build
 
 Not all users need to run Gemini3D on the same device where PyGemini is installed.
-PyGemini uses the "build on run" method developed by Michael Hirsch, which allows complex multi-language Python packages to install reliably across operating systems (MacOS, Linux, Windows).
-Upon the first `gemini3d.run()`, the underlying Gemini3D code is built, including all necessary libraries.
+Before the first `gemini3d.run()`, the underlying Gemini3D code is built by `gemini3d.setup()`, including all necessary libraries.
 
 ```sh
 python -m gemini3d.prereqs

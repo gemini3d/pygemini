@@ -8,7 +8,6 @@ import os
 import tempfile
 import importlib.resources
 
-from .. import PYGEMINI_ROOT
 from ..web import git_download
 
 __all__ = ["exe", "build", "find_library"]
@@ -114,29 +113,35 @@ project(dummy LANGUAGES C Fortran)
     return ret.returncode == 0
 
 
-def build_gemini3d(target: Path) -> Path:
+def get_gemini_root() -> Path:
+    gem_root = os.environ.get("GEMINI_ROOT")
+    if not gem_root:
+        gem_root = os.environ.get("GEMINI3D_ROOT")
+    if not gem_root:
+        raise EnvironmentError(
+            "Please set environment variable GEMINI_ROOT to (desired) top-level Gemini3D directory."
+            "If Gemini3D is not already there, PyGemini will download and build Gemini3D there."
+        )
+    return Path(gem_root)
+
+
+def build_gemini3d(targets: list[str]):
     """
     build targets from gemini3d program
 
     Specify environemnt variable GEMINI_ROOT to reuse existing development code
     """
-    src_dir = None
-    if os.environ.get("GEMINI_ROOT"):
-        src_dir = Path(os.environ["GEMINI_ROOT"]).expanduser()
 
-    if not src_dir or not src_dir.is_dir():
-        if len(target.parents) >= 2:
-            # user-specified location
-            src_dir = target.parents[1] / "gemini-fortran"
-        else:
-            src_dir = PYGEMINI_ROOT / "gemini-fortran"
+    if isinstance(targets, str):
+        targets = [targets]
 
-        if not (src_dir / "CMakeLists.txt").is_file():
-            jmeta = json.loads(importlib.resources.read_text("gemini3d", "libraries.json"))
-            git_download(src_dir, repo=jmeta["gemini3d"]["git"], tag=jmeta["gemini3d"]["tag"])
+    gem_root = get_gemini_root()
 
-    if not src_dir.is_dir():
-        raise NotADirectoryError(f"could not find Gemini3D source directory {src_dir}")
+    src_dir = Path(gem_root).expanduser()
+
+    if not (src_dir / "CMakeLists.txt").is_file():
+        jmeta = json.loads(importlib.resources.read_text("gemini3d", "libraries.json"))
+        git_download(src_dir, repo=jmeta["gemini3d"]["git"], tag=jmeta["gemini3d"]["tag"])
 
     build_dir = src_dir / "build"
 
@@ -146,11 +151,10 @@ def build_gemini3d(target: Path) -> Path:
         run_test=False,
         install=False,
         config_args=["-DBUILD_TESTING:BOOL=false"],
-        build_args=["--target", target.name],
+        build_args=["--target", *targets],
     )
-    exe = shutil.which(target.name, path=str(build_dir))
 
-    if not exe:
-        raise RuntimeError(f"{target.name} not found in {build_dir}")
-
-    return Path(exe)
+    for t in targets:
+        exe = shutil.which(t, path=str(build_dir))
+        if not exe:
+            raise RuntimeError(f"{t} not found in {build_dir}")

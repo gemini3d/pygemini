@@ -4,6 +4,7 @@ env:
   CC: gcc-10
   FC: gfortran-10
   CTEST_PARALLEL_LEVEL: 2
+  GEMINI_ROOT: ~/gemini3d
 
 on:
   push:
