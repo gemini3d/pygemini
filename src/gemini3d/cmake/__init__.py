@@ -122,7 +122,7 @@ def get_gemini_root() -> Path:
             "Please set environment variable GEMINI_ROOT to (desired) top-level Gemini3D directory."
             "If Gemini3D is not already there, PyGemini will download and build Gemini3D there."
         )
-    return Path(gem_root)
+    return Path(gem_root).expanduser()
 
 
 def build_gemini3d(targets: list[str]):
