@@ -137,9 +137,6 @@ def netcdf_c(
     else:
         lib_args = []
 
-    if not cmake.find_library("HDF5 COMPONENTS C Fortran", lib_args, env):
-        raise RuntimeError("Please install HDF5 before NetCDF4")
-
     c_args = [
         f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
         "-DCMAKE_BUILD_TYPE:STRING=Release",
@@ -199,14 +196,11 @@ def netcdf_fortran(
     else:
         lib_args = []
 
-    if not cmake.find_library("HDF5 COMPONENTS C Fortran", lib_args, env):
-        raise RuntimeError("Please install HDF5 before NetCDF4")
-
     patch = [
         f"-DNETCDF_C_LIBRARY:FILEPATH={netcdf_c}",
         f"-DNETCDF_INCLUDE_DIR:PATH={install_dir / 'include'}",
     ]
-    f_args = patch + [
+    f_args = patch + lib_args + [
         f"-DNetCDF_ROOT:PATH={install_dir}",
         f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
         "-DCMAKE_BUILD_TYPE:STRING=Release",
@@ -336,7 +330,7 @@ def lapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: 
 
     git_json(source_dir, "lapack")
 
-    args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
+    args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}", "-DBUILD_TESTING:BOOL=off"]
     cmake.build(source_dir, build_dir, wipe=wipe, env=env, dryrun=dryrun, config_args=args)
 
 
@@ -351,13 +345,7 @@ def scalapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryru
     lapack_root = dirs["prefix"] / LAPACK_DIR
     lib_args = [f"-DLAPACK_ROOT={lapack_root.as_posix()}"]
 
-    if not cmake.find_library("LAPACK", lib_args, env):
-        lapack(wipe, dirs, env)
-
-    args = [
-        "-Dautobuild:BOOL=off",
-        f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
-    ]
+    args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}", "-DBUILD_TESTING:BOOL=off"]
     cmake.build(
         source_dir, build_dir, wipe=wipe, env=env, dryrun=dryrun, config_args=args + lib_args
     )
@@ -380,14 +368,10 @@ def mumps(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: b
         lib_args = [
             f"-DSCALAPACK_ROOT:PATH={scalapack_lib.as_posix()}",
             f"-DLAPACK_ROOT:PATH={lapack_lib.as_posix()}",
+            "-DBUILD_TESTING:BOOL=off",
         ]
 
-    if not cmake.find_library("LAPACK", lib_args, env):
-        lapack(wipe, dirs, env)
-    if not cmake.find_library("SCALAPACK", lib_args, env):
-        scalapack(wipe, dirs, env)
-
-    args = ["-Dautobuild:BOOL=off", f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
+    args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
     cmake.build(
         source_dir, build_dir, wipe=wipe, env=env, dryrun=dryrun, config_args=args + lib_args
     )

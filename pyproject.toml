@@ -20,9 +20,6 @@ exclude = '''
 '''
 
 [tool.pytest.ini_options]
-addopts = "-ra --ignore-glob=*prereqs.py"
-# the prereqs tests are long and tedious, and are an auxiliary function of PyGemini
-# we test them explicitly with a CI case.
 log_cli = true
 log_cli_level = "WARNING"
 log_cli_format = "%(levelname)s"
