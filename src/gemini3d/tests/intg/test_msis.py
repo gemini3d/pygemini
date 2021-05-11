@@ -20,8 +20,8 @@ def test_build_msis(tmp_path, monkeypatch):
     """
 
     monkeypatch.setenv("GEMINI_ROOT", str(tmp_path / "gemini3d"))
-    monkeypatch.setenv("HDF5_ROOT", "")
-    monkeypatch.setenv("h5fortran_ROOT", "")
+#    monkeypatch.setenv("HDF5_ROOT", "")
+#    monkeypatch.setenv("h5fortran_ROOT", "")
     monkeypatch.setenv("glow_ROOT", "")
 
     gemini3d.setup("msis_setup")
@@ -34,6 +34,8 @@ def test_build_msis(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize("version", [0, 20])
 def test_msis(version, tmp_path):
+    gemini3d.setup("msis_setup")
+
     cfg = {
         "time": [datetime(2015, 1, 2, 12)],
         "f107": 100.0,
