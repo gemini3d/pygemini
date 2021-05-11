@@ -20,8 +20,8 @@ def test_build_msis(tmp_path, monkeypatch):
     """
 
     monkeypatch.setenv("GEMINI_ROOT", str(tmp_path / "gemini3d"))
-#    monkeypatch.setenv("HDF5_ROOT", "")
-#    monkeypatch.setenv("h5fortran_ROOT", "")
+    #    monkeypatch.setenv("HDF5_ROOT", "")
+    #    monkeypatch.setenv("h5fortran_ROOT", "")
     monkeypatch.setenv("glow_ROOT", "")
 
     gemini3d.setup("msis_setup")
