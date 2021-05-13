@@ -303,7 +303,7 @@ Use MPI on Windows via any of (choose one):
 
     url = f"https://download.open-mpi.org/release/open-mpi/v{version[:3]}/{tar_name}"
     url_retrieve(url, tarfn)
-    extract_tar(tarfn, source_dir)
+    extract_tar(tarfn, dirs["workdir"])
 
     cmd = [
         "./configure",
