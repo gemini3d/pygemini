@@ -43,7 +43,7 @@ jobs:
       # transient CI download speed
 
     - run: python -m gemini3d.install
-      timeout-minutes: 5
+      timeout-minutes: 7
       # transient CI download speed
 
     - name: Unit Tests

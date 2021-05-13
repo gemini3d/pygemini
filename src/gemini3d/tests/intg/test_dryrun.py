@@ -25,7 +25,7 @@ def test_memory(name, bref):
 @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 def test_mpiexec():
 
-    gemini3d.setup("gemini.bin")
+    gemini3d.setup()
 
     exe = job.get_gemini_exe()
     assert isinstance(exe, Path)
