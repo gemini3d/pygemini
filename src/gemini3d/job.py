@@ -1,8 +1,6 @@
 """
-functions related to running gemini.bin.
+functions related to running Gemini3D.
 Either locally (laptop or interactive HPC) or creating an HPC batch script based on template.
-
-Builds gemini.bin if not found.
 """
 
 from __future__ import annotations
@@ -16,7 +14,6 @@ import numpy as np
 import psutil
 
 from . import find
-from . import mpi
 from .hpc import hpc_batch_detect, hpc_batch_create
 from . import model
 from . import write
@@ -72,12 +69,11 @@ def runner(pr: dict[str, T.Any]) -> None:
     mpiexec = check_mpiexec(pr.get("mpiexec"), gemexe)
     if mpiexec:
         logging.info(f"mpiexec: {mpiexec}")
-        Nmpi = mpi.count(out_dir / p["indat_size"], pr.get("cpu_count"))
-        mpi_cmd = [mpiexec, "-n", str(Nmpi)]
+        mpi_args = []
     else:
-        mpi_cmd = []
+        mpi_args = ["-n", "1"]
 
-    cmd = mpi_cmd + [str(gemexe), str(out_dir)]
+    cmd = [str(gemexe), str(out_dir)] + mpi_args
 
     if pr.get("out_format"):
         cmd += ["-out_format", pr["out_format"]]
@@ -117,7 +113,7 @@ Gemini3D may run out of RAM on this computer, which may make the run exceedingly
 
 def memory_estimate(path: Path) -> int:
     """
-    Estimate how must RAM gemini.bin will need.
+    Estimate how must RAM Gemini3D will need.
     The current Gemini MPI architecture assumes the root node will use the most RAM,
     so that is the fundamental constraint.
     This neglects size of executable and library footprint,
@@ -207,25 +203,23 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
 def get_gemini_exe(exe: str | Path = None) -> Path:
     """
     find and check that Gemini executable can run on this system
-    download and build Gemini3D if needed
     """
+
+    name = "gemini3d.run"
 
     if not exe:  # allow for default dict empty
         src_dir = Path(cmake.get_gemini_root()).expanduser()
-        exe = shutil.which("gemini.bin", path=str(src_dir / "build"))
+        exe = shutil.which(name, path=str(src_dir / "build"))
     if not exe:
-        raise EnvironmentError(
-            "Gemini.bin not found. Please run:\n gemini3d.cmake.build_gemini3d('gemini.bin')"
-        )
+        raise EnvironmentError(f"{name} not found. Please run:\n gemini3d.cmake.build_gemini3d()")
 
-    # %% ensure gemini.bin is runnable
+    # %% ensure Gemini3D executable is runnable
     if exe is not None:
         ret = subprocess.run([str(exe)], stdout=subprocess.DEVNULL, timeout=10)
     if ret.returncode != 0:
         raise EnvironmentError(
-            f"\n{exe} was not runnable on your platform. Different HPC nodes may not have the CPU feature sets."
-            "\nTry recompiling on this computer type.\n"
-            f"gemini3d.cmake.build_gemini3d('gemini.bin')\n"
+            f"\n{exe} was not runnable on your platform--try rebuilding:\n"
+            f"gemini3d.cmake.build_gemini3d()\n"
         )
 
     return Path(exe)

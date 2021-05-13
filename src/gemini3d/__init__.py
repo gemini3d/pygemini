@@ -30,7 +30,7 @@ LSP = len(SPECIES)
 
 def setup(targets: list[str] = None):
     """
-    setup Gemini.bin and other Gemini3D executables
+    setup Gemini3D and other Gemini3D executables
     """
 
     if not targets:
