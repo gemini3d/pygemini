@@ -28,11 +28,6 @@ from .archive import extract_tar
 # ========= user parameters ======================
 BUILDDIR = "build"
 
-HDF5_DIR = "hdf5"
-LAPACK_DIR = "lapack"
-SCALAPACK_DIR = "scalapack"
-MUMPS_DIR = "mumps"
-
 # ========= end of user parameters ================
 
 
@@ -125,13 +120,13 @@ def netcdf_c(
 ):
     """build and install NetCDF-C"""
 
-    install_dir = dirs["prefix"] / "netcdf"
+    install_dir = dirs["prefix"]
     source_dir = dirs["workdir"] / "netcdf-c"
     build_dir = source_dir / BUILDDIR
 
     git_json(source_dir, "netcdf-c")
 
-    hdf5_root = dirs["prefix"] / HDF5_DIR
+    hdf5_root = dirs["prefix"]
     if hdf5_root.is_dir():
         lib_args = [f"-DHDF5_ROOT={hdf5_root.as_posix()}"]
     else:
@@ -168,7 +163,7 @@ def netcdf_fortran(
 ):
     """build and install NetCDF-Fortran"""
 
-    install_dir = dirs["prefix"] / "netcdf"
+    install_dir = dirs["prefix"]
     source_dir = dirs["workdir"] / "netcdf-fortran"
     build_dir = source_dir / BUILDDIR
 
@@ -190,7 +185,7 @@ def netcdf_fortran(
             f"please open a GitHub Issue for your operating system {sys.platform}"
         )
 
-    hdf5_root = dirs["prefix"] / HDF5_DIR
+    hdf5_root = dirs["prefix"]
     if hdf5_root.is_dir():
         lib_args = [f"-DHDF5_ROOT={hdf5_root.as_posix()}"]
     else:
@@ -226,7 +221,7 @@ def hdf5(dirs: dict[str, Path], env: T.Mapping[str, str]):
 
     use_cmake = True
     name = "hdf5"
-    install_dir = dirs["prefix"] / name
+    install_dir = dirs["prefix"]
     source_dir = dirs["workdir"] / name
     build_dir = source_dir / BUILDDIR
 
@@ -328,8 +323,8 @@ Use MPI on Windows via any of (choose one):
 
 def lapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """build and insall Lapack"""
-    install_dir = dirs["prefix"] / LAPACK_DIR
-    source_dir = dirs["workdir"] / LAPACK_DIR
+    install_dir = dirs["prefix"]
+    source_dir = dirs["workdir"] / "lapack"
     build_dir = source_dir / BUILDDIR
 
     git_json(source_dir, "lapack")
@@ -340,13 +335,13 @@ def lapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: 
 
 def scalapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """build and install Scalapack"""
-    install_dir = dirs["prefix"] / SCALAPACK_DIR
-    source_dir = dirs["workdir"] / SCALAPACK_DIR
+    install_dir = dirs["prefix"]
+    source_dir = dirs["workdir"] / "scalapack"
     build_dir = source_dir / BUILDDIR
 
     git_json(source_dir, "scalapack")
 
-    lapack_root = dirs["prefix"] / LAPACK_DIR
+    lapack_root = dirs["prefix"]
     lib_args = [f"-DLAPACK_ROOT={lapack_root.as_posix()}"]
 
     args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}", "-DBUILD_TESTING:BOOL=off"]
@@ -357,12 +352,12 @@ def scalapack(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryru
 
 def mumps(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """build and install Mumps"""
-    install_dir = dirs["prefix"] / MUMPS_DIR
-    source_dir = dirs["workdir"] / MUMPS_DIR
+    install_dir = dirs["prefix"]
+    source_dir = dirs["workdir"] / "mumps"
     build_dir = source_dir / BUILDDIR
 
-    scalapack_lib = dirs["prefix"] / SCALAPACK_DIR
-    lapack_lib = dirs["prefix"] / LAPACK_DIR
+    scalapack_lib = dirs["prefix"]
+    lapack_lib = dirs["prefix"]
 
     git_json(source_dir, "mumps")
 
