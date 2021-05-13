@@ -215,60 +215,39 @@ def netcdf_fortran(
 
 def hdf5(dirs: dict[str, Path], env: T.Mapping[str, str]):
     """build and install HDF5
-    some systems have broken libz and so have trouble extracting tar.bz2 from Python.
-    To avoid this, we git clone the release instead.
+    to avoid duplication we use our CMake scripts
+    """
+    cmake_scripts = Path(cmake.get_gemini_root()).expanduser() / "cmake/ext_libs"
+
+    jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
+
+    cmakelist = f"""
+    cmake_minimum_required(VERSION 3.20)
+    project(HDF5builder LANGUAGES C Fortran)
+
+    set(zlib_url {jmeta[f"zlib2"]["url"]})
+    set(zlib_sha256 {jmeta[f"zlib2"]["sha256"]})
+
+    set(hdf5_url {jmeta[f"hdf5"]["url"]})
+    set(hdf5_sha256 {jmeta[f"hdf5"]["sha256"]})
+
+    include({(cmake_scripts / "build_hdf5.cmake").as_posix()})
     """
 
-    use_cmake = True
-    name = "hdf5"
+    workdir = dirs["workdir"] / "hdf5_dummy"
     install_dir = dirs["prefix"]
-    source_dir = dirs["workdir"] / name
-    build_dir = source_dir / BUILDDIR
 
-    git_json(source_dir, "hdf5")
+    workdir.mkdir(exist_ok=True, parents=True)
 
-    if use_cmake or os.name == "nt":
-        # works for Intel oneAPI on Windows and many other systems/compilers.
-        # works for Make or Ninja in general.
-        cmd0 = [
-            "cmake",
-            f"-S{source_dir}",
-            f"-DCMAKE_INSTALL_PREFIX={install_dir}",
-            "-DHDF5_GENERATE_HEADERS:BOOL=false",
-            "-DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=true",
-            "-DBUILD_SHARED_LIBS:BOOL=false",
-            "-DCMAKE_BUILD_TYPE=Release",
-            "-DHDF5_BUILD_FORTRAN:BOOL=true",
-            "-DHDF5_BUILD_CPP_LIB:BOOL=false",
-            "-DHDF5_BUILD_TOOLS:BOOL=false",
-            "-DBUILD_TESTING:BOOL=false",
-            "-DHDF5_BUILD_EXAMPLES:BOOL=false",
-        ]
+    (workdir / "CMakeLists.txt").write_text(cmakelist)
 
-        cmd1 = ["cmake", "--build", str(build_dir), "--parallel"]
-
-        cmd2 = ["cmake", "--install", str(build_dir)]
-
-        # this old "cmake .." style command is necessary due to bugs with
-        # HDF5 (including 1.10.7) CMakeLists:
-        #   CMake Error at config/cmake/HDF5UseFortran.cmake:205 (file):
-        #   file failed to open for reading (No such file or directory):
-        #   C:/Users/micha/AppData/Local/Temp/hdf5/build/pac_fconftest.out.
-        build_dir.mkdir(exist_ok=True)
-        subprocess.check_call(cmd0, cwd=build_dir, env=env)
-    else:
-        cmd0 = [
-            "./configure",
-            f"--prefix={install_dir}",
-            "--enable-fortran",
-            "--enable-build-mode=production",
-        ]
-        cmd1 = ["make", "-j"]
-        cmd2 = ["make", "-j", "install"]
-        subprocess.check_call(cmd0, cwd=source_dir, env=env)
-
-    subprocess.check_call(cmd1, cwd=source_dir)
-    subprocess.check_call(cmd2, cwd=source_dir)
+    cmake.build(
+        source_dir=workdir,
+        build_dir=workdir / BUILDDIR,
+        env=env,
+        run_test=False,
+        config_args=[f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"],
+    )
 
 
 def openmpi(dirs: dict[str, Path], env: T.Mapping[str, str], version: str, dryrun: bool = False):
