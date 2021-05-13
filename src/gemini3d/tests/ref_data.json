@@ -32,25 +32,25 @@
     "2dew_fang" :
     {
       "archive" : "2dew_fang.zst",
-      "md5" : "85af89f4cf26ac11b9a31216739ca385",
+      "sha256" : "861d7fa93f33907414d57dbecaf9d0b0beecde25cfa7932901c1c4d8d449a346",
       "url" : "https://www.dropbox.com/s/p2x3wqp14jqlvn6/2dew_fang.zst?dl=1"
     },
     "2dew_glow" :
     {
       "archive" : "2dew_glow.zst",
-      "md5" : "e01ac0e3c804173027d9a52d9258dde3",
+      "sha256" : "bee10da9ce97650423d18d0e59c1540b9e8fc42f4be1f11e495c94544645514e",
       "url" : "https://www.dropbox.com/s/ei7nplk2rm7xf39/2dew_glow.zst?dl=1"
     },
     "2dns_fang" :
     {
       "archive" : "2dns_fang.zst",
-      "md5" : "fb165e186872b70032da609885046391",
+      "sha256" : "51a6061a739890f133ebe07e3f5772a39e456cc73b5c32a19b1a600bb18c5168",
       "url" : "https://www.dropbox.com/s/1xpbp51ay0flwpg/2dns_fang.zst?dl=1"
     },
     "2dns_glow" :
     {
       "archive" : "2dns_glow.zst",
-      "md5" : "0cd9114ed752a58c11f0bc154e33c125",
+      "sha256" : "2c7dd2d7640cf9ca7f2b651f424c433aa10fbea1ce5337c5b9a30c38444f274c",
       "url" : "https://www.dropbox.com/s/1m7mscs0g3uuhim/2dns_glow.zst?dl=1"
     },
     "3d_eq" :
@@ -62,13 +62,13 @@
     "3d_fang" :
     {
       "archive" : "3d_fang.zst",
-      "md5" : "13d07259b334f9928c48d1ea78eeba80",
+      "sha256" : "790fcc91645cfd7b77d9cbd209b6640bb4c29e34a3a268b881d6f407f7f2908f",
       "url" : "https://www.dropbox.com/s/5p0p0soihl6dbwi/3d_fang.zst?dl=1"
     },
     "3d_glow" :
     {
       "archive" : "3d_glow.zst",
-      "md5" : "aaf4e6ef2478b3b13859ce87dfb98083",
+      "sha256" : "822fd1ad80a90ea78e3136d854a87411a5506edec332244564e2b8faccb86b11",
       "url" : "https://www.dropbox.com/s/8p6h6a5u1nn653i/3d_glow.zst?dl=1"
     }
   }
