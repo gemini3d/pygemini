@@ -81,10 +81,10 @@ def runner(pr: dict[str, T.Any]) -> None:
     # %% attempt dry run, but don't fail in case intended for HPC
     logging.info("Gemini dry run command:")
     logging.info(" ".join(cmd))
-    proc = subprocess.run(cmd + ["-dryrun"])
+    proc = subprocess.run(cmd + ["-dryrun"], cwd=str(gemexe.parent))
 
     if proc.returncode != 0:
-        raise RuntimeError("Gemini dry run failed.")
+        raise RuntimeError(f"Gemini dry run failed. {' '.join(cmd)}")
 
     if pr.get("dryrun"):
         return None
@@ -106,7 +106,7 @@ Gemini3D may run out of RAM on this computer, which may make the run exceedingly
             )
         print("\nBEGIN Gemini run with command:")
         print(" ".join(cmd), "\n")
-        ret = subprocess.run(cmd).returncode
+        ret = subprocess.run(cmd, cwd=str(gemexe.parent)).returncode
         if ret != 0:
             raise RuntimeError("Gemini run failed")
 
@@ -167,7 +167,7 @@ def check_compiler():
         raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
 
 
-def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
+def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> str:
     """check if specified mpiexec exists on this system
     If not, fall back to not using MPI (slow, but still works)."""
 
@@ -189,7 +189,13 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Pathlike) -> str:
         return mpiexec
 
     mpi_msg = ret.stdout.strip()
-    ret = subprocess.run([str(gemexe), "-compiler"], stdout=subprocess.PIPE, text=True, timeout=5)
+    ret = subprocess.run(
+        [str(gemexe), "-compiler"],
+        stdout=subprocess.PIPE,
+        text=True,
+        timeout=5,
+        cwd=str(gemexe.parent),
+    )
     if ret.returncode != 0:
         raise EnvironmentError(f"{gemexe} not executable")
 
@@ -214,15 +220,17 @@ def get_gemini_exe(exe: str | Path = None) -> Path:
         raise EnvironmentError(f"{name} not found. Please run:\n gemini3d.cmake.build_gemini3d()")
 
     # %% ensure Gemini3D executable is runnable
-    if exe is not None:
-        ret = subprocess.run([str(exe)], stdout=subprocess.DEVNULL, timeout=10)
+    gemexe = Path(exe).expanduser()
+    ret = subprocess.run(
+        [str(gemexe)], stdout=subprocess.DEVNULL, timeout=10, cwd=str(gemexe.parent)
+    )
     if ret.returncode != 0:
         raise EnvironmentError(
-            f"\n{exe} was not runnable on your platform--try rebuilding:\n"
+            f"\n{gemexe} was not runnable on your platform--try rebuilding:\n"
             f"gemini3d.cmake.build_gemini3d()\n"
         )
 
-    return Path(exe)
+    return gemexe
 
 
 def check_outdir(out_dir: Pathlike) -> Path:
