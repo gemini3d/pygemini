@@ -79,7 +79,7 @@ def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> tuple[np.ndarray, np.ndarra
 def geog2UEN(alt, glon, glat, thetactr, phictr):
     """
     Converts a set of glon,glat into magnetic up, north, east coordinates.
-    thetactr and phictr are the magnetic coordinates of the center of hte region of interest.
+    thetactr and phictr are the magnetic coordinates of the center of the region of interest.
     They can be computed from geog2geomag.
     """
 

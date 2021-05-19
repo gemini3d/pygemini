@@ -33,7 +33,7 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     if lx1 is None:
         raise ValueError("size data not in Efield grid")
 
-    # %% For current density boundary conditions we need to determin top v bottom of the grid
+    # %% For current density boundary conditions we need to determine top v bottom of the grid
     if xg["alt"][0, 0, 0] > xg["alt"][1, 0, 0]:
         # inverted
         gridflag = 1

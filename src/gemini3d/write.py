@@ -65,7 +65,7 @@ def grid(cfg: dict[str, T.Any], xg: dict[str, T.Any], *, file_format: str = None
     xg: dict
         grid values
 
-    NOTE: we use .with_suffix() in case file_format was overriden by user
+    NOTE: we use .with_suffix() in case file_format was overridden by user
     that allows writing NetCDF4 and HDF5 by scripts using same input files
     """
 

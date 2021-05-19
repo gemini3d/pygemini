@@ -117,7 +117,7 @@ def memory_estimate(path: Path) -> int:
     The current Gemini MPI architecture assumes the root node will use the most RAM,
     so that is the fundamental constraint.
     This neglects size of executable and library footprint,
-    which would be miniscule in simulations larger than 1 GB where we
+    which would be minuscule in simulations larger than 1 GB where we
     are concerned about RAM limits.
 
     Parameters

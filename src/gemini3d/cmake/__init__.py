@@ -129,7 +129,7 @@ def build_gemini3d(targets: list[str]):
     """
     build targets from gemini3d program
 
-    Specify environemnt variable GEMINI_ROOT to reuse existing development code
+    Specify environment variable GEMINI_ROOT to reuse existing development code
     """
 
     if isinstance(targets, str):

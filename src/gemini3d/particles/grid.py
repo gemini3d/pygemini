@@ -52,7 +52,7 @@ def precip_grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     NOTE: since Fortran Gemini interpolates between time steps,
     having E0 default to zero is NOT appropriate, as the file before and/or
     after precipitation would interpolate from E0=0 to desired value, which
-    is decidely non-physical.
+    is decidedly non-physical.
     We default E0 to NaN so that it's obvious (by Gemini emitting an
     error) that an unexpected input has occurred.
     """

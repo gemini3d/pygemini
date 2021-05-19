@@ -1,3 +1,3 @@
 [codespell]
 skip = */.git,*/.mypy_cache
-ignore-words-list = Te
+ignore-words-list = Te,parms,parm,activ

@@ -66,7 +66,7 @@ def simsize(path: Path) -> tuple[int, ...]:
     elif fn.suffix == ".mat":
         return matlab.simsize(fn)
     else:
-        raise ValueError("unkonwn simsize file type")
+        raise ValueError("unknown simsize file type")
 
 
 def grid(

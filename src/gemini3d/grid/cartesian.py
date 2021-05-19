@@ -241,7 +241,7 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
     # xg['inull']=[];
     xg["nullpts"] = np.zeros(lx)
 
-    # %% TRIM DATA STRUCTRE TO BE THE SIZE FORTRAN EXPECTS
+    # %% TRIM DATA STRUCTURE TO BE THE SIZE FORTRAN EXPECTS
     # note: xgf is xg == True
     xgf = xg
 

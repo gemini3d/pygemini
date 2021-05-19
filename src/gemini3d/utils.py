@@ -127,7 +127,7 @@ def git_meta(path: Path = None) -> dict[str, str]:
         text=True,
     )
     if ret.returncode != 0:
-        logging.error(f"{path} coul not determine Git branch")
+        logging.error(f"{path} could not determine Git branch")
         return meta
     meta["branch"] = ret.stdout.strip()
 

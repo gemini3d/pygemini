@@ -1,5 +1,5 @@
 """
-using MSIS Fortran exectuable from Python
+using MSIS Fortran executable from Python
 """
 
 from __future__ import annotations
