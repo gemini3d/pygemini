@@ -50,9 +50,11 @@ def read_nml(fn: Path) -> dict[str, T.Any]:
         return params
 
     params["nml"] = fn
-    for n in ("base", "files", "flags", "setup"):
+    for n in ("base", "files", "flags"):
         params.update(parse_namelist(fn, n))
 
+    if namelist_exists(fn, "setup"):
+        params.update(parse_namelist(fn, "setup"))
     if namelist_exists(fn, "neutral_perturb"):
         params.update(parse_namelist(fn, "neutral_perturb"))
     if namelist_exists(fn, "precip"):
