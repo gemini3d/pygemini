@@ -3,28 +3,27 @@ import subprocess
 import os
 import shutil
 from pathlib import Path
-import xarray
-import numpy as np
+
 from datetime import datetime
 import typing as T
 import logging
 import importlib
+import imp
 
-try:
-    import psutil
-except ImportError:
-    psutil = None
-    # pip install psutil will improve CPU utilization.
+import xarray
+import numpy as np
+
 
 Pathlike = T.Union[str, Path]
 
-__all__ = ["to_datetime", "git_meta", "get_cpu_count", "datetime2ymd_hourdec"]
+__all__ = ["to_datetime", "git_meta", "datetime2ymd_hourdec"]
 
 
-def str2func(name: str) -> T.Callable:
+def str2func(name: str, path: Path = None) -> T.Callable:
     """
     expects one of (in priority order):
 
+    0. file in "path" (if present)
     1. os.getcwd()/name.py containing function name()
     2. gemiin3d.<foo> <foo>/name.py module file containing function name()
     3. gemini3d.<foo> <foo>/__init__.py containing function name()
@@ -49,8 +48,17 @@ def str2func(name: str) -> T.Callable:
             mod = importlib.import_module(mod_name)
             return getattr(mod, func_name)
     else:
-        # file in current working directory
-        mod = importlib.import_module(func_name)
+        if path is not None:
+            fid = imp.find_module(name, [path])  # type: ignore
+            try:
+                mod = imp.load_module(name, *fid)  # type: ignore
+            finally:
+                # higher except: may catch, so avoid resource leaks
+                if fid[0]:
+                    fid[0].close()
+        else:
+            # file in current working directory
+            mod = importlib.import_module(func_name)
 
     return getattr(mod, func_name)
 
@@ -175,6 +183,8 @@ def get_cpu_count() -> int:
     count: int
         detect number of physical CPU
     """
+
+    import psutil
 
     extradiv = 1
     max_cpu = None

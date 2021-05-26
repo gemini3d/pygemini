@@ -4,12 +4,12 @@ import numpy as np
 
 def Jcurrent_gaussian(E: xarray.Dataset, gridflag: int, flagdip: bool) -> xarray.Dataset:
 
-    if E["llon"] > 1:
+    if E.mlon.size > 1:
         shapelon = np.exp(-((E.mlon - E.mlonmean) ** 2) / 2 / E.mlonsig ** 2)
     else:
         shapelon = 1
 
-    if E["llat"] > 1:
+    if E.mlat.size > 1:
         shapelat = np.exp(-((E.mlat - E.mlatmean - 1.5 * E.mlatsig) ** 2) / 2 / E.mlatsig ** 2)
     else:
         shapelat = 1
