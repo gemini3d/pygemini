@@ -149,7 +149,7 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         else:
             func = str2func("gemini3d.efield.Jcurrent_gaussian")
 
-        E = func(E, gridflag)
+        E = func(E, gridflag, flagdip)
     else:
         # background only
         pass
