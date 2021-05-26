@@ -299,10 +299,11 @@ def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
 
     lxs = simsize(file.parent)
 
-    if lxs[2] == 1:  # east-west
-        p3 = (2, 0, 1)
-    else:  # 3D or north-south, no swap
-        p3 = (2, 1, 0)
+## fixme: deprecate???
+  #  if lxs[2] == 1:  # east-west
+  #      p3 = (2, 0, 1)
+  #  else:  # 3D or north-south, no swap
+    p3 = (2, 1, 0)
 
     v2n = {
         "ne": "neall",
