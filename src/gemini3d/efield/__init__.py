@@ -156,14 +156,14 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
     # %% check for NaNs
     # this is also done in Fortran, but just to help ensure results.
-    check_finite(E["Exit"], "Exit")
-    check_finite(E["Eyit"], "Eyit")
-    check_finite(E["Vminx1it"], "Vminx1it")
-    check_finite(E["Vmaxx1it"], "Vmaxx1it")
-    check_finite(E["Vminx2ist"], "Vminx2ist")
-    check_finite(E["Vmaxx2ist"], "Vmaxx2ist")
-    check_finite(E["Vminx3ist"], "Vminx3ist")
-    check_finite(E["Vmaxx3ist"], "Vmaxx3ist")
+    check_finite(E["Exit"])
+    check_finite(E["Eyit"])
+    check_finite(E["Vminx1it"])
+    check_finite(E["Vmaxx1it"])
+    check_finite(E["Vminx2ist"])
+    check_finite(E["Vmaxx2ist"])
+    check_finite(E["Vminx3ist"])
+    check_finite(E["Vmaxx3ist"])
 
     # %% SAVE THESE DATA TO APPROPRIATE FILES
     # LEAVE THE SPATIAL AND TEMPORAL INTERPOLATION TO THE
@@ -183,8 +183,11 @@ def Esigma(pwidth: float, pmax: float, pmin: float, px: np.ndarray) -> tuple[flo
     return wsig, xsig
 
 
-def check_finite(v: np.ndarray, name: str):
+def check_finite(v: np.ndarray, name: str = None):
 
     i = ~np.isfinite(v)
+
     if i.any():
+        if name is None and isinstance(v, xarray.DataArray):
+            name = v.name
         raise ValueError(f"{np.count_nonzero(i)} NaN in {name} at {i.nonzero()}")
