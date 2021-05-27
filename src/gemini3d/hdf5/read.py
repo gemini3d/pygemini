@@ -135,7 +135,10 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
             if f[k].ndim >= 2:
                 xg[k] = f[k][:].transpose()
             else:
-                xg[k] = f[k][:]
+                if (f[k].size>1):
+                    xg[k] = f[k][:]
+                else:
+                    xg[k]=f[k]
 
     xg["lx"] = simsize(file.with_name("simsize.h5"))
 

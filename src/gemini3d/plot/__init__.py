@@ -70,7 +70,7 @@ def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = None):
     # %% loop over files / time
     for t in cfg["time"]:
         frame(direc, time=t, var=var, saveplot_fmt=saveplot_fmt, xg=xg, plotfun=plotfun)
-        glow(aurmap_dir, t, saveplot_fmt, xg=xg)
+        #glow(aurmap_dir, t, saveplot_fmt, xg=xg)
 
 
 def frame(

@@ -262,6 +262,10 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
                 fletcher32=True,
             )
 
+        if "glonctr" in xg:
+            h["/glonctr"]=xg["glonctr"]
+            h["/glatctr"]=xg["glatctr"]               
+
 
 def Efield(outdir: Path, E: xarray.Dataset):
     """
