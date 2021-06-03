@@ -64,10 +64,10 @@ def model2magcoords(xg,parm,lalt,llon,llat,altlims=None,mlonlims=None,mlatlims=N
         sys.error('Unsupported grid type...')
 
     # Execute plaid interpolation
-    [X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
+    #[X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
     xi=np.zeros((x1i.size,3))
     xi=np.array( (x1i.flatten(),x2i.flatten(),x3i.flatten()) ).transpose()
-    parmi=scipy.interpolate.interpn( (x1,x2,x3), parm, xi, method="linear", bounds_error=False, fill_value=np.NaN)    
+    parmi=scipy.interpolate.interpn( (x1,x2,x3), np.array(parm), xi, method="linear", bounds_error=False, fill_value=np.NaN)    
     parmi=np.reshape(parmi,[lalt,llon,llat])
 
     return [alti,mloni,mlati,parmi]
