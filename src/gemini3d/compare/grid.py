@@ -14,11 +14,6 @@ def compare_grid(
     ref = read.grid(refdir)
     new = read.grid(new_dir, file_format=file_format)
 
-    if not ref:
-        raise FileNotFoundError(f"No simulation grid in {refdir}")
-    if not new:
-        raise FileNotFoundError(f"No simulation grid in {new_dir}")
-
     errs = 0
 
     if tol is None:

@@ -88,9 +88,7 @@ def grid(
         read only the shape of the grid instead of the data iteslf
     """
 
-    fn = find.grid(path)
-    if not fn:
-        return {}
+    fn = find.grid(path, required=True)
 
     if not file_format:
         file_format = fn.suffix[1:]
@@ -136,14 +134,12 @@ def data(
         simulation outputs
     """
 
-    if not fn:
-        return {}
-
     if not var:
         var = {"ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3", "Phi"}
 
     if isinstance(var, str):
         var = [var]
+    var = set(var)
 
     fn = Path(fn).expanduser()
 
@@ -321,6 +317,8 @@ def frame(
         top-level directory of simulation output
     time: datetime.datetime
         time to load from simulation output
+    var: set of str
+        variable(s) to read
     file_format: str, optional
         "hdf5", "nc" for hdf5 or netcdf4 respectively
 

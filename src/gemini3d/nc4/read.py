@@ -84,7 +84,7 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
     ----------
     file: pathlib.Path
         filepath to simgrid
-    var: list of str, optional
+    var: set of str, optional
         read only these grid variables
     shape: bool, optional
         read only the shape of the grid instead of the data iteslf
@@ -113,9 +113,12 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
         grid["lxs"] = np.array([grid["x1"], grid["x2"], grid["x3"]])
         return grid
 
+    if isinstance(var, str):
+        var = [var]
+
     with Dataset(file, "r") as f:
-        if not var:
-            var = f.variables
+        var = set(var) if var else f.variables
+
         for k in var:
             if f[k].ndim >= 2:
                 grid[k] = f[k][:].transpose()
@@ -197,6 +200,10 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
     var: set of str
         variable(s) to read
     """
+
+    if isinstance(var, str):
+        var = [var]
+    var = set(var)
 
     xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
@@ -280,7 +287,12 @@ def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
         "Phi": "Phiall",
     }
 
+    if isinstance(var, str):
+        var = [var]
+
     with Dataset(file, "r") as f:
+        var = set(var) if var else f.variables
+
         for k in var:
             if k == "Phi":
                 dat["Phitop"] = (("x2", "x3"), f[v2n[k]][:].transpose())

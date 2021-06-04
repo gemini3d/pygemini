@@ -10,7 +10,7 @@ from .. import read
 
 
 def compare_cli(P):
-    errs = compare_all(P.new_dir, P.ref_dir, file_format=P.file_format, only=P.only)
+    errs = compare_all(P.new_dir, P.ref_dir, file_format=P.file_format, only=P.only, plot=True)
 
     if errs:
         for e, v in errs.items():

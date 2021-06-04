@@ -60,8 +60,6 @@ def equilibrium_resample(p: dict[str, T.Any], xg: dict[str, T.Any]):
 
     # %% DO THE INTERPOLATION
     xg_in = read.grid(p["eq_dir"])
-    if not xg_in:
-        raise FileNotFoundError(f"{p['eq_dir']} does not have an input simulation grid.")
 
     dat_interp = model_resample(xg_in, dat, xg)
 

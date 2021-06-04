@@ -49,10 +49,8 @@ def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = None):
 
     if not var:
         var = PARAMS
-    if isinstance(var, str):
-        var = {var}
 
-    if set(var).intersection({"png", "pdf", "eps"}):
+    if not {"png", "pdf", "eps"} & var:
         raise ValueError("please use saveplot_fmt='png' or similar for plot format")
 
     xg = read.grid(direc)

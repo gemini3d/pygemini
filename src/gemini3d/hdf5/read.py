@@ -94,7 +94,7 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
     ----------
     file: pathlib.Path
         filepath to simgrid
-    var: list of str, optional
+    var: set of str, optional
         read only these grid variables
     shape: bool, optional
         read only the shape of the grid instead of the data iteslf
@@ -128,9 +128,12 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
         xg["lx"] = np.array([xg["x1"], xg["x2"], xg["x3"]])
         return xg
 
+    if isinstance(var, str):
+        var = [var]
+
     with h5py.File(file, "r") as f:
-        if not var:
-            var = f.keys()
+        var = set(var) if var else f.keys()
+
         for k in var:
             if f[k].ndim >= 2:
                 xg[k] = f[k][:].transpose()
@@ -216,9 +219,13 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
 
     file: pathlib.Path
         filename to read
-    var: list of str
+    var: set of str
         variable(s) to read
     """
+
+    if isinstance(var, str):
+        var = [var]
+    var = set(var)
 
     xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
@@ -317,7 +324,12 @@ def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
         "Phi": "Phiall",
     }
 
+    if isinstance(var, str):
+        var = [var]
+
     with h5py.File(file, "r") as f:
+        var = set(var) if var else f.keys()
+
         for k in var:
             if k == "Phi":
                 dat["Phitop"] = (("x2", "x3"), f[f"/{v2n[k]}"][:].transpose())
