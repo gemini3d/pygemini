@@ -38,9 +38,7 @@ def config(path: Path) -> dict[str, T.Any]:
         simulation parameters from config file
     """
 
-    file = find.config(path)
-    if not file:
-        return {}  # {} instead of None to work with .get()
+    file = find.config(path, required=True)
 
     if file.suffix == ".ini":
         P = read_ini(file)

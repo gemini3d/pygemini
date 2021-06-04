@@ -39,10 +39,6 @@ def equilibrium_resample(p: dict[str, T.Any], xg: dict[str, T.Any]):
 
     # %% READ Equilibrium SIMULATION INFO
     peq = read.config(p["eq_dir"])
-    if not peq:
-        raise FileNotFoundError(
-            f"equilibrium directory {p['eq_dir']} does not appear to contain config.nml"
-        )
 
     # %% END FRAME time of equilibrium simulation
     # this will be the starting time of the new simulation

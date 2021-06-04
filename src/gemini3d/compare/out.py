@@ -24,8 +24,6 @@ def compare_output(
     a: np.ndarray = None
 
     params = read.config(new_dir)
-    if not params:
-        raise FileNotFoundError(f"{new_dir} does not appear to contain config.nml")
     if len(params["time"]) <= 1:
         raise ValueError(
             f"{new_dir} simulation did not run long enough, must run for more than one time step"

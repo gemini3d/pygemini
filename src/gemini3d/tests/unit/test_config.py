@@ -63,8 +63,8 @@ def test_datetime_range():
 
 
 def test_no_config(tmp_path):
-    p = read.config(tmp_path)
-    assert p == {}
+    with pytest.raises(FileNotFoundError):
+        read.config(tmp_path)
 
 
 def test_no_nml(tmp_path):

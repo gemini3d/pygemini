@@ -23,14 +23,10 @@ def compare_input(
     names = {"ns", "Ts", "vs1"}
 
     ref_params = read.config(refdir)
-    if not ref_params:
-        raise FileNotFoundError(f"{refdir} does not appear to contain config.nml")
     ref_indir = refdir / ref_params["indat_file"].parts[-2]
     ref = read.data(ref_indir / ref_params["indat_file"].name, var=names)
 
     new_params = read.config(new_dir)
-    if not new_params:
-        raise FileNotFoundError(f"{new_dir} does not appear to contain config.nml")
     if len(new_params["time"]) <= 1:
         raise ValueError(
             f"{new_dir} simulation did not run long enough, must run for more than one time step"

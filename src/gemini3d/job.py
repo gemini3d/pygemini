@@ -32,8 +32,6 @@ def runner(pr: dict[str, T.Any]) -> None:
     config_file = find.config(pr["config_file"])
     # load configuration to know what directories to check
     p = read.config(config_file)
-    if not p:
-        raise FileNotFoundError(f"{config_file} does not appear to contain config.nml")
 
     # we don't want to overwrite an expensive simulation output
     if find.frame(out_dir, p["time"][0], p.get("out_format")):

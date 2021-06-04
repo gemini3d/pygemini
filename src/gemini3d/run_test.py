@@ -76,8 +76,6 @@ def runner(
         shutil.copy2(ref / "inputs/config.nml", input_dir)
 
     cfg = gemini3d.read.config(ref)
-    if not cfg:
-        raise FileNotFoundError(f"{ref} does not appear to contain a config.nml file")
 
     # delete previous test run data to avoid restarting milestone and failing test
     if (outdir / "output.nml").is_file():
