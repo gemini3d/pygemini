@@ -14,6 +14,11 @@ def glow(
     direc: Path, time: datetime, saveplot_fmt: str, xg: dict[str, T.Any] = None, fg: Figure = None
 ):
     """plots Gemini-Glow auroral emissions"""
+
+    if direc is None:
+        # no glow in this sim
+        return
+
     cfg = read.config(direc.parent)
 
     if xg is None:

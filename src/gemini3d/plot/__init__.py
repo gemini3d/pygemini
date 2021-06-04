@@ -50,7 +50,7 @@ def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = None):
     if not var:
         var = PARAMS
 
-    if not {"png", "pdf", "eps"} & var:
+    if {"png", "pdf", "eps"} & var:
         raise ValueError("please use saveplot_fmt='png' or similar for plot format")
 
     xg = read.grid(direc)
