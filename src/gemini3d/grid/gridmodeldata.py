@@ -30,6 +30,20 @@ def model2magcoords(xg,parm,lalt,llon,llat,altlims=None,mlonlims=None,mlatlims=N
     inds1=range(2,lx1+2); inds2=range(2,lx2+2); inds3=range(2,lx3+2);
     x1=xg["x1"][inds1]; x2=xg["x2"][inds2]; x3=xg["x3"][inds3];
     
+    # determine 2D v. 3D source data
+    #if ()
+    numdims=0
+    shp=parm.shape
+    for idim in range(0,len(parm.shape)):
+        if shp[idim] != 1:
+            numdims=numdims+1
+    indsingle=-1
+    if numdims==2:
+        if shp[1]==1:
+            indsingle=1
+        else:
+            indsingle=2
+    
     # set some defaults if not provided by user
     if altlims==None:
         altlims=np.array( [np.min(alt.flatten())+0.0001,np.max(alt.flatten())-0.0001] )
@@ -61,13 +75,34 @@ def model2magcoords(xg,parm,lalt,llon,llat,altlims=None,mlonlims=None,mlatlims=N
         [zUENi,xUENi,yUENi]=geomag2UENgeomag(ALTi,MLONi,MLATi)
         x1i=zUENi; x2i=xUENi; x3i=yUENi;
     else:
-        sys.error('Unsupported grid type...')
+        sys.error("Unsupported grid type...")
 
     # Execute plaid interpolation
     #[X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
-    xi=np.zeros((x1i.size,3))
-    xi=np.array( (x1i.flatten(),x2i.flatten(),x3i.flatten()) ).transpose()
-    parmi=scipy.interpolate.interpn( (x1,x2,x3), np.array(parm), xi, method="linear", bounds_error=False, fill_value=np.NaN)    
+    if (numdims==3):
+        #xi=np.zeros((x1i.size,3))
+        xi=np.array( (x1i.flatten(),x2i.flatten(),x3i.flatten()) ).transpose()
+        parmi=scipy.interpolate.interpn( (x1,x2,x3), np.array(parm), xi, method="linear", \
+                                        bounds_error=False, fill_value=np.NaN)
+    elif (numdims==2):
+        coord1=x1
+        coord1i=x1i
+        if (indsingle==2):
+            coord2=x2
+            coord2i=x2i
+        elif (indsingle==1):
+            coord2=x3
+            coord2i=x3i
+        else:
+            sys.error("Unable to identify second interpolant coordinate...")
+        #fi=scipy.interpolate.interp2d(coord1,coord2,np.squeeze(np.array(parm)), kind="linear", \
+        #                              bounds_error=False, fill_value=np.NaN)
+        #parmi=fi(coord1i.flatten(),coord2i.flatten()) 
+        xi=np.array( (coord1i.flatten(),coord2i.flatten()) ).transpose()
+        parmi=scipy.interpolate.interpn( (coord1,coord2), np.array(parm), xi, method="linear", \
+                                        bounds_error=False, fill_value=np.NaN)    
+    else:
+        sys.error("Can only grid 2D or 3D data, check array dims...")
     parmi=np.reshape(parmi,[lalt,llon,llat])
 
     return [alti,mloni,mlati,parmi]
