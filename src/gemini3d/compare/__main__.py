@@ -10,7 +10,7 @@ from .. import read
 
 
 def compare_cli(P):
-    errs = compare_all(P.new_dir, P.refdir, file_format=P.file_format, only=P.only)
+    errs = compare_all(P.new_dir, P.ref_dir, file_format=P.file_format, only=P.only)
 
     if errs:
         for e, v in errs.items():
@@ -18,12 +18,12 @@ def compare_cli(P):
 
         raise SystemExit(f"FAIL: compare {P.new_dir}")
 
-    print(f"OK: Gemini comparison {P.new_dir} {P.refdir}")
+    print(f"OK: Gemini comparison {P.new_dir} {P.ref_dir}")
 
 
 def plot_cli(P):
-    ref_path = Path(P.ref_path).expanduser().resolve(strict=True)
-    new_path = Path(P.new_path).expanduser().resolve(strict=True)
+    ref_path = Path(P.ref_dir).expanduser().resolve(strict=True)
+    new_path = Path(P.new_dir).expanduser().resolve(strict=True)
 
     if P.time:
         time = parse(P.time)
@@ -50,7 +50,7 @@ def plot_cli(P):
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Compare simulation file outputs and inputs")
     p.add_argument("new_dir", help="directory to compare")
-    p.add_argument("refdir", help="reference directory")
+    p.add_argument("ref_dir", help="reference directory")
     p.add_argument("-plot", help="plot instead of numeric compare", action="store_true")
     p.add_argument("-only", help="only check in or out", choices=["in", "out"])
     p.add_argument("-name", help="variable name")
