@@ -8,15 +8,26 @@ Various transformations needed to grid model output so it can be easily plotted
 @author: zettergm
 """
 
-# imports
+from __future__ import annotations
 import numpy as np
 from numpy import pi
-import sys
+import xarray
+
+import typing as T
 import scipy.interpolate
 from .convert import Re
 
 
-def model2magcoords(xg, parm, lalt, llon, llat, altlims=None, mlonlims=None, mlatlims=None):
+def model2magcoords(
+    xg: dict[str, T.Any],
+    parm: xarray.DataArray,
+    lalt: int,
+    llon: int,
+    llat: int,
+    altlims: tuple[float, float] = None,
+    mlonlims: tuple[float, float] = None,
+    mlatlims: tuple[float, float] = None,
+):
     """
     Grid the scalar GEMINI output data in parm onto a regular *geomagnetic* coordinates
     grid.  By default create a linearly spaced output grid based on
@@ -25,8 +36,8 @@ def model2magcoords(xg, parm, lalt, llon, llat, altlims=None, mlonlims=None, mla
     """
 
     # convenience variables
-    mlon = xg["phi"] * 180 / pi
-    mlat = 90 - xg["theta"] * 180 / pi
+    mlon = np.degrees(xg["phi"])
+    mlat = 90 - np.degrees(xg["theta"])
     alt = xg["alt"]
     lx1 = xg["lx"][0]
     lx2 = xg["lx"][1]
@@ -42,31 +53,28 @@ def model2magcoords(xg, parm, lalt, llon, llat, altlims=None, mlonlims=None, mla
     # if ()
     numdims = 0
     shp = parm.shape
-    for idim in range(0, len(parm.shape)):
+    for idim in range(len(parm.shape)):
         if shp[idim] != 1:
             numdims = numdims + 1
     indsingle = -1
     if numdims == 2:
-        if shp[1] == 1:
-            indsingle = 1
-        else:
-            indsingle = 2
+        indsingle = 1 if shp[1] == 1 else 2
 
     # set some defaults if not provided by user
     if altlims is None:
-        altlims = np.array([np.min(alt.flatten()) + 0.0001, np.max(alt.flatten()) - 0.0001])
-        mlonlims = np.array([np.min(mlon.flatten()) + 0.0001, np.max(mlon.flatten()) - 0.0001])
-        mlatlims = np.array([np.min(mlat.flatten()) + 0.0001, np.max(mlat.flatten()) - 0.0001])
+        altlims = (alt.min() + 0.0001, alt.max() - 0.0001)
+        mlonlims = (mlon.min() + 0.0001, mlon.max() - 0.0001)
+        mlatlims = (mlat.min() + 0.0001, mlat.max() - 0.0001)
 
     # define uniform grid in magnetic coords.
     alti = np.linspace(altlims[0], altlims[1], lalt)
     mloni = np.linspace(mlonlims[0], mlonlims[1], llon)
     mlati = np.linspace(mlatlims[0], mlatlims[1], llat)
-    [ALTi, MLONi, MLATi] = np.meshgrid(alti, mloni, mlati, indexing="ij")
+    ALTi, MLONi, MLATi = np.meshgrid(alti, mloni, mlati, indexing="ij")
 
     # identify the type of grid that we are using
-    minh1 = np.min(xg["h1"])
-    maxh1 = np.max(xg["h1"])
+    minh1 = xg["h1"].min()
+    maxh1 = xg["h1"].max()
     if abs(minh1 - 1) > 1e-4 or abs(maxh1 - 1) > 1e-4:  # curvilinear, dipole
         flagcurv = 1
     else:  # cartesian
@@ -77,25 +85,24 @@ def model2magcoords(xg, parm, lalt, llon, llat, altlims=None, mlonlims=None, mla
     # There needs to be a separate transformation here for each coordinate system that the model
     # may use...
     if flagcurv == 1:
-        [qi, pei, phii] = geomag2dipole(ALTi, MLONi, MLATi)
-        x1i = qi
-        x2i = pei
-        x3i = phii
+        x1i, x2i, x3i = geomag2dipole(ALTi, MLONi, MLATi)
     elif flagcurv == 0:
-        [zUENi, xUENi, yUENi] = geomag2UENgeomag(ALTi, MLONi, MLATi)
-        x1i = zUENi
-        x2i = xUENi
-        x3i = yUENi
+        x1i, x2i, x3i = geomag2UENgeomag(ALTi, MLONi, MLATi)
     else:
-        sys.error("Unsupported grid type...")
+        raise ValueError("Unsupported grid type...")
 
     # Execute plaid interpolation
     # [X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
     if numdims == 3:
         # xi=np.zeros((x1i.size,3))
-        xi = np.array((x1i.flatten(), x2i.flatten(), x3i.flatten())).transpose()
+        xi = np.array((x1i.ravel(), x2i.ravel(), x3i.ravel())).transpose()
         parmi = scipy.interpolate.interpn(
-            (x1, x2, x3), np.array(parm), xi, method="linear", bounds_error=False, fill_value=np.NaN
+            points=(x1, x2, x3),
+            values=parm.data,
+            xi=xi,
+            method="linear",
+            bounds_error=False,
+            fill_value=np.NaN,
         )
     elif numdims == 2:
         coord1 = x1
@@ -107,43 +114,50 @@ def model2magcoords(xg, parm, lalt, llon, llat, altlims=None, mlonlims=None, mla
             coord2 = x3
             coord2i = x3i
         else:
-            sys.error("Unable to identify second interpolant coordinate...")
-        # fi=scipy.interpolate.interp2d(coord1,coord2,np.squeeze(np.array(parm)), kind="linear", \
+            raise ValueError("Unable to identify second interpolant coordinate...")
+        # fi=scipy.interpolate.interp2d(coord1,coord2, parm.data, kind="linear", \
         #                              bounds_error=False, fill_value=np.NaN)
-        # parmi=fi(coord1i.flatten(),coord2i.flatten())
-        xi = np.array((coord1i.flatten(), coord2i.flatten())).transpose()
+        # parmi=fi(coord1i.ravel(),coord2i.ravel())
+        xi = np.array((coord1i.ravel(), coord2i.ravel())).transpose()
         parmi = scipy.interpolate.interpn(
-            (coord1, coord2),
-            np.array(parm),
-            xi,
+            points=(coord1, coord2),
+            values=parm.data,
+            xi=xi,
             method="linear",
             bounds_error=False,
             fill_value=np.NaN,
         )
     else:
-        sys.error("Can only grid 2D or 3D data, check array dims...")
-    parmi = np.reshape(parmi, [lalt, llon, llat])
+        raise ValueError("Can only grid 2D or 3D data, check array dims...")
 
-    return [alti, mloni, mlati, parmi]
+    parmi = parmi.reshape(lalt, llon, llat)
+
+    return alti, mloni, mlati, parmi
 
 
-# Convert geomagnetic coordinates into dipole
-def geomag2dipole(alt, mlon, mlat):
+def geomag2dipole(
+    alt: np.ndarray, mlon: np.ndarray, mlat: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Convert geomagnetic coordinates into dipole"""
+
     theta = pi / 2 - mlat * pi / 180
     phi = mlon * pi / 180
     r = alt + Re
     q = ((Re / r) ** 2) * np.cos(theta)
     p = r / (Re * np.sin(theta) ** 2)
-    return [q, p, phi]
+
+    return q, p, phi
 
 
-# Convert geomagnetic to UEN geomagnetic coords.
-def geomag2UENgeomag(alt, mlon, mlat):
+def geomag2UENgeomag(alt, mlon, mlat) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Convert geomagnetic to UEN geomagnetic coords."""
+
     theta = pi / 2 - mlat * pi / 180
     phi = mlon * pi / 180
-    meantheta = np.mean(theta.flatten())
-    meanphi = np.mean(phi.flatten())
+    meantheta = theta.mean()
+    meanphi = phi.mean()
     yUEN = -1 * Re * (theta - meantheta)  # north dist. runs backward from zenith angle
     xUEN = Re * np.sin(meantheta) * (phi - meanphi)  # some warping done here (using meantheta)
     zUEN = alt
-    return [zUEN, xUEN, yUEN]
+
+    return zUEN, xUEN, yUEN
