@@ -1,11 +1,8 @@
 {
 "gemini3d": {
   "git": "https://github.com/gemini3d/gemini3d.git",
-  "tag": "v0.14.3"},
-"zlib1": {
-  "url": "https://zlib.net/zlib1211.zip",
-  "sha256": "d7510a8ee1918b7d0cad197a089c0a2cd4d6df05fee22389f67f115e738b178d"
-},
+  "tag": "v1.0.1"},
+
 "zlib2": {
   "url" : "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.3.zip",
   "sha256": "235232f622d17cb4070f67ebeb06b0df8cf0894f9045ea6c51782479318841d2",

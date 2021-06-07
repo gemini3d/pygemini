@@ -1,8 +1,8 @@
 name: ci_mac
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  CC: gcc-10
-  FC: gfortran-10
+  CC: gcc-11
+  FC: gfortran-11
   CTEST_PARALLEL_LEVEL: 2
   GEMINI_ROOT: ~/gemini3d
 
