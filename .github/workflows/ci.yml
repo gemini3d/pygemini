@@ -71,3 +71,81 @@ jobs:
     # - run: pytest --cov --cov-report=xml
     # - name: Upload coverage to Codecov
     #   uses: codecov/codecov-action@v1
+
+
+  macos:
+    needs: linux
+    runs-on: macos-latest
+    env:
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+      CC: gcc-11
+      FC: gfortran-11
+
+    strategy:
+      matrix:
+        python-version: [ '3.8' ]
+
+    name: MacOS Python ${{ matrix.python-version }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Tell PATH to debug transient CI failures
+      run: echo $PATH
+
+    - run: python -m pip install .[tests,plots]
+      timeout-minutes: 5
+      # transient CI download speed
+
+    - run: python -m gemini3d.install
+      timeout-minutes: 7
+      # transient CI download speed
+
+    - name: Unit Tests
+      run: pytest --pyargs gemini3d.tests.unit
+      timeout-minutes: 2
+
+    - name: Integration Tests
+      run: pytest --pyargs gemini3d.tests.intg
+      timeout-minutes: 7
+
+  windows:
+    needs: linux
+    runs-on: windows-latest
+    env:
+      CMAKE_GENERATOR: Ninja
+
+    strategy:
+      matrix:
+        python-version: [ '3.8' ]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          git
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-gcc-fortran
+          mingw-w64-x86_64-hdf5
+          mingw-w64-x86_64-lapack
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - run: echo "D:/a/_temp/msys/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - run: python -m pip install .[tests,plots]
+      timeout-minutes: 2
+
+    - name: Unit Tests
+      run: pytest --pyargs gemini3d.tests.unit
+      timeout-minutes: 2
+
+    - name: Integration Tests
+      run: pytest --pyargs gemini3d.tests.intg
+      timeout-minutes: 7

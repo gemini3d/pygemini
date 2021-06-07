@@ -1,8 +1,6 @@
 # PyGemini
 
 ![ci](https://github.com/gemini3d/pygemini/workflows/ci/badge.svg)
-![ci](https://github.com/gemini3d/pygemini/workflows/ci_mac/badge.svg)
-![ci](https://github.com/gemini3d/pygemini/workflows/ci_windows/badge.svg)
 
 A Python interface to [Gemini3D](https://github.com/gemini3d/gemini), funded in part by NASA HDEE.
 
