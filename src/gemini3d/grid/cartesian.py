@@ -318,7 +318,7 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
     xgf["y"] = xgf["y"][i1, i2, i3]
     xgf["z"] = xgf["z"][i1, i2, i3]
 
-    xgf["glonctr"]=np.asarray(p["glon"])
-    xgf["glatctr"]=np.asarray(p["glat"])
+    xgf["glonctr"] = p["glon"]
+    xgf["glatctr"] = p["glat"]
 
     return xgf

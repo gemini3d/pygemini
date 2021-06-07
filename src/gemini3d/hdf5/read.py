@@ -138,10 +138,10 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
             if f[k].ndim >= 2:
                 xg[k] = f[k][:].transpose()
             else:
-                if (f[k].size>1):
+                if f[k].size > 1:
                     xg[k] = f[k][:]
                 else:
-                    xg[k]=f[k]
+                    xg[k] = f[k]
 
     xg["lx"] = simsize(file.with_name("simsize.h5"))
 
@@ -307,12 +307,6 @@ def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
-    lxs = simsize(file.parent)
-
-## fixme: deprecate???
-  #  if lxs[2] == 1:  # east-west
-  #      p3 = (2, 0, 1)
-  #  else:  # 3D or north-south, no swap
     p3 = (2, 1, 0)
 
     v2n = {
