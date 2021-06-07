@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Wed May 26 09:28:13 2021
-
 Various transformations needed to grid model output so it can be easily plotted
 
 @author: zettergm
