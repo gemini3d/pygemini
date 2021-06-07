@@ -184,6 +184,12 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
 
         _write_var(f, "I", xg["I"], ("x2", "x3"))
 
+        if "glonctr" in xg:
+            g = f.createVariable("glonctr", np.float32)
+            g[:] = xg["glonctr"]
+            g = f.createVariable("glatctr", np.float32)
+            g[:] = xg["glatctr"]
+
 
 def _write_var(
     f,
