@@ -2,6 +2,7 @@ from __future__ import annotations
 import typing as T
 import re
 import os
+import logging
 import math
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -170,9 +171,10 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
             if P[k].startswith(simroot_key):
                 root = os.environ.get(simroot_key[1:-1])
                 if not root:
-                    raise EnvironmentError(
+                    root = str(Path("~/gemini_sims").expanduser())
+                    logging.warning(
                         f"{k} refers to undefined environment variable GEMINI_SIMROOT."
-                        "Set it to location to store/load Gemini3D simulations."
+                        f"falling back to {root}"
                     )
                 P[k] = P[k].replace(simroot_key, root, 1)
             P[k] = Path(P[k]).expanduser()
