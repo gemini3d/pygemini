@@ -17,9 +17,9 @@ import gemini3d.plot
 @pytest.mark.parametrize(
     "name",
     [
-        "2dew_glow",
-        "2dns_glow",
-        "3d_glow",
+        "mini2dew_glow",
+        "mini2dns_glow",
+        "mini3d_glow",
     ],
 )
 def test_plot(name, tmp_path):
@@ -33,4 +33,4 @@ def test_plot(name, tmp_path):
 
     plot_files = sorted((tmp_path / "plots").glob("*.png"))
 
-    assert len(plot_files) == 10
+    assert len(plot_files) == 66

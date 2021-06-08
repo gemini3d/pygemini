@@ -19,7 +19,7 @@ from gemini3d.efield import Efield_BCs
 from gemini3d.particles import particles_BCs
 
 
-@pytest.mark.parametrize("name", ["2dew_fang"])
+@pytest.mark.parametrize("name", ["mini2dew_fang"])
 def test_file_time(name):
     # get files if needed
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
@@ -34,7 +34,12 @@ def test_file_time(name):
 
 @pytest.mark.parametrize(
     "name,file_format",
-    [("2dew_fang", "h5"), ("3d_fang", "h5"), ("2dew_fang", "nc"), ("3d_fang", "nc")],
+    [
+        ("mini2dew_fang", "h5"),
+        ("mini3d_fang", "h5"),
+        ("mini2dew_fang", "nc"),
+        ("mini3d_fang", "nc"),
+    ],
 )
 def test_grid(name, file_format, tmp_path):
 
@@ -62,7 +67,7 @@ def test_grid(name, file_format, tmp_path):
 
 
 @pytest.mark.parametrize(
-    "name,file_format", [("2dew_fang", "h5"), ("2dns_fang", "h5"), ("3d_fang", "h5")]
+    "name,file_format", [("mini2dew_fang", "h5"), ("mini2dns_fang", "h5"), ("mini3d_fang", "h5")]
 )
 def test_Efield(name, file_format, tmp_path):
 
@@ -86,7 +91,7 @@ def test_Efield(name, file_format, tmp_path):
 
 
 @pytest.mark.parametrize(
-    "name,file_format", [("2dew_fang", "h5"), ("2dns_fang", "h5"), ("3d_fang", "h5")]
+    "name,file_format", [("mini2dew_fang", "h5"), ("mini2dns_fang", "h5"), ("mini3d_fang", "h5")]
 )
 def test_precip(name, file_format, tmp_path):
 
@@ -114,15 +119,15 @@ def test_precip(name, file_format, tmp_path):
 @pytest.mark.parametrize(
     "name,file_format",
     [
-        ("2dew_eq", "h5"),
-        ("2dew_fang", "h5"),
-        ("2dew_glow", "h5"),
-        ("2dns_eq", "h5"),
-        ("2dns_fang", "h5"),
-        ("2dns_glow", "h5"),
-        ("3d_eq", "h5"),
-        ("3d_fang", "h5"),
-        ("3d_glow", "h5"),
+        ("mini2dew_eq", "h5"),
+        ("mini2dew_fang", "h5"),
+        ("mini2dew_glow", "h5"),
+        ("mini2dns_eq", "h5"),
+        ("mini2dns_fang", "h5"),
+        ("mini2dns_glow", "h5"),
+        ("mini3d_eq", "h5"),
+        ("mini3d_fang", "h5"),
+        ("mini3d_glow", "h5"),
     ],
 )
 def test_runner(name, file_format, tmp_path):

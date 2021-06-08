@@ -12,7 +12,7 @@ the test reference data to gemini/test_data/:
 
 If you wish to generate reference data for only one or a few test case(s), do like:
 
-    python scripts/generate_reference_data.py test_data/ -only test2dew_fang
+    python scripts/generate_reference_data.py test_data/ -only
 """
 
 from pathlib import Path

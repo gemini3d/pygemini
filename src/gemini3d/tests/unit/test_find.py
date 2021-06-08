@@ -17,37 +17,31 @@ def test_config(tmp_path):
         assert fn == cfn
 
 
-@pytest.mark.parametrize("name", ["2dew_fang"])
+@pytest.mark.parametrize("name", ["mini2dew_fang"])
 def test_grid(name, tmp_path):
     assert find.grid(tmp_path) is None
     assert find.grid(tmp_path / "not_exist") is None
 
-    try:
-        test_dir = gemini3d.web.download_and_extract(name, gemini3d.PYGEMINI_ROOT / "tests/data")
-    except ConnectionError as e:
-        pytest.skip(f"failed to download reference data {e}")
+    test_dir = gemini3d.web.download_and_extract(name, gemini3d.PYGEMINI_ROOT / "tests/data")
 
     fn = find.grid(test_dir)
     assert fn.name.endswith("simgrid.h5")
 
 
-@pytest.mark.parametrize("name", ["2dew_fang"])
+@pytest.mark.parametrize("name", ["mini2dew_fang"])
 def test_simsize(name, tmp_path):
     assert find.simsize(tmp_path) is None
     assert find.simsize(tmp_path / "not_exist") is None
 
     R = Path(gemini3d.__path__[0])
 
-    try:
-        test_dir = gemini3d.web.download_and_extract(name, R / "tests/data")
-    except ConnectionError as e:
-        pytest.skip(f"failed to download reference data {e}")
+    test_dir = gemini3d.web.download_and_extract(name, R / "tests/data")
 
     fn = find.simsize(test_dir)
     assert fn.name == "simsize.h5"
 
 
-@pytest.mark.parametrize("name", ["2dew_fang"])
+@pytest.mark.parametrize("name", ["mini2dew_fang"])
 def test_frame(name, tmp_path):
 
     t = datetime(2013, 2, 20, 5)
@@ -57,10 +51,7 @@ def test_frame(name, tmp_path):
 
     R = Path(gemini3d.__path__[0])
 
-    try:
-        test_dir = gemini3d.web.download_and_extract(name, R / "tests/data")
-    except ConnectionError as e:
-        pytest.skip(f"failed to download reference data {e}")
+    test_dir = gemini3d.web.download_and_extract(name, R / "tests/data")
 
     fn = find.frame(test_dir, t)
     assert fn.name == "20130220_18000.000000.h5"

@@ -11,7 +11,7 @@ import gemini3d.job as job
 import gemini3d.web
 
 
-@pytest.mark.parametrize("name,bref", [("2dew_eq", 1271392), ("3d_eq", 2372992)])
+@pytest.mark.parametrize("name,bref", [("mini2dew_eq", 1271408), ("mini3d_eq", 2373008)])
 def test_memory(name, bref):
 
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
@@ -37,7 +37,7 @@ def test_mpiexec():
     assert isinstance(mpiexec, str) or mpiexec is None
 
 
-@pytest.mark.parametrize("name", ["2dew_eq"])
+@pytest.mark.parametrize("name", ["mini2dew_eq"])
 def test_dryrun(name, tmp_path):
 
     gemini3d.setup()
