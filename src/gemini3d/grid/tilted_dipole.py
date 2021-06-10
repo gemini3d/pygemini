@@ -26,6 +26,13 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
         simulation grid
     """
 
+    # check for parameter controller altitude of top of grid in open dipole. 
+    if "openparm" in cfg:
+      openparm=cfg["openparm"]
+    else:
+      openparm=100
+
+
     pi = math.pi
 
     # arrange the grid data in a dictionary
@@ -61,12 +68,12 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     p = np.empty(lpg)
     p[2:-2] = np.linspace(pmin, pmax, cfg["lp"])  # sans ghost cells
 
-    # find the max zenith angle (theta) for the grid, need to detect grid type and henmisphere
+    # find the max zenith angle (theta) for the grid, need to detect grid type and hemisphere
     if cfg["gridflag"] == 0:  # open dipole grid
         if thetad < pi / 2:  # northern hemisphere
-            thetamax = thetax2min + pi / 100
+            thetamax = thetax2min + pi / openparm
         else:  # southern hemisphere
-            thetamax = thetax2max - pi / 100
+            thetamax = thetax2max - pi / openparm
     else:  # closed dipole grid, reflect theta about equator
         if thetad < pi / 2:  # northern
             thetamax = pi - thetax2min
