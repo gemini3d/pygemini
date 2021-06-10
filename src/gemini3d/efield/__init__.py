@@ -190,7 +190,7 @@ def Esigma(pwidth: float, pmax: float, pmin: float, px: np.ndarray) -> tuple[flo
 
 def check_finite(v: np.ndarray, name: str = None):
 
-    i = ~np.isfinite(v)
+    i = np.logical_not(np.isfinite(v))
 
     if i.any():
         if name is None and isinstance(v, xarray.DataArray):

@@ -70,7 +70,8 @@ def geog2geomag(glon: np.ndarray, glat: np.ndarray) -> tuple[np.ndarray, np.ndar
     i = ((phin > phig) & ((phin - phig) > pi)) | ((phin < phig) & ((phig - phin) < pi))
 
     phi[i] = pi - alpha[i]
-    phi[~i] = alpha[~i] + pi
+    i = np.logical_not(i)
+    phi[i] = alpha[i] + pi
 
     return phi, theta
 
@@ -91,7 +92,8 @@ def geomag2geog(phi: np.ndarray, theta: np.ndarray) -> tuple[np.ndarray, np.ndar
 
     i = phiwrap > pi
     phig2[i] = phin - beta[i]
-    phig2[~i] = phin + beta[~i]
+    i = np.logical_not(i)
+    phig2[i] = phin + beta[i]
 
     phig2 = phig2 % tau
     thetag2 = pi / 2 - thetag2p

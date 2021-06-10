@@ -124,7 +124,7 @@ def scalar(time: datetime, xg: dict[str, np.ndarray], parm: np.ndarray, name: st
     ]
 
     # %% 3-D interpolation for plot
-    if ~np.isfinite(parm).all():
+    if not np.isfinite(parm).all():
         raise ValueError("Mayavi requires finite data values")
 
     # TODO: check order of interpolated axes (1,2,0) or ?
@@ -135,7 +135,7 @@ def scalar(time: datetime, xg: dict[str, np.ndarray], parm: np.ndarray, name: st
     #     bounds_error=False,
     # ).reshape((lxp, lyp, lzp))
 
-    # if ~np.isfinite(parmp).all():
+    # if not np.isfinite(parmp).all():
     #     raise ValueError('Interpolation issue: Mayavi requires finite data values')
 
     fig = mlab.figure()

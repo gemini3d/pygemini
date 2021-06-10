@@ -85,14 +85,21 @@ def test_max_mpi(size, N, M):
 
 
 def test_coord():
-    lat, lon = coord.geomag2geog(pi / 2, pi / 2)
-    assert [lat, lon] == approx([0, 19], abs=1e-6, rel=0.001)
-
     theta, phi = coord.geog2geomag(0, 0)
+    assert isinstance(theta, float) and isinstance(phi, float)
     assert [theta, phi] == approx([1.50863496978059, 1.24485046147953], abs=1e-6, rel=0.001)
 
-    alt, lon, lat = coord.UEN2geog(0, 0, 0, pi / 2, pi / 2)
+    lat, lon = coord.geomag2geog(0, 0)
+    assert isinstance(lon, float) and isinstance(lat, float)
+
+    lat, lon = coord.geomag2geog(pi / 2, pi / 2)
+    assert isinstance(lon, float) and isinstance(lat, float)
+    assert [lat, lon] == approx([0, 19], abs=1e-6, rel=0.001)
+
+    alt, lon, lat = coord.UEN2geog(0.0, 0, 0, pi / 2, pi / 2)
+    assert isinstance(alt, float) and isinstance(lon, float) and isinstance(lat, float)
     assert [alt, lat, lon] == approx([0, 0, 19], abs=1e-6, rel=0.001)
 
-    z, x, y = coord.geog2UEN(0, 0, 0, pi / 2, pi / 2)
+    z, x, y = coord.geog2UEN(0.0, 0, 0, pi / 2, pi / 2)
+    assert isinstance(z, float) and isinstance(y, float) and isinstance(x, float)
     assert [z, x, y] == approx([0, -2076275.16205889, 395967.844181141], abs=1e-6, rel=0.001)

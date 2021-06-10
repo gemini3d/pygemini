@@ -14,9 +14,8 @@ def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> tuple[np.ndarray, np.nd
     phin = math.radians(289)
 
     # enforce phit = [0,2pi]
-    phit = np.remainder(phit, tau)
+    phit = phit % tau
 
-    # thetag2p=acos(cos(thetat).*cos(thetan)-sin(thetat).*sin(thetan).*cos(phit));
     thetag2p = np.arccos(
         np.cos(thetat) * np.cos(thetan) - np.sin(thetat) * np.sin(thetan) * np.cos(phit)
     )
@@ -24,12 +23,12 @@ def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> tuple[np.ndarray, np.nd
     beta = np.arccos(
         (np.cos(thetat) - np.cos(thetag2p) * np.cos(thetan)) / (np.sin(thetag2p) * np.sin(thetan))
     )
-
     phig2 = np.empty_like(phit, dtype=float)
 
     i = phit > pi
     phig2[i] = phin - beta[i]
-    phig2[~i] = phin + beta[~i]
+    i = np.logical_not(i)
+    phig2[i] = phin + beta[i]
 
     i = phig2 < 0
     phig2[i] = phig2[i] + tau
@@ -62,10 +61,12 @@ def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> tuple[np.ndarray, np.ndarra
     phit = np.empty_like(lat, dtype=float)
 
     i = ((phin > phig) & ((phin - phig) > pi)) | ((phin < phig) & ((phig - phin) < pi))
-    phit[i] = pi - alpha[i]
-    phit[~i] = alpha[~i] + pi
 
-    return thetat, phit
+    phit[i] = pi - alpha[i]
+    i = np.logical_not(i)
+    phit[i] = alpha[i] + pi
+
+    return thetat, phit[()]
 
 
 def geog2UEN(alt, glon, glat, thetactr, phictr):
