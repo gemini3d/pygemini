@@ -38,8 +38,11 @@ def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
 
     # NOTE: in future, E0 could be made time-dependent in config.nml as 1D array
 
+    func_path = None
     if "Qprecip_function" in cfg:
-        Qfunc = str2func(cfg["Qprecip_function"])
+        if (cfg["nml"].parent / (cfg["Qprecip_function"] + ".py")).is_file():
+            func_path = cfg["nml"].parent
+        Qfunc = str2func(cfg["Qprecip_function"], func_path)
     else:
         Qfunc = str2func("gemini3d.particles.gaussian2d")
 

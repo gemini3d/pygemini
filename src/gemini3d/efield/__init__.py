@@ -134,13 +134,13 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     E["Vmaxx3ist"] = (("time", "mlon"), np.zeros((Nt, llon)))
 
     # %% synthesize feature
-    path = None
+    func_path = None
     if "Etarg" in cfg:
         E.attrs["Etarg"] = cfg["Etarg"]
         if "Etarg_function" in cfg:
             if (cfg["nml"].parent / (cfg["Etarg_function"] + ".py")).is_file():
-                path = cfg["nml"].parent
-            func = str2func(cfg["Etarg_function"], path)
+                func_path = cfg["nml"].parent
+            func = str2func(cfg["Etarg_function"], func_path)
         else:
             func = str2func("gemini3d.efield.Efield_erf")
 
@@ -149,8 +149,8 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         E.attrs["Jtarg"] = cfg["Jtarg"]
         if "Jtarg_function" in cfg:
             if (cfg["nml"].parent / (cfg["Jtarg_function"] + ".py")).is_file():
-                path = cfg["nml"].parent
-            func = str2func(cfg["Jtarg_function"], path)
+                func_path = cfg["nml"].parent
+            func = str2func(cfg["Jtarg_function"], func_path)
         else:
             func = str2func("gemini3d.efield.Jcurrent_gaussian")
 
