@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import typing as T
 
-FILE_FORMATS = [".h5", ".nc", ".dat"]
+FILE_FORMATS = [".h5", ".nc"]
 
 
 def config(path: Path, required: bool = False) -> T.Optional[Path]:
