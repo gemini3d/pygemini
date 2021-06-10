@@ -4,7 +4,6 @@ These adaptations meant for dipole to spherical coordinate transformation
 """
 
 from __future__ import annotations
-import logging
 
 from .convert import calc_theta, Re
 from .convert import objfunr as f, objfunr_derivative as fprime
@@ -19,7 +18,7 @@ def qp2rtheta(q: float, p: float, verbose: bool = False) -> tuple[float, float]:
     tol = 1e-9
     maxit = 100
 
-    r: float = 0
+    r = 0.0
     converged = False
     ir0 = 0
     parms = (q, p)
@@ -29,7 +28,7 @@ def qp2rtheta(q: float, p: float, verbose: bool = False) -> tuple[float, float]:
         # may need to verify we get the correct root?
         r0 = ir0 * (0.25 * Re)
         r, it, converged = newton_exact(f, fprime, r0, parms, maxit, tol, verbose)
-        ir0 = ir0 + 1
+        ir0 += 1
 
     theta = calc_theta(r, parms)
 
@@ -48,7 +47,7 @@ def newton_exact(
 
     # Guard against starting at an inflection point
     if abs(fprime(x0, parms)) < derivtol:
-        raise ValueError("!Warning:  starting near inflection point, please change initial guess!")
+        raise ValueError("starting near inflection point, please change initial guess!")
 
     # Newton iteration main loop
     it = 1
@@ -58,7 +57,7 @@ def newton_exact(
     while not converged and it <= maxit:
         derivative = fprime(root, parms)
         if abs(derivative) < derivtol:
-            logging.warning(
+            raise ValueError(
                 "derivative near zero, terminating iterations with failure"
                 "to converge (try a different starting point)!"
             )
@@ -70,8 +69,8 @@ def newton_exact(
                 print(
                     "Iteration ", it, "; root ", root, "; fval ", fval, "; derivative ", derivative
                 )
-            it = it + 1
+            it += 1
             converged = abs(fval) < tol
-    it = it - 1
+    it -= 1
 
     return root, it, converged

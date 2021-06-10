@@ -14,8 +14,8 @@ import math
 
 # define module-scope constants
 Re = 6370e3
-thetan = np.deg2rad(11)
-phin = np.deg2rad(289)
+thetan = math.radians(11)
+phin = math.radians(289)
 pi = math.pi
 tau = math.tau
 
@@ -56,40 +56,29 @@ def geog2geomag(glon: np.ndarray, glat: np.ndarray) -> tuple[np.ndarray, np.ndar
     convert geographic to geomagnetic coordinates (see GEMINI document for details)
     """
 
-    glon = np.atleast_1d(glon)
-    glat = np.atleast_1d(glat)
-
-    glonwrap = np.mod(glon, 360)
-    thetag = pi / 2 - np.deg2rad(glat)
-    phig = np.deg2rad(glonwrap)
+    thetag = pi / 2 - np.radians(glat)
+    phig = np.radians(glon % 360)
 
     theta = np.arccos(
         np.cos(thetag) * np.cos(thetan) + np.sin(thetag) * np.sin(thetan) * np.cos(phig - phin)
     )
     argtmp = (np.cos(thetag) - np.cos(theta) * np.cos(thetan)) / (np.sin(theta) * np.sin(thetan))
-    alpha = np.arccos(np.maximum(np.minimum(argtmp, 1), -1))
+    alpha = np.arccos(max(min(argtmp, 1), -1))
 
-    phi = np.zeros(glon.shape)
+    phi = np.empty_like(glon, dtype=float)
 
-    condition = np.logical_or(
-        (np.logical_and(phin > phig, phin - phig > pi)),
-        (np.logical_and(phin < phig, phig - phin < pi)),
-    )
-    inds = np.where(condition)
-    phi[inds] = pi - alpha[inds]
-    inds = np.where(np.logical_not(condition))
-    phi[inds] = alpha[inds] + pi
+    i = ((phin > phig) & ((phin - phig) > pi)) | ((phin < phig) & ((phig - phin) < pi))
 
-    return phi.squeeze()[()], theta.squeeze()[()]
+    phi[i] = pi - alpha[i]
+    phi[~i] = alpha[~i] + pi
+
+    return phi, theta
 
 
 def geomag2geog(phi: np.ndarray, theta: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """convert from geomagnetic to geographic"""
 
-    theta = np.atleast_1d(theta)
-    phi = np.atleast_1d(phi)
-
-    phiwrap = np.mod(phi, tau)
+    phiwrap = phi % tau
 
     thetag2p = np.arccos(
         np.cos(theta) * np.cos(thetan) - np.sin(theta) * np.sin(thetan) * np.cos(phiwrap)
@@ -98,17 +87,16 @@ def geomag2geog(phi: np.ndarray, theta: np.ndarray) -> tuple[np.ndarray, np.ndar
         (np.cos(theta) - np.cos(thetag2p) * np.cos(thetan)) / (np.sin(thetag2p) * np.sin(thetan))
     )
 
-    phig2 = np.zeros(phi.shape)
+    phig2 = np.empty_like(phi, dtype=float)
 
-    inds = np.where(phiwrap > pi)
-    phig2[inds] = phin - beta[inds]
-    inds = np.where(phiwrap <= pi)
-    phig2[inds] = phin + beta[inds]
+    i = phiwrap > pi
+    phig2[i] = phin - beta[i]
+    phig2[~i] = phin + beta[~i]
 
-    phig2 = np.mod(phig2, tau)
+    phig2 = phig2 % tau
     thetag2 = pi / 2 - thetag2p
 
-    glat = np.rad2deg(thetag2)
-    glon = np.rad2deg(phig2)
+    glat = np.degrees(thetag2)
+    glon = np.degrees(phig2)
 
-    return glon.squeeze()[()], glat.squeeze()[()]
+    return glon, glat

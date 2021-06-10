@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 get Linux system info
 """

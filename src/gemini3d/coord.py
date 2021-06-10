@@ -25,13 +25,11 @@ def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> tuple[np.ndarray, np.nd
         (np.cos(thetat) - np.cos(thetag2p) * np.cos(thetan)) / (np.sin(thetag2p) * np.sin(thetan))
     )
 
-    phig2 = np.zeros_like(phit)
+    phig2 = np.empty_like(phit, dtype=float)
 
     i = phit > pi
     phig2[i] = phin - beta[i]
-
-    i = phit <= pi
-    phig2[i] = phin + beta[i]
+    phig2[~i] = phin + beta[~i]
 
     i = phig2 < 0
     phig2[i] = phig2[i] + tau
@@ -53,27 +51,21 @@ def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> tuple[np.ndarray, np.ndarra
     thetan = math.radians(11)
     phin = math.radians(289)
 
-    lat = np.atleast_1d(lat)
-    lon = np.atleast_1d(lon)
-
-    # enforce [0,360] longitude
-    lon = lon % 360
-
     thetagp = pi / 2 - np.radians(lat)
-    phig = np.radians(lon)
+    phig = np.radians(lon % 360)
 
     thetat = np.arccos(
         np.cos(thetagp) * np.cos(thetan) + np.sin(thetagp) * np.sin(thetan) * np.cos(phig - phin)
     )
     argtmp = (np.cos(thetagp) - np.cos(thetat) * np.cos(thetan)) / (np.sin(thetat) * np.sin(thetan))
     alpha = np.arccos(max(min(argtmp, 1), -1))
-    phit = np.empty(lat.shape)
+    phit = np.empty_like(lat, dtype=float)
 
     i = ((phin > phig) & ((phin - phig) > pi)) | ((phin < phig) & ((phig - phin) < pi))
     phit[i] = pi - alpha[i]
     phit[~i] = alpha[~i] + pi
 
-    return thetat.squeeze()[()], phit.squeeze()[()]
+    return thetat, phit
 
 
 def geog2UEN(alt, glon, glat, thetactr, phictr):
@@ -120,6 +112,6 @@ def UEN2geog(z, x, y, thetactr, phictr):
     phi = phictr + gamma1
 
     # Now convert the magnetic to geographic using our simple transformation
-    [glat, glon] = geomag2geog(theta, phi)
+    glat, glon = geomag2geog(theta, phi)
 
     return alt, glon, glat

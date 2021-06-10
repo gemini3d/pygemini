@@ -26,12 +26,11 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
         simulation grid
     """
 
-    # check for parameter controller altitude of top of grid in open dipole. 
+    # check for parameter controller altitude of top of grid in open dipole.
     if "openparm" in cfg:
-      openparm=cfg["openparm"]
+        openparm = cfg["openparm"]
     else:
-      openparm=100
-
+        openparm = 100
 
     pi = math.pi
 
