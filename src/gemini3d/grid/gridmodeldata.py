@@ -46,15 +46,7 @@ def model2magcoords(
     x3 = xg["x3"][inds3]
 
     # determine 2D v. 3D source data
-    # if ()
-    numdims = 0
-    shp = parm.shape
-    for idim in range(len(parm.shape)):
-        if shp[idim] != 1:
-            numdims = numdims + 1
-    indsingle = -1
-    if numdims == 2:
-        indsingle = 1 if shp[1] == 1 else 2
+    ndims = (np.asarray(parm.shape) > 1).sum()
 
     # set some defaults if not provided by user
     if altlims is None:
@@ -89,7 +81,7 @@ def model2magcoords(
 
     # Execute plaid interpolation
     # [X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
-    if numdims == 3:
+    if ndims == 3:
         # xi=np.zeros((x1i.size,3))
         xi = np.array((x1i.ravel(), x2i.ravel(), x3i.ravel())).transpose()
         parmi = scipy.interpolate.interpn(
@@ -100,17 +92,15 @@ def model2magcoords(
             bounds_error=False,
             fill_value=np.NaN,
         )
-    elif numdims == 2:
+    elif ndims == 2:
         coord1 = x1
         coord1i = x1i
-        if indsingle == 2:
-            coord2 = x2
-            coord2i = x2i
-        elif indsingle == 1:
+        if parm.shape[1] == 1:
             coord2 = x3
             coord2i = x3i
         else:
-            raise ValueError("Unable to identify second interpolant coordinate...")
+            coord2 = x2
+            coord2i = x2i
         # fi=scipy.interpolate.interp2d(coord1,coord2, parm.data, kind="linear", \
         #                              bounds_error=False, fill_value=np.NaN)
         # parmi=fi(coord1i.ravel(),coord2i.ravel())
