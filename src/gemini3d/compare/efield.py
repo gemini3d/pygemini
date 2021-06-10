@@ -25,8 +25,8 @@ def compare_Efield(
     efield_errs = 0
     # often we reuse Efield inputs without copying over files
     for t in times:
-        ref = read.Efield(find.frame(refdir, t))
-        new = read.Efield(find.frame(newdir, t), file_format=file_format)
+        ref = read.Efield(find.frame(refdir, t, required=True))
+        new = read.Efield(find.frame(newdir, t, required=True), file_format=file_format)
         for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
             b = ref[k]
             a = new[k]

@@ -27,7 +27,7 @@ def test_file_time(name):
 
     t0 = datetime(2013, 2, 20, 5, 0, 0)
 
-    file = gemini3d.find.frame(test_dir, time=t0)
+    file = gemini3d.find.frame(test_dir, time=t0, required=True)
     time = gemini3d.read.time(file)
     assert time == t0
 

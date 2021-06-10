@@ -326,7 +326,11 @@ def frame(
         simulation output for this time step
     """
 
-    return data(find.frame(simdir, time, file_format), var=var, file_format=file_format)
+    return data(
+        find.frame(simdir, time, file_format=file_format, required=True),
+        var=var,
+        file_format=file_format,
+    )
 
 
 def time(file: Path) -> datetime:

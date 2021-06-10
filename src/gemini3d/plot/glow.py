@@ -25,7 +25,7 @@ def glow(
         xg = read.grid(direc.parent)
 
     # %% get filename
-    fn = find.frame(direc, time)
+    fn = find.frame(direc, time, required=True)
 
     # %% make plots
     if fg is None:

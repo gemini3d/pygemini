@@ -26,8 +26,8 @@ def compare_precip(
 
     # often we reuse precipitation inputs without copying over files
     for t in times:
-        ref = read.precip(find.frame(refdir, t))
-        new = read.precip(find.frame(newdir, t), file_format=file_format)
+        ref = read.precip(find.frame(refdir, t, required=True))
+        new = read.precip(find.frame(newdir, t, required=True), file_format=file_format)
 
         for k in ref.keys():
             b = np.atleast_1d(ref[k])

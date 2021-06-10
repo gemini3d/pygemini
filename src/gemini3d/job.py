@@ -34,7 +34,7 @@ def runner(pr: dict[str, T.Any]) -> None:
     p = read.config(config_file)
 
     # we don't want to overwrite an expensive simulation output
-    if find.frame(out_dir, p["time"][0], p.get("out_format")):
+    if find.frame(out_dir, p["time"][0], file_format=p.get("out_format"), required=False):
         raise FileExistsError(
             f"a fresh simulation should not have data in output directory: {out_dir}"
         )

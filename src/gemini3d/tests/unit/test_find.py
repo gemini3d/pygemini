@@ -46,12 +46,12 @@ def test_frame(name, tmp_path):
 
     t = datetime(2013, 2, 20, 5)
 
-    assert find.frame(tmp_path, t) is None
-    assert find.frame(tmp_path / "not_exist", t) is None
+    assert find.frame(tmp_path, t, required=False) is None
+    assert find.frame(tmp_path / "not_exist", t, required=False) is None
 
     R = Path(gemini3d.__path__[0])
 
     test_dir = gemini3d.web.download_and_extract(name, R / "tests/data")
 
-    fn = find.frame(test_dir, t)
+    fn = find.frame(test_dir, t, required=True)
     assert fn.name == "20130220_18000.000000.h5"

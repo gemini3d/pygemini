@@ -22,7 +22,9 @@ def simsize(path: Path, suffix: str = None, required: bool = False) -> T.Optiona
     return find_stem(path, stem="simsize", suffix=suffix, required=required)
 
 
-def frame(simdir: Path, time: datetime, file_format: str = None) -> T.Optional[Path]:
+def frame(
+    simdir: Path, time: datetime, *, file_format: str = None, required: bool = False
+) -> T.Optional[Path]:
     """
     the frame filenames can have different file formats
     """
@@ -59,6 +61,9 @@ def frame(simdir: Path, time: datetime, file_format: str = None) -> T.Optional[P
 
             if abs(afile_times[i] - time) <= MAX_OFFSET:
                 return files[i]
+
+    if required:
+        raise FileNotFoundError(f"{stem}{suffixes} not found in {simdir}")
 
     return None
 
