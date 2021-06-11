@@ -91,7 +91,7 @@ def model2magcoords(
             method="linear",
             bounds_error=False,
             fill_value=np.NaN,
-        )
+        )    # FIXME: need to check here whether our target grid is 2D or 3D...
     elif ndims == 2:
         coord1 = x1
         coord1i = x1i
