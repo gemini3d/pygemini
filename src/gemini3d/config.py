@@ -44,32 +44,20 @@ def read_nml(fn: Path) -> dict[str, T.Any]:
     Just trying to keep Python prereqs reduced for this simple parsing.
     """
 
-    params: dict[str, T.Any] = {}
+    fn = find.config(fn, required=True)
 
-    fn = find.config(fn)
-    if not fn:
-        return params
+    params = {"nml": fn}
 
-    params["nml"] = fn
-    for n in ("base", "files", "flags"):
-        params.update(parse_namelist(fn, n))
-
-    if namelist_exists(fn, "setup"):
-        params.update(parse_namelist(fn, "setup"))
-    if namelist_exists(fn, "neutral_perturb"):
-        params.update(parse_namelist(fn, "neutral_perturb"))
-    if namelist_exists(fn, "precip"):
-        params.update(parse_namelist(fn, "precip"))
-    if namelist_exists(fn, "efield"):
-        params.update(parse_namelist(fn, "efield"))
-    if namelist_exists(fn, "glow"):
-        params.update(parse_namelist(fn, "glow"))
+    for k in {"base", "files", "flags", "setup", "neutral_perturb", "precip", "efield", "glow"}:
+        if namelist_exists(fn, k):
+            params.update(parse_namelist(fn, k))
 
     return params
 
 
 def namelist_exists(fn: Path, nml: str) -> bool:
-    """determines if a namelist exists in a file"""
+    """determines if a namelist exists in a
+    does not check for proper formatting etc."""
 
     pat = re.compile(r"^\s*&(" + nml + ")$")
 
@@ -89,14 +77,10 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
 
     r = namelist.read(file, nml)
 
-    P: dict[str, T.Any]
-
     if nml == "base":
         P = parse_base(r)
     elif nml == "flags":
-        P = {}
-        for k in r:
-            P[k] = int(r[k])
+        P = parse_flags(r)
     elif nml == "files":
         P = parse_files(r)
     elif nml == "setup":
@@ -144,6 +128,15 @@ def parse_base(r: dict[str, T.Any]) -> dict[str, T.Any]:
     )
 
     P["time"] = datetime_range(t0, t0 + P["tdur"], P["dtout"])
+
+    return P
+
+
+def parse_flags(r: dict[str, T.Any]) -> dict[str, T.Any]:
+
+    P = {}
+    for k in r:
+        P[k] = int(r[k])
 
     return P
 
@@ -252,19 +245,17 @@ def read_ini(fn: Path) -> dict[str, T.Any]:
     DEPRECATED
     """
 
-    P: dict[str, T.Any] = {}
-
-    fn = find.config(fn)
-
-    if not fn:
-        return P
+    fn = find.config(fn, required=True)
 
     with fn.open("r") as f:
         date = list(map(int, f.readline().split()[0].split(",")))[::-1]
         sec = float(f.readline().split()[0])
         t0 = datetime(date[0], date[1], date[2]) + timedelta(seconds=sec)
-        P["tdur"] = timedelta(seconds=float(f.readline().split()[0]))
-        P["dtout"] = timedelta(seconds=float(f.readline().split()[0]))
+
+        P: dict[str, T.Any] = {
+            "tdur": timedelta(seconds=float(f.readline().split()[0])),
+            "dtout": timedelta(seconds=float(f.readline().split()[0])),
+        }
         P["time"] = datetime_range(t0, t0 + P["tdur"], P["dtout"])
 
         P["f107a"], P["f107"], P["Ap"] = map(float, f.readline().split()[0].split(","))

@@ -38,8 +38,7 @@ if __name__ == "__main__":
         x2 = dat["x2"]
         x3 = dat["x3"]
     except KeyError:
-        grid_file = find.grid(dat_file.parent)
-        grid = read.grid(grid_file)
+        grid = read.grid(find.grid(dat_file.parent, required=True))
 
         x1 = grid["x1"]
         x2 = grid["x2"]

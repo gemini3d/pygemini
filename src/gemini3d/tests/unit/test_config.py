@@ -68,13 +68,13 @@ def test_no_config(tmp_path):
 
 
 def test_no_nml(tmp_path):
-    p = config.read_nml(tmp_path)
-    assert p == {}
+    with pytest.raises(FileNotFoundError):
+        config.read_nml(tmp_path)
 
 
 def test_no_ini(tmp_path):
-    p = config.read_ini(tmp_path)
-    assert p == {}
+    with pytest.raises(FileNotFoundError):
+        config.read_ini(tmp_path)
 
 
 def test_nml_bad(tmp_path):

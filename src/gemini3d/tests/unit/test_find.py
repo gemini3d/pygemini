@@ -9,22 +9,22 @@ import gemini3d.web
 
 
 def test_config(tmp_path):
-    assert find.config(tmp_path) is None
-    assert find.config(tmp_path / "not_exist") is None
+    assert find.config(tmp_path, required=False) is None
+    assert find.config(tmp_path / "not_exist", required=False) is None
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
-        fn = find.config(cfn)
+        fn = find.config(cfn, required=True)
         assert fn == cfn
 
 
 @pytest.mark.parametrize("name", ["mini2dew_fang"])
 def test_grid(name, tmp_path):
-    assert find.grid(tmp_path) is None
-    assert find.grid(tmp_path / "not_exist") is None
+    assert find.grid(tmp_path, required=False) is None
+    assert find.grid(tmp_path / "not_exist", required=False) is None
 
     test_dir = gemini3d.web.download_and_extract(name, gemini3d.PYGEMINI_ROOT / "tests/data")
 
-    fn = find.grid(test_dir)
+    fn = find.grid(test_dir, required=True)
     assert fn.name.endswith("simgrid.h5")
 
 

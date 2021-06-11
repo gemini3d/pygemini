@@ -29,7 +29,7 @@ def runner(pr: dict[str, T.Any]) -> None:
 
     out_dir = check_outdir(pr["out_dir"])
 
-    config_file = find.config(pr["config_file"])
+    config_file = find.config(pr["config_file"], required=True)
     # load configuration to know what directories to check
     p = read.config(config_file)
 
