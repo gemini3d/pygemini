@@ -48,16 +48,30 @@ def model2magcoords(
     # determine 2D v. 3D source data
     ndims = (np.asarray(parm.shape) > 1).sum()
 
-    # set some defaults if not provided by user
+    # set some defaults for interoplation limits if not provided by user
     if altlims is None:
         altlims = (alt.min() + 0.0001, alt.max() - 0.0001)
+    if mlonlims is None:
         mlonlims = (mlon.min() + 0.0001, mlon.max() - 0.0001)
+    if mlatlims is None:
         mlatlims = (mlat.min() + 0.0001, mlat.max() - 0.0001)
-
-    # define uniform grid in magnetic coords.
-    alti = np.linspace(altlims[0], altlims[1], lalt)
-    mloni = np.linspace(mlonlims[0], mlonlims[1], llon)
-    mlati = np.linspace(mlatlims[0], mlatlims[1], llat)
+    
+    # define uniform grid in magnetic coords.; check for singleton target grid dims
+    if lalt>1:
+        alti = np.linspace(altlims[0], altlims[1], lalt)
+    else:
+        altref=np.mean(altlims)    # user can control the slice by setting altlims input...
+        alti = np.array((altref))
+    if llon>1:
+        mloni = np.linspace(mlonlims[0], mlonlims[1], llon)
+    else:
+        mlonref=np.mean(mlonlims)
+        mloni=np.array((mlonref))
+    if llat>1:
+        mlati = np.linspace(mlatlims[0], mlatlims[1], llat)
+    else:
+        mlatref=np.mean(mlatlims)
+        mlati=np.array((mlatref))
     ALTi, MLONi, MLATi = np.meshgrid(alti, mloni, mlati, indexing="ij")
 
     # identify the type of grid that we are using
@@ -67,7 +81,7 @@ def model2magcoords(
         flagcurv = 1
     else:  # cartesian
         flagcurv = 0
-        # elif others possible...
+    # elif others possible...
 
     # Compute the coordinates of the intended interpolation grid IN THE MODEL SYSTEM/BASIS.
     # There needs to be a separate transformation here for each coordinate system that the model
@@ -81,7 +95,8 @@ def model2magcoords(
 
     # Execute plaid interpolation
     # [X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
-    if ndims == 3:
+    if ndims == 3:      # 3D source data
+        # FIXME: need to check here whether our *target* grid is 2D or 3D...
         # xi=np.zeros((x1i.size,3))
         xi = np.array((x1i.ravel(), x2i.ravel(), x3i.ravel())).transpose()
         parmi = scipy.interpolate.interpn(
@@ -91,8 +106,8 @@ def model2magcoords(
             method="linear",
             bounds_error=False,
             fill_value=np.NaN,
-        )    # FIXME: need to check here whether our target grid is 2D or 3D...
-    elif ndims == 2:
+        )
+    elif ndims == 2:    # 2D source data
         coord1 = x1
         coord1i = x1i
         if parm.shape[1] == 1:
