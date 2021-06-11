@@ -5,7 +5,10 @@ tilted dipole grid generation function
 from __future__ import annotations
 import typing as T
 import math
+import logging
+
 import numpy as np
+
 from .newton_method import qp2rtheta
 from .convert import geog2geomag, geomag2geog, Re
 
@@ -26,11 +29,8 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
         simulation grid
     """
 
-    # check for parameter controller altitude of top of grid in open dipole.
-    if "openparm" in cfg:
-        openparm = cfg["openparm"]
-    else:
-        openparm = 100
+    # parameter controlling altitude of top of grid in open dipole.
+    gopen = cfg.get("grid_openparm", 100.0)
 
     pi = math.pi
 
@@ -41,7 +41,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     lqg = cfg["lq"] + 4
     lpg = cfg["lp"] + 4
     lphig = cfg["lphi"] + 4
-    print("tilted_dipole3d called for mesh size of:  ", cfg["lq"], "x", cfg["lp"], "x", cfg["lphi"])
+    logging.info(f"mesh size of:  {cfg['lq']} x {cfg['lp']} x {cfg['lphi']}")
 
     # phi,theta coordinates at the "center" of the grid
     phid, thetad = geog2geomag(cfg["glon"], cfg["glat"])
@@ -70,9 +70,9 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     # find the max zenith angle (theta) for the grid, need to detect grid type and hemisphere
     if cfg["gridflag"] == 0:  # open dipole grid
         if thetad < pi / 2:  # northern hemisphere
-            thetamax = thetax2min + pi / openparm
+            thetamax = thetax2min + pi / gopen
         else:  # southern hemisphere
-            thetamax = thetax2max - pi / openparm
+            thetamax = thetax2max - pi / gopen
     else:  # closed dipole grid, reflect theta about equator
         if thetad < pi / 2:  # northern
             thetamax = pi - thetax2min
@@ -132,7 +132,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     r = np.empty((lqg, lpg))
     theta = np.empty((lqg, lpg))
     # qtol = 1e-9  # tolerance for declaring "equator"
-    print(" tilted_dipole3d:  converting grid centers to r,theta...")
+    logging.info("converting grid centers to r,theta")
 
     for iq in range(lqg):
         for ip in range(lpg):
@@ -143,7 +143,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     phispher = np.broadcast_to(phi[None, None, :], (lqg, lpg, phi.size))
 
     # %% define cell interfaces and convert coordinates
-    print(" tilted_dipole3d:  converting q interface values to r,theta...")
+    logging.info("converting q interface values to r,theta")
     qi = 1 / 2 * (q[1:-2] + q[2:-1])
     rqi = np.empty((cfg["lq"] + 1, cfg["lp"]))
     thetaqi = np.empty((cfg["lq"] + 1, cfg["lp"]))
@@ -154,7 +154,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     rqi = np.broadcast_to(rqi[:, :, None], (*rqi.shape, cfg["lphi"]))
     thetaqi = np.broadcast_to(thetaqi[:, :, None], (*thetaqi.shape, cfg["lphi"]))
 
-    print(" tilted_dipole3d:  converting p interface values to r,theta...")
+    logging.info("converting p interface values to r,theta")
     pi = 1 / 2 * (p[1:-2] + p[2:-1])
     rpi = np.empty((cfg["lq"], cfg["lp"] + 1))
     thetapi = np.empty((cfg["lq"], cfg["lp"] + 1))
@@ -168,7 +168,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     # phii = 1 / 2 * (phi[1:-2] + phi[2:-1])
 
     # metric factors at cell centers and interfaces
-    print(" tilted_dipole3d:  calculating metric ceoffs...")
+    logging.info("calculating metric ceoffs")
     denom = np.sqrt(1 + 3 * np.cos(theta) ** 2)  # ghost cells need for these
     xg["h1"] = r ** 3 / Re ** 2 / denom
     xg["h2"] = Re * np.sin(theta) ** 3 / denom
@@ -197,7 +197,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     xg["h3x2i"] = rpi * np.sin(thetapi)
 
     # spherical unit vectors (expressed in a Cartesian basis), these should not have ghost cells
-    print(" tilted_dipole3d:  calculating spherical unit vectors")
+    logging.info("calculating spherical unit vectors")
     xg["er"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
     xg["etheta"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
     xg["ephi"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
@@ -212,7 +212,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     xg["ephi"][..., 2] = 0
 
     # now do the dipole unit vectors
-    print(" tilted_dipole3d:  calculating dipole unit vectors")
+    logging.info("calculating dipole unit vectors")
     xg["e1"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
     xg["e2"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
     xg["e3"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
@@ -250,7 +250,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     xg["e3"] = xg["ephi"]  # same as in spherical
 
     # find inclination angle for each field line
-    print(" tilted_dipole3d:  calculating average inclination angle for each field line...")
+    logging.info("calculating average inclination angle for each field line...")
     proj = np.sum(xg["er"] * xg["e1"], axis=3)
     Imat = np.arccos(proj)
     if cfg["gridflag"] == 0:  # open dipole
@@ -262,7 +262,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     # ignore parallel vs. anti-parallel
 
     # compute gravitational field components, exclude ghost cells
-    print(" tilted_dipole3d:  calculating gravitational field over grid...")
+    logging.info("calculating gravitational field over grid...")
     G = 6.67428e-11
     Me = 5.9722e24
     g = G * Me / r[2:-2, 2:-2, 2:-2] ** 2
@@ -273,7 +273,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     xg["gx3"] = np.zeros(xg["gx1"].shape)
 
     # compute magnetic field strength
-    print(" tilted_dipole3d:  calculating magnetic field strength over grid...")
+    logging.info("calculating magnetic field strength over grid...")
     # simplified (4 * pi * 1e-7)* 7.94e22 / 4 / pi due to precision issues
     xg["Bmag"] = (
         7.94e15

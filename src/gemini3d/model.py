@@ -9,10 +9,8 @@ from pathlib import Path
 import typing as T
 import shutil
 
-from gemini3d.grid import tilted_dipole
-
 from .config import read_nml
-from .grid import cartesian
+from .grid import cartesian, tilted_dipole
 from .plasma import equilibrium_state, equilibrium_resample
 from .efield import Efield_BCs
 from .particles import particles_BCs

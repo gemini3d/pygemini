@@ -1,6 +1,7 @@
 from __future__ import annotations
-import numpy as np
 import math
+
+import numpy as np
 
 
 def grid1d(dist: float, L: int, parms: list[float] = None) -> np.ndarray:
