@@ -57,7 +57,7 @@ def cli():
         if infile.name in {"simsize", "simgrid", "initial_conditions"}:
             continue
 
-        outfile = outdir / (f"{infile.stem}.{cfg['file_format']}")
+        outfile = outdir / (f"{infile.stem}.{P.format}")
         print(infile, "=>", outfile)
 
         dat = read.data(infile, cfg=cfg)

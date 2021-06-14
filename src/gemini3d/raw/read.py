@@ -35,13 +35,13 @@ def simsize(path: Path) -> tuple[int, ...]:
 
     fsize = path.stat().st_size
     if fsize == 12:
-        lxs = struct.unpack("III", path.open("rb").read(12))
+        lx = struct.unpack("III", path.open("rb").read(12))
     elif fsize == 8:
-        lxs = struct.unpack("II", path.open("rb").read(8))
+        lx = struct.unpack("II", path.open("rb").read(8))
     else:
         raise ValueError(f"{path} is not expected 8 bytes (2-D) or 12 bytes (3-D) long")
 
-    return lxs
+    return lx
 
 
 def grid(file: Path, shape: bool = False) -> dict[str, T.Any]:
@@ -62,16 +62,16 @@ def grid(file: Path, shape: bool = False) -> dict[str, T.Any]:
     if shape:
         raise NotImplementedError("grid shape for raw would be straightforward.")
 
-    lxs = simsize(file)
-    if len(lxs) == 2:
-        return grid2(file, lxs)
-    elif len(lxs) == 3:
-        return grid3(file, lxs)
+    lx = simsize(file)
+    if len(lx) == 2:
+        return grid2(file, lx)
+    elif len(lx) == 3:
+        return grid3(file, lx)
     else:
-        raise ValueError("lxs must be 2-D or 3-D")
+        raise ValueError("lx must be 2-D or 3-D")
 
 
-def grid2(fn: Path, lxs: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
+def grid2(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
     """for Efield"""
 
     ft = np.float64
@@ -79,22 +79,22 @@ def grid2(fn: Path, lxs: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
     if not fn.is_file():
         raise FileNotFoundError(fn)
 
-    xg: dict[str, T.Any] = {"lx": lxs}
+    xg: dict[str, T.Any] = {"lx": lx}
     with fn.open("r") as f:
-        xg["mlon"] = np.fromfile(f, ft, lxs[0])
-        xg["mlat"] = np.fromfile(f, ft, lxs[1])
+        xg["mlon"] = np.fromfile(f, ft, lx[0])
+        xg["mlat"] = np.fromfile(f, ft, lx[1])
 
     return xg
 
 
-def grid3(fn: Path, lxs: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
+def grid3(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
 
-    lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
-    gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
+    lgridghost = (lx[0] + 4) * (lx[1] + 4) * (lx[2] + 4)
+    gridsizeghost = [lx[0] + 4, lx[1] + 4, lx[2] + 4]
 
     ft = np.float64
 
-    xg: dict[str, T.Any] = {"lx": lxs}
+    xg: dict[str, T.Any] = {"lx": lx}
 
     if not fn.is_file():
         logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
@@ -104,42 +104,42 @@ def grid3(fn: Path, lxs: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
 
     with fn.open("r") as f:
         for i in (1, 2, 3):
-            xg[f"x{i}"] = read(f, ft, lxs[i - 1] + 4)
-            xg[f"x{i}i"] = read(f, ft, lxs[i - 1] + 1)
-            xg[f"dx{i}b"] = read(f, ft, lxs[i - 1] + 3)
-            xg[f"dx{i}h"] = read(f, ft, lxs[i - 1])
+            xg[f"x{i}"] = read(f, ft, lx[i - 1] + 4)
+            xg[f"x{i}i"] = read(f, ft, lx[i - 1] + 1)
+            xg[f"dx{i}b"] = read(f, ft, lx[i - 1] + 3)
+            xg[f"dx{i}h"] = read(f, ft, lx[i - 1])
         for i in (1, 2, 3):
             xg[f"h{i}"] = read(f, ft, lgridghost).reshape(gridsizeghost)
-        L = [lxs[0] + 1, lxs[1], lxs[2]]
+        L = [lx[0] + 1, lx[1], lx[2]]
         for i in (1, 2, 3):
             xg[f"h{i}x1i"] = read(f, ft, np.prod(L)).reshape(L)
-        L = [lxs[0], lxs[1] + 1, lxs[2]]
+        L = [lx[0], lx[1] + 1, lx[2]]
         for i in (1, 2, 3):
             xg[f"h{i}x2i"] = read(f, ft, np.prod(L)).reshape(L)
-        L = [lxs[0], lxs[1], lxs[2] + 1]
+        L = [lx[0], lx[1], lx[2] + 1]
         for i in (1, 2, 3):
             xg[f"h{i}x3i"] = read(f, ft, np.prod(L)).reshape(L)
         for i in (1, 2, 3):
-            xg[f"gx{i}"] = read(f, ft, np.prod(lxs)).reshape(lxs)
+            xg[f"gx{i}"] = read(f, ft, np.prod(lx)).reshape(lx)
         for k in ("alt", "glat", "glon", "Bmag"):
-            xg[k] = read(f, ft, np.prod(lxs)).reshape(lxs)
-        xg["Bincl"] = read(f, ft, lxs[1] * lxs[2]).reshape(lxs[1:])
-        xg["nullpts"] = read(f, ft, np.prod(lxs)).reshape(lxs)
+            xg[k] = read(f, ft, np.prod(lx)).reshape(lx)
+        xg["Bincl"] = read(f, ft, lx[1] * lx[2]).reshape(lx[1:])
+        xg["nullpts"] = read(f, ft, np.prod(lx)).reshape(lx)
         if f.tell() == fn.stat().st_size:  # not EOF
             return xg
 
-        L = [lxs[0], lxs[1], lxs[2], 3]
+        L = [lx[0], lx[1], lx[2], 3]
         for i in (1, 2, 3):
             xg[f"e{i}"] = read(f, ft, np.prod(L)).reshape(L)
         for k in ("er", "etheta", "ephi"):
             xg[k] = read(f, ft, np.prod(L)).reshape(L)
         for k in ("r", "theta", "phi"):
-            xg[k] = read(f, ft, np.prod(lxs)).reshape(lxs)
+            xg[k] = read(f, ft, np.prod(lx)).reshape(lx)
         if f.tell() == fn.stat().st_size:  # not EOF
             return xg
 
         for k in ("x", "y", "z"):
-            xg[k] = read(f, ft, np.prod(lxs)).reshape(lxs)
+            xg[k] = read(f, ft, np.prod(lx)).reshape(lx)
 
     return xg
 
@@ -151,12 +151,12 @@ def Efield(file: Path) -> xarray.Dataset:
 
     ft = np.float64
 
-    lxs = simsize(file.parent)
+    lx = simsize(file.parent)
 
-    assert lxs[0] > 0, "must have strictly positive number of longitude cells"
-    assert lxs[1] > 0, "must have strictly positive number of latitude cells"
+    assert lx[0] > 0, "must have strictly positive number of longitude cells"
+    assert lx[1] > 0, "must have strictly positive number of latitude cells"
 
-    m = grid2(file.parent / "simgrid.dat", lxs)
+    m = grid2(file.parent / "simgrid.dat", lx)
 
     assert (
         (m["mlat"] >= -90) & (m["mlat"] <= 90)
@@ -173,11 +173,11 @@ def Efield(file: Path) -> xarray.Dataset:
         """
         dat["flagdirich"] = int(np.fromfile(f, ft, 1))
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-            dat[p] = (("x2", "x3"), read2D(f, lxs))
+            dat[p] = (("x2", "x3"), read2D(f, lx))
         for p in ("Vminx2ist", "Vmaxx2ist"):
-            dat[p] = (("x2",), np.fromfile(f, ft, lxs[1]))
+            dat[p] = (("x2",), np.fromfile(f, ft, lx[1]))
         for p in ("Vminx3ist", "Vmaxx3ist"):
-            dat[p] = (("x3",), np.fromfile(f, ft, lxs[0]))
+            dat[p] = (("x3",), np.fromfile(f, ft, lx[0]))
         filesize = file.stat().st_size
         if f.tell() != filesize:
             logging.error(f"{file} size {filesize} != file read position {f.tell()}")
@@ -196,23 +196,26 @@ def frame3d_curv(file: Path) -> xarray.Dataset:
         filename to read
     """
 
-    xg = grid(file)
+    if not file.is_file():
+        raise FileNotFoundError(file)
+
+    xg = grid(file.parent)
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
-    lxs = simsize(file)
+    lx = simsize(file.parent)
 
     with file.open("r") as f:
         time(f)
 
-        ns = read4D(f, LSP, lxs)
+        ns = read4D(f, LSP, lx)
         dat["ne"] = (("x1", "x2", "x3"), ns[:, :, :, LSP - 1])
 
-        vs1 = read4D(f, LSP, lxs)
+        vs1 = read4D(f, LSP, lx)
         dat["v1"] = (
             ("x1", "x2", "x3"),
             (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / dat["ne"],
         )
 
-        Ts = read4D(f, LSP, lxs)
+        Ts = read4D(f, LSP, lx)
         dat["Ti"] = (
             ("x1", "x2", "x3"),
             (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / dat["ne"],
@@ -220,9 +223,9 @@ def frame3d_curv(file: Path) -> xarray.Dataset:
         dat["Te"] = (("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze())
 
         for p in ("J1", "J2", "J3", "v2", "v3"):
-            dat[p] = (("x1", "x2", "x3"), read3D(f, lxs))
+            dat[p] = (("x1", "x2", "x3"), read3D(f, lx))
 
-        dat["Phitop"] = (("x2", "x3"), read2D(f, lxs))
+        dat["Phitop"] = (("x2", "x3"), read2D(f, lx))
 
     return dat
 
@@ -236,72 +239,78 @@ def frame3d_curvavg(file: Path) -> xarray.Dataset:
         filename of this timestep of simulation output
     """
 
-    lxs = simsize(file)
-    xg = grid(file)
+    if not file.is_file():
+        raise FileNotFoundError(file)
+
+    lx = simsize(file.parent)
+    xg = grid(file.parent)
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     with file.open("r") as f:
         time(f)
 
         for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
-            dat[p] = (("x1", "x2", "x3"), read3D(f, lxs))
+            dat[p] = (("x1", "x2", "x3"), read3D(f, lx))
 
-        dat["Phitop"] = (("x2", "x3"), read2D(f, lxs))
+        dat["Phitop"] = (("x2", "x3"), read2D(f, lx))
 
     return dat
 
 
 def frame3d_curvne(file: Path) -> xarray.Dataset:
 
-    lxs = simsize(file)
-    xg = grid(file)
+    if not file.is_file():
+        raise FileNotFoundError(file)
+
+    lx = simsize(file.parent)
+    xg = grid(file.parent)
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     with file.open("r") as f:
         time(f)
 
-        dat["ne"] = (("x1", "x2", "x3"), read3D(f, lxs))
+        dat["ne"] = (("x1", "x2", "x3"), read3D(f, lx))
 
     return dat
 
 
-def read4D(f, lsp: int, lxs: tuple[int, ...] | list[int]) -> np.ndarray:
+def read4D(f, lsp: int, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     """
     read 4D array from raw file
     """
 
     ft = np.float64
 
-    if not len(lxs) == 3:
-        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
+    if not len(lx) == 3:
+        raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
-    return np.fromfile(f, ft, np.prod(lxs) * lsp).reshape((*lxs, lsp), order="F")
+    return np.fromfile(f, ft, np.prod(lx) * lsp).reshape((*lx, lsp), order="F")
 
 
-def read3D(f, lxs: tuple[int, ...] | list[int]) -> np.ndarray:
+def read3D(f, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     """
     read 3D array from raw file
     """
 
     ft = np.float64
 
-    if not len(lxs) == 3:
-        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
+    if not len(lx) == 3:
+        raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
-    return np.fromfile(f, ft, np.prod(lxs)).reshape(*lxs, order="F")
+    return np.fromfile(f, ft, np.prod(lx)).reshape(*lx, order="F")
 
 
-def read2D(f, lxs: tuple[int, ...] | list[int]) -> np.ndarray:
+def read2D(f, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     """
     read 2D array from raw file
     """
 
     ft = np.float64
 
-    if not len(lxs) == 3:
-        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
+    if not len(lx) == 3:
+        raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
-    return np.fromfile(f, ft, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
+    return np.fromfile(f, ft, np.prod(lx[1:])).reshape(*lx[1:], order="F")
 
 
 def glow_aurmap(file: Path) -> xarray.Dataset:
@@ -311,16 +320,16 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
 
     ft = np.float64
 
-    lxs = simsize(file.parent)
+    lx = simsize(file.parent)
     xg = grid(file.parent)
     dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    if not len(lxs) == 3:
-        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
+    if not len(lx) == 3:
+        raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
     with file.open("r") as f:
-        raw = np.fromfile(f, ft, np.prod(lxs[1:]) * len(WAVELEN)).reshape(
-            np.prod(lxs[1:]) * len(WAVELEN), order="F"
+        raw = np.fromfile(f, ft, np.prod(lx[1:]) * len(WAVELEN)).reshape(
+            np.prod(lx[1:]) * len(WAVELEN), order="F"
         )
 
     dat["rayleighs"] = (("wavelength", "x2", "x3"), raw)
