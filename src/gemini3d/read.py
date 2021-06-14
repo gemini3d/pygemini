@@ -48,12 +48,10 @@ def config(path: Path) -> dict[str, T.Any]:
     return P
 
 
-def simsize(path: Path) -> tuple[int, ...]:
+def simsize(path: Path, suffix: str = None) -> tuple[int, ...]:
     """get simulation dimensions"""
 
-    fn = find.simsize(path)
-    if not fn:
-        return None
+    fn = find.simsize(path, suffix=suffix, required=True)
 
     if fn.suffix == ".h5":
         return h5read.simsize(fn)
