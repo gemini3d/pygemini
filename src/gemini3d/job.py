@@ -21,6 +21,12 @@ from . import read
 from . import cmake
 from .utils import git_meta
 
+try:
+    from math import prod
+except ImportError:
+    # python < 3.8
+    from numpy import prod  # type: ignore
+
 
 Pathlike = T.Union[str, Path]
 
@@ -140,9 +146,10 @@ def memory_estimate(path: Path) -> int:
     grid_size = 0
 
     for k, v in gs.items():
-        if k == "lx" or not isinstance(v, (tuple, list, np.ndarray)):
+        if k == "lx" or not isinstance(v, (tuple, list, np.ndarray)) or not v:
             continue
-        grid_size += np.prod(v)  # type: ignore
+        print(k, v, grid_size)
+        grid_size += prod(v)  # type: ignore
 
     LSP = 7
     x1 = gs["x1"][0]

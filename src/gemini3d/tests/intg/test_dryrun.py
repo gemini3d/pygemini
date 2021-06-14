@@ -2,6 +2,7 @@
 
 import shutil
 import pytest
+import sys
 from pathlib import Path
 import importlib.resources
 
@@ -11,13 +12,15 @@ import gemini3d.job as job
 import gemini3d.web
 
 
-@pytest.mark.parametrize("name,bref", [("mini2dew_eq", 1271408), ("mini3d_eq", 2373008)])
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="test requires Python >= 3.8")
+@pytest.mark.parametrize("name,bref", [("mini2dew_eq", 1238112), ("mini3d_eq", 2323072)])
 def test_memory(name, bref):
 
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
         ref = gemini3d.web.download_and_extract(name, fn.parent)
 
     est = job.memory_estimate(ref)
+    assert isinstance(est, int)
 
     assert est == bref
 
