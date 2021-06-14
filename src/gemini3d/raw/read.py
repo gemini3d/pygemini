@@ -44,7 +44,7 @@ def simsize(path: Path) -> tuple[int, ...]:
     return lxs
 
 
-def grid(fn: Path, shape: bool = False) -> dict[str, T.Any]:
+def grid(file: Path, shape: bool = False) -> dict[str, T.Any]:
     """
     get simulation grid
 
@@ -62,11 +62,11 @@ def grid(fn: Path, shape: bool = False) -> dict[str, T.Any]:
     if shape:
         raise NotImplementedError("grid shape for raw would be straightforward.")
 
-    lxs = simsize(fn.parent)
+    lxs = simsize(file.with_name("simsize.dat"))
     if len(lxs) == 2:
-        return grid2(fn, lxs)
+        return grid2(file, lxs)
     elif len(lxs) == 3:
-        return grid3(fn, lxs)
+        return grid3(file, lxs)
     else:
         raise ValueError("lxs must be 2-D or 3-D")
 
