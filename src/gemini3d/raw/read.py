@@ -4,13 +4,15 @@ Raw files are deprecated and do not contain most features of Gemini
 """
 
 from __future__ import annotations
-import xarray
+
 from pathlib import Path
 import typing as T
-import numpy as np
 import logging
 import struct
 from datetime import datetime, timedelta
+
+import numpy as np
+import xarray
 
 from .. import find
 from .. import WAVELEN, LSP
@@ -31,7 +33,7 @@ def simsize(path: Path) -> tuple[int, ...]:
         3 integers telling simulation grid size
     """
 
-    path = find.simsize(path, ".dat", required=True)
+    path = find.simsize(path, suffix=".dat", required=True)
 
     fsize = path.stat().st_size
     if fsize == 12:
@@ -63,6 +65,10 @@ def grid(file: Path, shape: bool = False) -> dict[str, T.Any]:
         raise NotImplementedError("grid shape for raw would be straightforward.")
 
     lx = simsize(file)
+
+    if not file.is_file():
+        file = find.grid(file, required=True)
+
     if len(lx) == 2:
         return grid2(file, lx)
     elif len(lx) == 3:
@@ -80,7 +86,7 @@ def grid2(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
         raise FileNotFoundError(fn)
 
     xg: dict[str, T.Any] = {"lx": lx}
-    with fn.open("r") as f:
+    with fn.open("rb") as f:
         xg["mlon"] = np.fromfile(f, ft, lx[0])
         xg["mlat"] = np.fromfile(f, ft, lx[1])
 
@@ -88,6 +94,12 @@ def grid2(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
 
 
 def grid3(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
+    """
+    load 3D grid
+    """
+
+    if not fn.is_file():
+        raise FileNotFoundError(fn)
 
     lgridghost = (lx[0] + 4) * (lx[1] + 4) * (lx[2] + 4)
     gridsizeghost = [lx[0] + 4, lx[1] + 4, lx[2] + 4]
@@ -96,13 +108,9 @@ def grid3(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
 
     xg: dict[str, T.Any] = {"lx": lx}
 
-    if not fn.is_file():
-        logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
-        return xg
-
     read = np.fromfile
 
-    with fn.open("r") as f:
+    with fn.open("rb") as f:
         for i in (1, 2, 3):
             xg[f"x{i}"] = read(f, ft, lx[i - 1] + 4)
             xg[f"x{i}i"] = read(f, ft, lx[i - 1] + 1)
@@ -158,13 +166,12 @@ def Efield(file: Path) -> xarray.Dataset:
 
     m = grid2(file.parent / "simgrid.dat", lx)
 
-    assert (
-        (m["mlat"] >= -90) & (m["mlat"] <= 90)
-    ).all(), f"impossible latitude, was file read correctly? {file}"
+    if ((m["mlat"] < -90) | (m["mlat"] > 90)).any():
+        raise ValueError(f"impossible latitude, was file read correctly? {file}")
 
     dat = xarray.Dataset(coords=m)
 
-    with file.open("r") as f:
+    with file.open("rb") as f:
         """
         NOTE:
         this is mistakenly a float from Matlab
@@ -199,12 +206,20 @@ def frame3d_curv(file: Path) -> xarray.Dataset:
     if not file.is_file():
         raise FileNotFoundError(file)
 
-    xg = grid(file.parent)
-    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
     lx = simsize(file.parent)
 
-    with file.open("r") as f:
-        time(f)
+    try:
+        xg = grid(file.parent)
+        dat = xarray.Dataset(
+            coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+        )
+    except FileNotFoundError:
+        # perhaps converting raw data, and didn't have the huge grid file
+        logging.error("simgrid.dat missing, returning data without grid information")
+        dat = xarray.Dataset(coords={"x1": range(lx[0]), "x2": range(lx[1]), "x3": range(lx[2])})
+
+    with file.open("rb") as f:
+        dat = dat.assign_coords({"time": time(f)})
 
         ns = read4D(f, LSP, lx)
         dat["ne"] = (("x1", "x2", "x3"), ns[:, :, :, LSP - 1])
@@ -243,11 +258,19 @@ def frame3d_curvavg(file: Path) -> xarray.Dataset:
         raise FileNotFoundError(file)
 
     lx = simsize(file.parent)
-    xg = grid(file.parent)
-    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    with file.open("r") as f:
-        time(f)
+    try:
+        xg = grid(file.parent)
+        dat = xarray.Dataset(
+            coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+        )
+    except FileNotFoundError:
+        # perhaps converting raw data, and didn't have the huge grid file
+        logging.error("simgrid.dat missing, returning data without grid information")
+        dat = xarray.Dataset(coords={"x1": range(lx[0]), "x2": range(lx[1]), "x3": range(lx[2])})
+
+    with file.open("rb") as f:
+        dat = dat.assign_coords({"time": time(f)})
 
         for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
             dat[p] = (("x1", "x2", "x3"), read3D(f, lx))
@@ -263,18 +286,26 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
         raise FileNotFoundError(file)
 
     lx = simsize(file.parent)
-    xg = grid(file.parent)
-    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    with file.open("r") as f:
-        time(f)
+    try:
+        xg = grid(file.parent)
+        dat = xarray.Dataset(
+            coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+        )
+    except FileNotFoundError:
+        # perhaps converting raw data, and didn't have the huge grid file
+        logging.error("simgrid.dat missing, returning data without grid information")
+        dat = xarray.Dataset(coords={"x1": range(lx[0]), "x2": range(lx[1]), "x3": range(lx[2])})
+
+    with file.open("rb") as f:
+        dat = dat.assign_coords({"time": time(f)})
 
         dat["ne"] = (("x1", "x2", "x3"), read3D(f, lx))
 
     return dat
 
 
-def read4D(f, lsp: int, lx: tuple[int, ...] | list[int]) -> np.ndarray:
+def read4D(f: T.BinaryIO, lsp: int, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     """
     read 4D array from raw file
     """
@@ -287,7 +318,7 @@ def read4D(f, lsp: int, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     return np.fromfile(f, ft, np.prod(lx) * lsp).reshape((*lx, lsp), order="F")
 
 
-def read3D(f, lx: tuple[int, ...] | list[int]) -> np.ndarray:
+def read3D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     """
     read 3D array from raw file
     """
@@ -300,7 +331,7 @@ def read3D(f, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     return np.fromfile(f, ft, np.prod(lx)).reshape(*lx, order="F")
 
 
-def read2D(f, lx: tuple[int, ...] | list[int]) -> np.ndarray:
+def read2D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     """
     read 2D array from raw file
     """
@@ -327,7 +358,7 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
     if not len(lx) == 3:
         raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
-    with file.open("r") as f:
+    with file.open("rb") as f:
         raw = np.fromfile(f, ft, np.prod(lx[1:]) * len(WAVELEN)).reshape(
             np.prod(lx[1:]) * len(WAVELEN), order="F"
         )
@@ -335,7 +366,7 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
     dat["rayleighs"] = (("wavelength", "x2", "x3"), raw)
 
 
-def time(f) -> datetime:
+def time(f: T.BinaryIO) -> datetime:
     ft = np.float64
 
     t = np.fromfile(f, ft, 4)

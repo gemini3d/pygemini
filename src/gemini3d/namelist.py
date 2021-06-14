@@ -36,7 +36,7 @@ def read(file: Path, namelist: str) -> dict[str, T.Any]:
     end_pat = re.compile(r"^\s*/\s*$")
     val_pat = re.compile(r"^\s*(\w+)\s*=\s*([^!]*)")
 
-    with file.open("r") as f:
+    with file.open("rt") as f:
         for line in f:
             if not nml_pat.match(line):
                 continue

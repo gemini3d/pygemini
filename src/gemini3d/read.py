@@ -180,16 +180,16 @@ def data(
     else:
         raise ValueError(f"Unknown file type {fn}")
 
-    lxs = simsize(fn.parent)
+    lx = (dat.dims["x1"], dat.dims["x2"], dat.dims["x3"])
 
     # %% Derived variables
     if flag == 1:
         if {"ne", "v1", "Ti", "Te"} & var:
             dat["ne"] = (("x1", "x2", "x3"), dat["ns"][LSP - 1, :, :, :].data)
             # np.any() in case neither is an np.ndarray
-            if dat["ns"].shape[0] != LSP or not np.array_equal(dat["ns"].shape[1:], lxs):
+            if dat["ns"].shape[0] != LSP or not np.array_equal(dat["ns"].shape[1:], lx):
                 raise ValueError(
-                    f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {dat['ns'].shape}"
+                    f"may have wrong permutation on read. lx: {lx}  ns x1,x2,x3: {dat['ns'].shape}"
                 )
         if "v1" in var:
             dat["v1"] = (
@@ -207,7 +207,7 @@ def data(
 
         if "J1" in var:
             # np.any() in case neither is an np.ndarray
-            if np.any(dat["J1"].shape != lxs):
+            if np.any(dat["J1"].shape != lx):
                 raise ValueError("J1 may have wrong permutation on read")
 
     if "time" not in dat:
@@ -348,16 +348,16 @@ def time(file: Path) -> datetime:
 
 def get_lxs(xg: dict[str, T.Any]) -> tuple[int, int, int]:
 
-    lxs = None
+    lx = None
     for k in ("lx", "lxs", "lx1"):
         if k in xg:
             if k == "lx1":
-                lxs = [xg["lx1"], xg["lx2"], xg["lx3"]]
+                lx = [xg["lx1"], xg["lx2"], xg["lx3"]]
                 break
             else:
-                lxs = xg[k]
+                lx = xg[k]
 
-    if lxs is None:
+    if lx is None:
         raise IndexError("Did not find grid size")
 
-    return (lxs[0], lxs[1], lxs[2])
+    return lx[0], lx[1], lx[2]

@@ -24,7 +24,7 @@ def grid(direc: Path, only: list[str] = None, saveplot_fmt: str = None):
 
     if only is None:
         only = ["basic", "alt", "geog"]
-        if xg["lxs"].prod() < 10000:
+        if xg["lx"].prod() < 10000:
             # gets extremely slow if too many points
             only.append("ecef")
 

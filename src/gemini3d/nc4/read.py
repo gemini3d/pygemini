@@ -31,12 +31,12 @@ def simsize(path: Path) -> tuple[int, ...]:
 
     with Dataset(path, "r") as f:
         if "lxs" in f.variables:
-            lxs = f["lxs"][:]
+            lx = f["lxs"][:]
         elif "lx" in f.variables:
-            lxs = f["lx"][:]
+            lx = f["lx"][:]
         elif "lx1" in f.variables:
             if f["lx1"].ndim > 0:
-                lxs = np.array(
+                lx = np.array(
                     [
                         f["lx1"][:].squeeze()[()],
                         f["lx2"][:].squeeze()[()],
@@ -44,11 +44,11 @@ def simsize(path: Path) -> tuple[int, ...]:
                     ]
                 )
             else:
-                lxs = np.array([f["lx1"][()], f["lx2"][()], f["lx3"][()]])
+                lx = np.array([f["lx1"][()], f["lx2"][()], f["lx3"][()]])
         else:
             raise KeyError(f"could not find 'lxs', 'lx' or 'lx1' in {path.as_posix()}")
 
-    return lxs
+    return lx
 
 
 def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
@@ -91,27 +91,25 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
 
     Returns
     -------
-    grid: dict
+    xg: dict
         grid parameters
     """
 
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    grid: dict[str, T.Any] = {}
+    xg: dict[str, T.Any] = {}
 
     if not file.is_file():
-        file2 = find.grid(file, required=True)
-        if file2 and file2.is_file():
-            file = file2
+        file = find.grid(file, required=True)
 
     if shape:
         with Dataset(file, "r") as f:
             for key in f.variables:
-                grid[key] = f[key].shape
+                xg[key] = f[key].shape
 
-        grid["lxs"] = np.array([grid["x1"], grid["x2"], grid["x3"]])
-        return grid
+        xg["lx"] = np.array([xg["x1"], xg["x2"], xg["x3"]])
+        return xg
 
     if isinstance(var, str):
         var = [var]
@@ -121,13 +119,13 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
 
         for k in var:
             if f[k].ndim >= 2:
-                grid[k] = f[k][:].transpose()
+                xg[k] = f[k][:].transpose()
             else:
-                grid[k] = f[k][:]
+                xg[k] = f[k][:]
 
-    grid["lxs"] = simsize(file.with_name("simsize.nc"))
+    xg["lx"] = simsize(file.with_name("simsize.nc"))
 
-    return grid
+    return xg
 
 
 def Efield(file: Path) -> xarray.Dataset:
@@ -211,10 +209,10 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    lxs = simsize(file.parent)
+    lx = simsize(file.parent)
 
     p4 = (0, 3, 2, 1)
-    if lxs[2] == 1:  # east-west
+    if lx[2] == 1:  # east-west
         p3 = (2, 0, 1)
     else:  # 3D or north-south, no swap
         p3 = (2, 1, 0)
@@ -267,9 +265,9 @@ def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    lxs = simsize(file.parent)
+    lx = simsize(file.parent)
 
-    if lxs[2] == 1:  # east-west
+    if lx[2] == 1:  # east-west
         p3 = (2, 0, 1)
     else:  # 3D or north-south, no swap
         p3 = (2, 1, 0)

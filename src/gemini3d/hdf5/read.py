@@ -41,12 +41,12 @@ def simsize(path: Path) -> tuple[int, ...]:
 
     with h5py.File(path, "r") as f:
         if "lxs" in f:
-            lxs = f["lxs"][:]
+            lx = f["lxs"][:]
         elif "lx" in f:
-            lxs = f["lx"][:]
+            lx = f["lx"][:]
         elif "lx1" in f:
             if f["lx1"].ndim > 0:
-                lxs = np.array(
+                lx = np.array(
                     [
                         f["lx1"][:].squeeze()[()],
                         f["lx2"][:].squeeze()[()],
@@ -54,11 +54,11 @@ def simsize(path: Path) -> tuple[int, ...]:
                     ]
                 )
             else:
-                lxs = np.array([f["lx1"][()], f["lx2"][()], f["lx3"][()]])
+                lx = np.array([f["lx1"][()], f["lx2"][()], f["lx3"][()]])
         else:
             raise KeyError(f"could not find '/lxs', '/lx' or '/lx1' in {path.as_posix()}")
 
-    return lxs
+    return lx
 
 
 def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
@@ -113,9 +113,7 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
     xg: dict[str, T.Any] = {}
 
     if not file.is_file():
-        file2 = find.grid(file, required=True)
-        if file2 and file2.is_file():
-            file = file2
+        file = find.grid(file, required=True)
 
     if shape:
         with h5py.File(file, "r") as f:
@@ -200,9 +198,9 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
     xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    lxs = simsize(file.parent)
+    lx = simsize(file.parent)
 
-    if lxs[2] == 1:  # east-west
+    if lx[2] == 1:  # east-west
         p3 = (2, 0, 1)
     else:  # 3D or north-south, no swap
         p3 = (2, 1, 0)
@@ -236,7 +234,7 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
-    lxs = simsize(file.parent)
+    lx = simsize(file.parent)
 
     p4s = (0, 3, 1, 2)  # only for Gemini < 0.10.0
     p3s = (2, 0, 1)
@@ -245,10 +243,10 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
 
     with h5py.File(file, "r") as f:
 
-        if lxs[1] == 1 or file.name == "initial_conditions.h5":
+        if lx[1] == 1 or file.name == "initial_conditions.h5":
             p4 = p4n
             p3 = p3n
-        elif lxs[2] == 1:  # east-west
+        elif lx[2] == 1:  # east-west
             if f["/nsall"].shape[2] == 1:  # old, Gemini < 0.10.0 data
                 p4 = p4s
                 p3 = p3s
@@ -278,12 +276,12 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
             Phiall = f["/Phiall"][:]
 
             if Phiall.ndim == 1:
-                if lxs[1] == 1:
+                if lx[1] == 1:
                     Phiall = Phiall[None, :]
                 else:
                     Phiall = Phiall[:, None]
 
-            if all(Phiall.shape == lxs[1:][::-1]):
+            if all(Phiall.shape == lx[1:][::-1]):
                 Phiall = Phiall.transpose()  # Gemini < 0.10.0
             dat["Phitop"] = (("x2", "x3"), Phiall)
 
@@ -350,12 +348,12 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
     xg = grid(file.parents[1], var={"x2", "x3"})
     dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    lxs = simsize(file.parents[1])
+    lx = simsize(file.parents[1])
 
     if h5py is None:
         raise ImportError("h5py missing or broken")
 
-    if lxs[2] == 1:  # east-west
+    if lx[2] == 1:  # east-west
         p3 = (0, 2, 1)
     else:  # 3D or north-south, no swap
         p3 = (0, 2, 1)

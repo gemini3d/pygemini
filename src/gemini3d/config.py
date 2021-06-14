@@ -61,7 +61,7 @@ def namelist_exists(fn: Path, nml: str) -> bool:
 
     pat = re.compile(r"^\s*&(" + nml + ")$")
 
-    with fn.open("r") as f:
+    with fn.open("rt") as f:
         for line in f:
             if pat.match(line) is not None:
                 return True
@@ -247,7 +247,7 @@ def read_ini(fn: Path) -> dict[str, T.Any]:
 
     fn = find.config(fn, required=True)
 
-    with fn.open("r") as f:
+    with fn.open("rt") as f:
         date = list(map(int, f.readline().split()[0].split(",")))[::-1]
         sec = float(f.readline().split()[0])
         t0 = datetime(date[0], date[1], date[2]) + timedelta(seconds=sec)

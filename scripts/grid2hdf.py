@@ -21,8 +21,8 @@ def grid2hdf(infn: Path):
     lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 
-    with infn.open("r") as f, h5py.File(outfn, "w") as h:
-        h["lxs"] = lxs
+    with infn.open("rb") as f, h5py.File(outfn, "w") as h:
+        h["lx"] = lxs
         for i in (1, 2, 3):
             h[f"x{i}"] = fromfile(f, float64, lxs[i - 1] + 4).astype(float32)
             h[f"x{i}i"] = fromfile(f, float64, lxs[i - 1] + 1).astype(float32)

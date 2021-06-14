@@ -38,23 +38,23 @@ def simsize(path: Path) -> tuple[int, ...]:
     path = Path(path).expanduser().resolve()
 
     f = scipy.io.loadmat(path, squeeze_me=True)
-    if "lxs" in f:
-        lxs = f["lxs"]
+    if "lx" in f:
+        lx = f["lx"]
     elif "lx" in f:
-        lxs = f["lx"]
+        lx = f["lx"]
     elif "lx1" in f:
         if f["lx1"].ndim > 0:
-            lxs = (
+            lx = (
                 f["lx1"],
                 f["lx2"],
                 f["lx3"],
             )
         else:
-            lxs = (f["lx1"], f["lx2"], f["lx3"])
+            lx = (f["lx1"], f["lx2"], f["lx3"])
     else:
         raise KeyError(f"could not find '/lxs', '/lx' or '/lx1' in {path.as_posix()}")
 
-    return lxs
+    return lx
 
 
 def state(fn: Path) -> dict[str, T.Any]:

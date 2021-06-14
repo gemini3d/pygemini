@@ -61,8 +61,7 @@ def test_tilted_dipole():
     # direc="~/sims/tohoku20112D_medres_axineu/"     # source directory
     # xgorig=gemini3d.read.grid(direc)
 
-    # FIXME:  MATLAB keys "lx" vs. "lxs" do not match python, so need to fix before comparing!
-    # Fortran reads lxs from simsize.h5 instead
+    # Fortran reads lx from simsize.h5 instead
 
     fail = []
     for k in xg.keys():
