@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import gemini3d.read as read
 import argparse
+
+import gemini3d.read as read
 
 
 p = argparse.ArgumentParser()

@@ -2,6 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 import logging
+
 import numpy as np
 
 from .plot import plotdiff

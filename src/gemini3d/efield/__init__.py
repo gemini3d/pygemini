@@ -3,10 +3,11 @@ generate, read, write Electric Field
 """
 
 from __future__ import annotations
-import xarray
 import typing as T
-import numpy as np
 import logging
+
+import xarray
+import numpy as np
 
 from .. import write
 from ..config import datetime_range

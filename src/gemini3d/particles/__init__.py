@@ -1,11 +1,12 @@
 from __future__ import annotations
 import typing as T
+
 import numpy as np
 
 from .. import write
 from ..utils import str2func
 from .grid import precip_grid
-from .gaussian2d import gaussian2d
+from .gaussian2d import gaussian2d  # this is loaded dynamically via str2func
 
 
 def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):

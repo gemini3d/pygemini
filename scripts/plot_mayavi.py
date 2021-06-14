@@ -6,8 +6,9 @@ https://docs.enthought.com/mayavi/mayavi/mlab_case_studies.html
 https://docs.enthought.com/mayavi/mayavi/auto/mlab_decorations.html
 """
 
-from mayavi import mlab
 import argparse
+
+from mayavi import mlab
 
 import gemini3d.read
 

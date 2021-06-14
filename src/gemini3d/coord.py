@@ -1,6 +1,7 @@
 from __future__ import annotations
-import numpy as np
 import math
+
+import numpy as np
 
 pi = math.pi
 tau = math.tau

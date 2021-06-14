@@ -5,12 +5,13 @@ Various transformations needed to grid model output so it can be easily plotted
 """
 
 from __future__ import annotations
+import typing as T
+
 import numpy as np
 from numpy import pi
 import xarray
-
-import typing as T
 import scipy.interpolate
+
 from .convert import Re
 
 

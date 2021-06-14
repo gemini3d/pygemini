@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
+
 from matplotlib.pyplot import figure, show
-import gemini3d.read
+
+import gemini3d.read as read
 
 
 def plotplasma(dat: dict):
@@ -21,7 +23,7 @@ if __name__ == "__main__":
     p.add_argument("time", help="time of frame to plot")
     p = p.parse_args()
 
-    dat = gemini3d.read.frame(p.simdir, p.time)
+    dat = read.frame(p.simdir, p.time)
 
     plotplasma(dat)
 

@@ -3,11 +3,12 @@ NetCDF4 file reading
 """
 
 from __future__ import annotations
-import xarray
 from pathlib import Path
 import typing as T
-import numpy as np
 from datetime import datetime, timedelta
+
+import xarray
+import numpy as np
 
 from .. import find
 from .. import WAVELEN

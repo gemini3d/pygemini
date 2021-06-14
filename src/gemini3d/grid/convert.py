@@ -9,8 +9,9 @@ transformations from dipole to spherical
 """
 
 from __future__ import annotations
-import numpy as np
 import math
+
+import numpy as np
 
 # define module-scope constants
 Re = 6370e3

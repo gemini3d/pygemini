@@ -1,4 +1,5 @@
 import typing as T
+
 import numpy as np
 from matplotlib.ticker import MultipleLocator
 from matplotlib.figure import Figure

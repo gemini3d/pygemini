@@ -8,12 +8,12 @@ suggested install:
 
 from __future__ import annotations
 from pathlib import Path
-import numpy as np
 from datetime import datetime
 import typing as T
 
-# import scipy.interpolate as interp
+import numpy as np
 
+# import scipy.interpolate as interp
 from mayavi import mlab
 
 # mlab.options.backend = 'envisage'  # for GUI

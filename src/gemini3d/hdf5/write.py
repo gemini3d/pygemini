@@ -8,12 +8,12 @@ from pathlib import Path
 from datetime import datetime
 import logging
 
-from .. import LSP
-from ..utils import datetime2ymd_hourdec, to_datetime
-
 import h5py
 import numpy as np
 import xarray
+
+from .. import LSP
+from ..utils import datetime2ymd_hourdec, to_datetime
 
 CLVL = 3  # GZIP compression level: larger => better compression, slower to write
 

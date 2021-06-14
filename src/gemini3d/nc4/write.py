@@ -3,12 +3,13 @@ NetCDF4 file writing
 """
 
 from __future__ import annotations
-import xarray
 import typing as T
-import numpy as np
 from datetime import datetime
 from pathlib import Path
 import logging
+
+import xarray
+import numpy as np
 
 from ..utils import datetime2ymd_hourdec, to_datetime
 from .. import LSP

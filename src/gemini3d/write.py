@@ -1,10 +1,11 @@
 from __future__ import annotations
-import numpy as np
-import xarray
 from pathlib import Path
 import typing as T
 import sys
 import json
+
+import numpy as np
+import xarray
 
 from .utils import git_meta
 from .hdf5 import write as h5write

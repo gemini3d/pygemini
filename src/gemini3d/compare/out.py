@@ -1,8 +1,9 @@
 from __future__ import annotations
 from pathlib import Path
-import numpy as np
 import logging
 import typing as T
+
+import numpy as np
 
 from .plot import plotdiff
 from .utils import err_pct, load_tol

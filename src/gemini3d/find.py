@@ -4,8 +4,9 @@ functions for finding files
 
 from datetime import datetime, timedelta
 from pathlib import Path
-import numpy as np
 import typing as T
+
+import numpy as np
 
 FILE_FORMATS = [".h5", ".nc"]
 

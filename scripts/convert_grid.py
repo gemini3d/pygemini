@@ -6,7 +6,8 @@ convert Gemini grid to HDF5 .h5
 from pathlib import Path
 import argparse
 
-import gemini3d
+import gemini3d.read as read
+import gemini3d.write as write
 
 
 def cli():
@@ -29,14 +30,14 @@ def cli():
     outfile = outdir / (infile.stem + suffix)
     print(infile, "=>", outfile)
 
-    xg = gemini3d.read.grid(infile)
+    xg = read.grid(infile)
 
     cfg = {
         "indat_size": infile.with_name(f"simsize{suffix}"),
         "indat_grid": infile.with_suffix(suffix),
     }
 
-    gemini3d.write.grid(cfg, xg)
+    write.grid(cfg, xg)
 
 
 if __name__ == "__main__":

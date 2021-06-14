@@ -8,8 +8,6 @@ from pathlib import Path
 from .input import compare_input
 from .out import compare_output
 from .grid import compare_grid
-from .efield import compare_Efield
-from .precip import compare_precip
 
 
 def compare_all(

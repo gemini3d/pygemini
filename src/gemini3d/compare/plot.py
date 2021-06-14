@@ -1,8 +1,9 @@
-import numpy as np
-import xarray
 from pathlib import Path
 from datetime import datetime
 import logging
+
+import numpy as np
+import xarray
 
 from .. import read
 

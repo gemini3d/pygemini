@@ -1,8 +1,9 @@
 from __future__ import annotations
 import typing as T
+import logging
+
 import xarray
 import numpy as np
-import logging
 
 from ..config import datetime_range
 

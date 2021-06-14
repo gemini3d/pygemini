@@ -4,8 +4,9 @@ NOTE: this is made for very basic plots. The axes quantities are notional and no
 """
 
 from pathlib import Path
-from matplotlib.pyplot import figure, show, close
 import argparse
+
+from matplotlib.pyplot import figure, show, close
 
 import gemini3d.plot.slices as slices
 import gemini3d.find as find

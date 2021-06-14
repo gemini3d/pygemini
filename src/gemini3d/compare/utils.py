@@ -1,7 +1,8 @@
 from __future__ import annotations
-import numpy as np
 import importlib.resources
 import json
+
+import numpy as np
 
 
 def err_pct(a: np.ndarray, b: np.ndarray) -> float:

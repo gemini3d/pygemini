@@ -4,10 +4,11 @@ https://docs.python.org/3/library/struct.html#struct-format-strings
 """
 
 from __future__ import annotations
-import numpy as np
 from pathlib import Path
 from datetime import datetime
 import typing as T
+
+import numpy as np
 import xarray
 
 from .config import read_ini, read_nml

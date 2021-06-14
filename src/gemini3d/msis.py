@@ -3,14 +3,15 @@ using MSIS Fortran executable from Python
 """
 
 from __future__ import annotations
-import xarray
 from pathlib import Path
-import numpy as np
 import subprocess
 import logging
 import typing as T
-import h5py
 import shutil
+
+import numpy as np
+import h5py
+import xarray
 
 from . import cmake
 

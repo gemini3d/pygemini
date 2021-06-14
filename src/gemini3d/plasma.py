@@ -4,8 +4,9 @@ plasma functions
 
 from __future__ import annotations
 import typing as T
-import numpy as np
 import logging
+
+import numpy as np
 import xarray
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d, interp2d, interpn

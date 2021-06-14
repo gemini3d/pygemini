@@ -3,16 +3,16 @@ HDF5 file read
 """
 
 from __future__ import annotations
-import xarray
 from pathlib import Path
 import typing as T
-import numpy as np
 from datetime import datetime, timedelta
+
+import xarray
+import numpy as np
+import h5py
 
 from .. import find
 from .. import WAVELEN
-
-import h5py
 
 
 def simsize(path: Path) -> tuple[int, ...]:
