@@ -43,11 +43,11 @@ def cli():
     if not infiles:
         raise FileNotFoundError(f"no files to convert in {indir}")
 
-    lxs = read.simsize(indir)
-
     cfg = read.config(indir)
     if "flagoutput" not in cfg:
         raise LookupError(f"need to specify flagoutput in {indir}/config.nml")
+
+    lxs = read.simsize(indir, suffix=cfg["file_format"])
 
     xg = None
     if P.format == "nc":
