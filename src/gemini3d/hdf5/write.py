@@ -3,9 +3,7 @@ HDF5 file writing
 """
 
 from __future__ import annotations
-import xarray
 import typing as T
-import numpy as np
 from pathlib import Path
 from datetime import datetime
 import logging
@@ -13,11 +11,9 @@ import logging
 from .. import LSP
 from ..utils import datetime2ymd_hourdec, to_datetime
 
-try:
-    import h5py
-except (ImportError, AttributeError):
-    # must be ImportError not ModuleNotFoundError for botched HDF5 linkage
-    h5py = None
+import h5py
+import numpy as np
+import xarray
 
 CLVL = 3  # GZIP compression level: larger => better compression, slower to write
 
@@ -33,9 +29,6 @@ def state(fn: Path, dat: xarray.Dataset):
     INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
-
-    if h5py is None:
-        raise ImportError("pip install h5py")
 
     time = to_datetime(dat.time)
 
@@ -96,9 +89,6 @@ def data(outfn: Path, dat: xarray.Dataset):
     e.g. for converting a file format from a simulation
     """
 
-    if h5py is None:
-        raise ImportError("pip install h5py")
-
     if "species" in dat.dims:
         shape = [dat.dims["species"], dat.dims["x1"], dat.dims["x2"], dat.dims["x3"]]
     else:
@@ -158,9 +148,6 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
     Matlab read/write HDF5 in Fortran order. h5py read/write HDF5 in C order so we
     need the .transpose() for h5py
     """
-
-    if h5py is None:
-        raise ImportError("pip install h5py")
 
     if "lx" not in xg:
         xg["lx"] = np.array([xg["x1"].shape, xg["x2"].shape, xg["x3"].shape]).astype(np.int32)
@@ -275,9 +262,6 @@ def Efield(outdir: Path, E: xarray.Dataset):
     write Efield to disk
     """
 
-    if h5py is None:
-        raise ImportError("pip install h5py")
-
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f["/llon"] = np.asarray(E.mlon.size).astype(np.int32)
         f["/llat"] = np.asarray(E.mlat.size).astype(np.int32)
@@ -313,9 +297,6 @@ def Efield(outdir: Path, E: xarray.Dataset):
 
 
 def precip(outdir: Path, P: xarray.Dataset):
-
-    if h5py is None:
-        raise ImportError("pip install h5py")
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f["/llon"] = np.asarray(P.mlon.size).astype(np.int32)

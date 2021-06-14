@@ -12,11 +12,7 @@ from datetime import datetime, timedelta
 from .. import find
 from .. import WAVELEN
 
-try:
-    import h5py
-except (ImportError, AttributeError):
-    # must be ImportError not ModuleNotFoundError for botched HDF5 linkage
-    h5py = None
+import h5py
 
 
 def simsize(path: Path) -> tuple[int, ...]:
@@ -33,9 +29,6 @@ def simsize(path: Path) -> tuple[int, ...]:
     size: tuple of int, int, int
         3 integers telling simulation grid size
     """
-
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
 
     path = find.simsize(path, ".h5", required=True)
 
@@ -63,9 +56,6 @@ def simsize(path: Path) -> tuple[int, ...]:
 
 def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
     """detect output type"""
-
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
 
     flag = None
     with h5py.File(file, "r") as f:
@@ -106,9 +96,6 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
 
     Transpose on read to undo the transpose operation we had to do in write_grid C => Fortran order.
     """
-
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
 
     xg: dict[str, T.Any] = {}
 
@@ -151,9 +138,6 @@ def Efield(file: Path) -> xarray.Dataset:
     load electric field
     """
 
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
-
     with h5py.File(file.with_name("simgrid.h5"), "r") as f:
         E = xarray.Dataset(coords={"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]})
 
@@ -174,9 +158,6 @@ def precip(file: Path) -> xarray.Dataset:
     load precipitation
     """
 
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
-
     with h5py.File(file.with_name("simgrid.h5"), "r") as f:
         dat = xarray.Dataset(coords={"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]})
 
@@ -192,18 +173,10 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
     just Ne
     """
 
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
-
     xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    lx = simsize(file.parent)
-
-    if lx[2] == 1:  # east-west
-        p3 = (2, 0, 1)
-    else:  # 3D or north-south, no swap
-        p3 = (2, 1, 0)
+    p3 = (2, 1, 0)
 
     with h5py.File(file, "r") as f:
         dat["ne"] = (("x1", "x2", "x3"), f["/ne"][:].transpose(p3))
@@ -231,31 +204,15 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
     xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
+    lx = xg["lx"]
 
-    lx = simsize(file.parent)
-
-    p4s = (0, 3, 1, 2)  # only for Gemini < 0.10.0
-    p3s = (2, 0, 1)
     p4n = (0, 3, 2, 1)
     p3n = (2, 1, 0)
 
     with h5py.File(file, "r") as f:
 
-        if lx[1] == 1 or file.name == "initial_conditions.h5":
-            p4 = p4n
-            p3 = p3n
-        elif lx[2] == 1:  # east-west
-            if f["/nsall"].shape[2] == 1:  # old, Gemini < 0.10.0 data
-                p4 = p4s
-                p3 = p3s
-            else:  # Gemini >= 0.10.0
-                p4 = p4n
-                p3 = p3n
-        else:  # 3D
-            p4 = p4n
-            p3 = p3n
+        p4 = p4n
+        p3 = p3n
 
         if {"ne", "ns", "v1", "Ti"} & var:
             dat["ns"] = (("species", "x1", "x2", "x3"), f["/nsall"][:].transpose(p4))
@@ -281,9 +238,7 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
                 else:
                     Phiall = Phiall[:, None]
 
-            if all(Phiall.shape == lx[1:][::-1]):
-                Phiall = Phiall.transpose()  # Gemini < 0.10.0
-            dat["Phitop"] = (("x2", "x3"), Phiall)
+            dat["Phitop"] = (("x2", "x3"), Phiall.transpose())
 
     return dat
 
@@ -301,9 +256,6 @@ def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
 
     xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
-
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
 
     p3 = (2, 1, 0)
 
@@ -348,15 +300,7 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
     xg = grid(file.parents[1], var={"x2", "x3"})
     dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    lx = simsize(file.parents[1])
-
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
-
-    if lx[2] == 1:  # east-west
-        p3 = (0, 2, 1)
-    else:  # 3D or north-south, no swap
-        p3 = (0, 2, 1)
+    p3 = (0, 2, 1)
 
     with h5py.File(file, "r") as h:
         dat["rayleighs"] = (("wavelength", "x2", "x3"), h["/aurora/iverout"][:].transpose(p3))
@@ -368,9 +312,6 @@ def time(file: Path) -> datetime:
     """
     reads simulation time
     """
-
-    if h5py is None:
-        raise ImportError("h5py missing or broken")
 
     with h5py.File(file, "r") as f:
         ymd = datetime(*f["/time/ymd"][:3])

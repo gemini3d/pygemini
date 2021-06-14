@@ -54,9 +54,6 @@ def simsize(path: Path) -> tuple[int, ...]:
 def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
     """detect output type"""
 
-    if Dataset is None:
-        raise ImportError("netcdf missing or broken")
-
     flag = None
     with Dataset(file, "r") as f:
         if "nsall" in f.variables:
@@ -133,9 +130,6 @@ def Efield(file: Path) -> xarray.Dataset:
     load electric field
     """
 
-    if Dataset is None:
-        raise ImportError("netcdf missing or broken")
-
     with Dataset(file.with_name("simgrid.nc"), "r") as f:
         E = xarray.Dataset(coords={"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]})
 
@@ -156,9 +150,6 @@ def precip(file: Path) -> xarray.Dataset:
     load precipitation
     """
 
-    if Dataset is None:
-        raise ImportError("netcdf missing or broken")
-
     with Dataset(file.with_name("simgrid.nc"), "r") as f:
         dat = xarray.Dataset(coords={"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]})
 
@@ -173,9 +164,6 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
     """
     just Ne
     """
-
-    if Dataset is None:
-        raise ImportError("netcdf missing or broken")
 
     xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
@@ -206,16 +194,8 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
     xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    if Dataset is None:
-        raise ImportError("netcdf missing or broken")
-
-    lx = simsize(file.parent)
-
     p4 = (0, 3, 2, 1)
-    if lx[2] == 1:  # east-west
-        p3 = (2, 0, 1)
-    else:  # 3D or north-south, no swap
-        p3 = (2, 1, 0)
+    p3 = (2, 1, 0)
 
     with Dataset(file, "r") as f:
         if {"ne", "ns", "v1", "Ti"} & var:
@@ -262,15 +242,7 @@ def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
     xg = grid(file.parent, var={"x1", "x2", "x3"})
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    if Dataset is None:
-        raise ImportError("netcdf missing or broken")
-
-    lx = simsize(file.parent)
-
-    if lx[2] == 1:  # east-west
-        p3 = (2, 0, 1)
-    else:  # 3D or north-south, no swap
-        p3 = (2, 1, 0)
+    p3 = (2, 1, 0)
 
     v2n = {
         "ne": "neall",
@@ -313,9 +285,6 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
     xg = grid(file.parents[1], var={"x2", "x3"})
     dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
-    if Dataset is None:
-        raise ImportError("netcdf missing or broken")
-
     with Dataset(file, "r") as h:
         dat["rayleighs"] = (("wavelength", "x2", "x3"), h["iverout"][:])
 
@@ -326,9 +295,6 @@ def time(file: Path) -> datetime:
     """
     reads simulation time
     """
-
-    if Dataset is None:
-        raise ImportError("netcdf missing or broken")
 
     with Dataset(file, "r") as f:
         ymd = datetime(*f["ymd"][:3])
