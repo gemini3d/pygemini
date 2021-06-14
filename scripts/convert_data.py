@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 convert Gemini data to HDF5 .h5
+
+For clarity, the user must provide a config.nml for the original raw data.
 """
 
 from pathlib import Path
@@ -18,12 +20,6 @@ def cli():
     p.add_argument("format", help="file format", choices=["h5", "nc"])
     p.add_argument("indir", help="Gemini .dat file directory")
     p.add_argument("-o", "--outdir", help="directory to write HDF5 files")
-    p.add_argument(
-        "-f",
-        "--flagoutput",
-        help="manually specify flagoutput, for if config.nml is missing",
-        type=int,
-    )
     P = p.parse_args()
 
     indir = Path(P.indir).expanduser()
@@ -49,9 +45,10 @@ def cli():
 
     lxs = read.simsize(indir)
 
-    cfg = {"file_format": P.format}
-    if P.flagoutput is not None:
-        cfg["flagoutput"] = P.flagoutput
+    cfg = read.config(indir)
+    cfg["file_format"] = P.format
+    if "flagoutput" not in cfg:
+        raise LookupError(f"need to specify flagoutput in {indir}/config.nml")
 
     xg = None
     if P.format == "nc":
