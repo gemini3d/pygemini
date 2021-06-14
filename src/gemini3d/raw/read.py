@@ -62,7 +62,7 @@ def grid(file: Path, shape: bool = False) -> dict[str, T.Any]:
     if shape:
         raise NotImplementedError("grid shape for raw would be straightforward.")
 
-    lxs = simsize(file.with_name("simsize.dat"))
+    lxs = simsize(file)
     if len(lxs) == 2:
         return grid2(file, lxs)
     elif len(lxs) == 3:
