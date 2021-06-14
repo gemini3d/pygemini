@@ -99,7 +99,10 @@ def data(outfn: Path, dat: xarray.Dataset):
     if h5py is None:
         raise ImportError("pip install h5py")
 
-    lx = dat.shape
+    if "species" in dat.dims:
+        shape = [dat.dims["species"], dat.dims["x1"], dat.dims["x2"], dat.dims["x3"]]
+    else:
+        shape = [dat.dims["x1"], dat.dims["x2"], dat.dims["x3"]]
 
     with h5py.File(outfn, "w") as h:
         for k in {"ns", "vs1", "Ts"}:
@@ -109,7 +112,7 @@ def data(outfn: Path, dat: xarray.Dataset):
             h.create_dataset(
                 k,
                 data=dat[k].astype(np.float32),
-                chunks=(1, *lx[1:], LSP),
+                chunks=(1, *shape[1:], LSP),
                 compression="gzip",
                 compression_opts=CLVL,
             )
@@ -121,7 +124,7 @@ def data(outfn: Path, dat: xarray.Dataset):
             h.create_dataset(
                 k,
                 data=dat[k].astype(np.float32),
-                chunks=(1, *lx[1:]),
+                chunks=(1, *shape[1:]),
                 compression="gzip",
                 compression_opts=CLVL,
             )

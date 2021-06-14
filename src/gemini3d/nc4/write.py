@@ -71,12 +71,10 @@ def data(fn: Path, dat: xarray.Dataset, xg: dict[str, T.Any]):
 
     logging.info(f"write_data: {fn}")
 
-    if "ns" in dat:
-        shape = dat["ns"].shape
-    elif "ne" in dat:
-        shape = dat["ne"].shape
+    if "species" in dat.dims:
+        shape = [dat.dims["species"], dat.dims["x1"], dat.dims["x2"], dat.dims["x3"]]
     else:
-        raise ValueError("what variable should I use to determine dimensions?")
+        shape = [dat.dims["x1"], dat.dims["x2"], dat.dims["x3"]]
 
     with Dataset(fn, "w") as f:
 
