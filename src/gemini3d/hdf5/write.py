@@ -19,6 +19,8 @@ except (ImportError, AttributeError):
     # must be ImportError not ModuleNotFoundError for botched HDF5 linkage
     h5py = None
 
+CLVL = 3  # GZIP compression level: larger => better compression, slower to write
+
 
 def state(fn: Path, dat: xarray.Dataset):
     """
@@ -82,7 +84,7 @@ def _write_var(f, name: str, A: xarray.DataArray):
         data=A,
         dtype=np.float32,
         compression="gzip",
-        compression_opts=1,
+        compression_opts=CLVL,
         shuffle=True,
         fletcher32=True,
     )
@@ -109,7 +111,7 @@ def data(outfn: Path, dat: xarray.Dataset):
                 data=dat[k].astype(np.float32),
                 chunks=(1, *lx[1:], LSP),
                 compression="gzip",
-                compression_opts=1,
+                compression_opts=CLVL,
             )
 
         for k in {"ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"}:
@@ -121,7 +123,7 @@ def data(outfn: Path, dat: xarray.Dataset):
                 data=dat[k].astype(np.float32),
                 chunks=(1, *lx[1:]),
                 compression="gzip",
-                compression_opts=1,
+                compression_opts=CLVL,
             )
 
         if "Phitop" in dat:
@@ -129,7 +131,7 @@ def data(outfn: Path, dat: xarray.Dataset):
                 "Phiall",
                 data=dat["Phitop"].astype(np.float32),
                 compression="gzip",
-                compression_opts=1,
+                compression_opts=CLVL,
             )
 
 
@@ -153,8 +155,6 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
     Matlab read/write HDF5 in Fortran order. h5py read/write HDF5 in C order so we
     need the .transpose() for h5py
     """
-
-    CLVL = 1
 
     if h5py is None:
         raise ImportError("pip install h5py")
@@ -301,7 +301,7 @@ def Efield(outdir: Path, E: xarray.Dataset):
                     data=E[k].loc[time].transpose(),
                     dtype=np.float32,
                     compression="gzip",
-                    compression_opts=1,
+                    compression_opts=CLVL,
                     shuffle=True,
                     fletcher32=True,
                 )
@@ -333,7 +333,7 @@ def precip(outdir: Path, P: xarray.Dataset):
                     data=P[k].loc[time].transpose(),
                     dtype=np.float32,
                     compression="gzip",
-                    compression_opts=1,
+                    compression_opts=CLVL,
                     shuffle=True,
                     fletcher32=True,
                 )

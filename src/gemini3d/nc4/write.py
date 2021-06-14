@@ -19,6 +19,8 @@ except ImportError:
     # must be ImportError not ModuleNotFoundError for botched NetCDF4 linkage
     Dataset = None
 
+CLVL = 3  # GZIP compression level: larger => better compression, slower to write
+
 
 def state(fn: Path, dat: xarray.Dataset):
     """
@@ -213,7 +215,7 @@ def _write_var(
         np.float32,
         dims,
         zlib=True,
-        complevel=1,
+        complevel=CLVL,
         shuffle=True,
         fletcher32=True,
         fill_value=np.nan,

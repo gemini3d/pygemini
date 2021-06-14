@@ -47,8 +47,6 @@ def cli():
     if "flagoutput" not in cfg:
         raise LookupError(f"need to specify flagoutput in {indir}/config.nml")
 
-    lx = read.simsize(indir, suffix=cfg["file_format"])
-
     xg = None
     if P.format == "nc":
         xg = read.grid(indir)
@@ -61,8 +59,6 @@ def cli():
         print(infile, "=>", outfile)
 
         dat = read.data(infile, cfg=cfg)
-        if "lx" not in dat:
-            dat["lx"] = lx
 
         write.data(outfile, dat, file_format=P.format, xg=xg)
 
