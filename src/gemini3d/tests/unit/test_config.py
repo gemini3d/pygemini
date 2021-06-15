@@ -120,7 +120,7 @@ def test_nml_namelist(namelist):
         assert params["time"][0] == datetime(2013, 2, 20, 5)
 
     if "files" in namelist:
-        assert params["file_format"] == "h5"
+        assert params["file_format"].endswith("h5")
 
     if "precip" in namelist:
         assert params["dtprec"] == timedelta(seconds=5)
