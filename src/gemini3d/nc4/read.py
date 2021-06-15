@@ -63,11 +63,9 @@ def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
         elif "flagoutput" in f.variables:
             flag = f["flagoutput"][()]
         elif "ne" in f.variables and f["ne"].ndim == 3:
-            flag = 0
-        elif "Tavgall" in f.variables:
-            flag = 2
-        elif "neall" in f.variables:
             flag = 3
+        elif "neall" in f.variables:
+            flag = 2
     if flag is None:
         flag = cfg.get("flagoutput")
 

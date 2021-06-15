@@ -153,7 +153,7 @@ def data(
 
     if file_format.endswith("dat"):
         flag = cfg.get("flagoutput")
-        if flag == 0:
+        if flag == 3:
             dat = raw_read.frame3d_curvne(fn, xg)
         elif flag == 1:
             dat = raw_read.frame3d_curv(fn, xg)
@@ -164,7 +164,7 @@ def data(
     elif file_format.endswith("h5"):
         flag = h5read.flagoutput(fn, cfg)
 
-        if flag == 0:
+        if flag == 3:
             dat = h5read.frame3d_curvne(fn, xg)
         elif flag == 1:
             dat = h5read.frame3d_curv(fn, var, xg)
@@ -175,7 +175,7 @@ def data(
     elif file_format.endswith("nc"):
         flag = ncread.flagoutput(fn, cfg)
 
-        if flag == 0:
+        if flag == 3:
             dat = ncread.frame3d_curvne(fn, xg)
         elif flag == 1:
             dat = ncread.frame3d_curv(fn, var, xg)

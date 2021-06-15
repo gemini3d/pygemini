@@ -64,7 +64,7 @@ jobs:
 
     - name: Integration Tests
       run: pytest --pyargs gemini3d.tests.intg
-      timeout-minutes: 7
+      timeout-minutes: 10
 
 # codecov coverage
     # - run: pip install codecov pytest-cov
@@ -109,7 +109,7 @@ jobs:
 
     - name: Integration Tests
       run: pytest --pyargs gemini3d.tests.intg
-      timeout-minutes: 7
+      timeout-minutes: 10
 
   windows:
     needs: linux
@@ -148,4 +148,4 @@ jobs:
 
     - name: Integration Tests
       run: pytest --pyargs gemini3d.tests.intg
-      timeout-minutes: 7
+      timeout-minutes: 10

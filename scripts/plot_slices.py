@@ -28,7 +28,7 @@ if __name__ == "__main__":
     P = p.parse_args()
 
     cfg = {}
-    if P.flagoutput:
+    if P.flagoutput is not None:
         cfg["flagoutput"] = P.flag
 
     dat_file = Path(P.fn).expanduser()
