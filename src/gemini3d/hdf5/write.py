@@ -336,7 +336,7 @@ def maggrid(fn: Path, mag: dict[str, np.ndarray], gridsize: tuple[int, int, int]
 
     with h5py.File(fn, "w") as f:
         f.create_dataset("/lpoints", data=mag["r"].size, dtype=np.int32)
-        f["/r"] = mag["r"].astype(freal)
-        f["/theta"] = mag["theta"].astype(freal)
-        f["/phi"] = mag["phi"].astype(freal)
+        f["/r"] = mag["r"].ravel(order="F").astype(freal)
+        f["/theta"] = mag["theta"].ravel(order="F").astype(freal)
+        f["/phi"] = mag["phi"].ravel(order="F").astype(freal)
         f["/gridsize"] = np.asarray(gridsize).astype(np.int32)
