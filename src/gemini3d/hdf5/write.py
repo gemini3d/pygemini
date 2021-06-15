@@ -263,8 +263,8 @@ def Efield(outdir: Path, E: xarray.Dataset):
     """
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
-        f["/llon"] = np.asarray(E.mlon.size).astype(np.int32)
-        f["/llat"] = np.asarray(E.mlat.size).astype(np.int32)
+        f.create_dataset("/llon", data=E.mlon.size, dtype=np.int32)
+        f.create_dataset("/llat", data=E.mlat.size, dtype=np.int32)
 
     with h5py.File(outdir / "simgrid.h5", "w") as f:
         f["/mlon"] = E.mlon.astype(np.float32)
@@ -299,8 +299,8 @@ def Efield(outdir: Path, E: xarray.Dataset):
 def precip(outdir: Path, P: xarray.Dataset):
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
-        f["/llon"] = np.asarray(P.mlon.size).astype(np.int32)
-        f["/llat"] = np.asarray(P.mlat.size).astype(np.int32)
+        f.create_dataset("/llon", data=P.mlon.size, dtype=np.int32)
+        f.create_dataset("/llat", data=P.mlat.size, dtype=np.int32)
 
     with h5py.File(outdir / "simgrid.h5", "w") as f:
         f["/mlon"] = P.mlon.astype(np.float32)
@@ -321,3 +321,22 @@ def precip(outdir: Path, P: xarray.Dataset):
                     shuffle=True,
                     fletcher32=True,
                 )
+
+
+def maggrid(fn: Path, mag: dict[str, np.ndarray], gridsize: tuple[int, int, int]):
+    """
+    hdf5 files can optionally store a gridsize variable which tells readers how to
+    reshape the data into 2D or 3D arrays.
+    NOTE: the Fortran magcalc.f90 is looking for flat list.
+    """
+
+    print("write", fn)
+
+    freal = np.float32
+
+    with h5py.File(fn, "w") as f:
+        f.create_dataset("/lpoints", data=mag["r"].size, dtype=np.int32)
+        f["/r"] = mag["r"].astype(freal)
+        f["/theta"] = mag["theta"].astype(freal)
+        f["/phi"] = mag["phi"].astype(freal)
+        f["/gridsize"] = np.asarray(gridsize).astype(np.int32)

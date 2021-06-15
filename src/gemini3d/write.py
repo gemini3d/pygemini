@@ -2,6 +2,7 @@ from __future__ import annotations
 from pathlib import Path
 import typing as T
 import sys
+import logging
 import json
 
 import numpy as np
@@ -159,3 +160,32 @@ def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]):
     js = json.dumps(jm, sort_keys=True, indent=2)
 
     fn.write_text(js)
+
+
+def maggrid(filename: Path, xmag: dict[str, T.Any]):
+
+    filename = Path(filename).expanduser()
+
+    # %% error checking on struct fields
+    assert "r" in xmag, "R field of xmag must be defined"
+    assert "theta" in xmag, "THETA field of xmag must be defined"
+    assert "phi" in xmag, "PHI field of xmag must be defined"
+
+    # %% default value for gridsize
+    if "gridsize" not in xmag:
+        if xmag["r"].ndim == 1:
+            logging.warning("Defaulting gridsize to flat list")
+            gridsize = (xmag["r"].size, -1, -1)
+        else:
+            gridsize = xmag["r"].shape
+    else:
+        gridsize = xmag["gridsize"]
+
+    # %% write the file
+    if not filename.parent.is_dir():
+        raise FileNotFoundError(f"{filename.parent} parent directory does not exist")
+
+    if filename.suffix == ".h5":
+        h5write.maggrid(filename, xmag, gridsize)
+    else:
+        raise ValueError(f"{filename.suffix} not handled yet. Please open GitHub issue.")
