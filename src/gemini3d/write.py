@@ -166,11 +166,6 @@ def maggrid(filename: Path, xmag: dict[str, T.Any]):
 
     filename = Path(filename).expanduser()
 
-    # %% error checking on struct fields
-    assert "r" in xmag, "R field of xmag must be defined"
-    assert "theta" in xmag, "THETA field of xmag must be defined"
-    assert "phi" in xmag, "PHI field of xmag must be defined"
-
     # %% default value for gridsize
     if "gridsize" not in xmag:
         if xmag["r"].ndim == 1:
