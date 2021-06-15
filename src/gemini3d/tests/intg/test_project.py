@@ -43,7 +43,7 @@ def test_file_time(name):
 )
 def test_grid(name, file_format, tmp_path):
 
-    if file_format == "nc":
+    if file_format.endswith("nc"):
         pytest.importorskip("netCDF4")
 
     # get files if needed

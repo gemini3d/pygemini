@@ -24,7 +24,7 @@ def state(out_file: Path, dat: xarray.Dataset, file_format: str = None, **kwargs
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
 
-    ext = file_format if file_format else out_file.suffix[1:]
+    ext = file_format if file_format else out_file.suffix
 
     # %% allow overriding "dat"
     if "time" in kwargs:
@@ -38,9 +38,9 @@ def state(out_file: Path, dat: xarray.Dataset, file_format: str = None, **kwargs
         dat["Phitop"] = (("x2", "x3"), kwargs["Phitop"])
 
     # %% dispatch to format-specific writers
-    if ext == "h5":
+    if ext.endswith("h5"):
         h5write.state(out_file.with_suffix(".h5"), dat)
-    elif ext == "nc":
+    elif ext.endswith("nc"):
         ncwrite.state(out_file.with_suffix(".nc"), dat)
     else:
         raise ValueError(f"unknown file format {ext}")
@@ -48,9 +48,9 @@ def state(out_file: Path, dat: xarray.Dataset, file_format: str = None, **kwargs
 
 def data(out_file: Path, dat: np.ndarray, file_format: str, xg: dict[str, T.Any] = None):
 
-    if file_format == "h5":
+    if file_format.endswith("h5"):
         h5write.data(out_file, dat)
-    elif file_format == "nc":
+    elif file_format.endswith("nc"):
         ncwrite.data(out_file, dat, xg)
     else:
         raise ValueError(f"Unknown file format {file_format}")
@@ -78,11 +78,11 @@ def grid(cfg: dict[str, T.Any], xg: dict[str, T.Any], *, file_format: str = None
     input_dir.mkdir(parents=True, exist_ok=True)
 
     if not file_format:
-        file_format = cfg["file_format"] if "file_format" in cfg else cfg["indat_size"].suffix[1:]
+        file_format = cfg.get("file_format", cfg["indat_size"].suffix)
 
-    if file_format == "h5":
+    if file_format.endswith("h5"):
         h5write.grid(cfg["indat_size"].with_suffix(".h5"), cfg["indat_grid"].with_suffix(".h5"), xg)
-    elif file_format == "nc":
+    elif file_format.endswith("nc"):
         ncwrite.grid(cfg["indat_size"].with_suffix(".nc"), cfg["indat_grid"].with_suffix(".nc"), xg)
     else:
         raise ValueError(f'unknown file format {cfg["file_format"]}')
@@ -107,9 +107,9 @@ def Efield(E: xarray.Dataset, outdir: Path, file_format: str):
     print("write E-field data to", outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    if file_format == "h5":
+    if file_format.endswith("h5"):
         h5write.Efield(outdir, E)
-    elif file_format == "nc":
+    elif file_format.endswith("nc"):
         ncwrite.Efield(outdir, E)
     else:
         raise ValueError(f"unknown file format {file_format}")
@@ -131,9 +131,9 @@ def precip(precip: dict[str, T.Any], outdir: Path, file_format: str):
     print("write precipitation data to", outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    if file_format == "h5":
+    if file_format.endswith("h5"):
         h5write.precip(outdir, precip)
-    elif file_format == "nc":
+    elif file_format.endswith("nc"):
         ncwrite.precip(outdir, precip)
     else:
         raise ValueError(f"unknown file format {file_format}")
@@ -180,7 +180,7 @@ def maggrid(filename: Path, xmag: dict[str, T.Any]):
     if not filename.parent.is_dir():
         raise FileNotFoundError(f"{filename.parent} parent directory does not exist")
 
-    if filename.suffix == ".h5":
+    if filename.suffix.endswith("h5"):
         h5write.maggrid(filename, xmag, gridsize)
     else:
         raise ValueError(f"{filename.suffix} not handled yet. Please open GitHub issue.")

@@ -100,7 +100,7 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
     xg: dict[str, T.Any] = {}
 
     if not file.is_file():
-        file = find.grid(file, required=True)
+        file = find.grid(file, suffix=".h5", required=True)
 
     if shape:
         with h5py.File(file, "r") as f:
@@ -168,12 +168,14 @@ def precip(file: Path) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curvne(file: Path) -> xarray.Dataset:
+def frame3d_curvne(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
     """
     just Ne
     """
 
-    xg = grid(file.parent, var={"x1", "x2", "x3"})
+    if not xg:
+        xg = grid(file.parent, var={"x1", "x2", "x3"})
+
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     p3 = (2, 1, 0)
@@ -184,7 +186,7 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
+def frame3d_curv(file: Path, var: set[str], xg: dict[str, T.Any] = None) -> xarray.Dataset:
     """
     curvilinear
 
@@ -201,7 +203,9 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
         var = [var]
     var = set(var)
 
-    xg = grid(file.parent, var={"x1", "x2", "x3"})
+    if not xg:
+        xg = grid(file.parent, var={"x1", "x2", "x3"})
+
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     lx = xg["lx"]
@@ -243,7 +247,7 @@ def frame3d_curv(file: Path, var: set[str]) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
+def frame3d_curvavg(file: Path, var: set[str], xg: dict[str, T.Any] = None) -> xarray.Dataset:
     """
 
     Parameters
@@ -254,7 +258,9 @@ def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
         variable(s) to read
     """
 
-    xg = grid(file.parent, var={"x1", "x2", "x3"})
+    if not xg:
+        xg = grid(file.parent, var={"x1", "x2", "x3"})
+
     dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     p3 = (2, 1, 0)
@@ -287,7 +293,7 @@ def frame3d_curvavg(file: Path, var: set[str]) -> xarray.Dataset:
     return dat
 
 
-def glow_aurmap(file: Path) -> xarray.Dataset:
+def glow_aurmap(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
     """
     read the auroral output from GLOW
 
@@ -297,7 +303,9 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
         filename of this timestep of simulation output
     """
 
-    xg = grid(file.parents[1], var={"x2", "x3"})
+    if not xg:
+        xg = grid(file.parents[1], var={"x2", "x3"})
+
     dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     p3 = (0, 2, 1)

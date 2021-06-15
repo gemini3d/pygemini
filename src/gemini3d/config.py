@@ -148,7 +148,7 @@ def parse_files(r: dict[str, T.Any]) -> dict[str, T.Any]:
     for k in ("indat_file", "indat_grid", "indat_size"):
         P[k] = r[k]
 
-    P["file_format"] = r.get("file_format", Path(P["indat_size"]).suffix[1:])
+    P["file_format"] = r.get("file_format", Path(P["indat_size"]).suffix)
     # defaults to type of input
 
     if "realbits" in r:

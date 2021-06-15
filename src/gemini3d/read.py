@@ -54,13 +54,13 @@ def simsize(path: Path, suffix: str = None) -> tuple[int, ...]:
 
     fn = find.simsize(path, suffix=suffix, required=True)
 
-    if fn.suffix == ".h5":
+    if fn.suffix.endswith("h5"):
         return h5read.simsize(fn)
-    elif fn.suffix == ".nc":
+    elif fn.suffix.endswith("nc"):
         return ncread.simsize(fn)
-    elif fn.suffix == ".dat":
+    elif fn.suffix.endswith("dat"):
         return raw_read.simsize(fn)
-    elif fn.suffix == ".mat":
+    elif fn.suffix.endswith("mat"):
         return matlab.simsize(fn)
     else:
         raise ValueError("unknown simsize file type")
@@ -85,18 +85,18 @@ def grid(
         read only the shape of the grid instead of the data iteslf
     """
 
-    fn = find.grid(path, required=True)
+    fn = find.grid(path, suffix=file_format, required=True)
 
     if not file_format:
-        file_format = fn.suffix[1:]
+        file_format = fn.suffix
 
-    if file_format == "dat":
+    if file_format.endswith("dat"):
         xg = raw_read.grid(fn.with_suffix(".dat"), shape=shape)
-    elif file_format == "h5":
+    elif file_format.endswith("h5"):
         xg = h5read.grid(fn.with_suffix(".h5"), var=var, shape=shape)
-    elif file_format == "nc":
+    elif file_format.endswith("nc"):
         xg = ncread.grid(fn.with_suffix(".nc"), var=var, shape=shape)
-    elif file_format == "mat":
+    elif file_format.endswith("mat"):
         xg = matlab.grid(fn.with_suffix(".mat"), shape=shape)
     else:
         raise ValueError(f"Unknown file type {fn}")
@@ -107,7 +107,12 @@ def grid(
 
 
 def data(
-    fn: Path, var: set[str] = None, *, file_format: str = None, cfg: dict[str, T.Any] = None
+    fn: Path,
+    var: set[str] = None,
+    *,
+    file_format: str = None,
+    cfg: dict[str, T.Any] = None,
+    xg: dict[str, T.Any] = None,
 ) -> xarray.Dataset:
     """
     knowing the filename for a simulation time step, read the data for that time step
@@ -122,8 +127,8 @@ def data(
         specify file extension of data files
     cfg: dict
         to avoid reading config.nml
-    E0dir: pathlib.Path
-        E0 directory
+    xg: dict
+        to avoid reading simgrid.*, useful to save time when reading data files in a loop
 
     Returns
     -------
@@ -144,38 +149,38 @@ def data(
         cfg = config(fn.parent)
 
     if not file_format:
-        file_format = cfg["file_format"] if "file_format" in cfg else fn.suffix[1:]
+        file_format = cfg.get("file_format", fn.suffix)
 
-    if file_format == "dat":
+    if file_format.endswith("dat"):
         flag = cfg.get("flagoutput")
         if flag == 0:
-            dat = raw_read.frame3d_curvne(fn)
+            dat = raw_read.frame3d_curvne(fn, xg)
         elif flag == 1:
-            dat = raw_read.frame3d_curv(fn)
+            dat = raw_read.frame3d_curv(fn, xg)
         elif flag == 2:
-            dat = raw_read.frame3d_curvavg(fn)
+            dat = raw_read.frame3d_curvavg(fn, xg)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
-    elif file_format == "h5":
+    elif file_format.endswith("h5"):
         flag = h5read.flagoutput(fn, cfg)
 
         if flag == 0:
-            dat = h5read.frame3d_curvne(fn)
+            dat = h5read.frame3d_curvne(fn, xg)
         elif flag == 1:
-            dat = h5read.frame3d_curv(fn, var)
+            dat = h5read.frame3d_curv(fn, var, xg)
         elif flag == 2:
-            dat = h5read.frame3d_curvavg(fn, var)
+            dat = h5read.frame3d_curvavg(fn, var, xg)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
-    elif file_format == "nc":
+    elif file_format.endswith("nc"):
         flag = ncread.flagoutput(fn, cfg)
 
         if flag == 0:
-            dat = ncread.frame3d_curvne(fn)
+            dat = ncread.frame3d_curvne(fn, xg)
         elif flag == 1:
-            dat = ncread.frame3d_curv(fn, var)
+            dat = ncread.frame3d_curv(fn, var, xg)
         elif flag == 2:
-            dat = ncread.frame3d_curvavg(fn, var)
+            dat = ncread.frame3d_curvavg(fn, var, xg)
         else:
             raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
     else:
@@ -221,11 +226,11 @@ def glow(fn: Path) -> xarray.DataArray:
 
     fmt = fn.suffix
 
-    if fmt == ".h5":
+    if fmt.endswith("h5"):
         dat = h5read.glow_aurmap(fn)
-    elif fmt == ".nc":
+    elif fmt.endswith("nc"):
         dat = ncread.glow_aurmap(fn)
-    elif fmt == ".dat":
+    elif fmt.endswith("dat"):
         dat = raw_read.glow_aurmap(fn)
     else:
         raise ValueError(f"Unknown file type {fn}")
@@ -253,13 +258,13 @@ def Efield(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
     fn = Path(fn).expanduser().resolve(strict=True)
 
     if not file_format:
-        file_format = fn.suffix[1:]
+        file_format = fn.suffix
 
-    if file_format == "h5":
+    if file_format.endswith("h5"):
         E = h5read.Efield(fn)
-    elif file_format == "nc":
+    elif file_format.endswith("nc"):
         E = ncread.Efield(fn)
-    elif file_format == "dat":
+    elif file_format.endswith("dat"):
         E = raw_read.Efield(fn)
     else:
         raise ValueError(f"Unknown file type {fn}")
@@ -289,11 +294,11 @@ def precip(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
     fn = Path(fn).expanduser().resolve(strict=True)
 
     if not file_format:
-        file_format = fn.suffix[1:]
+        file_format = fn.suffix
 
-    if file_format == "h5":
+    if file_format.endswith("h5"):
         dat = h5read.precip(fn)
-    elif file_format == "nc":
+    elif file_format.endswith("nc"):
         dat = ncread.precip(fn)
     else:
         raise ValueError(f"unknown file format {file_format}")
@@ -337,9 +342,9 @@ def time(file: Path) -> datetime:
     read simulation time of a file
     """
 
-    if file.suffix == ".h5":
+    if file.suffix.endswith("h5"):
         t = h5read.time(file)
-    elif file.suffix == ".nc":
+    elif file.suffix.endswith("nc"):
         t = ncread.time(file)
     else:
         raise ValueError(f"unknown file format {file.suffix}")

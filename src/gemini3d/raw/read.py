@@ -67,7 +67,7 @@ def grid(file: Path, shape: bool = False) -> dict[str, T.Any]:
     lx = simsize(file)
 
     if not file.is_file():
-        file = find.grid(file, required=True)
+        file = find.grid(file, suffix=".dat", required=True)
 
     if len(lx) == 2:
         return grid2(file, lx)
@@ -77,7 +77,7 @@ def grid(file: Path, shape: bool = False) -> dict[str, T.Any]:
         raise ValueError("lx must be 2-D or 3-D")
 
 
-def grid2(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
+def grid2(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, T.Any]:
     """for Efield"""
 
     ft = np.float64
@@ -85,7 +85,7 @@ def grid2(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
     if not fn.is_file():
         raise FileNotFoundError(fn)
 
-    xg: dict[str, T.Any] = {"lx": lx}
+    xg = {"lx": lx}
     with fn.open("rb") as f:
         xg["mlon"] = np.fromfile(f, ft, lx[0])
         xg["mlat"] = np.fromfile(f, ft, lx[1])
@@ -93,7 +93,7 @@ def grid2(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
     return xg
 
 
-def grid3(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
+def grid3(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, T.Any]:
     """
     load 3D grid
     """
@@ -106,7 +106,7 @@ def grid3(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, np.ndarray]:
 
     ft = np.float64
 
-    xg: dict[str, T.Any] = {"lx": lx}
+    xg = {"lx": lx}
 
     read = np.fromfile
 
@@ -192,7 +192,7 @@ def Efield(file: Path) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curv(file: Path) -> xarray.Dataset:
+def frame3d_curv(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
     """
     curvilinear
 
@@ -209,7 +209,9 @@ def frame3d_curv(file: Path) -> xarray.Dataset:
     lx = simsize(file.parent)
 
     try:
-        xg = grid(file.parent)
+        if not xg:
+            xg = grid(file.parent)
+
         dat = xarray.Dataset(
             coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
         )
@@ -245,7 +247,7 @@ def frame3d_curv(file: Path) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curvavg(file: Path) -> xarray.Dataset:
+def frame3d_curvavg(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
     """
 
     Parameters
@@ -260,7 +262,9 @@ def frame3d_curvavg(file: Path) -> xarray.Dataset:
     lx = simsize(file.parent)
 
     try:
-        xg = grid(file.parent)
+        if not xg:
+            xg = grid(file.parent)
+
         dat = xarray.Dataset(
             coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
         )
@@ -280,7 +284,7 @@ def frame3d_curvavg(file: Path) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curvne(file: Path) -> xarray.Dataset:
+def frame3d_curvne(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
 
     if not file.is_file():
         raise FileNotFoundError(file)
@@ -288,7 +292,9 @@ def frame3d_curvne(file: Path) -> xarray.Dataset:
     lx = simsize(file.parent)
 
     try:
-        xg = grid(file.parent)
+        if not xg:
+            xg = grid(file.parent)
+
         dat = xarray.Dataset(
             coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
         )
@@ -310,12 +316,10 @@ def read4D(f: T.BinaryIO, lsp: int, lx: tuple[int, ...] | list[int]) -> np.ndarr
     read 4D array from raw file
     """
 
-    ft = np.float64
-
     if not len(lx) == 3:
         raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
-    return np.fromfile(f, ft, np.prod(lx) * lsp).reshape((*lx, lsp), order="F")
+    return np.fromfile(f, np.float64, np.prod(lx) * lsp).reshape((*lx, lsp), order="F")
 
 
 def read3D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]) -> np.ndarray:
@@ -323,12 +327,10 @@ def read3D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     read 3D array from raw file
     """
 
-    ft = np.float64
-
     if not len(lx) == 3:
         raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
-    return np.fromfile(f, ft, np.prod(lx)).reshape(*lx, order="F")
+    return np.fromfile(f, np.float64, np.prod(lx)).reshape(*lx, order="F")
 
 
 def read2D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]) -> np.ndarray:
@@ -336,30 +338,28 @@ def read2D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     read 2D array from raw file
     """
 
-    ft = np.float64
-
     if not len(lx) == 3:
         raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
-    return np.fromfile(f, ft, np.prod(lx[1:])).reshape(*lx[1:], order="F")
+    return np.fromfile(f, np.float64, np.prod(lx[1:])).reshape(*lx[1:], order="F")
 
 
-def glow_aurmap(file: Path) -> xarray.Dataset:
+def glow_aurmap(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
     """
     read the auroral output from GLOW
     """
 
-    ft = np.float64
-
     lx = simsize(file.parent)
-    xg = grid(file.parent)
+    if not xg:
+        xg = grid(file.parent)
+
     dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
 
     if not len(lx) == 3:
         raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
     with file.open("rb") as f:
-        raw = np.fromfile(f, ft, np.prod(lx[1:]) * len(WAVELEN)).reshape(
+        raw = np.fromfile(f, np.float64, np.prod(lx[1:]) * len(WAVELEN)).reshape(
             np.prod(lx[1:]) * len(WAVELEN), order="F"
         )
 
@@ -367,7 +367,7 @@ def glow_aurmap(file: Path) -> xarray.Dataset:
 
 
 def time(f: T.BinaryIO) -> datetime:
-    ft = np.float64
 
-    t = np.fromfile(f, ft, 4)
+    t = np.fromfile(f, np.float64, 4)
+
     return datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])

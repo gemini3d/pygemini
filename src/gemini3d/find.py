@@ -69,13 +69,13 @@ def frame(
     return None
 
 
-def grid(path: Path, required: bool = False) -> T.Optional[Path]:
+def grid(path: Path, *, suffix=None, required: bool = False) -> T.Optional[Path]:
     """given a path or filename, return the full path to simgrid file
     we don't override FILE_FORMATS to allow outputs from a prior sim in a different
     file format to be used in this sim.
     """
 
-    return find_stem(path, stem="simgrid", required=required)
+    return find_stem(path, stem="simgrid", suffix=suffix, required=required)
 
 
 def find_stem(

@@ -19,6 +19,7 @@ def cli():
     p = argparse.ArgumentParser()
     p.add_argument("format", help="file format", choices=["h5", "nc"])
     p.add_argument("indir", help="Gemini .dat file directory")
+    p.add_argument("-i", "--intype", help="type of input file [.dat]", default=".dat")
     p.add_argument("-o", "--outdir", help="directory to write HDF5 files")
     P = p.parse_args()
 
@@ -36,20 +37,21 @@ def cli():
         infiles = [indir]
         indir = indir.parent
     elif indir.is_dir():
-        infiles = sorted(indir.glob("*.dat"))
+        infiles = sorted(indir.glob(f"*{P.intype}"))
     else:
         raise FileNotFoundError(indir)
 
     if not infiles:
-        raise FileNotFoundError(f"no files to convert in {indir}")
+        raise FileNotFoundError(f"no {P.intype} files to convert in {indir}")
 
     cfg = read.config(indir)
     if "flagoutput" not in cfg:
         raise LookupError(f"need to specify flagoutput in {indir}/config.nml")
 
-    xg = None
-    if P.format == "nc":
-        xg = read.grid(indir)
+    try:
+        xg = read.grid(indir, file_format=P.intype)
+    except FileNotFoundError:
+        xg = None
 
     for infile in infiles:
         if infile.name in {"simsize", "simgrid", "initial_conditions"}:
@@ -58,7 +60,7 @@ def cli():
         outfile = outdir / (f"{infile.stem}.{P.format}")
         print(infile, "=>", outfile)
 
-        dat = read.data(infile, cfg=cfg)
+        dat = read.data(infile, file_format=P.intype, cfg=cfg, xg=xg)
 
         write.data(outfile, dat, file_format=P.format, xg=xg)
 
