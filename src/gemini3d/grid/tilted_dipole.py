@@ -329,7 +329,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     xg["dx3h"] = xg["x3i"][1:] - xg["x3i"][:-1]
 
     # center lat/lon of grid also required
-    xg["glonctr"]=cfg["glon"]
-    xg["glatctr"]=cfg["glat"] 
+    xg["glonctr"] = cfg["glon"]
+    xg["glatctr"] = cfg["glat"]
 
     return xg
