@@ -22,7 +22,7 @@ def curv3d_long(
     lalt: int = 256,
     llon: int = 256,
     llat: int = 256
-):
+) -> Figure:
     """plot dipole data vs. alt,lon,lat"""
 
     altref = 300e3
@@ -32,9 +32,9 @@ def curv3d_long(
 
     # define slices indices
     ialt = abs(alti - altref).argmin()
-    lonavg = cfg["sourcemlon"]
+    lonavg = cfg.get("sourcemlon", mloni.mean())
     ilon = abs(mloni - lonavg).argmin()
-    latavg = cfg["sourcemlat"]
+    latavg = cfg.get("sourcemlat", mlati.mean())
     ilat = abs(mlati - latavg).argmin()
 
     # plot various slices through the 3D domain
@@ -59,6 +59,8 @@ def curv3d_long(
     ax.set_ylabel("alt")
     fg.colorbar(h, ax=ax)
 
+    return fg
+
 
 def curv2d(
     cfg: dict[str, T.Any],
@@ -69,7 +71,7 @@ def curv2d(
     *,
     lalt: int = 256,
     llat: int = 256
-):
+) -> Figure:
     # grid data
     alti, mloni, mlati, parmi = model2magcoords(xg, parm, lalt, 1, llat)
 
@@ -83,3 +85,5 @@ def curv2d(
     ax.set_xlabel("mlat")
     ax.set_ylabel("alt")
     fg.colorbar(h, ax=ax)
+
+    return fg
