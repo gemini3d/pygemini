@@ -19,7 +19,7 @@ mpl.rcParams["axes.formatter.useoffset"] = False
 mpl.rcParams["axes.formatter.min_exponent"] = 4
 
 
-def grid2plotfun(xg: dict[str, np.ndarray]):
+def grid2plotfun(xg: dict[str, np.ndarray]) -> T.Callable:
     plotfun = None
     h1 = xg.get("h1")
 
@@ -30,15 +30,15 @@ def grid2plotfun(xg: dict[str, np.ndarray]):
         maxh1 = h1.max()
         if (abs(minh1 - 1) > 1e-4) or (abs(maxh1 - 1) > 1e-4):  # curvilinear grid
             if (lxs[1] > 1) and (lxs[2] > 1):
-                plotfun = curvilinear.curv3d_long
+                plotfun = curvilinear.curv3d_long  # type: ignore
             else:
-                plotfun = curvilinear.curv2d
+                plotfun = curvilinear.curv2d  # type: ignore
 
     if plotfun is None:
         if (lxs[1] > 1) and (lxs[2] > 1):
-            plotfun = cartesian.cart3d_long_ENU
+            plotfun = cartesian.cart3d_long_ENU  # type: ignore
         else:
-            plotfun = cartesian.cart2d
+            plotfun = cartesian.cart2d  # type: ignore
 
     return plotfun
 
@@ -67,7 +67,7 @@ def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = None):
 
     # %% loop over files / time
     for t in cfg["time"]:
-        frame(direc, time=t, var=var, saveplot_fmt=saveplot_fmt, xg=xg, plotfun=plotfun)
+        frame(direc, time=t, var=var, saveplot_fmt=saveplot_fmt, xg=xg, cfg=cfg, plotfun=plotfun)
         glow(aurmap_dir, t, saveplot_fmt, xg=xg)
 
 
@@ -79,6 +79,7 @@ def frame(
     saveplot_fmt: str = None,
     var: set[str] = None,
     xg: dict[str, T.Any] = None,
+    cfg: dict[str, T.Any] = None,
 ):
     """
     if save_dir, plots will not be visible while generating to speed plot writing
@@ -110,7 +111,10 @@ def frame(
 
     for k, v in dat.items():
         if any(s in k for s in var):
-            fg = plotfun(
-                to_datetime(dat.time), xg, v.squeeze(), k, wavelength=dat.get("wavelength")
-            )
+            if plotfun.__name__.startswith("curv"):
+                fg = plotfun(cfg, xg, v, k)
+            else:
+                fg = plotfun(
+                    to_datetime(dat.time), xg, v.squeeze(), k, wavelength=dat.get("wavelength")
+                )
             save_fig(fg, direc, name=k, fmt=saveplot_fmt, time=time)

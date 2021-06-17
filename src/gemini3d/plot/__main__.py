@@ -30,7 +30,7 @@ def cli():
     if "all" in p.which:
         plot_all(p.direc, p.var, saveplot_fmt=p.save)
     if "grid" in p.which:
-        grid(p.direc)
+        grid.grid(p.direc)
     if "Efield" in p.which:
         input.Efield(p.direc)
     if "precip" in p.which:
