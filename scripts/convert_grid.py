@@ -13,29 +13,31 @@ import gemini3d.write as write
 def cli():
     p = argparse.ArgumentParser()
     p.add_argument("format", help="file format", choices=["h5", "nc"])
-    p.add_argument("indir", help="Gemini simgrid.dat")
+    p.add_argument(
+        "indir", help="Gemini3d path to simgrid.dat or path containing inputs/simgrid.dat"
+    )
     p.add_argument("-i", "--intype", help="type of input file [.dat]", default=".dat")
     p.add_argument("-o", "--outdir", help="directory to write HDF5 files")
     P = p.parse_args()
 
-    infile = Path(P.indir).expanduser()
+    indir = Path(P.indir).expanduser()
     if P.outdir:
         outdir = Path(P.outdir).expanduser()
-    elif infile.is_file():
-        outdir = infile.parent
+    elif indir.is_file():
+        outdir = indir.parent
+    elif indir.is_dir():
+        outdir = indir
     else:
-        raise FileNotFoundError(infile)
+        raise FileNotFoundError(indir)
 
-    suffix = f".{P.format}"
+    outfile = outdir / f"simgrid.{P.format}"
+    print(indir, "=>", outfile)
 
-    outfile = outdir / (infile.stem + suffix)
-    print(infile, "=>", outfile)
-
-    xg = read.grid(infile, file_format=P.intype)
+    xg = read.grid(indir, file_format=P.intype)
 
     cfg = {
-        "indat_size": infile.with_name(f"simsize{suffix}"),
-        "indat_grid": infile.with_suffix(suffix),
+        "indat_size": xg["filename"].with_name(f"simsize.{P.format}"),
+        "indat_grid": xg["filename"].with_suffix(f".{P.format}"),
     }
 
     write.grid(cfg, file_format=P.format, xg=xg)
