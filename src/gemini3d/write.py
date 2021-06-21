@@ -87,7 +87,7 @@ def grid(cfg: dict[str, T.Any], xg: dict[str, T.Any], *, file_format: str = None
     else:
         raise ValueError(f'unknown file format {cfg["file_format"]}')
 
-    meta(cfg["out_dir"] / "setup_grid.json", git_meta(), cfg)
+    meta(input_dir / "setup_grid.json", git_meta(), cfg)
 
 
 def Efield(E: xarray.Dataset, outdir: Path, file_format: str):
