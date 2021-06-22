@@ -8,6 +8,8 @@ import typing as T
 
 import numpy as np
 
+from .utils import filename2datetime
+
 FILE_FORMATS = [".h5", ".nc"]
 
 
@@ -52,9 +54,7 @@ def frame(
         file_times = []
         files = list(simdir.glob(pat + ext))
         for fn in files:
-            file_times.append(
-                datetime.strptime(fn.name[:8], "%Y%m%d") + timedelta(seconds=float(fn.name[9:21]))
-            )
+            file_times.append(filename2datetime(fn))
 
         if file_times:
             afile_times = np.array(file_times)

@@ -4,7 +4,7 @@ import os
 import shutil
 from pathlib import Path
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import typing as T
 import logging
 import importlib
@@ -12,7 +12,6 @@ import imp
 
 import xarray
 import numpy as np
-
 
 Pathlike = T.Union[str, Path]
 
@@ -217,3 +216,15 @@ def datetime2ymd_hourdec(dt: datetime) -> str:
         dt.strftime("%Y%m%d")
         + f"_{dt.hour*3600 + dt.minute*60 + dt.second + dt.microsecond/1e6:12.6f}"
     )
+
+
+def filename2datetime(path: Path) -> datetime:
+    """
+    Gemini3D datafiles use a file naming pattern that we translate to a datetime
+
+    path need not exist.
+    """
+
+    name = path.name
+
+    return datetime.strptime(name[:8], "%Y%m%d") + timedelta(seconds=float(name[9:21]))

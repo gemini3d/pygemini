@@ -6,9 +6,12 @@ from __future__ import annotations
 from pathlib import Path
 import typing as T
 from datetime import datetime, timedelta
+import logging
 
 import xarray
 import numpy as np
+
+from gemini3d.utils import filename2datetime
 
 from .. import find
 from .. import WAVELEN
@@ -303,16 +306,18 @@ def time(file: Path) -> datetime:
     reads simulation time
     """
 
-    with Dataset(file, "r") as f:
-        ymd = datetime(*f["ymd"][:3])
+    try:
+        with Dataset(file, "r") as f:
+            ymd = datetime(*f["ymd"][:3])
 
-        if "UThour" in f:
-            hour = f["UThour"][()].item()
-        elif "UTsec" in f:
-            hour = f["UTsec"][()].item() / 3600
-        else:
-            raise KeyError(f"did not find time of day in {file}")
+            try:
+                hour = f["UThour"][()].item()
+            except KeyError:
+                hour = f["UTsec"][()].item() / 3600
 
-    t = ymd + timedelta(hours=hour)
+        t = ymd + timedelta(hours=hour)
+    except KeyError:
+        logging.error(f"/time group missing from {file}, getting time from filename pattern.")
+        t = filename2datetime(file)
 
     return t
