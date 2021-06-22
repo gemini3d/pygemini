@@ -12,7 +12,6 @@ import h5py
 import numpy as np
 import xarray
 
-from .. import LSP
 from ..utils import datetime2ymd_hourdec, to_datetime
 
 CLVL = 3  # GZIP compression level: larger => better compression, slower to write
@@ -48,7 +47,7 @@ def state(fn: Path, dat: xarray.Dataset):
             _write_var(f, "/Phiall", dat["Phitop"])
 
 
-def _write_var(f, name: str, A: xarray.DataArray):
+def _write_var(fid, name: str, A: xarray.DataArray):
     """
     NOTE: The .transpose() reverses the dimension order.
     The HDF Group never implemented the intended H5T_array_create(..., perm)
@@ -60,11 +59,15 @@ def _write_var(f, name: str, A: xarray.DataArray):
     """
 
     p4s = ("species", "x3", "x2", "x1")
+    p3s = ("x3", "x2", "x1")
+    p2s = ("x3", "x2")
 
     if A.ndim == 4:
         A = A.transpose(*p4s)
+    elif A.ndim == 3:
+        A = A.transpose(*p3s)
     elif A.ndim == 2:
-        A = A.transpose()
+        A = A.transpose(*p2s)
     elif A.ndim == 1:
         pass
     else:
@@ -72,11 +75,11 @@ def _write_var(f, name: str, A: xarray.DataArray):
             f"write_hdf5: unexpected number of dimensions {A.ndim}. Please raise a GitHub Issue."
         )
 
-    f.create_dataset(
+    fid.create_dataset(
         name,
         data=A,
-        dtype=np.float32,
-        compression="gzip",
+        dtype=np.float32,  # float32 saves disk space
+        compression="gzip",  # GZIP is universally available with HDF5
         compression_opts=CLVL,
         shuffle=True,
         fletcher32=True,
@@ -89,43 +92,24 @@ def data(outfn: Path, dat: xarray.Dataset):
     e.g. for converting a file format from a simulation
     """
 
-    if "species" in dat.dims:
-        shape = [dat.dims["species"], dat.dims["x1"], dat.dims["x2"], dat.dims["x3"]]
-    else:
-        shape = [dat.dims["x1"], dat.dims["x2"], dat.dims["x3"]]
-
     with h5py.File(outfn, "w") as h:
-        for k in {"ns", "vs1", "Ts"}:
-            if k not in dat:
-                continue
-
-            h.create_dataset(
-                k,
-                data=dat[k].astype(np.float32),
-                chunks=(1, *shape[1:], LSP),
-                compression="gzip",
-                compression_opts=CLVL,
-            )
-
-        for k in {"ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"}:
-            if k not in dat:
-                continue
-
-            h.create_dataset(
-                k,
-                data=dat[k].astype(np.float32),
-                chunks=(1, *shape[1:]),
-                compression="gzip",
-                compression_opts=CLVL,
-            )
-
-        if "Phitop" in dat:
-            h.create_dataset(
-                "Phiall",
-                data=dat["Phitop"].astype(np.float32),
-                compression="gzip",
-                compression_opts=CLVL,
-            )
+        for k in {
+            "ns",
+            "vs1",
+            "Ts",
+            "ne",
+            "v1",
+            "Ti",
+            "Te",
+            "J1",
+            "J2",
+            "J3",
+            "v2",
+            "v3",
+            "Phitop",
+        }:
+            if k in dat:
+                _write_var(h, k, dat[k])
 
 
 def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
@@ -158,8 +142,8 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
 
     logging.info(f"write_grid: {grid_fn}")
     with h5py.File(grid_fn, "w") as h:
-        for i in (1, 2, 3):
-            for k in (
+        for i in {1, 2, 3}:
+            for k in {
                 f"x{i}",
                 f"x{i}i",
                 f"dx{i}b",
@@ -168,7 +152,7 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
                 f"h{i}x1i",
                 f"h{i}x2i",
                 f"h{i}x3i",
-            ):
+            }:
                 if k not in xg:
                     logging.info(f"SKIP: {k}")
                     continue
@@ -187,7 +171,7 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
                     h[f"/{k}"] = xg[k].astype(np.float32)
 
         # 3-D same as grid
-        for k in (
+        for k in {
             "gx1",
             "gx2",
             "gx3",
@@ -202,7 +186,7 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
             "x",
             "y",
             "z",
-        ):
+        }:
             if k not in xg:
                 logging.info(f"SKIP: {k}")
                 continue
@@ -219,7 +203,7 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
             )
 
         # %% 2-D
-        for k in ("I",):
+        for k in {"I"}:
             if k not in xg:
                 logging.info(f"SKIP: {k}")
                 continue
@@ -236,7 +220,7 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
             )
 
         # %% 4-D
-        for k in ("e1", "e2", "e3", "er", "etheta", "ephi"):
+        for k in {"e1", "e2", "e3", "er", "etheta", "ephi"}:
             if k not in xg:
                 logging.info(f"SKIP: {k}")
                 continue

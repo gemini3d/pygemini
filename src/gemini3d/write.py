@@ -47,6 +47,9 @@ def state(out_file: Path, dat: xarray.Dataset, file_format: str = None, **kwargs
 
 
 def data(out_file: Path, dat: np.ndarray, file_format: str, xg: dict[str, T.Any] = None):
+    """
+    used by scripts/convert_data.py
+    """
 
     if file_format.endswith("h5"):
         h5write.data(out_file, dat)

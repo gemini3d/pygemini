@@ -106,15 +106,13 @@ def data(fn: Path, dat: xarray.Dataset, xg: dict[str, T.Any]):
                     raise ValueError(f"{k}:  {xg[k].size} != {f.dimensions[k].size}")
                 _write_var(f, name=k, value=x, dims=k)
 
-        for k in ["ns", "vs1", "Ts"]:
-            if k not in dat:
-                continue
-            _write_var(f, k, dat[k], dims)
+        for k in {"ns", "vs1", "Ts"}:
+            if k in dat:
+                _write_var(f, k, dat[k], dims)
 
-        for k in ["ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"]:
-            if k not in dat:
-                continue
-            _write_var(f, k, dat[k], dims)
+        for k in {"ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"}:
+            if k in dat:
+                _write_var(f, k, dat[k], dims)
 
         if "Phitop" in dat:
             _write_var(f, "Phiall", dat["Phitop"], dims[-2:])
@@ -165,7 +163,7 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
 
         f.createDimension("ecef", 3)
 
-        for i in (1, 2, 3):
+        for i in {1, 2, 3}:
             _write_var(f, f"x{i}", xg[f"x{i}"], dims=f"x{i}ghost")
             _write_var(f, f"x{i}i", xg[f"x{i}i"], dims=f"x{i}i")
             _write_var(f, f"dx{i}b", xg[f"dx{i}b"], dims=f"x{i}d")
@@ -177,10 +175,10 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
             _write_var(f, f"gx{i}", xg[f"gx{i}"], ("x1", "x2", "x3"))
             _write_var(f, f"e{i}", xg[f"e{i}"], ("x1", "x2", "x3", "ecef"))
 
-        for k in ("alt", "glat", "glon", "Bmag", "nullpts", "r", "theta", "phi", "x", "y", "z"):
+        for k in {"alt", "glat", "glon", "Bmag", "nullpts", "r", "theta", "phi", "x", "y", "z"}:
             _write_var(f, k, xg[k], ("x1", "x2", "x3"))
 
-        for k in ("er", "etheta", "ephi"):
+        for k in {"er", "etheta", "ephi"}:
             _write_var(f, k, xg[k], ("x1", "x2", "x3", "ecef"))
 
         _write_var(f, "I", xg["I"], ("x2", "x3"))
