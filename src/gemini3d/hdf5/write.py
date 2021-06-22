@@ -29,15 +29,10 @@ def state(fn: Path, dat: xarray.Dataset):
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
 
-    time = to_datetime(dat.time)
-
-    logging.info(f"state: {fn} {time}")
+    logging.info(f"state: {fn}")
 
     with h5py.File(fn, "w") as f:
-        f["/time/ymd"] = np.array([time.year, time.month, time.day]).astype(np.int32)
-        f["/time/UTsec"] = np.float32(
-            time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
-        )
+        write_time(f, to_datetime(dat.time))
 
         for k in {"ns", "vs1", "Ts"}:
             if k in dat.data_vars:
@@ -92,7 +87,9 @@ def data(outfn: Path, dat: xarray.Dataset):
     e.g. for converting a file format from a simulation
     """
 
-    with h5py.File(outfn, "w") as h:
+    with h5py.File(outfn, "w") as f:
+        write_time(f, to_datetime(dat.time))
+
         for k in {
             "ns",
             "vs1",
@@ -109,7 +106,7 @@ def data(outfn: Path, dat: xarray.Dataset):
             "Phitop",
         }:
             if k in dat:
-                _write_var(h, k, dat[k])
+                _write_var(f, k, dat[k])
 
 
 def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
@@ -261,10 +258,7 @@ def Efield(outdir: Path, E: xarray.Dataset):
         # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
         with h5py.File(fn, "w") as f:
             f["/flagdirich"] = E["flagdirich"].loc[time].astype(np.int32)
-            f["/time/ymd"] = np.array([time.year, time.month, time.day]).astype(np.int32)
-            f["/time/UTsec"] = (
-                time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
-            )
+            write_time(f, time)
 
             for k in {"Exit", "Eyit", "Vminx1it", "Vmaxx1it"}:
                 f.create_dataset(
@@ -295,6 +289,8 @@ def precip(outdir: Path, P: xarray.Dataset):
         fn = outdir / (datetime2ymd_hourdec(time) + ".h5")
 
         with h5py.File(fn, "w") as f:
+            write_time(f, to_datetime(time))
+
             for k in {"Q", "E0"}:
                 f.create_dataset(
                     f"/{k}p",
@@ -324,3 +320,12 @@ def maggrid(fn: Path, mag: dict[str, np.ndarray], gridsize: tuple[int, int, int]
         f["/theta"] = mag["theta"].ravel(order="F").astype(freal)
         f["/phi"] = mag["phi"].ravel(order="F").astype(freal)
         f["/gridsize"] = np.asarray(gridsize).astype(np.int32)
+
+
+def write_time(fid: h5py.File, time: datetime):
+    """
+    write time to HDF5 file as year-month-day, UTsec
+    """
+
+    fid["/time/ymd"] = np.array([time.year, time.month, time.day]).astype(np.int32)
+    fid["/time/UTsec"] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6

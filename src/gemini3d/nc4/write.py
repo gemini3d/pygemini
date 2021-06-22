@@ -42,12 +42,7 @@ def state(fn: Path, dat: xarray.Dataset):
     logging.info(f"state: {fn} {time}")
 
     with Dataset(fn, "w") as f:
-        f.createDimension("ymd", 3)
-        g = f.createVariable("ymd", np.int32, "ymd")
-        g[:] = [time.year, time.month, time.day]
-
-        g = f.createVariable("UTsec", np.float32)
-        g[:] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
+        write_time(f, time)
         f.createDimension("species", 7)
         f.createDimension("x1", dat.x1.size)
         f.createDimension("x2", dat.x2.size)
@@ -78,6 +73,8 @@ def data(fn: Path, dat: xarray.Dataset, xg: dict[str, T.Any]):
         shape = [dat.dims["x1"], dat.dims["x2"], dat.dims["x3"]]
 
     with Dataset(fn, "w") as f:
+
+        write_time(f, to_datetime(dat.time))
 
         if len(shape) == 4:
             dims = ["species", "x1", "x2", "x3"]
@@ -256,12 +253,7 @@ def Efield(outdir: Path, E: xarray.Dataset):
             g = f.createVariable("flagdirich", np.int32)
             g[:] = E["flagdirich"].loc[time]
 
-            f.createDimension("ymd", 3)
-            g = f.createVariable("ymd", np.int32, "ymd")
-            g[:] = [time.year, time.month, time.day]
-
-            g = f.createVariable("UTsec", np.float32)
-            g[:] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
+            write_time(f, time)
 
             for k in {"Exit", "Eyit", "Vminx1it", "Vmaxx1it"}:
                 _write_var(f, k, E[k].loc[time])
@@ -301,5 +293,16 @@ def precip(outdir: Path, P: xarray.Dataset):
             f.createDimension("mlon", P.mlon.size)
             f.createDimension("mlat", P.mlat.size)
 
+            write_time(f, time)
+
             for k in {"Q", "E0"}:
                 _write_var(f, f"{k}p", P[k].loc[time])
+
+
+def write_time(fid, time: datetime):
+    fid.createDimension("ymd", 3)
+    g = fid.createVariable("ymd", np.int32, "ymd")
+    g[:] = [time.year, time.month, time.day]
+
+    g = fid.createVariable("UTsec", np.float32)
+    g[:] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
