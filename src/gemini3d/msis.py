@@ -23,7 +23,14 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     [f107a, f107, ap] = activ
     """
 
-    msis_exe = shutil.which("msis_setup", path=str(cmake.get_gemini_root() / "build"))
+    name = "msis_setup"
+    src_dir = cmake.get_gemini_root()
+
+    for n in {"build", "build/Debug", "build/Release"}:
+        msis_exe = shutil.which(name, path=str(src_dir / n))
+        if msis_exe:
+            break
+
     if not msis_exe:
         raise EnvironmentError(
             "Did not find gemini3d/build/msis_setup--build by:\n"

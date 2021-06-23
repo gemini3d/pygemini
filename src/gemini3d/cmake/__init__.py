@@ -155,6 +155,9 @@ def build_gemini3d(targets: list[str]):
     )
 
     for t in targets:
-        exe = shutil.which(t, path=str(build_dir))
+        for n in {"build", "build/Debug", "build/Release"}:
+            exe = shutil.which(t, path=str(src_dir / n))
+            if exe:
+                break
         if not exe:
             raise RuntimeError(f"{t} not found in {build_dir}")

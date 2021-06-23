@@ -220,7 +220,10 @@ def get_gemini_exe(exe: str | Path = None) -> Path:
 
     if not exe:  # allow for default dict empty
         src_dir = Path(cmake.get_gemini_root()).expanduser()
-        exe = shutil.which(name, path=str(src_dir / "build"))
+        for n in {"build", "build/Debug", "build/Release"}:
+            exe = shutil.which(name, path=str(src_dir / n))
+            if exe:
+                break
     if not exe:
         raise EnvironmentError(f"{name} not found. Please run:\n gemini3d.cmake.build_gemini3d()")
 
