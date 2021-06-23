@@ -31,7 +31,7 @@ def simsize(path: Path) -> tuple[int, ...]:
     if Dataset is None:
         raise ImportError("netcdf missing or broken")
 
-    path = find.simsize(path, ".nc", required=True)
+    path = find.simsize(path, ".nc")
 
     with Dataset(path, "r") as f:
         if "lxs" in f.variables:
@@ -58,7 +58,6 @@ def simsize(path: Path) -> tuple[int, ...]:
 def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
     """detect output type"""
 
-    flag = None
     with Dataset(file, "r") as f:
         if "nsall" in f.variables:
             # milestone or full
@@ -69,8 +68,8 @@ def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
             flag = 3
         elif "neall" in f.variables:
             flag = 2
-    if flag is None:
-        flag = cfg.get("flagoutput")
+        else:
+            flag = cfg["flagoutput"]
 
     return flag
 
@@ -100,7 +99,7 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
     xg: dict[str, T.Any] = {}
 
     if not file.is_file():
-        file = find.grid(file, suffix=".nc", required=True)
+        file = find.grid(file, suffix=".nc")
 
     if shape:
         with Dataset(file, "r") as f:

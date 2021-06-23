@@ -33,7 +33,7 @@ def simsize(path: Path) -> tuple[int, ...]:
         3 integers telling simulation grid size
     """
 
-    path = find.simsize(path, suffix=".dat", required=True)
+    path = find.simsize(path, suffix=".dat")
 
     fsize = path.stat().st_size
     if fsize == 12:
@@ -67,7 +67,7 @@ def grid(file: Path, shape: bool = False) -> dict[str, T.Any]:
     lx = simsize(file)
 
     if not file.is_file():
-        file = find.grid(file, suffix=".dat", required=True)
+        file = find.grid(file, suffix=".dat")
 
     if len(lx) == 2:
         return grid2(file, lx)
@@ -85,10 +85,8 @@ def grid2(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, T.Any]:
     if not fn.is_file():
         raise FileNotFoundError(fn)
 
-    xg = {"lx": lx}
     with fn.open("rb") as f:
-        xg["mlon"] = np.fromfile(f, ft, lx[0])
-        xg["mlat"] = np.fromfile(f, ft, lx[1])
+        xg = {"lx": lx, "mlon": np.fromfile(f, ft, lx[0]), "mlat": np.fromfile(f, ft, lx[1])}
 
     return xg
 
@@ -169,7 +167,7 @@ def Efield(file: Path) -> xarray.Dataset:
     if ((m["mlat"] < -90) | (m["mlat"] > 90)).any():
         raise ValueError(f"impossible latitude, was file read correctly? {file}")
 
-    dat = xarray.Dataset(coords=m)
+    dat = xarray.Dataset(coords={"mlon": m["mlon"], "mlat": m["mlat"]})
 
     with file.open("rb") as f:
         """
@@ -364,6 +362,8 @@ def glow_aurmap(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
         )
 
     dat["rayleighs"] = (("wavelength", "x2", "x3"), raw)
+
+    return dat
 
 
 def time(f: T.BinaryIO) -> datetime:

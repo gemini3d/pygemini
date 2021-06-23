@@ -184,7 +184,7 @@ def model_resample(
     return dat_interp
 
 
-def check_density(n: np.ndarray):
+def check_density(n: np.ndarray | xarray.DataArray):
 
     if not np.isfinite(n).all():
         raise ValueError("non-finite density")
@@ -194,7 +194,7 @@ def check_density(n: np.ndarray):
         raise ValueError("too small maximum density")
 
 
-def check_drift(v: np.ndarray):
+def check_drift(v: np.ndarray | xarray.DataArray):
 
     if not np.isfinite(v).all():
         raise ValueError("non-finite drift")
@@ -202,7 +202,7 @@ def check_drift(v: np.ndarray):
         raise ValueError("excessive drift velocity")
 
 
-def check_temperature(Ts: np.ndarray):
+def check_temperature(Ts: np.ndarray | xarray.DataArray):
 
     if not np.isfinite(Ts).all():
         raise ValueError("non-finite temperature")
@@ -281,8 +281,6 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
 
         nmolc = np.zeros(lx1)
         nmolc[i] = (1 - rho[i]) * ne[i]
-
-        cond: bool = None
 
         if any(inds):
             if xgr.ndim == 3:

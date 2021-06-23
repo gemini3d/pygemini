@@ -129,7 +129,9 @@ def plot_interp(
             ax.set_xlabel("eastward dist. (km)")
         elif parm.ndim == 2:
             f = interp.interp2d(xg["x2"][inds2], xg["x1"][inds1], parm, bounds_error=False)
-            plot12(xp[i], zp, f(xp, zp)[:, i], name, cmap, vmin, vmax, fg, ax)
+            plot12(
+                xp[i], zp, f(xp, zp)[:, i], name=name, cmap=cmap, vmin=vmin, vmax=vmax, fg=fg, ax=ax
+            )
         elif parm.ndim == 1:  # phitop
             f = interp.interp1d(xg["x2"][inds2], parm, bounds_error=False)
             plot1d2(xp, f(xp), name, fg, ax)
@@ -159,7 +161,7 @@ def plot_interp(
         elif parm.ndim == 2:
             f = interp.interp2d(xg["x3"][inds3], xg["x1"][inds1], parm, bounds_error=False)
             parmp = f(yp, zp).reshape((lzp, lyp))
-            plot13(yp[i], zp, parmp[:, i], name, cmap, vmin, vmax, fg, ax)
+            plot13(yp[i], zp, parmp[:, i], name=name, cmap=cmap, vmin=vmin, vmax=vmax, fg=fg, ax=ax)
         elif parm.ndim == 1:  # phitop
             f = interp.interp1d(xg["x3"][inds3], parm, bounds_error=False)
             plot1d3(yp, f(yp), name, fg, ax)
@@ -246,7 +248,9 @@ def plot3d_slice(
     # CONVERT ANGULAR COORDINATES TO MLAT,MLON
     ix = np.argsort(xp)
     iy = np.argsort(yp)
-    plot12(xp[ix], zp, f(xp, zp)[:, ix], name, cmap, vmin, vmax, fg, axs[0])
+    plot12(
+        xp[ix], zp, f(xp, zp)[:, ix], name=name, cmap=cmap, vmin=vmin, vmax=vmax, fg=fg, ax=axs[0]
+    )
     # %% LAT./LONG. SLICE COORDINATES (center panel)
     zp2 = REF_ALT
     X3, Y3, Z3 = np.meshgrid(xp, yp, zp2 * 1e3)
@@ -259,11 +263,23 @@ def plot3d_slice(
     ).reshape((1, lxp, lyp))
 
     parmp = parmp[:, :, iy]  # must be indexed in two steps
-    plot23(xp[ix], yp[iy], parmp[0, ix, :], name, cmap, vmin, vmax, fg, axs[1])
+    plot23(
+        xp[ix],
+        yp[iy],
+        parmp[0, ix, :],
+        name=name,
+        cmap=cmap,
+        vmin=vmin,
+        vmax=vmax,
+        fg=fg,
+        ax=axs[1],
+    )
     # %% ALT/LAT SLICE (right panel)
     ix2 = lx2 // 2 - 1  # arbitrary slice, to match Matlab
     f = interp.interp2d(xg["x3"][inds3], xg["x1"][inds1], parm[:, ix2, :], bounds_error=False)
-    plot13(yp[iy], zp, f(yp, zp)[:, iy], name, cmap, vmin, vmax, fg, axs[2])
+    plot13(
+        yp[iy], zp, f(yp, zp)[:, iy], name=name, cmap=cmap, vmin=vmin, vmax=vmax, fg=fg, ax=axs[2]
+    )
 
     return fg
 

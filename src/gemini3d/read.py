@@ -39,7 +39,7 @@ def config(path: Path) -> dict[str, T.Any]:
         simulation parameters from config file
     """
 
-    file = find.config(path, required=True)
+    file = find.config(path)
 
     if file.suffix == ".ini":
         P = read_ini(file)
@@ -52,7 +52,7 @@ def config(path: Path) -> dict[str, T.Any]:
 def simsize(path: Path, suffix: str = None) -> tuple[int, ...]:
     """get simulation dimensions"""
 
-    fn = find.simsize(path, suffix=suffix, required=True)
+    fn = find.simsize(path, suffix=suffix)
 
     if fn.suffix.endswith("h5"):
         return h5read.simsize(fn)
@@ -85,7 +85,7 @@ def grid(
         read only the shape of the grid instead of the data iteslf
     """
 
-    fn = find.grid(path, suffix=file_format, required=True)
+    fn = find.grid(path, suffix=file_format)
 
     if not file_format:
         file_format = fn.suffix
@@ -110,7 +110,7 @@ def data(
     fn: Path,
     var: set[str] = None,
     *,
-    file_format: str = None,
+    file_format: str = "",
     cfg: dict[str, T.Any] = None,
     xg: dict[str, T.Any] = None,
 ) -> xarray.Dataset:
@@ -222,7 +222,7 @@ def data(
     return dat
 
 
-def glow(fn: Path) -> xarray.DataArray:
+def glow(fn: Path) -> xarray.Dataset:
 
     fmt = fn.suffix
 
@@ -238,7 +238,7 @@ def glow(fn: Path) -> xarray.DataArray:
     return dat
 
 
-def Efield(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
+def Efield(fn: Path, *, file_format: str = None) -> xarray.Dataset:
     """load Efield data "Efield_inputs"
 
     Parameters
@@ -251,9 +251,6 @@ def Efield(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
     dat: dict of np.ndarray
         electric field
     """
-
-    if not fn:
-        return {}
 
     fn = Path(fn).expanduser().resolve(strict=True)
 
@@ -272,7 +269,7 @@ def Efield(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
     return E
 
 
-def precip(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
+def precip(fn: Path, *, file_format: str = None) -> xarray.Dataset:
     """load precipitation to disk
 
     Parameters
@@ -287,9 +284,6 @@ def precip(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
     dat: dict
         precipitation
     """
-
-    if not fn:
-        return {}
 
     fn = Path(fn).expanduser().resolve(strict=True)
 
@@ -307,7 +301,7 @@ def precip(fn: Path, *, file_format: str = None) -> dict[str, T.Any]:
 
 
 def frame(
-    simdir: Path, time: datetime, *, var: set[str] = None, file_format: str = None
+    simdir: Path, time: datetime, *, var: set[str] = None, file_format: str = ""
 ) -> xarray.Dataset:
     """
     load a frame of simulation data, automatically selecting the correct
@@ -331,7 +325,7 @@ def frame(
     """
 
     return data(
-        find.frame(simdir, time, file_format=file_format, required=True),
+        find.frame(simdir, time, file_format=file_format),
         var=var,
         file_format=file_format,
     )

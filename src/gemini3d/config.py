@@ -44,7 +44,7 @@ def read_nml(fn: Path) -> dict[str, T.Any]:
     Just trying to keep Python prereqs reduced for this simple parsing.
     """
 
-    fn = find.config(fn, required=True)
+    fn = find.config(fn)
 
     params = {"nml": fn}
 
@@ -245,7 +245,7 @@ def read_ini(fn: Path) -> dict[str, T.Any]:
     DEPRECATED
     """
 
-    fn = find.config(fn, required=True)
+    fn = find.config(fn)
 
     with fn.open("rt") as f:
         date = list(map(int, f.readline().split()[0].split(",")))[::-1]

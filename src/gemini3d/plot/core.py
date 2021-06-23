@@ -47,7 +47,9 @@ def stitle(fig: Figure, xg: dict[str, T.Any], ttxt: str = ""):
     fig.suptitle(ttxt)
 
 
-def save_fig(fg: Figure, direc: Path, name: str, *, fmt: str = "png", time: datetime = None):
+def save_fig(
+    fg: Figure, direc: Path, name: str, *, fmt: T.Optional[str] = "png", time: datetime = None
+):
     if not fmt:
         fmt = "png"
 

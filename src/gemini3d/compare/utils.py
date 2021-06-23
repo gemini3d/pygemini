@@ -3,9 +3,10 @@ import importlib.resources
 import json
 
 import numpy as np
+import xarray
 
 
-def err_pct(a: np.ndarray, b: np.ndarray) -> float:
+def err_pct(a: np.ndarray | xarray.DataArray, b: np.ndarray | xarray.DataArray) -> float:
     """compute maximum error percent"""
 
     return (abs(a - b).max() / abs(b).max()).item() * 100

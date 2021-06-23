@@ -33,7 +33,7 @@ def simsize(path: Path) -> tuple[int, ...]:
         3 integers telling simulation grid size
     """
 
-    path = find.simsize(path, ".h5", required=True)
+    path = find.simsize(path, ".h5")
 
     with h5py.File(path, "r") as f:
         if "lxs" in f:
@@ -60,7 +60,6 @@ def simsize(path: Path) -> tuple[int, ...]:
 def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
     """detect output type"""
 
-    flag = None
     with h5py.File(file, "r") as f:
         if "nsall" in f:
             # milestone or full
@@ -71,8 +70,8 @@ def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
             flag = 3
         elif "neall" in f:
             flag = 2
-    if flag is None:
-        flag = cfg.get("flagoutput")
+        else:
+            flag = cfg["flagoutput"]
 
     return flag
 
@@ -101,7 +100,7 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
     xg: dict[str, T.Any] = {}
 
     if not file.is_file():
-        file = find.grid(file, suffix=".h5", required=True)
+        file = find.grid(file, suffix=".h5")
 
     if shape:
         with h5py.File(file, "r") as f:

@@ -39,7 +39,7 @@ if __name__ == "__main__":
         x2 = dat["x2"]
         x3 = dat["x3"]
     except KeyError:
-        grid = read.grid(find.grid(dat_file.parent, required=True))
+        grid = read.grid(find.grid(dat_file.parent))
 
         x1 = grid["x1"]
         x2 = grid["x2"]
@@ -59,15 +59,11 @@ if __name__ == "__main__":
             # %% left panel
             ax = fg.add_subplot(1, 3, 1)
             ix3 = x3.size // 2 - 1  # arbitrary slice
-            slices.plot12(
-                x2, x1, dat[p][1][:, :, ix3], name=p, cmap=None, vmin=None, vmax=None, fg=fg, ax=ax
-            )
+            slices.plot12(x2, x1, dat[p][1][:, :, ix3], name=p, fg=fg, ax=ax)
             # %% middle panel
             ax = fg.add_subplot(1, 3, 2)
             ix1 = x1.size // 2 - 1  # arbitrary slice
-            slices.plot23(
-                x3, x2, dat[p][1][ix1, :, :], name=p, cmap=None, vmin=None, vmax=None, fg=fg, ax=ax
-            )
+            slices.plot23(x3, x2, dat[p][1][ix1, :, :], name=p, fg=fg, ax=ax)
             # %% right panel
             ax = fg.add_subplot(1, 3, 3)
             ix2 = x2.size // 2 - 1  # arbitrary slice
@@ -76,9 +72,6 @@ if __name__ == "__main__":
                 x1,
                 dat[p][1][:, ix2, :],
                 name=p,
-                cmap=None,
-                vmin=None,
-                vmax=None,
                 fg=fg,
                 ax=ax,
             )

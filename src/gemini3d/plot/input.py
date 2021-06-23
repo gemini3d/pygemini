@@ -68,13 +68,12 @@ def Efield(direc: Path):
 
     cfg = read.config(direc)
     path = find.inputs(direc, cfg.get("E0dir"))
-    if not path:
-        raise FileNotFoundError(f"{direc} does not contain E-field data")
 
     time = datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtE0"])
     for t in time:
-        file = find.frame(path, t, required=False)
-        if not file:
+        try:
+            file = find.frame(path, t)
+        except FileNotFoundError:
             logging.error(f"no E-field data found at {t} in {path}")
             continue
 
@@ -105,14 +104,13 @@ def precip(direc: Path):
 
     cfg = read.config(direc)
     precip_path = find.inputs(direc, cfg.get("precdir"))
-    if not precip_path:
-        raise FileNotFoundError(f"{direc} does not contain precipitation data")
 
     time = datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtprec"])
 
     for t in time:
-        file = find.frame(precip_path, t, required=False)
-        if not file:
+        try:
+            file = find.frame(precip_path, t)
+        except FileNotFoundError:
             logging.error(f"no precipitation data found at {t} in {precip_path}")
             continue
 

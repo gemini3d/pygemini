@@ -191,14 +191,14 @@ def _write_var(
     f,
     name: str,
     value: np.ndarray | xarray.DataArray,
-    dims: str | tuple[str, ...] | list[str] = None,
+    dims: str | tuple[str, ...] | list[str] = "",
 ):
 
     if isinstance(dims, str):
         dims = [dims]
-    elif dims is None:
+    if not dims:
         if isinstance(value, xarray.DataArray):
-            dims = value.dims
+            dims = value.dims  # type: ignore
         else:
             raise ValueError(f"Please specify dims for {name}")
 

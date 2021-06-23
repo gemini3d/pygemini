@@ -11,7 +11,11 @@ from .. import find
 
 
 def glow(
-    direc: Path, time: datetime, saveplot_fmt: str, xg: dict[str, T.Any] = None, fg: Figure = None
+    direc: T.Optional[Path],
+    time: datetime,
+    saveplot_fmt: str,
+    xg: dict[str, T.Any] = None,
+    fg: Figure = None,
 ):
     """plots Gemini-Glow auroral emissions"""
 
@@ -25,7 +29,7 @@ def glow(
         xg = read.grid(direc.parent)
 
     # %% get filename
-    fn = find.frame(direc, time, required=True)
+    fn = find.frame(direc, time)
 
     # %% make plots
     if fg is None:

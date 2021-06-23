@@ -15,14 +15,13 @@ def compare_output(
     refdir: Path,
     *,
     tol: dict[str, float] = None,
-    file_format: str = None,
+    file_format: str = "",
     plot: bool = True,
 ) -> int:
     """compare simulation outputs"""
 
     ref: dict[str, T.Any] = {}
     errs = 0
-    a: np.ndarray = None
 
     params = read.config(new_dir)
     if len(params["time"]) <= 1:

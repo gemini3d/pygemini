@@ -189,11 +189,11 @@ def Esigma(pwidth: float, pmax: float, pmin: float, px: np.ndarray) -> tuple[flo
     return wsig, xsig
 
 
-def check_finite(v: np.ndarray, name: str = None):
+def check_finite(v: xarray.DataArray, name: str = None):
 
     i = np.logical_not(np.isfinite(v))
 
     if i.any():
-        if name is None and isinstance(v, xarray.DataArray):
-            name = v.name
-        raise ValueError(f"{np.count_nonzero(i)} NaN in {name} at {i.nonzero()}")
+        if not name:
+            name = str(v.name) if v.name else ""
+        raise ValueError(f"{np.count_nonzero(i)} NaN in {name}")

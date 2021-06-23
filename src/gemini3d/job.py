@@ -35,15 +35,16 @@ def runner(pr: dict[str, T.Any]) -> None:
 
     out_dir = check_outdir(pr["out_dir"])
 
-    config_file = find.config(pr["config_file"], required=True)
+    config_file = find.config(pr["config_file"])
     # load configuration to know what directories to check
     p = read.config(config_file)
 
     # we don't want to overwrite an expensive simulation output
-    if find.frame(out_dir, p["time"][0], file_format=p.get("out_format"), required=False):
-        raise FileExistsError(
-            f"a fresh simulation should not have data in output directory: {out_dir}"
-        )
+    try:
+        find.frame(out_dir, p["time"][0], file_format=p.get("out_format"))
+        raise FileExistsError(f"new simulation shouldn't have data in output directory: {out_dir}")
+    except FileNotFoundError:
+        pass
 
     # %% setup grid and/or initial ionosphere state if needed
     for k in ("indat_size", "indat_grid", "indat_file"):
@@ -70,7 +71,7 @@ def runner(pr: dict[str, T.Any]) -> None:
     gemexe = get_gemini_exe(pr.get("gemexe"))
     logging.info(f"gemini executable: {gemexe}")
 
-    mpiexec = check_mpiexec(pr.get("mpiexec"), gemexe)
+    mpiexec = check_mpiexec(pr.get("mpiexec", "mpiexec"), gemexe)
     if mpiexec:
         logging.info(f"mpiexec: {mpiexec}")
         mpi_args = []
@@ -172,12 +173,10 @@ def check_compiler():
         raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
 
 
-def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> str:
+def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> T.Optional[str]:
     """check if specified mpiexec exists on this system
     If not, fall back to not using MPI (slow, but still works)."""
 
-    if not mpiexec:
-        mpiexec = "mpiexec"
     mpi_root = os.environ.get("MPI_ROOT", "")
     if mpi_root:
         mpi_root += "/bin"
@@ -211,7 +210,7 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> str:
     return mpiexec
 
 
-def get_gemini_exe(exe: str | Path = None) -> Path:
+def get_gemini_exe(exe: str = None) -> Path:
     """
     find and check that Gemini executable can run on this system
     """
@@ -221,14 +220,14 @@ def get_gemini_exe(exe: str | Path = None) -> Path:
     if not exe:  # allow for default dict empty
         src_dir = Path(cmake.get_gemini_root()).expanduser()
         for n in {"build", "build/Debug", "build/Release"}:
-            exe = shutil.which(name, path=str(src_dir / n))
-            if exe:
+            e = shutil.which(name, path=str(src_dir / n))
+            if e:
                 break
-    if not exe:
+    if not e:
         raise EnvironmentError(f"{name} not found. Please run:\n gemini3d.cmake.build_gemini3d()")
 
     # %% ensure Gemini3D executable is runnable
-    gemexe = Path(exe).expanduser()
+    gemexe = Path(e).expanduser()
     ret = subprocess.run(
         [str(gemexe)], stdout=subprocess.DEVNULL, timeout=10, cwd=str(gemexe.parent)
     )

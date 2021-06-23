@@ -13,21 +13,19 @@ from .utils import filename2datetime
 FILE_FORMATS = [".h5", ".nc"]
 
 
-def config(path: Path, required: bool = False) -> T.Optional[Path]:
+def config(path: Path) -> Path:
     """given a path or config filename, return the full path to config file"""
 
-    return find_stem(path, stem="config", suffix="nml", required=required)
+    return find_stem(path, stem="config", suffix="nml")
 
 
-def simsize(path: Path, suffix: str = None, required: bool = False) -> T.Optional[Path]:
+def simsize(path: Path, suffix: str = None) -> Path:
     """gets path to simsize file"""
 
-    return find_stem(path, stem="simsize", suffix=suffix, required=required)
+    return find_stem(path, stem="simsize", suffix=suffix)
 
 
-def frame(
-    simdir: Path, time: datetime, *, file_format: str = None, required: bool = False
-) -> T.Optional[Path]:
+def frame(simdir: Path, time: datetime, *, file_format: str = None) -> Path:
     """
     the frame filenames can have different file formats
     """
@@ -63,24 +61,19 @@ def frame(
             if abs(afile_times[i] - time) <= MAX_OFFSET:
                 return files[i]
 
-    if required:
-        raise FileNotFoundError(f"{stem}{suffixes} not found in {simdir}")
-
-    return None
+    raise FileNotFoundError(f"{stem}{suffixes} not found in {simdir}")
 
 
-def grid(path: Path, *, suffix=None, required: bool = False) -> T.Optional[Path]:
+def grid(path: Path, *, suffix=None) -> Path:
     """given a path or filename, return the full path to simgrid file
     we don't override FILE_FORMATS to allow outputs from a prior sim in a different
     file format to be used in this sim.
     """
 
-    return find_stem(path, stem="simgrid", suffix=suffix, required=required)
+    return find_stem(path, stem="simgrid", suffix=suffix)
 
 
-def find_stem(
-    path: Path, stem: str, suffix: str = None, required: bool = False
-) -> T.Optional[Path]:
+def find_stem(path: Path, stem: str, suffix: str = None) -> Path:
     """find file containing stem"""
 
     path = Path(path).expanduser()
@@ -90,7 +83,7 @@ def find_stem(
             return path
         else:
             found = find_stem(path.parent, stem, path.suffix)
-            if required and not found:
+            if not found:
                 raise FileNotFoundError(f"{stem} not found in {path.parent}")
             return found
 
@@ -111,13 +104,10 @@ def find_stem(
                 if f.is_file():
                     return f
 
-    if required:
-        raise FileNotFoundError(f"{stem} not found in {path}")
-
-    return None
+    raise FileNotFoundError(f"{stem} not found in {path}")
 
 
-def inputs(direc: Path, input_dir: T.Optional[Path] = None) -> T.Optional[Path]:
+def inputs(direc: Path, input_dir: T.Optional[Path] = None) -> Path:
     """
     find input parameter directory
 
@@ -136,6 +126,6 @@ def inputs(direc: Path, input_dir: T.Optional[Path] = None) -> T.Optional[Path]:
         input_path = direc
 
     if not input_path.is_dir():
-        input_path = None
+        raise NotADirectoryError(direc)
 
     return input_path

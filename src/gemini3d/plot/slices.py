@@ -1,6 +1,8 @@
+from __future__ import annotations
 import typing as T
 
 import numpy as np
+import xarray
 from matplotlib.ticker import MultipleLocator
 from matplotlib.figure import Figure
 import scipy.interpolate as interp
@@ -13,13 +15,14 @@ if T.TYPE_CHECKING:
 
 
 def plot12(
-    x: np.ndarray,
-    z: np.ndarray,
-    parm: np.ndarray,
+    x: np.ndarray | xarray.DataArray,
+    z: np.ndarray | xarray.DataArray,
+    parm: np.ndarray | xarray.DataArray,
+    *,
     name: str,
-    cmap: str,
-    vmin: float,
-    vmax: float,
+    cmap: str = None,
+    vmin: float = None,
+    vmax: float = None,
     fg: Figure = None,
     ax: "mpla.Axes" = None,
 ) -> Figure:
@@ -43,13 +46,14 @@ def plot12(
 
 
 def plot13(
-    y: np.ndarray,
-    z: np.ndarray,
-    parm: np.ndarray,
+    y: np.ndarray | xarray.DataArray,
+    z: np.ndarray | xarray.DataArray,
+    parm: np.ndarray | xarray.DataArray,
+    *,
     name: str,
-    cmap: str,
-    vmin: float,
-    vmax: float,
+    cmap: str = None,
+    vmin: float = None,
+    vmax: float = None,
     fg: Figure = None,
     ax: "mpla.Axes" = None,
 ) -> Figure:
@@ -72,13 +76,14 @@ def plot13(
 
 
 def plot23(
-    x: np.ndarray,
-    y: np.ndarray,
-    parm: np.ndarray,
+    x: np.ndarray | xarray.DataArray,
+    y: np.ndarray | xarray.DataArray,
+    parm: np.ndarray | xarray.DataArray,
     name: str,
-    cmap: str,
-    vmin: float,
-    vmax: float,
+    *,
+    cmap: str = None,
+    vmin: float = None,
+    vmax: float = None,
     fg: Figure = None,
     ax: "mpla.Axes" = None,
 ) -> Figure:

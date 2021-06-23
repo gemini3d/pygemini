@@ -40,10 +40,10 @@ def grid2plotfun(xg: dict[str, np.ndarray]) -> T.Callable:
         else:
             plotfun = cartesian.cart2d  # type: ignore
 
-    return plotfun
+    return plotfun  # type: ignore
 
 
-def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = None):
+def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = ""):
 
     direc = Path(direc).expanduser().resolve(strict=True)
 
@@ -88,23 +88,14 @@ def frame(
     if not var:
         var = PARAMS
 
-    file = None
     if time is None:
-        if not direc.is_file():
-            raise ValueError("must either specify directory and time, or single file")
-        file = direc
+        dat = read.data(direc, var)
         direc = direc.parent
+    else:
+        dat = read.frame(direc, time, var=var)
 
     if not xg:
         xg = read.grid(direc)
-
-    if file is None:
-        dat = read.frame(direc, time, var=var)
-    else:
-        dat = read.data(file, var)
-
-    if not dat:
-        raise ValueError(f"No data in {direc} at {time}")
 
     if plotfun is None:
         plotfun = grid2plotfun(xg)

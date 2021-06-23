@@ -20,7 +20,7 @@ def compare_all(
     *,
     tol: dict[str, float] = None,
     plot: bool = True,
-    file_format: str = None,
+    file_format: str = "",
     only: str = None,
 ) -> dict[str, int]:
     """

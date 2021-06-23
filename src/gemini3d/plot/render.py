@@ -20,6 +20,7 @@ from mayavi import mlab
 
 from .constants import PARAMS, R_EARTH
 from .. import read
+from ..utils import to_datetime
 
 PLOTFUN = {"scalar": ("ne", "Ti", "Te", "J1", "J2", "J3"), "vector": ("v1", "v2", "v3")}
 
@@ -59,7 +60,7 @@ def frame(
             continue
 
         if k in PLOTFUN["scalar"]:
-            fg = scalar(time, xg, dat[k].squeeze(), name=k)
+            fg = scalar(to_datetime(time), xg, dat[k].squeeze(), name=k)
         elif k in PLOTFUN["vector"]:
             print("TODO: vector plot", k)
 

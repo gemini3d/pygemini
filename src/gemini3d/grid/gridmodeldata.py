@@ -52,7 +52,9 @@ def model2magcoords(
     # set some defaults if not provided by user
     if altlims is None:
         altlims = (alt.min() + 0.0001, alt.max() - 0.0001)
+    if mlonlims is None:
         mlonlims = (mlon.min() + 0.0001, mlon.max() - 0.0001)
+    if mlatlims is None:
         mlatlims = (mlat.min() + 0.0001, mlat.max() - 0.0001)
 
     # define uniform grid in magnetic coords.

@@ -6,13 +6,13 @@ plot electric field input to simulation "Efield_inputs" for a single file
 from pathlib import Path
 import argparse
 
+import xarray
 from matplotlib.figure import Figure
-import numpy as np
 
 import gemini3d.read as read
 
 
-def plotVmaxx1it(V: np.ndarray) -> Figure:
+def plotVmaxx1it(V: xarray.DataArray) -> Figure:
 
     V = V.squeeze()
     fg = Figure()

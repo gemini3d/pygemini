@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 
+import xarray
 from matplotlib.pyplot import figure, show
 
 import gemini3d.read as read
 
 
-def plotplasma(dat: dict):
+def plotplasma(dat: xarray.Dataset):
     for k, v in dat.items():
         if k == "t":
             t = v
