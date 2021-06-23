@@ -184,7 +184,7 @@ def model_resample(
     return dat_interp
 
 
-def check_density(n: np.ndarray | xarray.DataArray):
+def check_density(n: xarray.DataArray):
 
     if not np.isfinite(n).all():
         raise ValueError("non-finite density")
@@ -194,7 +194,7 @@ def check_density(n: np.ndarray | xarray.DataArray):
         raise ValueError("too small maximum density")
 
 
-def check_drift(v: np.ndarray | xarray.DataArray):
+def check_drift(v: xarray.DataArray):
 
     if not np.isfinite(v).all():
         raise ValueError("non-finite drift")
@@ -202,7 +202,7 @@ def check_drift(v: np.ndarray | xarray.DataArray):
         raise ValueError("excessive drift velocity")
 
 
-def check_temperature(Ts: np.ndarray | xarray.DataArray):
+def check_temperature(Ts: xarray.DataArray):
 
     if not np.isfinite(Ts).all():
         raise ValueError("non-finite temperature")
