@@ -99,13 +99,14 @@ def frame(
 
     if plotfun is None:
         plotfun = grid2plotfun(xg)
-
+    
     for k, v in dat.items():
-        if any(s in k for s in var):
-            if plotfun.__name__.startswith("curv"):
-                fg = plotfun(cfg, xg, v, k)
-            else:
-                fg = plotfun(
-                    to_datetime(dat.time), xg, v.squeeze(), k, wavelength=dat.get("wavelength")
-                )
-            save_fig(fg, direc, name=k, fmt=saveplot_fmt, time=time)
+        if not v.name=="Phitop":
+            if any(s in k for s in var):
+                if plotfun.__name__.startswith("curv"):
+                    fg = plotfun(cfg, xg, v, k)
+                else:
+                    fg = plotfun(
+                        to_datetime(dat.time), xg, v.squeeze(), k, wavelength=dat.get("wavelength")
+                    )
+                save_fig(fg, direc, name=k, fmt=saveplot_fmt, time=time)
