@@ -27,7 +27,6 @@ def plot_interp(
     time: datetime,
     xg: dict[str, np.ndarray],
     parm: xarray.DataArray,
-    name: str,
     fg: Figure = None,
     **kwargs,
 ) -> Figure:
@@ -47,6 +46,9 @@ def plot_interp(
         grid in linspaces below, runs backward from north distance,
         hence the negative sign
     """
+
+    name = parm.name
+    assert isinstance(name, str)
 
     if fg is None:
         fg = Figure(constrained_layout=True)
