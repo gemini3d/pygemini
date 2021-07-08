@@ -10,7 +10,6 @@ Use the full compiler path if it's not getting the right compiler.
 
 from __future__ import annotations
 import typing as T
-import sys
 import os
 import subprocess
 import shutil
@@ -41,7 +40,7 @@ def cli():
     p.add_argument(
         "libs",
         help="libraries to compile",
-        choices=["hdf5", "lapack", "mumps", "netcdf", "openmpi", "openmpi3", "scalapack"],
+        choices=["hdf5", "lapack", "mumps", "openmpi", "scalapack"],
         nargs="+",
     )
     p.add_argument("-prefix", help="top-level directory to install libraries under")
@@ -94,15 +93,10 @@ def setup_libs(
 
     if "hdf5" in libs:
         hdf5(dirs, env=env)
-    if "netcdf" in libs:
-        netcdf_c(dirs, env=env, wipe=wipe, dryrun=dryrun)
-        netcdf_fortran(dirs, env=env, wipe=wipe, dryrun=dryrun)
 
     # Note: OpenMPI needs to be before scalapack and mumps
     if "openmpi" in libs:
         openmpi(dirs, env=env, version="", dryrun=dryrun)
-    elif "openmpi3" in libs:
-        openmpi(dirs, env=env, version="3", dryrun=dryrun)
 
     if "lapack" in libs:
         lapack(wipe, dirs, env=env, dryrun=dryrun)
@@ -113,104 +107,6 @@ def setup_libs(
 
     if not dryrun:
         print("Installed", libs, "under", dirs["prefix"])
-
-
-def netcdf_c(
-    dirs: dict[str, Path], env: T.Mapping[str, str], wipe: bool = False, dryrun: bool = False
-):
-    """build and install NetCDF-C"""
-
-    install_dir = dirs["prefix"]
-    source_dir = dirs["workdir"] / "netcdf-c"
-    build_dir = source_dir / BUILDDIR
-
-    git_json(source_dir, "netcdf-c")
-
-    hdf5_root = dirs["prefix"]
-    if hdf5_root.is_dir():
-        lib_args = [f"-DHDF5_ROOT={hdf5_root.as_posix()}"]
-    else:
-        lib_args = []
-
-    c_args = [
-        f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
-        "-DCMAKE_BUILD_TYPE:STRING=Release",
-        "-DBUILD_SHARED_LIBS:BOOL=ON",
-        "-DENABLE_PARALLEL4:BOOL=OFF",
-        "-DENABLE_PNETCDF:BOOL=OFF",
-        "-DBUILD_UTILITIES:BOOL=OFF",
-        "-DENABLE_TESTS:BOOL=off",
-        "-DBUILD_TESTING:BOOL=OFF",
-        "-DENABLE_HDF4:BOOL=OFF",
-        "-DUSE_DAP:BOOL=off",
-        "-DENABLE_DAP:BOOL=OFF",
-        "-DENABLE_DAP2:BOOL=OFF",
-        "-DENABLE_DAP4:BOOL=OFF",
-    ]
-    cmake.build(
-        source_dir,
-        build_dir,
-        wipe=wipe,
-        env=env,
-        run_test=False,
-        dryrun=dryrun,
-        config_args=c_args + lib_args,
-    )
-
-
-def netcdf_fortran(
-    dirs: dict[str, Path], env: T.Mapping[str, str], wipe: bool = False, dryrun: bool = False
-):
-    """build and install NetCDF-Fortran"""
-
-    install_dir = dirs["prefix"]
-    source_dir = dirs["workdir"] / "netcdf-fortran"
-    build_dir = source_dir / BUILDDIR
-
-    git_json(source_dir, "netcdf-fortran")
-
-    # NetCDF-Fortran does not yet use NetCDF_ROOT
-    if sys.platform == "linux":
-        netcdf_c = install_dir / "lib/libnetcdf.so"
-    elif sys.platform == "win32":
-        print(
-            "NetCDF4 on MSYS2 may not work, see https://github.com/Unidata/netcdf-c/issues/554",
-            file=sys.stderr,
-        )
-        netcdf_c = install_dir / "bin/libnetcdf.dll"
-    elif sys.platform == "darwin":
-        netcdf_c = install_dir / "lib/libnetcdf.dylib"
-    else:
-        raise EnvironmentError(
-            f"please open a GitHub Issue for your operating system {sys.platform}"
-        )
-
-    hdf5_root = dirs["prefix"]
-    if hdf5_root.is_dir():
-        lib_args = [f"-DHDF5_ROOT={hdf5_root.as_posix()}"]
-    else:
-        lib_args = []
-
-    patch = [
-        f"-DNETCDF_C_LIBRARY:FILEPATH={netcdf_c}",
-        f"-DNETCDF_INCLUDE_DIR:PATH={install_dir / 'include'}",
-    ]
-    f_args = (
-        patch
-        + lib_args
-        + [
-            f"-DNetCDF_ROOT:PATH={install_dir}",
-            f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
-            "-DCMAKE_BUILD_TYPE:STRING=Release",
-            "-DBUILD_SHARED_LIBS:BOOL=ON",
-            "-DBUILD_UTILITIES:BOOL=OFF",
-            "-DENABLE_TESTS:BOOL=off",
-            "-DBUILD_EXAMPLES:BOOL=OFF",
-        ]
-    )
-    cmake.build(
-        source_dir, build_dir, wipe=wipe, env=env, run_test=False, dryrun=dryrun, config_args=f_args
-    )
 
 
 def hdf5(dirs: dict[str, Path], env: T.Mapping[str, str]):
