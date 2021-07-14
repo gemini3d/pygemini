@@ -40,7 +40,7 @@ def compare_precip(
                 prec_errs += 1
                 logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
                 if plot:
-                    plotdiff(a, b, k, t, newdir.parent, refdir.parent)
+                    plotdiff(a, b, t, newdir.parent, refdir.parent)
             if prec_errs == 0:
                 logging.info(f"OK: {k}  {newdir}")
 

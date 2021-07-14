@@ -38,7 +38,7 @@ def compare_Efield(
                 efield_errs += 1
                 logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
                 if plot:
-                    plotdiff(a, b, k, t, newdir.parent, refdir.parent)
+                    plotdiff(a, b, t, newdir.parent, refdir.parent)
 
     if efield_errs == 0:
         logging.info(f"OK: Efield {newdir}")

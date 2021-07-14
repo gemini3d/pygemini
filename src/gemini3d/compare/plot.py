@@ -17,10 +17,11 @@ except ImportError:
 def plotdiff(
     A: xarray.DataArray,
     B: xarray.DataArray,
-    name: str,
     time: datetime,
     new_dir: Path,
-    refdir: Path,
+    ref_dir: Path,
+    *,
+    name: str = None,
     imax: int = None,
 ):
     """
@@ -36,8 +37,11 @@ def plotdiff(
         logging.error("Matplotlib not available")
         return
 
-    assert A.shape == B.shape, "size of new and ref arrays don't match"
-    assert A.ndim <= 3, "for 3D or 2D arrays only"
+    if not name:
+        name = str(A.name)
+
+    assert A.shape == B.shape, f"{name}: size of new and ref arrays don't match"
+    assert 1 < A.ndim <= 4, f"failed to plot {A.ndim}-D array {name}: for 4D, 3D, or 2D arrays"
 
     lx = read.simsize(new_dir)
     is3d = lx[1] != 1 and lx[2] != 1
@@ -45,18 +49,28 @@ def plotdiff(
     A = A.squeeze()
     B = B.squeeze()
 
+    if A.ndim == 4:
+        assert A.shape[0] == 7, "4-D arrays must have species as first axis"
+        # loop over the species, which are in the first dimension
+        for i in range(A.shape[0]):
+            plotdiff(A[i], B[i], time, new_dir, ref_dir)
+
     if A.ndim == 3:
         if A.shape[0] == 7:
             # loop over the species, which are in the first dimension
             for i in range(A.shape[0]):
-                plotdiff(A[i], B[i], f"{name}-{i}", time, new_dir, refdir)
+                plotdiff(A[i], B[i], time, new_dir, ref_dir, name=f"{name}-{i}")
         elif is3d:
             # pick x2 and x3 slice at maximum difference
             im = abs(A - B).argmax(dim=A.dims)
             ix2 = im["x2"].data
             ix3 = im["x3"].data
-            plotdiff(A[:, :, ix3], B[:, :, ix3], name + "-x2", time, new_dir, refdir, ix3)
-            plotdiff(A[:, ix2, :], B[:, ix2, :], name + "-x3", time, new_dir, refdir, ix2)
+            plotdiff(
+                A[:, :, ix3], B[:, :, ix3], time, new_dir, ref_dir, name=name + "-x2", imax=ix3
+            )
+            plotdiff(
+                A[:, ix2, :], B[:, ix2, :], time, new_dir, ref_dir, name=name + "-x3", imax=ix2
+            )
         else:
             raise ValueError("unexpected case, 2D data but in if-tree only for 3D")
 
@@ -73,7 +87,7 @@ def plotdiff(
         raise ValueError("expected 2D or 1D")
 
     axs[0].set_title(str(new_dir))
-    axs[1].set_title(str(refdir))
+    axs[1].set_title(str(ref_dir))
     axs[2].set_title(f"diff: {name}")
 
     tstr = time.isoformat()

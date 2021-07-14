@@ -58,7 +58,7 @@ def compare_input(
                     # just plot electron density
                     a = a[-1]
                     b = b[-1]
-                plotdiff(a, b, k, ref_params["time"][0], new_dir, refdir)
+                plotdiff(a, b, ref_params["time"][0], new_dir, refdir)
 
     if "precdir" in new_params:
         prec_errs = compare_precip(

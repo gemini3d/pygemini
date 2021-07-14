@@ -54,7 +54,7 @@ def compare_output(
                 errs += 1
                 logging.error(f"{k} {st}   {err_pct(a, b):.1f}")
                 if plot:
-                    plotdiff(a, b, k, t, new_dir, refdir)
+                    plotdiff(a, b, t, new_dir, refdir)
         # %% assert time steps have unique output (earth always rotating...)
         if i > 1:
             names = ["ne", "v1", "v2", "v3"]
