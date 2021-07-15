@@ -16,7 +16,6 @@ import shutil
 import argparse
 import tempfile
 import json
-import importlib.resources
 from pathlib import Path
 
 from . import cmake
@@ -115,7 +114,7 @@ def hdf5(dirs: dict[str, Path], env: T.Mapping[str, str]):
     """
     cmake_scripts = Path(cmake.get_gemini_root()).expanduser() / "cmake/ext_libs"
 
-    jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
+    jmeta = get_json()
 
     cmakelist = f"""
     cmake_minimum_required(VERSION 3.20)
@@ -161,7 +160,8 @@ Use MPI on Windows via any of (choose one):
 """
         )
 
-    jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
+    jmeta = get_json()
+
     version = jmeta[f"openmpi{version}"]["tag"]
 
     mpi_dir = f"openmpi-{version}"
@@ -251,8 +251,13 @@ def mumps(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: b
     )
 
 
+def get_json() -> T.Mapping[str, T.Any]:
+    cmake_config = Path(cmake.get_gemini_root()).expanduser() / "cmake/config/libraries.json"
+    return json.loads(cmake_config.read_text())
+
+
 def git_json(path: Path, name: str):
-    jmeta = json.loads(importlib.resources.read_text(__package__, "libraries.json"))
+    jmeta = get_json()
 
     git_download(path, jmeta[name]["git"], tag=jmeta[name].get("tag"))
 

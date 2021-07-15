@@ -1,30 +1,6 @@
 {
-"gemini3d": {
-  "git": "https://github.com/gemini3d/gemini3d.git",
-  "tag": "v1.0.2"},
-
-"zlib2": {
-  "url" : "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.5.tar.gz",
-  "sha256": "eca3fe72aea7036c31d00ca120493923c4d5b99fe02e6d3322f7c88dbdcd0085",
-  "git": "https://github.com/zlib-ng/zlib-ng.git"
-},
-"hdf5": {
-  "url": "https://github.com/HDFGroup/hdf5/archive/hdf5-1_10_7.zip",
-  "sha256": "89ea0b117c27a8f7587e601b65fa1427b28db3a6ee66ffff0178509514128f18",
-  "git": "https://github.com/HDFGroup/hdf5.git",
-  "tag": "1.10/master"
-},
-
-"lapack": {
-  "git": "https://github.com/scivision/lapack.git",
-  "tag": "v3.10.0.0"
-},
-"mumps": {
-  "git": "https://github.com/scivision/mumps.git",
-  "tag": "v5.4.0.5"
-},
-"openmpi": {"tag": "4.1.1"},
-"scalapack": {
-  "git": "https://github.com/scivision/scalapack.git",
-  "tag": "v2.1.0.23"}
+  "gemini3d": {
+    "git": "https://github.com/gemini3d/gemini3d.git",
+    "tag": "v1.0.2"
+  }
 }
