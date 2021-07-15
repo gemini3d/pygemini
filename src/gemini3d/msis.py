@@ -49,14 +49,13 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     msis_outfile = p.get("msis_outfile", p["indat_size"].parent / "msis_setup_out.h5")
 
     with h5py.File(msis_infile, "w") as f:
-        f["/doy"] = doy
-        f["/UTsec"] = UTsec0
-        f["/f107a"] = p["f107a"]
-        f["/f107"] = p["f107"]
-        f["/Ap"] = [p["Ap"]] * 7
-        # astype(float32) just to save disk I/O time/space
-        # we must give full shape to work with Fortran/h5fortran
-        # this is how MatGemini does it
+        f.create_dataset("/doy", dtype=np.int32, data=doy)
+        f.create_dataset("/UTsec", dtype=np.float32, data=UTsec0)
+        f.create_dataset("/f107a", dtype=np.float32, data=p["f107a"])
+        f.create_dataset("/f107", dtype=np.float32, data=p["f107"])
+        f.create_dataset("/Ap", shape=(7,), dtype=np.float32, data=[p["Ap"]] * 7)
+        # astype(float32) to save disk I/O time/space
+        # we must give full shape to give proper rank/shape to Fortran/h5fortran
         f.create_dataset("/glat", shape=xg["lx"], dtype=np.float32, data=xg["glat"])
         f.create_dataset("/glon", shape=xg["lx"], dtype=np.float32, data=xg["glon"])
         f.create_dataset("/alt", shape=xg["lx"], dtype=np.float32, data=alt_km)
