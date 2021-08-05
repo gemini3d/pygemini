@@ -17,6 +17,7 @@ import argparse
 import tempfile
 import json
 from pathlib import Path
+import importlib.resources
 
 from . import cmake
 from .utils import get_cpu_count
@@ -39,7 +40,7 @@ def cli():
     p.add_argument(
         "libs",
         help="libraries to compile",
-        choices=["hdf5", "lapack", "mumps", "openmpi", "scalapack"],
+        choices=["hdf5", "lapack", "mumps", "openmpi", "openmpi3", "scalapack"],
         nargs="+",
     )
     p.add_argument("-prefix", help="top-level directory to install libraries under")
@@ -96,6 +97,8 @@ def setup_libs(
     # Note: OpenMPI needs to be before scalapack and mumps
     if "openmpi" in libs:
         openmpi(dirs, env=env, version="", dryrun=dryrun)
+    elif "openmpi3" in libs:
+        openmpi(dirs, env=env, version="3", dryrun=dryrun)
 
     if "lapack" in libs:
         lapack(wipe, dirs, env=env, dryrun=dryrun)
@@ -160,18 +163,19 @@ Use MPI on Windows via any of (choose one):
 """
         )
 
-    jmeta = get_json()
+    jr = importlib.resources.read_text(__package__, "libraries.json")
+    jmeta = json.loads(jr)
 
-    version = jmeta[f"openmpi{version}"]["tag"]
+    ompi_version = jmeta[f"openmpi{version}"]["tag"]
 
-    mpi_dir = f"openmpi-{version}"
+    mpi_dir = f"openmpi-{ompi_version}"
     install_dir = dirs["prefix"] / mpi_dir
     source_dir = dirs["workdir"] / mpi_dir
 
-    tar_name = f"openmpi-{version}.tar.bz2"
+    tar_name = f"openmpi-{ompi_version}.tar.bz2"
     tarfn = dirs["workdir"] / tar_name
 
-    url = f"https://download.open-mpi.org/release/open-mpi/v{version[:3]}/{tar_name}"
+    url = f"https://download.open-mpi.org/release/open-mpi/v{ompi_version[:3]}/{tar_name}"
     url_retrieve(url, tarfn)
     extract_tar(tarfn, dirs["workdir"])
 
