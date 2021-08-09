@@ -21,7 +21,9 @@ def compare_cli(P):
     print(f"OK: Gemini comparison {P.new_dir} {P.ref_dir}")
 
 
-def plot_cli(ref_dir: Path, new_dir: Path, *, time_str: str = None, var: set[str] = None):
+def plot_cli(
+    ref_dir: Path, new_dir: Path, *, time_str: str = None, var: set[str] = None, only: str = None
+):
     ref_path = Path(ref_dir).expanduser().resolve(strict=True)
     new_path = Path(new_dir).expanduser().resolve(strict=True)
 
@@ -29,6 +31,16 @@ def plot_cli(ref_dir: Path, new_dir: Path, *, time_str: str = None, var: set[str
         time = parse(time_str)
         new = read.frame(new_path, time, var=var)
         ref = read.frame(ref_path, time, var=var)
+    elif only == "in":
+        var = {"ns", "Ts", "vs1"}
+
+        ref_params = read.config(ref_path)
+        ref_indir = ref_path / ref_params["indat_file"].parts[-2]
+        ref = read.data(ref_indir / ref_params["indat_file"].name, var=var)
+
+        new_params = read.config(new_path)
+        new_indir = new_path / new_params["indat_file"].parts[-2]
+        new = read.data(new_indir / new_params["indat_file"].name, var=var)
     else:
         if not ref_path.is_file():
             raise FileNotFoundError(f"{ref_path} must be a file when not specifying time")
@@ -61,6 +73,6 @@ if __name__ == "__main__":
     P = p.parse_args()
 
     if P.plot:
-        plot_cli(P.new_dir, P.ref_dir, time_str=P.time, var=P.var)
+        plot_cli(P.new_dir, P.ref_dir, time_str=P.time, var=P.var, only=P.only)
     else:
         compare_cli(P)
