@@ -46,9 +46,6 @@ def model2magcoords(
     x2 = xg["x2"][inds2]
     x3 = xg["x3"][inds3]
 
-    # determine 2D v. 3D source data
-    ndims = (np.asarray(parm.shape) > 1).sum()
-
     # set some defaults if not provided by user
     if altlims is None:
         altlims = (alt.min() + 0.0001, alt.max() - 0.0001)
@@ -84,7 +81,7 @@ def model2magcoords(
 
     # Execute plaid interpolation
     # [X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
-    if ndims == 3:
+    if parm.ndim == 3:
         # xi=np.zeros((x1i.size,3))
         xi = np.array((x1i.ravel(), x2i.ravel(), x3i.ravel())).transpose()
         parmi = scipy.interpolate.interpn(
@@ -95,7 +92,7 @@ def model2magcoords(
             bounds_error=False,
             fill_value=np.NaN,
         )
-    elif ndims == 2:
+    elif parm.ndim == 2:
         coord1 = x1
         coord1i = x1i
         if parm.shape[1] == 1:
@@ -124,7 +121,6 @@ def model2magcoords(
     return alti, mloni, mlati, parmi
 
 
-
 def model2geogcoords(
     xg: dict[str, T.Any],
     parm: xarray.DataArray,
@@ -143,8 +139,8 @@ def model2geogcoords(
     """
 
     # convenience variables
-    glat = xg['glat']
-    glon = xg['glon']
+    glat = xg["glat"]
+    glon = xg["glon"]
     alt = xg["alt"]
     lx1 = xg["lx"][0]
     lx2 = xg["lx"][1]
@@ -155,9 +151,6 @@ def model2geogcoords(
     x1 = xg["x1"][inds1]
     x2 = xg["x2"][inds2]
     x3 = xg["x3"][inds3]
-
-    # determine 2D v. 3D source data
-    ndims = (np.asarray(parm.shape) > 1).sum()
 
     # set some defaults if not provided by user
     if altlims is None:
@@ -194,7 +187,7 @@ def model2geogcoords(
 
     # Execute plaid interpolation
     # [X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
-    if ndims == 3:
+    if parm.ndim == 3:
         # xi=np.zeros((x1i.size,3))
         xi = np.array((x1i.ravel(), x2i.ravel(), x3i.ravel())).transpose()
         parmi = scipy.interpolate.interpn(
@@ -205,7 +198,7 @@ def model2geogcoords(
             bounds_error=False,
             fill_value=np.NaN,
         )
-    elif ndims == 2:
+    elif parm.ndim == 2:
         coord1 = x1
         coord1i = x1i
         if parm.shape[1] == 1:
@@ -234,36 +227,38 @@ def model2geogcoords(
     return alti, gloni, glati, parmi
 
 
-
 def geomag2dipole(
     alt: np.ndarray, mlon: np.ndarray, mlat: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Convert geomagnetic coordinates into dipole"""
 
-    theta = pi / 2 - mlat * pi / 180
-    phi = mlon * pi / 180
+    theta = pi / 2 - np.radians(mlat)
+    phi = np.radians(mlon)
     r = alt + Re
     q = ((Re / r) ** 2) * np.cos(theta)
     p = r / (Re * np.sin(theta) ** 2)
 
     return q, p, phi
 
-def geog2dipole(alt: np.ndarray, glon: np.ndarray, glat: np.ndarray
+
+def geog2dipole(
+    alt: np.ndarray, glon: np.ndarray, glat: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Convert geographic coordinates into dipole"""
-    
-    phi, theta = geog2geomag(glon,glat)
-    mlat = 90-theta*180/pi
-    mlon = phi*180/pi
-    q, p, phi = geomag2dipole(alt,mlon,mlat)
-    
+
+    phi, theta = geog2geomag(glon, glat)
+    mlat = 90 - np.degrees(theta)
+    mlon = np.degrees(phi)
+    q, p, phi = geomag2dipole(alt, mlon, mlat)
+
     return q, p, phi
+
 
 def geomag2UENgeomag(alt, mlon, mlat) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Convert geomagnetic to UEN geomagnetic coords."""
 
-    theta = pi / 2 - mlat * pi / 180
-    phi = mlon * pi / 180
+    theta = pi / 2 - np.radians(mlat)
+    phi = np.radians(mlon)
     meantheta = theta.mean()
     meanphi = phi.mean()
     yUEN = -1 * Re * (theta - meantheta)  # north dist. runs backward from zenith angle
@@ -272,24 +267,29 @@ def geomag2UENgeomag(alt, mlon, mlat) -> tuple[np.ndarray, np.ndarray, np.ndarra
 
     return zUEN, xUEN, yUEN
 
-def geog2UENgeog(alt, glon, glat, ref_lat: float = None, ref_lon: float = None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+
+def geog2UENgeog(
+    alt, glon, glat, ref_lat: float = None, ref_lon: float = None
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Convert geographic to UEN geographic coords."""
-    
-    theta=pi/2-glat*pi/180   #this is the zenith angle referenced from Earth's spin axis, i.e. the geographic (as opposed to magnetic) pole
-    phi=glon*pi/180
-    
+
+    theta = pi / 2 - np.radians(
+        glat
+    )  # this is the zenith angle referenced from Earth's spin axis, i.e. the geographic (as opposed to magnetic) pole
+    phi = np.radians(glon)
+
     if ref_lon is None:
         refphi = np.mean(phi)
     else:
-        refphi = ref_lon*pi/180
-        
+        refphi = np.radians(ref_lon)
+
     if ref_lat is None:
         reftheta = np.mean(theta)
     else:
-        reftheta = pi/2-ref_lat*pi/180
+        reftheta = pi / 2 - np.radians(ref_lat)
 
-    yUEN=-1*Re*(theta-reftheta)              #north dist. runs backward from zenith angle
-    xUEN=Re*np.sin(reftheta)*(phi-refphi)       #some warping done here (using meantheta)
-    zUEN=alt
+    yUEN = -1 * Re * (theta - reftheta)  # north dist. runs backward from zenith angle
+    xUEN = Re * np.sin(reftheta) * (phi - refphi)  # some warping done here (using meantheta)
+    zUEN = alt
 
     return zUEN, xUEN, yUEN
