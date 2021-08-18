@@ -214,7 +214,7 @@ def parse_setup(r: dict[str, T.Any]) -> dict[str, T.Any]:
     r is str, list of str, or float
     """
 
-    P = {}
+    P: dict[str, T.Any] = {}
 
     for k in r:
         if k in {
@@ -230,6 +230,20 @@ def parse_setup(r: dict[str, T.Any]) -> dict[str, T.Any]:
             "precip_llat",
         }:
             P[k] = int(r[k])
+        elif k in {
+            "glat",
+            "glon",
+            "dtheta",
+            "dphi",
+            "Qprecip",
+            "Qprecip_background",
+            "E0precip",
+            "Etarg",
+            "Efield_latwidth",
+            "Efield_lonwidth",
+            "altmin",
+        }:
+            P[k] = float(r[k])
         elif k == "eqdir":  # eqdir obsolete, should use eq_dir
             P["eq_dir"] = r[k]
         elif k == "setup_functions":
