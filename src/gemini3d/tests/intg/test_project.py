@@ -7,6 +7,7 @@ import logging
 import importlib.resources
 import pytest
 import os
+import shutil
 
 import gemini3d
 import gemini3d.web
@@ -126,6 +127,7 @@ def test_precip(name, file_format, tmp_path, monkeypatch):
     assert errs == 0, f"precipitation mismatch {cfg['out_dir']}  {test_dir}"
 
 
+@pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 @pytest.mark.parametrize(
     "name,file_format",
     [

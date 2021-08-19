@@ -14,6 +14,7 @@ import gemini3d
 import gemini3d.msis as gp
 
 
+@pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 def test_build_msis(tmp_path, monkeypatch):
     """
     blanking out some env vars to help ensure self-building is tested
@@ -32,6 +33,7 @@ def test_build_msis(tmp_path, monkeypatch):
     assert Path(tgt).is_file()
 
 
+@pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 @pytest.mark.parametrize("version", [0, 20])
 def test_msis(version, tmp_path):
     gemini3d.setup("msis_setup")

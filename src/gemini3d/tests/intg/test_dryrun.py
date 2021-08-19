@@ -40,6 +40,7 @@ def test_mpiexec():
     assert isinstance(mpiexec, str) or mpiexec is None
 
 
+@pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 @pytest.mark.parametrize("name", ["mini2dew_eq"])
 def test_dryrun(name, tmp_path):
 
