@@ -194,7 +194,7 @@ def expand_simroot(P: dict[str, T.Any]) -> dict[str, T.Any]:
                     i1 += i0
                     envvar = P[k][i0 + 1 : i1]
                     envpath = os.environ.get(envvar)
-                    if envpath is None:
+                    if not envpath:
                         raise ValueError(
                             f"Environment variable {envvar} not found, specified in {k}"
                         )
