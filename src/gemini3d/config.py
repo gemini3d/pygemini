@@ -105,7 +105,7 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
     else:
         raise ValueError(f"Not sure how to parse NML namelist {nml}")
 
-    P = expand_simroot(P)
+    P = expand_envvar(P)
 
     return P
 
@@ -161,7 +161,7 @@ def parse_files(r: dict[str, T.Any]) -> dict[str, T.Any]:
     return P
 
 
-def expand_simroot(P: dict[str, T.Any]) -> dict[str, T.Any]:
+def expand_envvar(P: dict[str, T.Any]) -> dict[str, T.Any]:
     """
     Looks for text inbetween @ signs that is an environment variable.
     This helps avoid the need to hardcode paths.

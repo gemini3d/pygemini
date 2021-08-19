@@ -6,6 +6,7 @@ from datetime import datetime
 import logging
 import importlib.resources
 import pytest
+import os
 
 import gemini3d
 import gemini3d.web
@@ -41,10 +42,13 @@ def test_file_time(name):
         ("mini3d_fang", "nc"),
     ],
 )
-def test_grid(name, file_format, tmp_path):
+def test_grid(name, file_format, tmp_path, monkeypatch):
 
     if file_format.endswith("nc"):
         pytest.importorskip("netCDF4")
+
+    if not os.environ.get("GEMINI_SIMROOT"):
+        monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
@@ -69,7 +73,10 @@ def test_grid(name, file_format, tmp_path):
 @pytest.mark.parametrize(
     "name,file_format", [("mini2dew_fang", "h5"), ("mini2dns_fang", "h5"), ("mini3d_fang", "h5")]
 )
-def test_Efield(name, file_format, tmp_path):
+def test_Efield(name, file_format, tmp_path, monkeypatch):
+
+    if not os.environ.get("GEMINI_SIMROOT"):
+        monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
@@ -93,7 +100,10 @@ def test_Efield(name, file_format, tmp_path):
 @pytest.mark.parametrize(
     "name,file_format", [("mini2dew_fang", "h5"), ("mini2dns_fang", "h5"), ("mini3d_fang", "h5")]
 )
-def test_precip(name, file_format, tmp_path):
+def test_precip(name, file_format, tmp_path, monkeypatch):
+
+    if not os.environ.get("GEMINI_SIMROOT"):
+        monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
@@ -130,7 +140,10 @@ def test_precip(name, file_format, tmp_path):
         ("mini3d_glow", "h5"),
     ],
 )
-def test_runner(name, file_format, tmp_path):
+def test_runner(name, file_format, tmp_path, monkeypatch):
+
+    if not os.environ.get("GEMINI_SIMROOT"):
+        monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
 
     gemini3d.setup()
 

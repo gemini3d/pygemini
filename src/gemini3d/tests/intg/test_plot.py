@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest
 import importlib.resources
 import sys
+import os
 
 try:
     import matplotlib  # noqa: F401
@@ -22,7 +23,10 @@ import gemini3d.plot
         "mini3d_glow",
     ],
 )
-def test_plot(name, tmp_path):
+def test_plot(name, tmp_path, monkeypatch):
+
+    if not os.environ.get("GEMINI_SIMROOT"):
+        monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
