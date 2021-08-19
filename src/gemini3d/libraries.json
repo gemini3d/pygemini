@@ -1,7 +1,7 @@
 {
   "gemini3d": {
     "git": "https://github.com/gemini3d/gemini3d.git",
-    "tag": "v1.0.2"
+    "tag": "v1.0.3"
   },
   "openmpi": {
     "tag": "4.1.1"
