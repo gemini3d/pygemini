@@ -2,7 +2,6 @@ from __future__ import annotations
 import typing as T
 import re
 import os
-import logging
 import math
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -163,11 +162,19 @@ def parse_files(r: dict[str, T.Any]) -> dict[str, T.Any]:
 
 
 def expand_simroot(P: dict[str, T.Any]) -> dict[str, T.Any]:
+    """
+    Looks for text inbetween @ signs that is an environment variable.
+    This helps avoid the need to hardcode paths.
 
-    simroot_key = "@GEMINI_SIMROOT@"
-    default_dir = "~/gemini_sims"
+    For example, if the path in the config.nml is like  @GEMINI_SIMROOT@/tohoku/inputs/
+    and the user computer has previously set environment varaiable
 
-    for k in (
+        GEMINI_SIMROOT=~/data
+
+    then the path will be expanded to ~/data/tohoku/inputs/
+    """
+
+    for k in {
         "indat_file",
         "indat_grid",
         "indat_size",
@@ -177,17 +184,22 @@ def expand_simroot(P: dict[str, T.Any]) -> dict[str, T.Any]:
         "precdir",
         "sourcedir",
         "aurmap_dir",
-    ):
+    }:
         if k in P:
-            if P[k].startswith(simroot_key):
-                root = os.environ.get(simroot_key[1:-1])
-                if not root:
-                    root = str(Path(default_dir).expanduser())
-                    logging.warning(
-                        f"{k} refers to undefined environment variable GEMINI_SIMROOT."
-                        f"falling back to {root}"
-                    )
-                P[k] = P[k].replace(simroot_key, root, 1)
+            if "@" in P[k]:
+                # look for first pair @...@ -- following pairs would need to be handled by recursive calls
+                i0 = P[k].find("@")
+                i1 = P[k].find("@", i0 + 1)
+                if i1 >= 0:
+                    i1 += i0
+                    envvar = P[k][i0 + 1 : i1]
+                    envpath = os.environ.get(envvar)
+                    if envpath is None:
+                        raise ValueError(
+                            f"Environment variable {envvar} not found, specified in {k}"
+                        )
+                    P[k] = P[k].replace(P[k][i0 : i1 + 1], envpath)
+
             P[k] = Path(P[k]).expanduser()
 
     return P
