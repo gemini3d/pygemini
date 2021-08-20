@@ -21,7 +21,7 @@ def cli():
     p.add_argument("-v", "--verbose", action="store_true")
     P = p.parse_args()
 
-    level = logging.INFO if P.verbose else None
+    level = logging.DEBUG if P.verbose else logging.INFO
     logging.basicConfig(format="%(message)s", level=level)
 
     params = {
