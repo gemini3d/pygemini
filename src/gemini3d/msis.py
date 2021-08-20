@@ -18,7 +18,7 @@ from . import cmake
 
 def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     """
-    calls MSIS Fortran executable msis_setup--builds if not present
+    calls MSIS Fortran executable msis_setup
 
     [f107a, f107, ap] = activ
     """
@@ -68,9 +68,26 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     logging.info(" ".join(cmd))
     ret = subprocess.run(cmd, text=True, cwd=Path(msis_exe).parent)
 
-    if ret.returncode == 20:
+    # %% MSIS 2.0 does not return error codes at this time, have to filter stdout
+    if ret.returncode == 0:
+        if p.get("msis_version") == 20 and ret.stdout:
+            if [
+                e
+                for e in {
+                    "Integrals at reference height not available",
+                    "Error in pwmp",
+                    "Species not yet implemented",
+                    "problem with basis definitions",
+                    "problem with basis set",
+                    "not found. Stopping.",
+                }
+                if e in ret.stdout
+            ]:
+                raise RuntimeError(ret.stdout)
+
+    elif ret.returncode == 20:
         raise RuntimeError("Need to compile with 'cmake -Dmsis20=true'")
-    if ret.returncode != 0:
+    else:
         raise RuntimeError(
             f"MSIS failed to run: return code {ret.returncode}. See console for additional error info."
         )

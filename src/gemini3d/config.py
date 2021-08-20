@@ -237,10 +237,9 @@ def parse_neutral_BG(r: dict[str, T.Any]) -> dict[str, T.Any]:
 
     P: dict[str, T.Any] = {}
 
-    if r["flagneuBG"].lower() in {".true.", ".t."}:
+    P["flagneuBG"] = False
+    if r.get("flagneuBG") and r["flagneuBG"].lower() in {".true.", ".t."}:
         P["flagneuBG"] = True
-    else:
-        P["flagneuBG"] = False
 
     for k in {
         "dtneuBG",

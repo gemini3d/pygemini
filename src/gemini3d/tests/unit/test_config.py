@@ -116,6 +116,7 @@ def test_nml_namelist(namelist):
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         params = config.parse_namelist(cfn, namelist)
+
     if "base" in namelist:
         assert params["time"][0] == datetime(2013, 2, 20, 5)
 
@@ -127,6 +128,18 @@ def test_nml_namelist(namelist):
 
     if "efield" in namelist:
         assert params["dtE0"] == timedelta(seconds=1)
+
+
+@pytest.mark.parametrize("namelist", ["neutral_BG"])
+def test_msis20_namelist(namelist):
+
+    with importlib.resources.path("gemini3d.tests.config", "config_msis20.nml") as cfn:
+        params = config.parse_namelist(cfn, namelist)
+
+    if "neutral_BG" in namelist:
+        msis_version = params["msis_version"]
+        assert isinstance(msis_version, int)
+        assert msis_version == 20
 
 
 def test_read_config_nml(monkeypatch, tmp_path):
