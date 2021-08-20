@@ -47,7 +47,17 @@ def read_nml(fn: Path) -> dict[str, T.Any]:
 
     params = {"nml": fn}
 
-    for k in {"base", "files", "flags", "setup", "neutral_perturb", "precip", "efield", "glow"}:
+    for k in {
+        "base",
+        "files",
+        "flags",
+        "setup",
+        "neutral_BG",
+        "neutral_perturb",
+        "precip",
+        "efield",
+        "glow",
+    }:
         if namelist_exists(fn, k):
             params.update(parse_namelist(fn, k))
 
@@ -85,7 +95,9 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
     elif nml == "setup":
         P = parse_setup(r)
     elif nml == "neutral_perturb":
-        P = parse_neutral(r)
+        P = parse_neutral_perturb(r)
+    elif nml == "neutral_BG":
+        P = parse_neutral_BG(r)
     elif nml == "precip":
         P = {
             "dtprec": timedelta(seconds=float(r["dtprec"])),
@@ -205,18 +217,46 @@ def expand_envvar(P: dict[str, T.Any]) -> dict[str, T.Any]:
     return P
 
 
-def parse_neutral(r: dict[str, T.Any]) -> dict[str, T.Any]:
+def parse_neutral_perturb(r: dict[str, T.Any]) -> dict[str, T.Any]:
 
     P = {
         "interptype": int(r["interptype"]),
         "sourcedir": r["source_dir"],
     }
 
-    for k in ("sourcemlat", "sourcemlon", "dtneu", "dxn", "drhon", "dzn"):
+    for k in {"sourcemlat", "sourcemlon", "dtneu", "dxn", "drhon", "dzn"}:
         try:
             P[k] = float(r[k])
         except KeyError:
             P[k] = NaN
+
+    return P
+
+
+def parse_neutral_BG(r: dict[str, T.Any]) -> dict[str, T.Any]:
+
+    P: dict[str, T.Any] = {}
+
+    if r["flagneuBG"].lower() in {".true.", ".t."}:
+        P["flagneuBG"] = True
+    else:
+        P["flagneuBG"] = False
+
+    for k in {
+        "dtneuBG",
+    }:
+        try:
+            P[k] = float(r[k])
+        except KeyError:
+            P[k] = NaN
+
+    for k in {
+        "msis_version",
+    }:
+        try:
+            P[k] = int(r[k])
+        except KeyError:
+            P[k] = 0
 
     return P
 

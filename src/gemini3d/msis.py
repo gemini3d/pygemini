@@ -62,7 +62,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     # %% run MSIS
     args = [str(msis_infile), str(msis_outfile)]
 
-    if "msis_version" in p:
+    if p.get("msis_version") is not None:
         args.append(str(p["msis_version"]))
     cmd = [msis_exe] + args
     logging.info(" ".join(cmd))
