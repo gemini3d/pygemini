@@ -2,7 +2,6 @@ import shutil
 from datetime import datetime
 import pytest
 import importlib.resources
-import sys
 import os
 
 try:
@@ -14,7 +13,6 @@ import gemini3d.web
 import gemini3d.plot
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python >= 3.8 needed for copytree test")
 @pytest.mark.parametrize(
     "name",
     [

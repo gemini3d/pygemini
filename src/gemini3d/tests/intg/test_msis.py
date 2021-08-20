@@ -27,7 +27,7 @@ def test_build_msis(tmp_path, monkeypatch):
 
     gemini3d.setup("msis_setup")
 
-    tgt = shutil.which("msis_setup", path=str(Path(os.environ["GEMINI_ROOT"]) / "build"))
+    tgt = shutil.which("msis_setup", path=Path(os.environ["GEMINI_ROOT"]) / "build")
 
     assert tgt is not None
     assert Path(tgt).is_file()

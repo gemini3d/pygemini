@@ -6,9 +6,6 @@ A Python interface to [Gemini3D](https://github.com/gemini3d/gemini), funded in 
 
 ## Setup
 
-Python &ge; 3.7 is required.
-We recommend Python &ge; 3.8 in general for full features / robustness.
-
 Setup PyGemini by:
 
 ```sh

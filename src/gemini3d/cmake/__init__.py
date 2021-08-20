@@ -156,7 +156,7 @@ def build_gemini3d(targets: list[str]):
 
     for t in targets:
         for n in {"build", "build/Debug", "build/Release"}:
-            exe = shutil.which(t, path=str(src_dir / n))
+            exe = shutil.which(t, path=src_dir / n)
             if exe:
                 break
         if not exe:

@@ -27,7 +27,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     src_dir = cmake.get_gemini_root()
 
     for n in {"build", "build/Debug", "build/Release"}:
-        msis_exe = shutil.which(name, path=str(src_dir / n))
+        msis_exe = shutil.which(name, path=src_dir / n)
         if msis_exe:
             break
 

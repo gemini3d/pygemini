@@ -2,7 +2,6 @@
 
 import shutil
 import pytest
-import sys
 from pathlib import Path
 import importlib.resources
 
@@ -12,7 +11,6 @@ import gemini3d.job as job
 import gemini3d.web
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="test requires Python >= 3.8")
 @pytest.mark.parametrize("name,bref", [("mini2dew_eq", 1238112), ("mini3d_eq", 2323072)])
 def test_memory(name, bref):
 
