@@ -71,14 +71,7 @@ def runner(pr: dict[str, T.Any]) -> None:
     gemexe = get_gemini_exe(pr.get("gemexe"))
     logging.info(f"gemini executable: {gemexe}")
 
-    mpiexec = check_mpiexec(pr.get("mpiexec", "mpiexec"), gemexe)
-    if mpiexec:
-        logging.info(f"mpiexec: {mpiexec}")
-        mpi_args = []
-    else:
-        mpi_args = ["-n", "1"]
-
-    cmd = [str(gemexe), str(out_dir)] + mpi_args
+    cmd = [str(gemexe), str(out_dir)]
 
     if pr.get("out_format"):
         cmd += ["-out_format", pr["out_format"]]
@@ -173,21 +166,26 @@ def check_compiler():
         raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
 
 
-def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> T.Optional[str]:
-    """check if specified mpiexec exists on this system
-    If not, fall back to not using MPI (slow, but still works)."""
+def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> str:
+    """
+    check if specified mpiexec exists on this system.
+    If not, error as most runs are exceedingly slow with one CPU core.
+    """
 
-    mpi_root = os.environ.get("MPI_ROOT", "")
+    if not mpiexec:
+        mpiexec = "mpiexec"
+
+    mpi_root = os.environ.get("MPI_ROOT", None)
     if mpi_root:
         mpi_root += "/bin"
 
-    mpiexec = shutil.which(mpiexec, path=str(mpi_root))
+    mpiexec = shutil.which(mpiexec, path=mpi_root)
     if not mpiexec:
-        return None
+        raise FileNotFoundError(f"Cannot find mpiexec {mpiexec}")
 
     ret = subprocess.run([mpiexec, "-help"], stdout=subprocess.PIPE, text=True, timeout=5)
     if ret.returncode != 0:
-        return None
+        raise RuntimeError(f"MPIexec error code {ret.returncode}\n{ret.stderr}")
     # %% check that compiler and MPIexec compatible
     if os.name != "nt":
         return mpiexec
@@ -201,11 +199,10 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> T.Optional[str]:
         cwd=str(gemexe.parent),
     )
     if ret.returncode != 0:
-        raise EnvironmentError(f"{gemexe} not executable")
+        raise RuntimeError(f"{gemexe} not executable")
 
     if "GNU" in ret.stdout.strip() and "Intel(R) MPI Library" in mpi_msg:
-        mpiexec = None
-        logging.error("Not using MPIexec since MinGW is not compatible with Intel MPI")
+        raise EnvironmentError("MPIexec from MinGW is not compatible with Intel MPI")
 
     return mpiexec
 

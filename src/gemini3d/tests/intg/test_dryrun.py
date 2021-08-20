@@ -33,11 +33,8 @@ def test_mpiexec():
     exe = job.get_gemini_exe()
     assert isinstance(exe, Path)
 
-    # It's OK if MPIexec doesn't exist, but make the test assert consistent with that
-    # there are numerous possibilities that MPIexec might not work
-    # predicting the outcome of this test requires the function we're testing!
     mpiexec = job.check_mpiexec("mpiexec", exe)
-    assert isinstance(mpiexec, str) or mpiexec is None
+    assert isinstance(mpiexec, str)
 
 
 @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
