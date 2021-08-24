@@ -2,35 +2,33 @@
 test msis
 """
 
-from pathlib import Path
 import pytest
 import numpy as np
 from pytest import approx
 from datetime import datetime
-import os
 import shutil
 
 import gemini3d
 import gemini3d.msis as gp
 
 
-@pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
-def test_build_msis(tmp_path, monkeypatch):
-    """
-    blanking out some env vars to help ensure self-building is tested
-    """
+# @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
+# def test_build_msis(tmp_path, monkeypatch):
+#     """
+#     blanking out some env vars to help ensure self-building is tested
+#     """
 
-    monkeypatch.setenv("GEMINI_ROOT", str(tmp_path / "gemini3d"))
-    #    monkeypatch.setenv("HDF5_ROOT", "")
-    #    monkeypatch.setenv("h5fortran_ROOT", "")
-    monkeypatch.setenv("glow_ROOT", "")
+#     monkeypatch.setenv("GEMINI_ROOT", str(tmp_path / "gemini3d"))
+#     #    monkeypatch.setenv("HDF5_ROOT", "")
+#     #    monkeypatch.setenv("h5fortran_ROOT", "")
+#     monkeypatch.setenv("glow_ROOT", "")
 
-    gemini3d.setup("msis_setup")
+#     gemini3d.setup("msis_setup")
 
-    tgt = shutil.which("msis_setup", path=Path(os.environ["GEMINI_ROOT"]) / "build")
+#     tgt = shutil.which("msis_setup", path=Path(os.environ["GEMINI_ROOT"]) / "build")
 
-    assert tgt is not None
-    assert Path(tgt).is_file()
+#     assert tgt is not None
+#     assert Path(tgt).is_file()
 
 
 @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
