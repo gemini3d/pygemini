@@ -368,6 +368,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
             z0f = 325e3
             He = 2 * KB * Tn[:, ix2, ix3] / AMU / 30 / g[:, ix2, ix3]
             z0e = 120e3
+
             ne = chapmana(alt[:, ix2, ix3], p["nmf"], z0f, Hf) + chapmana(
                 alt[:, ix2, ix3], p["nme"], z0e, He
             )
@@ -441,7 +442,29 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
     return dat
 
 
-def chapmana(z: np.ndarray, nm: float, z0: float, H: float) -> np.ndarray:
+def chapmana(z: np.ndarray, nm: float, z0: float, H: np.ndarray) -> np.ndarray:
+    """
+    create Chapman profile
+
+    Parameters
+    ----------
+
+    z : np.ndarray
+        altitude [meters]
+
+    nm : float
+        number density scale factor
+
+    z0 : float
+        peak altitude [meters]
+
+    H : float or np.ndarray
+        scale height vs. altitude z [meters]
+    """
+
+    if np.any(H < 0.1):
+        raise ValueError(f"scale height H is unrealistically small:  {H}")
+
     zref = (z - z0) / H
     ne = nm * np.exp(0.5 * (1 - zref - np.exp(-zref)))
 
