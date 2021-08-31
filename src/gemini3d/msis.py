@@ -26,7 +26,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     name = "msis_setup"
     src_dir = cmake.get_gemini_root()
 
-    for n in {"build", "build/Debug", "build/Release"}:
+    for n in {"build", "build/Release", "build/RelWithDebInfo", "build/Debug"}:
         msis_exe = shutil.which(name, path=src_dir / n)
         if msis_exe:
             break
@@ -34,7 +34,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     if not msis_exe:
         raise EnvironmentError(
             "Did not find gemini3d/build/msis_setup--build by:\n"
-            "gemini3d.cmake.build_gemini3d('msis_setup')\n"
+            "gemini3d.setup('msis_setup')\n"
         )
 
     alt_km = xg["alt"] / 1e3
@@ -47,6 +47,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     # %% CREATE INPUT FILE FOR FORTRAN PROGRAM
     msis_infile = p.get("msis_infile", p["indat_size"].parent / "msis_setup_in.h5")
     msis_outfile = p.get("msis_outfile", p["indat_size"].parent / "msis_setup_out.h5")
+    msis_version = p.get("msis_version", 0)
 
     with h5py.File(msis_infile, "w") as f:
         f.create_dataset("/doy", dtype=np.int32, data=doy)
@@ -59,18 +60,16 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         f.create_dataset("/glat", shape=xg["lx"], dtype=np.float32, data=xg["glat"])
         f.create_dataset("/glon", shape=xg["lx"], dtype=np.float32, data=xg["glon"])
         f.create_dataset("/alt", shape=xg["lx"], dtype=np.float32, data=alt_km)
+        f.create_dataset("/msis_version", dtype=np.int32, data=msis_version)
     # %% run MSIS
-    args = [str(msis_infile), str(msis_outfile)]
+    cmd = [msis_exe, str(msis_infile), str(msis_outfile), str(msis_version)]
 
-    if p.get("msis_version") is not None:
-        args.append(str(p["msis_version"]))
-    cmd = [msis_exe] + args
     logging.info(" ".join(cmd))
     ret = subprocess.run(cmd, text=True, cwd=Path(msis_exe).parent)
 
     # %% MSIS 2.0 does not return error codes at this time, have to filter stdout
     if ret.returncode == 0:
-        if p.get("msis_version") == 20 and ret.stdout:
+        if msis_version == 20 and ret.stdout:
             if [
                 e
                 for e in {
