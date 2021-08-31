@@ -95,7 +95,7 @@ def test_msis(version, tmp_path):
     a1 = atmos.isel({"alt_km": 0, "glat": 1, "glon": 2})
 
     for k in a1.data_vars:
-        assert a1[k] == approx(
+        assert a1[k].data == approx(
             truth[version][k],
             rel=1e-5,
         )
