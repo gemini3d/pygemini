@@ -33,8 +33,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
     if not msis_exe:
         raise EnvironmentError(
-            "Did not find gemini3d/build/msis_setup--build by:\n"
-            "gemini3d.setup('msis_setup')\n"
+            "Did not find gemini3d/build/msis_setup--build by:\n" "gemini3d.setup('msis_setup')\n"
         )
 
     alt_km = xg["alt"] / 1e3
@@ -101,6 +100,13 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
         for k in {"nO", "nN2", "nO2", "Tn", "nN", "nH"}:
             atmos[k] = (("alt_km", "glat", "glon"), f[f"/{k}"][:])
+
+    # %% sanity check MSIS output
+    for v in atmos.data_vars:
+        if v.startswith("n"):  # type: ignore
+            assert (atmos[v] >= 0).all(), "density cannot be negative: {v}"
+        elif v.startswith("T"):  # type: ignore
+            assert (atmos[v] < 100000).all(), "temperature above 100,000 K unexpected: {v}"
 
     # Mitra, 1968
     atmos["nNO"] = 0.4 * np.exp(-3700.0 / atmos["Tn"]) * atmos["nO2"] + 5e-7 * atmos["nO"]
