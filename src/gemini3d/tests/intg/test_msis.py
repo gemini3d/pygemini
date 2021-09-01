@@ -99,3 +99,10 @@ def test_msis(version, tmp_path):
             truth[version][k],
             rel=1e-5,
         )
+    # general check of all test locations
+    assert (a1["nO"].data >= 3.5e15).all() and (a1["nO"].data <= 6e17).all()
+    assert (a1["nN2"].data >= 1.5e15).all() and (a1["nN2"].data <= 9.5e18).all()
+    assert (a1["nO2"].data >= 1.5e14).all() and (a1["nO2"].data <= 2.5e18).all()
+    assert (a1["Tn"].data >= 185).all() and (a1["Tn"].data <= 690).all()
+    assert (a1["nN"].data >= 4e10).all() and (a1["nN"].data <= 2.5e13).all()
+    assert (a1["nH"].data >= 5e11).all() and (a1["nH"].data <= 2.5e13).all()
