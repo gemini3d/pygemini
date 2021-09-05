@@ -6,7 +6,6 @@ import pytest
 import numpy as np
 from pytest import approx
 from datetime import datetime
-import shutil
 
 import gemini3d.msis as gp
 
@@ -30,7 +29,10 @@ import gemini3d.msis as gp
 #     assert Path(tgt).is_file()
 
 
-@pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
+@pytest.mark.skipif(
+    gp.get_msis_exe() is None,
+    reason="need to build msis_setup by gemini3d.setup('msis_setup')",
+)
 @pytest.mark.parametrize("version", [0, 20])
 def test_msis(version, tmp_path):
 

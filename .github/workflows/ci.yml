@@ -64,7 +64,7 @@ jobs:
 
     - name: build msis_setup executable
       run: python -c "import gemini3d; gemini3d.setup('msis_setup')"
-      timeout-minutes: 3
+      timeout-minutes: 2
 
     - name: Integration Tests
       run: pytest --pyargs gemini3d.tests.intg
@@ -113,7 +113,7 @@ jobs:
 
     - name: build msis_setup executable
       run: python -c "import gemini3d; gemini3d.setup('msis_setup')"
-      timeout-minutes: 3
+      timeout-minutes: 2
 
     - name: Integration Tests
       run: pytest --pyargs gemini3d.tests.intg
@@ -153,10 +153,6 @@ jobs:
     - name: Unit Tests
       run: pytest --pyargs gemini3d.tests.unit
       timeout-minutes: 2
-
-    - name: build msis_setup executable
-      run: python -c "import gemini3d; gemini3d.setup('msis_setup')"
-      timeout-minutes: 3
 
     - name: Integration Tests
       run: pytest --pyargs gemini3d.tests.intg
