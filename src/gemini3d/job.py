@@ -215,9 +215,9 @@ def get_gemini_exe(exe: str = None) -> Path:
     name = "gemini3d.run"
 
     if not exe:  # allow for default dict empty
-        src_dir = Path(cmake.get_gemini_root()).expanduser()
-        for n in {"build", "build/Debug", "build/Release"}:
-            e = shutil.which(name, path=src_dir / n)
+        gemini_root = cmake.get_gemini_root()
+        for n in [".", "build", "build/Debug", "build/RelWithDebInfo", "build/Release"]:
+            e = shutil.which(name, path=gemini_root / n)
             if e:
                 break
     if not e:

@@ -8,7 +8,6 @@ from pytest import approx
 from datetime import datetime
 import shutil
 
-import gemini3d
 import gemini3d.msis as gp
 
 
@@ -34,7 +33,6 @@ import gemini3d.msis as gp
 @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 @pytest.mark.parametrize("version", [0, 20])
 def test_msis(version, tmp_path):
-    gemini3d.setup("msis_setup")
 
     cfg = {
         "time": [datetime(2015, 1, 2, 12)],
