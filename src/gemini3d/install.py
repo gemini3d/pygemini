@@ -42,7 +42,7 @@ PKG = {
         "mingw-w64-x86_64-hdf5",
         "mingw-w64-x86_64-lapack",
         "mingw-w64-x86_64-scalapack",
-        "mingw-w64-x86_64-mumps",
+        # not MSYS2 mumps because it has broken OpenMP seen as error code 139 at runtime
     ],
 }
 
