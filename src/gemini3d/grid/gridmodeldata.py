@@ -80,15 +80,15 @@ def model2magcoords(
         raise ValueError("Unsupported grid type...")
 
     # count non singleton dimensions
-    numdims=0
-    for idim in range(0,3):
-        if xg["lx"][idim]>1:
-            numdims+=1
+    numdims = 0
+    for idim in range(0, 3):
+        if xg["lx"][idim] > 1:
+            numdims += 1
 
     # Execute plaid interpolation
     # [X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
-    #if parm.ndim == 3:     # problematic to not check for singleton dimensions
-    if numdims==3:
+    # if parm.ndim == 3:     # problematic to not check for singleton dimensions
+    if numdims == 3:
         # xi=np.zeros((x1i.size,3))
         xi = np.array((x1i.ravel(), x2i.ravel(), x3i.ravel())).transpose()
         parmi = scipy.interpolate.interpn(
@@ -99,7 +99,7 @@ def model2magcoords(
             bounds_error=False,
             fill_value=np.NaN,
         )
-    elif numdims==2:
+    elif numdims == 2:
         coord1 = x1
         coord1i = x1i
         if parm.shape[1] == 1:
@@ -193,10 +193,10 @@ def model2geogcoords(
         raise ValueError("Unsupported grid type...")
 
     # count non singleton dimensions
-    numdims=0
-    for idim in range(0,3):
-        if xg["lx"][idim]>1:
-            numdims+=1
+    numdims = 0
+    for idim in range(0, 3):
+        if xg["lx"][idim] > 1:
+            numdims += 1
 
     # Execute plaid interpolation
     # [X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")

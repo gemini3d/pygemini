@@ -59,7 +59,7 @@ def curv3d_long(
     ax.set_ylabel("alt")
     fg.colorbar(h, ax=ax)
 
-    return fg, ax
+    return fg, axs
 
 
 def curv2d(
