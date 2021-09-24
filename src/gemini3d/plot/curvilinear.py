@@ -21,7 +21,7 @@ def curv3d_long(
     lalt: int = 256,
     llon: int = 256,
     llat: int = 256
-) -> Figure:
+):
     """plot dipole data vs. alt,lon,lat"""
 
     altref = 300e3
@@ -59,7 +59,7 @@ def curv3d_long(
     ax.set_ylabel("alt")
     fg.colorbar(h, ax=ax)
 
-    return fg
+    return fg, ax
 
 
 def curv2d(
@@ -70,7 +70,7 @@ def curv2d(
     *,
     lalt: int = 256,
     llat: int = 256
-) -> Figure:
+):
     # grid data
     alti, mloni, mlati, parmi = model2magcoords(xg, parm, lalt, 1, llat)
 
@@ -86,4 +86,4 @@ def curv2d(
     ax.set_ylabel("alt")
     fg.colorbar(h, ax=ax)
 
-    return fg
+    return fg, ax
