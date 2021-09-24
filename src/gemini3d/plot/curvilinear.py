@@ -37,7 +37,8 @@ def curv3d_long(
     ilat = abs(mlati - latavg).argmin()
 
     # plot various slices through the 3D domain
-    fg = Figure()
+    if fg is None:
+        fg = Figure()
     axs = fg.subplots(1, 3)
 
     ax = axs[0]
@@ -77,7 +78,8 @@ def curv2d(
     ilon = 0
 
     # plot the meridional slice
-    fg = Figure()
+    if fg is None:
+        fg = Figure()
     ax = fg.gca()
     h = ax.pcolormesh(mlati, alti / 1e3, parmi[:, ilon, :], shading="nearest")
     ax.set_xlabel("mlat")
