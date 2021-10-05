@@ -1,17 +1,15 @@
 from __future__ import annotations
-import typing as T
 
 import numpy as np
 import xarray
+import scipy.interpolate as interp
+
 from matplotlib.ticker import MultipleLocator
 from matplotlib.figure import Figure
-import scipy.interpolate as interp
+from matplotlib.axes import Axes
 
 from .constants import CB_LBL, REF_ALT
 from ..utils import git_meta
-
-if T.TYPE_CHECKING:
-    import matplotlib.axes as mpla
 
 
 def plot12(
@@ -24,7 +22,7 @@ def plot12(
     vmin: float = None,
     vmax: float = None,
     fg: Figure = None,
-    ax: "mpla.Axes" = None,
+    ax: Axes = None,
 ) -> Figure:
 
     if parm.ndim != 2:
@@ -55,8 +53,8 @@ def plot13(
     vmin: float = None,
     vmax: float = None,
     fg: Figure = None,
-    ax: "mpla.Axes" = None,
-) -> Figure:
+    ax: Axes = None,
+) -> tuple[Figure, Axes]:
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
@@ -72,7 +70,7 @@ def plot13(
     ax.set_ylabel("upward dist. (km)")
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
-    return fg
+    return fg, ax
 
 
 def plot23(
@@ -85,8 +83,8 @@ def plot23(
     vmin: float = None,
     vmax: float = None,
     fg: Figure = None,
-    ax: "mpla.Axes" = None,
-) -> Figure:
+    ax: Axes = None,
+) -> tuple[Figure, Axes]:
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
@@ -101,12 +99,12 @@ def plot23(
     ax.set_ylabel("northward dist. (km)")
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
-    return fg
+    return fg, ax
 
 
 def plot1d2(
-    x: np.ndarray, parm: np.ndarray, name: str, fg: Figure = None, ax: "mpla.Axes" = None
-) -> Figure:
+    x: np.ndarray, parm: np.ndarray, name: str, fg: Figure = None, ax: Axes = None
+) -> tuple[Figure, Axes]:
 
     if parm.ndim != 1:
         raise ValueError("expecting 1-D data oriented east-west (along latitude)")
@@ -120,12 +118,12 @@ def plot1d2(
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel(CB_LBL[name])
 
-    return fg
+    return fg, ax
 
 
 def plot1d3(
-    y: np.ndarray, parm: np.ndarray, name: str, fg: Figure = None, ax: "mpla.Axes" = None
-) -> Figure:
+    y: np.ndarray, parm: np.ndarray, name: str, fg: Figure = None, ax: Axes = None
+) -> tuple[Figure, Axes]:
 
     if parm.ndim != 1:
         raise ValueError("expecting 1-D data oriented east-west (along latitude)")
@@ -139,12 +137,12 @@ def plot1d3(
     ax.set_xlabel("northward dist. (km)")
     ax.set_ylabel(CB_LBL[name])
 
-    return fg
+    return fg, ax
 
 
 def bright_east_north(
     fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time, wavelength
-):
+) -> tuple[Axes]:
 
     if parm.ndim != 3:
         raise ValueError(f"Expected 3D data, you gave {parm.ndim}D data.")
@@ -162,8 +160,10 @@ def bright_east_north(
     axs[2].set_xlabel("eastward dist. (km)")
     axs[2].set_ylabel("northward dist. (km)")
 
+    return axs
 
-def east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time):
+
+def east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time) -> Axes:
 
     if parm.ndim != 2:
         raise ValueError(f"Expected 2D data, you gave {parm.ndim}D data.")
@@ -181,8 +181,10 @@ def east_north(fg, grid, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, tim
     ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
+    return ax
 
-def mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time):
+
+def mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time) -> Axes:
 
     if parm.ndim != 2:
         raise ValueError(f"Expected 2D data, you gave {parm.ndim}D data.")
@@ -197,3 +199,5 @@ def mag_lonlat(fg, grid, parm, cmap, vmin, vmax, name, time):
     ax.set_ylabel("magnetic latitude (deg.)")
     ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+
+    return ax

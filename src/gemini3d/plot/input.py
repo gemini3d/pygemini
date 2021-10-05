@@ -44,7 +44,7 @@ def plot_all(
         if any(s in k for s in var):
             # FIXME: for now we just look at electrons v[-1, ...]
             cmap_name = {"ns": "ne", "Ts": "Te", "vs1": "v1"}
-            fg = plotfun(
+            fg, ax = plotfun(
                 to_datetime(dat.time),
                 xg,
                 v[-1, :, :, :].squeeze(),

@@ -106,9 +106,9 @@ def frame(
             # FIXME: fix the reason why this plotting sometimes fails
         if any(s in k for s in var):
             if plotfun.__name__.startswith("curv"):
-                fg = plotfun(cfg, xg, v)
+                fg, ax = plotfun(cfg, xg, v)
             else:
-                fg = plotfun(
+                fg, ax = plotfun(
                     to_datetime(dat.time), xg, v.squeeze(), wavelength=dat.get("wavelength")
                 )
             save_fig(fg, direc, name=k, fmt=saveplot_fmt, time=time)

@@ -7,7 +7,8 @@ import typing as T
 
 import numpy as np
 import xarray
-from matplotlib.figure import Figure
+from matplotlib.figure import Figure  # does not display, save only
+from matplotlib.axes import Axes
 
 from ..grid.gridmodeldata import model2magcoords
 
@@ -21,7 +22,7 @@ def curv3d_long(
     lalt: int = 256,
     llon: int = 256,
     llat: int = 256
-):
+) -> tuple[Figure, tuple[Axes]]:
     """plot dipole data vs. alt,lon,lat"""
 
     altref = 300e3
@@ -70,7 +71,7 @@ def curv2d(
     *,
     lalt: int = 256,
     llat: int = 256
-):
+) -> tuple[Figure, tuple[Axes]]:
     # grid data
     alti, mloni, mlati, parmi = model2magcoords(xg, parm, lalt, 1, llat)
 
@@ -86,4 +87,4 @@ def curv2d(
     ax.set_ylabel("alt")
     fg.colorbar(h, ax=ax)
 
-    return fg, ax
+    return fg, (ax,)

@@ -6,6 +6,7 @@ import math
 import xarray
 import scipy.interpolate as interp
 from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 
 from ..utils import git_meta
 from ..read import get_lxs
@@ -29,7 +30,7 @@ def plot_interp(
     parm: xarray.DataArray,
     fg: Figure = None,
     **kwargs,
-) -> Figure:
+) -> tuple[Figure, tuple[Axes]]:
 
     """
 
@@ -170,7 +171,7 @@ def plot_interp(
         else:
             raise ValueError(f"{name}: only 2D and 1D data are expected--squeeze data")
     elif parm.ndim == 3:
-        plot3d_slice(
+        fg, ax = plot3d_slice(
             fg,
             name,
             time,
@@ -192,7 +193,7 @@ def plot_interp(
             xg,
         )
     elif name == "rayleighs":
-        bright_east_north(
+        ax = bright_east_north(
             fg,
             xg,
             parm,
@@ -209,12 +210,12 @@ def plot_interp(
         )
     elif is_Efield:
         # single 2D plot
-        mag_lonlat(fg, xg, parm, cmap, vmin, vmax, name, time)
+        ax = mag_lonlat(fg, xg, parm, cmap, vmin, vmax, name, time)
     else:
         # single 2D plot
-        east_north(fg, xg, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time)
+        ax = east_north(fg, xg, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time)
 
-    return fg
+    return fg, ax
 
 
 def plot3d_slice(
@@ -237,7 +238,7 @@ def plot3d_slice(
     vmax,
     parm,
     xg,
-):
+) -> tuple[Figure, tuple[Axes]]:
 
     fg.set_size_inches((18, 5))
     axs = fg.subplots(1, 3, sharey=False, sharex=False)
@@ -283,7 +284,7 @@ def plot3d_slice(
         yp[iy], zp, f(yp, zp)[:, iy], name=name, cmap=cmap, vmin=vmin, vmax=vmax, fg=fg, ax=axs[2]
     )
 
-    return fg
+    return fg, axs
 
 
 cart3d_long_ENU = plot_interp
