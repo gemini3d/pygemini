@@ -30,7 +30,7 @@ def Efield_erf(
         if lx3 == 1:
             # meridional
             S = E.Etarg * E.sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
-            taper = erf((E.mlat - E.mlatmean) / E.mlatsig).data[:, None]
+            taper = erf((E.mlat - E.mlatmean) / E.mlatsig).data
         elif lx2 > 1 and lx3 > 1:
             # 3-D
             S = E.Etarg * E.sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
