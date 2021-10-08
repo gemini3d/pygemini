@@ -70,7 +70,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         f.create_dataset("/alt", shape=xg["lx"], dtype=np.float32, data=alt_km)
         f.create_dataset("/msis_version", dtype=np.int32, data=msis_version)
     # %% run MSIS
-    cmd = [msis_exe, str(msis_infile), str(msis_outfile), str(msis_version)]
+    cmd = [msis_exe, str(msis_infile), str(msis_outfile)]
 
     logging.info(" ".join(cmd))
     ret = subprocess.run(cmd, text=True, cwd=Path(msis_exe).parent)
