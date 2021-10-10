@@ -10,7 +10,8 @@ def Jcurrent_gaussian(E: xarray.Dataset, gridflag: int, flagdip: bool) -> xarray
         shapelon = 1
 
     if E.mlat.size > 1:
-        shapelat = np.exp(-((E.mlat - E.mlatmean - 1.5 * E.mlatsig) ** 2) / 2 / E.mlatsig ** 2)
+        shapelat = ( np.exp(-((E.mlat - E.mlatmean - 1.5 * E.mlatsig) ** 2) / 2 / E.mlatsig ** 2) - 
+                    np.exp(-((E.mlat - E.mlatmean + 1.5 * E.mlatsig) ** 2) / 2 / E.mlatsig ** 2) )
     else:
         shapelat = 1
 
