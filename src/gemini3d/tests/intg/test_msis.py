@@ -21,8 +21,6 @@ import gemini3d.msis as gp
 #     #    monkeypatch.setenv("h5fortran_ROOT", "")
 #     monkeypatch.setenv("glow_ROOT", "")
 
-#     gemini3d.setup("msis_setup")
-
 #     tgt = shutil.which("msis_setup", path=Path(os.environ["GEMINI_ROOT"]) / "build")
 
 #     assert tgt is not None

@@ -147,8 +147,6 @@ def test_runner(name, file_format, tmp_path, monkeypatch):
     if not os.environ.get("GEMINI_SIMROOT"):
         monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
 
-    gemini3d.setup()
-
     out_dir = tmp_path
     # get files if needed
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:

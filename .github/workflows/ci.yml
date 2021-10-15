@@ -2,6 +2,7 @@ name: ci
 env:
   CTEST_PARALLEL_LEVEL: 2
   GEMINI_ROOT: ~/gemini3d
+  CMAKE_BUILD_TYPE: Release
 
 on:
   push:
@@ -62,8 +63,8 @@ jobs:
       run: pytest --pyargs gemini3d.tests.unit
       timeout-minutes: 2
 
-    - name: build msis_setup executable
-      run: python -c "import gemini3d; gemini3d.setup('msis_setup')"
+    - name: build msis_setup, gemini3d.run, gemini.bin executables
+      run: python -c "import gemini3d; gemini3d.setup()"
       timeout-minutes: 2
 
     - name: Integration Tests
@@ -82,7 +83,6 @@ jobs:
     runs-on: macos-latest
     env:
       HOMEBREW_NO_INSTALL_CLEANUP: 1
-      CC: gcc-11
       FC: gfortran-11
 
     strategy:
@@ -111,8 +111,8 @@ jobs:
       run: pytest --pyargs gemini3d.tests.unit
       timeout-minutes: 2
 
-    - name: build msis_setup executable
-      run: python -c "import gemini3d; gemini3d.setup('msis_setup')"
+    - name: build msis_setup, gemini3d.run, gemini.bin executables
+      run: python -c "import gemini3d; gemini3d.setup()"
       timeout-minutes: 2
 
     - name: Integration Tests
@@ -152,6 +152,10 @@ jobs:
 
     - name: Unit Tests
       run: pytest --pyargs gemini3d.tests.unit
+      timeout-minutes: 2
+
+    - name: build msis_setup, gemini3d.run, gemini.bin executables
+      run: python -c "import gemini3d; gemini3d.setup()"
       timeout-minutes: 2
 
     - name: Integration Tests
