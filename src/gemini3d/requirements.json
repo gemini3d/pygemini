@@ -25,6 +25,6 @@
   },
   "cygwin": {
     "pkgs": ["gcc-fortran", "liblapack-devel", "libopenmpi-devel"],
-    "cmd": ""
+    "cmd": "setup-x86_64.exe -P"
   }
 }
