@@ -13,43 +13,14 @@ import subprocess
 import sys
 from argparse import ArgumentParser
 import shutil
-
-PKG = {
-    "yum": [
-        "epel-release",
-        "gcc-gfortran",
-        "MUMPS-openmpi-devel",
-        "lapack-devel",
-        "scalapack-openmpi-devel",
-        "openmpi-devel",
-        "hdf5-devel",
-    ],
-    "apt": [
-        "gfortran",
-        "libmumps-dev",
-        "liblapack-dev",
-        "libscalapack-mpi-dev",
-        "libopenmpi-dev",
-        "openmpi-bin",
-        "libhdf5-dev",
-    ],
-    "pacman": ["gcc-fortran", "ninja", "lapack", "openmpi", "hdf5"],
-    "brew": ["gcc", "ninja", "cmake", "lapack", "scalapack", "openmpi", "hdf5"],
-    "cygwin": ["gcc-fortran", "liblapack-devel", "libopenmpi-devel"],
-    "msys": [
-        "mingw-w64-x86_64-gcc-fortran",
-        "mingw-w64-x86_64-ninja",
-        "mingw-w64-x86_64-hdf5",
-        "mingw-w64-x86_64-lapack",
-        "mingw-w64-x86_64-scalapack",
-        # not MSYS2 mumps because it has broken OpenMP seen as error code 139 at runtime
-    ],
-}
+import json
+import importlib.resources
+import typing as T
 
 
-def main(package_manager: str):
+def main(package_manager: str, pkgs: dict[str, T.Any]) -> None:
 
-    cmd: list[str] = []
+    cmd = []
 
     if sys.platform == "linux":
 
@@ -60,32 +31,36 @@ def main(package_manager: str):
 
         if package_manager == "yum":
             subprocess.run(["sudo", "yum", "--assumeyes", "updateinfo"])
-            cmd = ["sudo", "yum", "install"] + PKG["yum"]
         elif package_manager == "apt":
             subprocess.run(["sudo", "apt", "update", "--yes"])
-            cmd = ["sudo", "apt", "install"] + PKG["apt"]
         elif package_manager == "pacman":
-            subprocess.run(["sudo", "pacman", "-S", "--needed"] + PKG["pacman"])
+            subprocess.run(["sudo", "pacman", "-Sy"])
         else:
             raise ValueError(
                 f"Unknown package manager {package_manager}, try installing the prereqs manually"
             )
+        k = package_manager
+        cmd = ["sudo"]
     elif sys.platform == "darwin":
-        if not shutil.which("brew"):
+        if shutil.which("brew"):
+            k = "brew"
+        elif shutil.which("port"):
+            k = "port"
+        else:
             raise SystemExit(
-                "We assume Homebrew is available, need to manually install a Fortran compiler otherwise."
+                "Neither Homebrew or MacPorts is available. Please install a Fortran compiler."
             )
-        cmd = ["brew", "install"] + PKG["brew"]
-        # autobuild Mumps, it's much faster
     elif sys.platform == "cygwin":
-        cmd = ["setup-x86_64.exe", "-P"] + PKG["cygwin"]
+        k = "cygwin"
     elif sys.platform == "win32":
         if not shutil.which("pacman"):
             raise SystemExit("Windows Subsystem for Linux or MSYS2 is recommended.")
         # assume MSYS2
-        cmd = ["pacman", "-S", "--needed"] + PKG["msys"]
+        k = "msys2"
     else:
         raise ValueError(f"unknown platform {sys.platform}")
+
+    cmd += pkgs[k]["cmd"].split(" ") + pkgs[k]["pkgs"]
 
     print(" ".join(cmd))
     ret = subprocess.run(cmd)
@@ -94,13 +69,16 @@ def main(package_manager: str):
 
 
 if __name__ == "__main__":
+    json_str = importlib.resources.read_text(__package__, "requirements.json")
+    pkgs = json.loads(json_str)
+
     p = ArgumentParser()
     p.add_argument(
         "package_manager",
         help="specify package manager e.g. apt, yum",
-        choices=list(PKG.keys()),
+        choices=list(pkgs.keys()),
         nargs="?",
     )
     P = p.parse_args()
 
-    main(P.package_manager)
+    main(P.package_manager, pkgs)
