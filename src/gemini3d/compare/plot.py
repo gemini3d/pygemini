@@ -53,7 +53,9 @@ def plotdiff(
         assert A.shape[0] == 7, "4-D arrays must have species as first axis"
         # loop over the species, which are in the first dimension
         for i in range(A.shape[0]):
-            plotdiff(A[i], B[i], time, new_dir, ref_dir)
+            plotdiff(A[i], B[i], time, new_dir, ref_dir, name=f"{name}-{i}")
+
+        return
 
     if A.ndim == 3:
         if A.shape[0] == 7:
@@ -84,7 +86,7 @@ def plotdiff(
     elif A.ndim == 1:
         maxdiff = diff1d(A, B, name, fg, axs)
     else:
-        raise ValueError("expected 2D or 1D")
+        raise ValueError(f"{name}: expected 2D or 1D instead of {A.ndim}D")
 
     axs[0].set_title(str(new_dir))
     axs[1].set_title(str(ref_dir))
