@@ -38,7 +38,7 @@ Qprecip_background = 0.0
 E0precip = 5e3
 Etarg = 50e-3   ! V/m
 Efield_lonwidth = 0.142857
-eqdir = '@GEMINI_SIMROOT@/test2d_eq'
+eqdir = '@GEMINI_CIROOT@/test2d_eq'
 /
 
 &precip

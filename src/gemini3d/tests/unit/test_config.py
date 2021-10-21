@@ -111,7 +111,7 @@ def test_nml_gemini_env_root(monkeypatch, tmp_path):
         cfg = config.parse_namelist(cfn, "setup")
 
     assert isinstance(cfg["eq_dir"], Path)
-    assert cfg["eq_dir"] == tmp_path / "test2d_eq"
+    assert cfg["eq_dir"] == Path(os.environ.get("GEMINI_CIROOT")).expanduser() / "test2d_eq"
 
 
 @pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])
