@@ -2,7 +2,7 @@ from __future__ import annotations
 from pathlib import Path
 import typing as T
 from datetime import datetime
-
+import logging
 import numpy as np
 import matplotlib as mpl
 
@@ -57,22 +57,13 @@ def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = ""):
     plotfun = grid2plotfun(xg)
     cfg = read.config(direc)
 
-    aurmap_dir = None
-    if cfg.get("aurmap_dir"):
-        # handle relative or absolute path to GLOW data
-        if cfg["aurmap_dir"].is_absolute():
-            aurmap_dir = cfg["aurmap_dir"]
-        else:
-            aurmap_dir = direc / cfg["aurmap_dir"]
-
     # %% loop over files / time
     for t in cfg["time"]:
         frame(direc, time=t, var=var, saveplot_fmt=saveplot_fmt, xg=xg, cfg=cfg, plotfun=plotfun)
-        glow(aurmap_dir, t, saveplot_fmt, xg=xg)
 
 
 def frame(
-    direc: Path,
+    path: Path,
     time: datetime = None,
     *,
     plotfun: T.Callable = None,
@@ -82,33 +73,52 @@ def frame(
     cfg: dict[str, T.Any] = None,
 ):
     """
-    if save_dir, plots will not be visible while generating to speed plot writing
+    Parameters
+    ----------
+
+    path: pathlib.Path
+        filename or directory + time to plot
+    time: datetime.datetime, optional
+        if path is a directory, time is required
     """
 
     if not var:
         var = PARAMS
+        var.add("aurora")
+
+    if not cfg:
+        cfg = read.config(path)
 
     if time is None:
-        dat = read.data(direc, var)
-        direc = direc.parent
+        # read a specific filename
+        dat = read.data(path, var)
+        path = path.parent
     else:
-        dat = read.frame(direc, time, var=var)
+        dat = read.frame(path, time, var=var)
 
     if not xg:
-        xg = read.grid(direc)
+        xg = read.grid(path)
 
     if plotfun is None:
         plotfun = grid2plotfun(xg)
 
+    t0 = to_datetime(dat.time)
+
     for k, v in dat.items():
-        if k == "Phitop":
-            continue
-            # FIXME: fix the reason why this plotting sometimes fails
-        if any(s in k for s in var):
-            if plotfun.__name__.startswith("curv"):
-                fg, ax = plotfun(cfg, xg, v)
-            else:
-                fg, ax = plotfun(
-                    to_datetime(dat.time), xg, v.squeeze(), wavelength=dat.get("wavelength")
-                )
-            save_fig(fg, direc, name=k, fmt=saveplot_fmt, time=time)
+        try:
+            if any(s in k for s in var):
+                if plotfun.__name__.startswith("curv"):
+                    fg, ax = plotfun(cfg, xg, v)
+                else:
+                    fg, ax = plotfun(t0, xg, v.squeeze(), wavelength=dat.get("wavelength"))
+                save_fig(fg, path, name=k, fmt=saveplot_fmt, time=t0)
+        except ValueError as e:
+            logging.error(f"SKIP: plot {k} at {t0} due to {e}")
+
+    if "aurora" in var:
+        if aurmap_dir := cfg.get("aurmap_dir"):
+            # handle relative or absolute path to GLOW data
+            if not aurmap_dir.is_absolute():
+                aurmap_dir = path / cfg["aurmap_dir"]
+
+            glow(aurmap_dir, t0, saveplot_fmt, xg=xg)

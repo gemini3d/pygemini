@@ -11,17 +11,13 @@ from .. import find
 
 
 def glow(
-    direc: T.Optional[Path],
+    direc: Path,
     time: datetime,
-    saveplot_fmt: str,
+    saveplot_fmt: str = None,
     xg: dict[str, T.Any] = None,
     fg: Figure = None,
 ):
     """plots Gemini-Glow auroral emissions"""
-
-    if direc is None:
-        # no glow in this sim
-        return
 
     cfg = read.config(direc.parent)
 
@@ -97,11 +93,14 @@ def emission_line(B: xarray.Dataset, time_str: str, fg: Figure):
     fg.suptitle(f"intensity: {time_str}")
 
 
-def save_glowframe(fg: Figure, filename: Path, saveplot_fmt: str):
+def save_glowframe(fg: Figure, filename: Path, fmt: T.Optional[str] = "png"):
     """CREATES IMAGE FILES FROM PLOTS"""
+
+    if not fmt:
+        fmt = "png"
 
     outdir = filename.parents[1] / "plots"
 
-    outfile = outdir / f"aurora-{filename.stem}.{saveplot_fmt}"
+    outfile = outdir / f"aurora-{filename.stem}.{fmt}"
     print("write:", outfile)
     fg.savefig(outfile)
