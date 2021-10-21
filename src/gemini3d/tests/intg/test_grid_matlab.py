@@ -25,13 +25,15 @@ def test_tilted_dipole():
     mat_path = os.environ.get("MATGEMINI")
     if not mat_path:
         # guess
-        root = Path(__file__).parents[4] / "mat_gemini"
+        root = Path(__file__).parents[5] / "mat_gemini"
         if not root.is_dir():
             raise FileNotFoundError(
-                "Please set MATGEMINI environment variable with top-level mat_gemini directory"
+                "Please set MATGEMINI environment variable with top-level mat_gemini directory."
+                f"\nMatGemini not found at {root}"
             )
-        if not (root / "setup.m").is_file():
-            raise FileNotFoundError("expected to find mat_gemini/setup.m")
+        mg_setup = root / "setup.m"
+        if not mg_setup.is_file():
+            raise FileNotFoundError(str(mg_setup))
 
     eng = mateng.start_matlab("-nojvm")
     eng.addpath(str(root))
@@ -54,7 +56,7 @@ def test_tilted_dipole():
     xg = grid.tilted_dipole3d(parm)
 
     # grid generated with MATLAB
-    xg_matlab = eng.gemini3d.grid.tilted_dipole3d(parm)
+    xg_matlab = eng.gemini3d.grid.tilted_dipole(parm)
     eng.quit()
 
     # # https://github.com/gemini3d/gemini-examples/tree/main/ci/daily/tohoku20112D_medres_axineu_CI
@@ -66,12 +68,12 @@ def test_tilted_dipole():
     fail = []
     for k in xg.keys():
         amat = np.asarray(xg_matlab[k]).squeeze()
-        if xg[k].squeeze() != pytest.approx(amat, rel=1e-6):
+        if np.squeeze(xg[k]) != pytest.approx(amat, rel=1e-6):
             print(
-                f"MISMATCH: {k}: python / matlab shapes:  {xg[k].shape} / {np.shape(xg_matlab[k])}"
+                f"MISMATCH: {k}: python / matlab shapes:  {np.shape(xg[k])} / {np.shape(xg_matlab[k])}"
             )
             fail.append(k)
-            print(xg[k].squeeze())
+            print(np.squeeze(xg[k]))
             print(amat)
 
     assert not fail, f"{len(fail)} / {len(xg.keys())} keys failed: {' '.join(fail)}"
