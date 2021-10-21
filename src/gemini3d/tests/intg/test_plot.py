@@ -3,14 +3,14 @@ from datetime import datetime
 import pytest
 import importlib.resources
 import os
-
-try:
-    import matplotlib  # noqa: F401
-except ImportError as e:
-    pytest.skip(f"Matplotlib missing {e}", allow_module_level=True)
+import re
 
 import gemini3d.web
-import gemini3d.plot
+
+try:
+    import gemini3d.plot
+except ImportError as e:
+    pytest.skip(f"Matplotlib missing {e}", allow_module_level=True)
 
 
 @pytest.mark.parametrize(
@@ -34,5 +34,8 @@ def test_plot(name, tmp_path, monkeypatch):
     gemini3d.plot.frame(tmp_path, datetime(2013, 2, 20, 5), saveplot_fmt="png")
 
     plot_files = sorted((tmp_path / "plots").glob("*.png"))
+    plot_names = [f.name for f in plot_files]
 
-    assert len(plot_files) == 66
+    for h in ("aurora", "J1", "J2", "J3", "v1", "v2", "v3", "ne", "Te", "Ti", "Phitop"):
+        pat = fr"^{h}-.*\.png"
+        assert len(list(filter(re.compile(pat).match, plot_names))) == 6, f"expected 6 {pat} plots"
