@@ -23,8 +23,8 @@ import gemini3d.plot
 )
 def test_plot(name, tmp_path, monkeypatch):
 
-    if not os.environ.get("GEMINI_SIMROOT"):
-        monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
+    if not os.environ.get("GEMINI_CIROOT"):
+        monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:

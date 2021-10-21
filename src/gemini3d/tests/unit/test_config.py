@@ -1,4 +1,5 @@
 import pytest
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 import importlib.resources
@@ -101,9 +102,11 @@ def test_namelist_exists(group):
         assert config.namelist_exists(cfn, "base")
 
 
-def test_nml_gemini_simroot(monkeypatch, tmp_path):
+def test_nml_gemini_env_root(monkeypatch, tmp_path):
 
-    monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path))
+    if not os.environ.get("GEMINI_CIROOT"):
+        monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path))
+
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         cfg = config.parse_namelist(cfn, "setup")
 
@@ -144,7 +147,8 @@ def test_msis20_namelist(namelist):
 
 def test_read_config_nml(monkeypatch, tmp_path):
 
-    monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path))
+    if not os.environ.get("GEMINI_CIROOT"):
+        monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path))
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         params = read.config(cfn)

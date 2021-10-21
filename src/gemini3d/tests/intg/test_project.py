@@ -48,8 +48,8 @@ def test_grid(name, file_format, tmp_path, monkeypatch):
     if file_format.endswith("nc"):
         pytest.importorskip("netCDF4")
 
-    if not os.environ.get("GEMINI_SIMROOT"):
-        monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
+    if not os.environ.get("GEMINI_CIROOT"):
+        monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
@@ -76,8 +76,8 @@ def test_grid(name, file_format, tmp_path, monkeypatch):
 )
 def test_Efield(name, file_format, tmp_path, monkeypatch):
 
-    if not os.environ.get("GEMINI_SIMROOT"):
-        monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
+    if not os.environ.get("GEMINI_CIROOT"):
+        monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
@@ -103,8 +103,8 @@ def test_Efield(name, file_format, tmp_path, monkeypatch):
 )
 def test_precip(name, file_format, tmp_path, monkeypatch):
 
-    if not os.environ.get("GEMINI_SIMROOT"):
-        monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
+    if not os.environ.get("GEMINI_CIROOT"):
+        monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
     with importlib.resources.path("gemini3d.tests.data", "__init__.py") as fn:
@@ -144,8 +144,8 @@ def test_precip(name, file_format, tmp_path, monkeypatch):
 )
 def test_runner(name, file_format, tmp_path, monkeypatch):
 
-    if not os.environ.get("GEMINI_SIMROOT"):
-        monkeypatch.setenv("GEMINI_SIMROOT", str(tmp_path / "gemini_data"))
+    if not os.environ.get("GEMINI_CIROOT"):
+        monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
     out_dir = tmp_path
     # get files if needed
