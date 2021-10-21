@@ -10,14 +10,10 @@ on:
   push:
     paths:
     - "**.py"
-    - "**.cmake"
-    - "**/CMakeLists.txt"
-    - ".github/workflows/ci.yml"
+    - ".github/workflows/ci_windows.yml"
     pull_request:
     - "**.py"
-    - "**.cmake"
-    - "**/CMakeLists.txt"
-    - ".github/workflows/ci.yml"
+    - ".github/workflows/ci_windows.yml"
 
 
 jobs:
