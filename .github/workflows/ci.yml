@@ -20,7 +20,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     strategy:
       matrix:
         python-version: [ 3.8, 3.9 ]
