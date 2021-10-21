@@ -22,18 +22,20 @@ def test_tilted_dipole():
     mateng = pytest.importorskip("matlab.engine")
 
     # find MatGemini
-    mat_path = os.environ.get("MATGEMINI")
-    if not mat_path:
+    root = os.environ.get("MATGEMINI")
+    if not root:
         # guess
         root = Path(__file__).parents[5] / "mat_gemini"
-        if not root.is_dir():
-            raise FileNotFoundError(
-                "Please set MATGEMINI environment variable with top-level mat_gemini directory."
-                f"\nMatGemini not found at {root}"
-            )
-        mg_setup = root / "setup.m"
-        if not mg_setup.is_file():
-            raise FileNotFoundError(str(mg_setup))
+
+    root = Path(root).expanduser()
+    if not root.is_dir():
+        raise FileNotFoundError(
+            "Please set MATGEMINI environment variable with top-level mat_gemini directory."
+            f"\nMatGemini not found at {root}"
+        )
+    mg_setup = root / "setup.m"
+    if not mg_setup.is_file():
+        raise FileNotFoundError(str(mg_setup))
 
     eng = mateng.start_matlab("-nojvm")
     eng.addpath(str(root))
