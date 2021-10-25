@@ -17,7 +17,7 @@ def exe() -> str:
 
     cmake = shutil.which("cmake")
     if not cmake:
-        raise FileNotFoundError("CMake not found.")
+        raise FileNotFoundError("CMake not found.  Try:\n    pip install cmake")
 
     cmake_version = (
         subprocess.check_output([cmake, "--version"], text=True).split("\n")[0].split(" ")[2]

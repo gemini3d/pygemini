@@ -4,8 +4,6 @@
 
 A Python interface to [Gemini3D](https://github.com/gemini3d/gemini), funded in part by NASA HDEE.
 
-## Setup
-
 Setup PyGemini by:
 
 ```sh
@@ -13,8 +11,6 @@ git clone https://github.com/gemini3d/pygemini
 
 pip install -e pygemini
 ```
-
-### build
 
 Not all users need to run Gemini3D on the same device where PyGemini is installed.
 Before the first `gemini3d.run()`, the underlying Gemini3D code is built by `gemini3d.setup()`, including all necessary libraries.
@@ -25,7 +21,7 @@ python -m gemini3d.prereqs
 
 allows manually installing those libraries to save rebuild time, but this is optional as Gemini3D automatically downloads and builds missing libraries.
 
-### Developers
+## Developers
 
 For those working with GEMINI Fortran code itself or to work with non-release versions of GEMINI Fortran code:
 
