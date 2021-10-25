@@ -67,13 +67,13 @@ def compare_output(
                     logging.error(f"{k} {st} too similar to prior step")
 
         if i == 3:
-            for k in ("Ti", "Te"):
+            for k in {"Ti", "Te"}:
                 if np.allclose(ref[k], A[k], rtol=0.01 * tol["rtolT"], atol=0.1 * tol["atolT"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
         if i == 2:
-            for k in ("J1", "J2", "J3"):
+            for k in {"J1", "J2", "J3"}:
                 if np.allclose(ref[k], a, rtol=0.01 * tol["rtolJ"], atol=0.1 * tol["atolJ"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")

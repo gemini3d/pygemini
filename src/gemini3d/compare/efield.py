@@ -28,7 +28,7 @@ def compare_Efield(
     for t in times:
         ref = read.Efield(find.frame(refdir, t))
         new = read.Efield(find.frame(newdir, t), file_format=file_format)
-        for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+        for k in {"Exit", "Eyit", "Vminx1it", "Vmaxx1it"}:
             b = ref[k]
             a = new[k]
 

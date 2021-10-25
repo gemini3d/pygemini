@@ -47,7 +47,7 @@ def runner(pr: dict[str, T.Any]) -> None:
         pass
 
     # %% setup grid and/or initial ionosphere state if needed
-    for k in ("indat_size", "indat_grid", "indat_file"):
+    for k in {"indat_size", "indat_grid", "indat_file"}:
         f = out_dir / p[k].expanduser()
         if pr.get("force") or not f.is_file():
             model.setup(p["nml"], out_dir)

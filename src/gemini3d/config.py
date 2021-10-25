@@ -11,6 +11,8 @@ from . import namelist
 
 NaN = math.nan
 
+__all__ = ["datetime_range", "read_nml"]
+
 
 def datetime_range(start: datetime, stop: datetime, step: timedelta) -> list[datetime]:
 
@@ -65,8 +67,10 @@ def read_nml(fn: Path) -> dict[str, T.Any]:
 
 
 def namelist_exists(fn: Path, nml: str) -> bool:
-    """determines if a namelist exists in a
-    does not check for proper formatting etc."""
+    """
+    Determines if a namelist exists in a file.
+    Does not check for proper format / syntax.
+    """
 
     pat = re.compile(r"^\s*&(" + nml + ")$")
 
@@ -80,8 +84,8 @@ def namelist_exists(fn: Path, nml: str) -> bool:
 
 def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
     """
-    this is Gemini-specific
-    don't resolve absolute paths here because that assumes same machine
+    Parses Gemini-specific namelists in a file to dict.
+    Does not resolve absolute paths here because that assumes same machine
     """
 
     r = namelist.read(file, nml)
@@ -89,7 +93,7 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
     if nml == "base":
         P = parse_base(r)
     elif nml == "flags":
-        P = parse_flags(r)
+        P = _parse_flags(r)
     elif nml == "files":
         P = parse_files(r)
     elif nml == "setup":
@@ -143,7 +147,7 @@ def parse_base(r: dict[str, T.Any]) -> dict[str, T.Any]:
     return P
 
 
-def parse_flags(r: dict[str, T.Any]) -> dict[str, T.Any]:
+def _parse_flags(r: dict[str, T.Any]) -> dict[str, T.Any]:
 
     P = {}
     for k in r:
@@ -156,7 +160,7 @@ def parse_files(r: dict[str, T.Any]) -> dict[str, T.Any]:
 
     P = {}
 
-    for k in ("indat_file", "indat_grid", "indat_size"):
+    for k in {"indat_file", "indat_grid", "indat_size"}:
         P[k] = r[k]
 
     P["file_format"] = r.get("file_format", Path(P["indat_size"]).suffix)
@@ -165,10 +169,7 @@ def parse_files(r: dict[str, T.Any]) -> dict[str, T.Any]:
     if "realbits" in r:
         P["realbits"] = int(r["realbits"])
     else:
-        if P["file_format"] in ("raw", "dat"):
-            P["realbits"] = 64
-        else:
-            P["realbits"] = 32
+        P["realbits"] = 64 if P["file_format"] in {"raw", "dat"} else 32
 
     return P
 
@@ -333,7 +334,7 @@ def read_ini(fn: Path) -> dict[str, T.Any]:
         P["flagoutput"] = int(f.readline().split()[0])
         P["flagcap"] = int(f.readline().split()[0])
 
-        for k in ("indat_size", "indat_grid", "indat_file"):
+        for k in {"indat_size", "indat_grid", "indat_file"}:
             P[k] = Path(f.readline().strip().replace("'", "").replace('"', "")).expanduser()
 
     return P

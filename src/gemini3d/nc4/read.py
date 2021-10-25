@@ -136,11 +136,11 @@ def Efield(file: Path) -> xarray.Dataset:
 
     with Dataset(file, "r") as f:
         E["flagdirich"] = f["flagdirich"][()].item()
-        for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+        for p in {"Exit", "Eyit", "Vminx1it", "Vmaxx1it"}:
             E[p] = (("mlat", "mlon"), f[p][:])
-        for p in ("Vminx2ist", "Vmaxx2ist"):
+        for p in {"Vminx2ist", "Vmaxx2ist"}:
             E[p] = (("mlat",), f[p][:])
-        for p in ("Vminx3ist", "Vmaxx3ist"):
+        for p in {"Vminx3ist", "Vmaxx3ist"}:
             E[p] = (("mlon",), f[p][:])
 
     return E
@@ -155,7 +155,7 @@ def precip(file: Path) -> xarray.Dataset:
         dat = xarray.Dataset(coords={"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]})
 
     with Dataset(file, "r") as f:
-        for k in ("Q", "E0"):
+        for k in {"Q", "E0"}:
             dat[k] = (("mlat", "mlon"), f[f"/{k}p"][:])
 
     return dat

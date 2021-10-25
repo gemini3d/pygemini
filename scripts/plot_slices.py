@@ -53,7 +53,7 @@ if __name__ == "__main__":
     if x3.size == dat["ne"][1].shape[2] + Ng:
         x3 = x3[2:-2]
 
-    for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
+    for p in {"ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"}:
         if p in dat:
             fg = figure(figsize=(15, 5), tight_layout=True)  # , constrained_layout=True)
             # %% left panel
