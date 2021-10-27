@@ -280,6 +280,7 @@ def parse_setup(r: dict[str, T.Any]) -> dict[str, T.Any]:
             "Efield_llat",
             "precip_llon",
             "precip_llat",
+            "random_seed_init",
         }:
             P[k] = int(r[k])
         elif k in {
