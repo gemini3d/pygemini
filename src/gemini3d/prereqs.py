@@ -20,7 +20,6 @@ from pathlib import Path
 import importlib.resources
 
 from . import cmake
-from .utils import get_cpu_count
 from .web import url_retrieve, git_download
 from .archive import extract_tar
 
@@ -189,9 +188,7 @@ Use MPI on Windows via any of (choose one):
 
     subprocess.check_call(cmd, cwd=source_dir, env=env)
 
-    Njobs = get_cpu_count()
-
-    cmd = ["make", "-C", str(source_dir), "-j", str(Njobs), "install"]
+    cmd = ["make", "-C", str(source_dir), "-j", "install"]
 
     if dryrun:
         print("DRYRUN: would have run\n", " ".join(cmd))

@@ -11,17 +11,14 @@ import shutil
 
 import gemini3d.web
 import gemini3d.read
-from . import mpi
 
 
 def cli():
     p = argparse.ArgumentParser()
     p.add_argument("testname", help="name of test")
-    p.add_argument("-mpiexec", help="mpiexec path")
-    p.add_argument("exe", help="Gemini.bin executable binary")
+    p.add_argument("exe", help="Gemini3D executable binary")
     p.add_argument("outdir", help="output directory")
     p.add_argument("refdir", help="reference directory")
-    p.add_argument("-np", help="force number of MPI images", type=int)
     p.add_argument(
         "-out_format",
         help="override config.nml output file format",
@@ -32,11 +29,9 @@ def cli():
 
     runner(
         P.testname,
-        P.mpiexec,
         P.exe,
         P.outdir,
         P.refdir,
-        mpi_count=P.np,
         out_format=P.out_format,
         dryrun=P.dryrun,
     )
@@ -44,12 +39,10 @@ def cli():
 
 def runner(
     test_name: str,
-    mpiexec: str,
     exe: str,
     outdir: Path,
     refdir: Path,
     *,
-    mpi_count: int = None,
     out_format: str = None,
     dryrun: bool = False,
 ):
@@ -95,15 +88,8 @@ def runner(
     if "neutral_perturb" in cfg and not (outdir / cfg["sourcedir"]).is_dir():
         shutil.copytree(ref / cfg["sourcedir"], outdir / cfg["sourcedir"])
 
-    if not mpi_count:
-        mpi_count = mpi.count(ref / cfg["indat_size"], 0)
-
     # have to get exe as absolute path
-    exe_abs = Path(exe).resolve()
-    if mpiexec:
-        cmd = [mpiexec, "-np", str(mpi_count), str(exe_abs), str(outdir)]
-    else:
-        cmd = [str(exe_abs), str(outdir)]
+    cmd = [str(Path(exe).resolve()), str(outdir)]
     if out_format:
         cmd += ["-out_format", out_format]
     if dryrun:

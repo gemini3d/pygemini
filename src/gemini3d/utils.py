@@ -175,7 +175,7 @@ def get_cpu_count() -> int:
     """get a physical CPU count
 
     Note: len(os.sched_getaffinity(0)) and multiprocessing.cpu_count don't help either
-    PSUtil is the most reliable, so we strongly recommend it.
+    We'd like to use HWLOC instead, but for now we leave PSUtil.
 
     Returns
     -------
@@ -183,24 +183,22 @@ def get_cpu_count() -> int:
         detect number of physical CPU
     """
 
-    import psutil
-
     extradiv = 1
-    max_cpu = None
     # without psutil, hyperthreaded CPU may overestimate physical count by factor of 2 (or more)
-    if psutil is not None:
+    try:
+        import psutil
+
         max_cpu = psutil.cpu_count(logical=False)
         if max_cpu is None:
             max_cpu = psutil.cpu_count()
             extradiv = 2
-    if max_cpu is None:
+    except ImportError:
         max_cpu = os.cpu_count()
-        if max_cpu is not None:
-            extradiv = 2
-        else:
-            max_cpu = 1
+        extradiv = 2
 
-    return max_cpu // extradiv
+    max_cpu = 1 if max_cpu is None else max_cpu // extradiv
+
+    return max_cpu
 
 
 def datetime2ymd_hourdec(dt: datetime) -> str:

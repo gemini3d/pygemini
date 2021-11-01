@@ -28,8 +28,7 @@ if __name__ == "__main__":
     p.add_argument("out_dir", help="reference file output directory (typically test_data/)")
     p.add_argument("-only", help="test cases (pattern) to run (default all)")
     p.add_argument("-mpiexec", help="path to desired mpiexec executable")
-    p.add_argument("-gemexe", help="path to desired gemini.bin")
-    p.add_argument("-n", "--cpu", help="number of CPU cores", type=int, default=0)
+    p.add_argument("-gemexe", help="path to Gemini3D executable")
     p.add_argument("-f", "--force", help="force regeneration of simulation", action="store_true")
     p.add_argument(
         "-out_format", help="override Fortran output file format", choices=["h5", "nc", "raw"]
@@ -49,7 +48,6 @@ if __name__ == "__main__":
             "gemexe": P.gemexe,
             "force": P.force,
             "out_format": P.out_format,
-            "cpu_count": P.cpu,
         }
 
         gemini3d.job.runner(params)

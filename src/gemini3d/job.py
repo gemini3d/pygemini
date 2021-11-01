@@ -11,7 +11,6 @@ import subprocess
 import shutil
 from pathlib import Path
 import numpy as np
-import psutil
 
 from . import find
 from .hpc import hpc_batch_detect, hpc_batch_create
@@ -94,14 +93,20 @@ def runner(pr: dict[str, T.Any]) -> None:
         job_file = hpc_batch_create(batcher, out_dir, cmd)
         print("Please examine batch file", job_file, "and when ready submit the job as usual.")
     else:
-        avail_memory = psutil.virtual_memory().available
-        if avail_memory < 2 * ram_use_bytes:
-            logging.warning(
-                f"""
-Computer RAM available: {avail_memory/1e9:.1} GB but simulation needs {ram_use_bytes/1e9:.1}
-Gemini3D may run out of RAM on this computer, which may make the run exceedingly slow or fail.
-"""
-            )
+        try:
+            import psutil
+
+            avail_memory = psutil.virtual_memory().available
+            if avail_memory < 2 * ram_use_bytes:
+                logging.warning(
+                    f"""
+    Computer RAM available: {avail_memory/1e9:.1} GB but simulation needs {ram_use_bytes/1e9:.1}
+    Gemini3D may run out of RAM on this computer, which may make the run exceedingly slow or fail.
+    """
+                )
+        except ImportError:
+            pass
+
         print("\nBEGIN Gemini run with command:")
         print(" ".join(cmd), "\n")
         ret = subprocess.run(cmd, cwd=str(gemexe.parent)).returncode
