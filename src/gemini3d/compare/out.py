@@ -12,7 +12,7 @@ from .. import read
 
 def compare_output(
     new_dir: Path,
-    refdir: Path,
+    ref_dir: Path,
     *,
     tol: dict[str, float] = None,
     file_format: str = "",
@@ -37,7 +37,7 @@ def compare_output(
         A = read.frame(new_dir, t, file_format=file_format)
         if not A:
             raise FileNotFoundError(f"{new_dir} does not appear to contain data at {t}")
-        B = read.frame(refdir, t)
+        B = read.frame(ref_dir, t)
         # don't specify file_format for reference,
         # so that one reference file format can check multiple "out" format
 
@@ -54,7 +54,7 @@ def compare_output(
                 errs += 1
                 logging.error(f"{k} {st}   {err_pct(a, b):.1f}")
                 if plot:
-                    plotdiff(a, b, t, new_dir, refdir)
+                    plotdiff(a, b, t, new_dir, ref_dir)
         # %% assert time steps have unique output (earth always rotating...)
         if i > 1:
             names = ["ne", "v1", "v2", "v3"]
