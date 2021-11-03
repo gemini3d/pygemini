@@ -96,6 +96,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Tell PATH to debug transient CI failures
+      if: failure()
       run: echo $PATH
 
     - run: python -m pip install .[tests,plots]
@@ -112,7 +113,7 @@ jobs:
 
     - name: build msis_setup, gemini3d.run, gemini.bin executables
       run: python -c "import gemini3d; gemini3d.setup()"
-      timeout-minutes: 3
+      timeout-minutes: 5
 
     - name: Integration Tests
       run: pytest --pyargs gemini3d.tests.intg
