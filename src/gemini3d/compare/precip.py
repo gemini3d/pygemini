@@ -12,13 +12,16 @@ from .. import read, find
 
 def compare_precip(
     times: list[datetime],
-    newdir: Path,
-    refdir: Path,
+    new_dir: Path,
+    ref_dir: Path,
     *,
     tol: dict[str, float] = None,
     plot: bool = False,
     file_format: str = None,
 ) -> int:
+
+    new_dir = Path(new_dir).expanduser().resolve(strict=True)
+    ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
 
     prec_errs = 0
 
@@ -27,8 +30,8 @@ def compare_precip(
 
     # often we reuse precipitation inputs without copying over files
     for t in times:
-        ref = read.precip(find.frame(refdir, t))
-        new = read.precip(find.frame(newdir, t), file_format=file_format)
+        ref = read.precip(find.frame(ref_dir, t))
+        new = read.precip(find.frame(new_dir, t), file_format=file_format)
 
         for k in ref.keys():
             b = ref[k]
@@ -40,8 +43,8 @@ def compare_precip(
                 prec_errs += 1
                 logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
                 if plot:
-                    plotdiff(a, b, t, newdir.parent, refdir.parent)
+                    plotdiff(a, b, t, new_dir.parent, ref_dir.parent)
             if prec_errs == 0:
-                logging.info(f"OK: {k}  {newdir}")
+                logging.info(f"OK: {k}  {new_dir}")
 
     return prec_errs

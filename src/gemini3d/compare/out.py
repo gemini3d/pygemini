@@ -20,6 +20,9 @@ def compare_output(
 ) -> int:
     """compare simulation outputs"""
 
+    new_dir = Path(new_dir).expanduser().resolve(strict=True)
+    ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
+
     ref: dict[str, T.Any] = {}
     errs = 0
 

@@ -92,7 +92,11 @@ def test_Efield(name, file_format, tmp_path, monkeypatch):
     cfg["E0dir"] = cfg["out_dir"] / cfg["E0dir"]
     Efield_BCs(cfg, xg)
     errs = compare_Efield(
-        cfg["time"], cfg["E0dir"], refdir=test_dir / E0dir, plot=False, file_format=file_format
+        cfg["time"],
+        new_dir=cfg["E0dir"],
+        ref_dir=test_dir / E0dir,
+        plot=False,
+        file_format=file_format,
     )
 
     assert errs == 0, f"Efield mismatch {cfg['out_dir']}  {test_dir}"
@@ -121,7 +125,11 @@ def test_precip(name, file_format, tmp_path, monkeypatch):
     particles_BCs(cfg, xg)
 
     errs = compare_precip(
-        cfg["time"], cfg["precdir"], refdir=test_dir / precdir, plot=False, file_format=file_format
+        cfg["time"],
+        new_dir=cfg["precdir"],
+        ref_dir=test_dir / precdir,
+        plot=False,
+        file_format=file_format,
     )
 
     assert errs == 0, f"precipitation mismatch {cfg['out_dir']}  {test_dir}"
@@ -173,7 +181,7 @@ def test_runner(name, file_format, tmp_path, monkeypatch):
 
     # %% check generated files
     errs = compare_all(
-        params["out_dir"], refdir=test_dir, only="in", plot=False, file_format=file_format
+        params["out_dir"], ref_dir=test_dir, only="in", plot=False, file_format=file_format
     )
 
     if errs:

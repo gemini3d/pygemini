@@ -14,7 +14,7 @@ from .efield import compare_Efield
 
 def compare_input(
     new_dir: Path,
-    refdir: Path,
+    ref_dir: Path,
     *,
     tol: dict[str, float] = None,
     file_format: str = None,
@@ -23,8 +23,11 @@ def compare_input(
 
     names = {"ns", "Ts", "vs1"}
 
-    ref_params = read.config(refdir)
-    ref_indir = refdir / ref_params["indat_file"].parts[-2]
+    new_dir = Path(new_dir).expanduser().resolve(strict=True)
+    ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
+
+    ref_params = read.config(ref_dir)
+    ref_indir = ref_dir / ref_params["indat_file"].parts[-2]
     ref = read.data(ref_indir / ref_params["indat_file"].name, var=names)
 
     new_params = read.config(new_dir)
@@ -58,7 +61,7 @@ def compare_input(
                     # just plot electron density
                     a = a[-1]
                     b = b[-1]
-                plotdiff(a, b, ref_params["time"][0], new_dir, refdir)
+                plotdiff(a, b, ref_params["time"][0], new_dir, ref_dir)
 
     if "precdir" in new_params:
         prec_errs = compare_precip(

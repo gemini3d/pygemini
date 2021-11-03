@@ -37,7 +37,8 @@ def plotdiff(
         logging.error("Matplotlib not available")
         return
 
-    new_dir = Path(new_dir).expanduser()
+    new_dir = Path(new_dir).expanduser().resolve(strict=True)
+    ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
 
     if not name:
         name = str(A.name)

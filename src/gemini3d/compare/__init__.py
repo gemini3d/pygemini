@@ -16,7 +16,7 @@ from .precip import compare_precip
 
 def compare_all(
     new_dir: Path,
-    refdir: Path,
+    ref_dir: Path,
     *,
     tol: dict[str, float] = None,
     plot: bool = True,
@@ -26,24 +26,24 @@ def compare_all(
     """
     compare two directories across time steps
     """
-    new_dir = Path(new_dir).expanduser()
-    refdir = Path(refdir).expanduser()
+    new_dir = Path(new_dir).expanduser().resolve(strict=True)
+    ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
 
-    if new_dir.samefile(refdir):
+    if new_dir.samefile(ref_dir):
         raise OSError(f"reference and output are the same directory: {new_dir}")
 
     # %% fail immediately if grid doesn't match as data would be non-sensical
-    if compare_grid(new_dir, refdir, tol=tol, file_format=file_format) != 0:
-        raise ValueError(f"grid values do not match {new_dir}  {refdir}")
+    if compare_grid(new_dir, ref_dir, tol=tol, file_format=file_format) != 0:
+        raise ValueError(f"grid values do not match {new_dir}  {ref_dir}")
 
     errs = {}
     if not only or only == "out":
-        e = compare_output(new_dir, refdir, tol=tol, file_format=file_format, plot=plot)
+        e = compare_output(new_dir, ref_dir, tol=tol, file_format=file_format, plot=plot)
         if e:
             errs["out"] = e
 
     if not only or only == "in":
-        e = compare_input(new_dir, refdir, tol=tol, file_format=file_format, plot=plot)
+        e = compare_input(new_dir, ref_dir, tol=tol, file_format=file_format, plot=plot)
         if e:
             errs["in"] = e
 

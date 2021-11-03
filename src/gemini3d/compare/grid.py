@@ -9,10 +9,13 @@ from .. import read
 
 
 def compare_grid(
-    new_dir: Path, refdir: Path, *, tol: dict[str, float] = None, file_format: str = None
+    new_dir: Path, ref_dir: Path, *, tol: dict[str, float] = None, file_format: str = None
 ) -> int:
 
-    ref = read.grid(refdir)
+    new_dir = Path(new_dir).expanduser().resolve(strict=True)
+    ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
+
+    ref = read.grid(ref_dir)
     new = read.grid(new_dir, file_format=file_format)
 
     errs = 0

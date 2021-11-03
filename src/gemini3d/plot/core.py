@@ -58,7 +58,7 @@ def save_fig(
     else:
         tstr = f"-{time.isoformat().replace(':','')}"
 
-    plot_fn = direc / f"plots/{name}{tstr}.{fmt}"
+    plot_fn = Path(direc).expanduser().resolve(strict=True) / f"plots/{name}{tstr}.{fmt}"
     plot_fn.parent.mkdir(exist_ok=True)
     print(f"{time} => {plot_fn}")
     fg.savefig(plot_fn)
