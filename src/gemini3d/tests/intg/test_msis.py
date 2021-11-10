@@ -62,7 +62,7 @@ def test_msis(version, tmp_path):
     try:
         atmos = gp.msis_setup(cfg, xg)
     except RuntimeError as e:
-        if "-Dmsis20=" in str(e):
+        if "-Dmsis2=" in str(e):
             pytest.skip("MSIS 2.0 wasn't available")
         raise
 

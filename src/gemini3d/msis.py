@@ -93,7 +93,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
                 raise RuntimeError(ret.stdout)
 
     elif ret.returncode == 20:
-        raise RuntimeError("Need to compile with 'cmake -Dmsis20=true'")
+        raise RuntimeError("Need to compile Gemini3D with 'cmake -Dmsis2=true'")
     else:
         raise RuntimeError(
             f"MSIS failed to run: return code {ret.returncode}. See console for additional error info."

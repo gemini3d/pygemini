@@ -150,7 +150,7 @@ def build_gemini3d(targets: list[str]):
         build_dir,
         run_test=False,
         install=False,
-        config_args=["-DBUILD_TESTING:BOOL=false", "-Dmsis20:BOOL=true"],
+        config_args=["-DBUILD_TESTING:BOOL=false", "-Dmsis2:BOOL=true"],
         build_args=["--target", *targets],
     )
 
