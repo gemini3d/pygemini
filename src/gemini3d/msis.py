@@ -23,7 +23,7 @@ def get_msis_exe() -> T.Optional[str]:
     name = "msis_setup"
     gemini_root = cmake.get_gemini_root()
 
-    for n in [".", "build", "build/Release", "build/RelWithDebInfo", "build/Debug"]:
+    for n in [".", "build", "build/bin", "build/Release", "build/RelWithDebInfo", "build/Debug"]:
         msis_exe = shutil.which(name, path=gemini_root / n)
         if msis_exe:
             break
