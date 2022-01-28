@@ -16,12 +16,14 @@ import xarray
 from . import cmake
 
 
-def get_msis_exe() -> T.Optional[str]:
+def get_msis_exe(gemini_root: Path = None) -> T.Optional[str]:
     """
     find MSIS_SETUP executable
     """
     name = "msis_setup"
-    gemini_root = cmake.get_gemini_root()
+
+    if not gemini_root:
+        gemini_root = cmake.get_gemini_root()
 
     for n in [".", "build", "build/bin", "build/Release", "build/RelWithDebInfo", "build/Debug"]:
         msis_exe = shutil.which(name, path=gemini_root / n)
@@ -38,7 +40,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     [f107a, f107, ap] = activ
     """
 
-    msis_exe = get_msis_exe()
+    msis_exe = get_msis_exe(p.get("gemini_root"))
 
     if not msis_exe:
         raise EnvironmentError(
