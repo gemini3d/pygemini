@@ -77,14 +77,14 @@ def to_datetime(times: xarray.DataArray | np.datetime64 | datetime) -> datetime:
     if isinstance(times, datetime):
         time = times
     elif isinstance(times, xarray.DataArray):
-        time = times.data.squeeze()[()]  # numpy.datetime64
+        time = times.data.squeeze()[()]
     elif isinstance(times, np.datetime64):
-        time = times.squeeze()[()]
+        time = times.squeeze()[()]  # type: ignore
     else:
         raise TypeError("expected datetime-like value")
 
     if isinstance(time, np.datetime64):
-        time = time.astype("datetime64[us]").astype(datetime)
+        time = time.astype("datetime64[us]").astype(datetime)  # type: ignore
 
     return time
 
