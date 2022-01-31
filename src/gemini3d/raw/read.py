@@ -104,7 +104,8 @@ def grid3(fn: Path, lx: tuple[int, ...] | list[int]) -> dict[str, T.Any]:
 
     ft = np.float64
 
-    xg = {"lx": lx}
+    xg : dict[str, T.Any] = {"lx": lx}
+    # NOTE: keep type hint to avoid platform-sensitive mypy failure
 
     read = np.fromfile
 
