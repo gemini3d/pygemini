@@ -23,8 +23,7 @@ jobs:
     timeout-minutes: 3
     strategy:
       matrix:
-        python-version: [ 3.8, 3.9 ]
-    # python 3.10 prereqs e.g. h5py not yet Python 3.10 wheels
+        python-version: [ "3.8", "3.9" , "3.10" ]
     name: Lint Python ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v2
@@ -44,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.8', '3.9' ]
+        python-version: [ '3.8', '3.9', '3.10' ]
     name: Linux Python ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v2
