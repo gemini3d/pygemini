@@ -5,10 +5,7 @@ import typing as T
 from pathlib import Path
 import tempfile
 
-try:
-    import zstandard
-except ImportError:
-    zstandard = None  # type: ignore
+import zstandard
 
 Pathlike = T.Union[str, Path]
 
@@ -26,8 +23,6 @@ def extract_zst(archive: Pathlike, out_path: Pathlike):
     out_path: pathlib.Path or str
       directory to extract files and directories to
     """
-    if zstandard is None:
-        raise ImportError("pip install zstandard")
 
     archive = Path(archive).expanduser().resolve()
     out_path = Path(out_path).expanduser().resolve()
