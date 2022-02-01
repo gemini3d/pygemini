@@ -50,23 +50,29 @@ def git_download(path: Path, repo: str, tag: str = None):
 
 def download_and_extract(test_name: str, data_dir: Path) -> Path:
 
-    with importlib.resources.path("gemini3d.tests", "ref_data.json") as url_ini:
-        z = get_test_params(test_name, url_ini, data_dir)
+    ref_file = data_dir / "ref_data.json"
 
-        if z["dir"].is_dir():
-            return z["dir"]
+    if not ref_file.is_file():
+        jmeta = json.loads(importlib.resources.read_text("gemini3d", "libraries.json"))
+        url_retrieve(
+            url=jmeta["ref_data"]["url"],
+            outfile=ref_file,
+            filehash=("sha256", jmeta["ref_data"]["sha256"]),
+        )
 
-        try:
-            url_retrieve(z["url"], z["archive"], ("sha256", z["sha256"]))
-        except (ConnectionError, ValueError) as e:
-            raise ConnectionError(f"problem downloading reference data {e}")
+    z = get_test_params(test_name, url_file=ref_file, ref_dir=data_dir)
 
-        if z["archive"].suffix == ".zst":
-            extract_zst(z["archive"], z["dir"])
-        elif z["archive"].suffix == ".zip":
-            extract_zip(z["archive"], z["dir"])
-        else:
-            extract_tar(z["archive"], z["dir"])
+    if z["dir"].is_dir():
+        return z["dir"]
+
+    url_retrieve(z["url"], z["archive"], ("sha256", z["sha256"]))
+
+    if z["archive"].suffix == ".zst":
+        extract_zst(z["archive"], z["dir"])
+    elif z["archive"].suffix == ".zip":
+        extract_zip(z["archive"], z["dir"])
+    else:
+        extract_tar(z["archive"], z["dir"])
 
     return z["dir"]
 
@@ -124,7 +130,7 @@ def url_retrieve(
 
     if filehash and filehash[1]:
         if not file_checksum(outfile, filehash[0], filehash[1]):
-            raise ValueError(f"Hash mismatch: {outfile}")
+            raise ValueError(f"Hash mismatch: {outfile} from {url}")
 
 
 def file_checksum(fn: Path, mode: str, filehash: str) -> bool:

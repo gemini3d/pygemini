@@ -1,7 +1,11 @@
 {
   "gemini3d": {
     "git": "https://github.com/gemini3d/gemini3d.git",
-    "tag": "v1.1.1"
+    "tag": "v1.2.1"
+  },
+  "ref_data": {
+    "url": "https://www.dropbox.com/s/tzwho5199ede15v/ref_data.json?dl=1",
+    "sha256": "2556941715d7c393e80d800737092d666857f72d5d5bd3a07edeec17f6c00329"
   },
   "openmpi": {
     "tag": "4.1.1"
