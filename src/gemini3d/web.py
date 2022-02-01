@@ -34,16 +34,16 @@ def git_download(path: Path, repo: str, tag: str = None):
                 f"{path} exists but is not a Git repo. Try specifying a local Git repo or new (uncreated) directory."
             )
         # don't use "git -C" for old HPC
-        ret = subprocess.run([git, "checkout", tag], cwd=str(path))
+        ret = subprocess.run([git, "checkout", tag], cwd=path)
         if ret.returncode != 0:
-            ret = subprocess.run([git, "fetch"], cwd=str(path))
+            ret = subprocess.run([git, "fetch"], cwd=path)
             if ret.returncode != 0:
                 raise RuntimeError(
                     f"could not Git fetch {path}  Maybe try removing this directory."
                 )
-            subprocess.check_call([git, "checkout", tag], cwd=str(path))
+            subprocess.check_call([git, "checkout", tag], cwd=path)
     else:
-        subprocess.check_call([git, "clone", repo, "--branch", tag, str(path)])
+        subprocess.check_call([git, "clone", repo, "--branch", tag, path])
 
 
 def download_and_extract(test_name: str, data_dir: Path) -> Path:

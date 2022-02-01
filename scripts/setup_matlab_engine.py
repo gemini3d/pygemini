@@ -33,4 +33,4 @@ cmd = [
 ]
 print(" ".join(cmd))
 
-subprocess.check_call(cmd, cwd=str(setup_path))
+subprocess.check_call(cmd, cwd=setup_path)

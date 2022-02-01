@@ -78,7 +78,7 @@ def runner(pr: dict[str, T.Any]) -> None:
     # %% attempt dry run, but don't fail in case intended for HPC
     logging.info("Gemini dry run command:")
     logging.info(" ".join(cmd))
-    proc = subprocess.run(cmd + ["-dryrun"], cwd=str(gemexe.parent))
+    proc = subprocess.run(cmd + ["-dryrun"], cwd=gemexe.parent)
 
     if proc.returncode != 0:
         raise RuntimeError(f"Gemini dry run failed. {' '.join(cmd)}")
@@ -109,7 +109,7 @@ def runner(pr: dict[str, T.Any]) -> None:
 
         print("\nBEGIN Gemini run with command:")
         print(" ".join(cmd), "\n")
-        ret = subprocess.run(cmd, cwd=str(gemexe.parent)).returncode
+        ret = subprocess.run(cmd, cwd=gemexe.parent).returncode
         if ret != 0:
             raise RuntimeError("Gemini run failed")
 
@@ -201,7 +201,7 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> str:
         stdout=subprocess.PIPE,
         text=True,
         timeout=5,
-        cwd=str(gemexe.parent),
+        cwd=gemexe.parent,
     )
     if ret.returncode != 0:
         raise RuntimeError(f"{gemexe} not executable")
@@ -238,12 +238,18 @@ def get_gemini_exe(exe: str = None) -> Path:
     # %% ensure Gemini3D executable is runnable
     gemexe = Path(e).expanduser()
     ret = subprocess.run(
-        [str(gemexe)], stdout=subprocess.DEVNULL, timeout=10, cwd=str(gemexe.parent)
+        [str(gemexe)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        timeout=10,
+        text=True,
+        cwd=gemexe.parent,
     )
     if ret.returncode != 0:
         raise EnvironmentError(
             f"\n{gemexe} was not runnable on your platform--try rebuilding:\n"
-            f"gemini3d.cmake.build_gemini3d()\n"
+            "gemini3d.cmake.build_gemini3d()\n"
+            f"{ret.stderr}"
         )
 
     return gemexe

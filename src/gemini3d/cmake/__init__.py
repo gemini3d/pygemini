@@ -63,7 +63,7 @@ def build(
     subprocess.check_call(cmd)
 
     if run_test:
-        subprocess.check_call(["ctest", "--output-on-failure"], cwd=str(build_dir))
+        subprocess.check_call(["ctest", "--output-on-failure"], cwd=build_dir)
 
     if install:
         subprocess.check_call([cmake, "--install", str(build_dir)])
@@ -103,7 +103,7 @@ project(dummy LANGUAGES C Fortran)
     cmd = [cmake, "-S", str(r), "-B", str(r / build_dir)] + lib_path
     # use cwd= to avoid spilling temporary files into current directory if ancient CMake used
     # also avoids bugs if there is a CMakeLists.txt in the current directory
-    ret = subprocess.run(cmd, env=env, cwd=str(r))
+    ret = subprocess.run(cmd, env=env, cwd=r)
 
     try:
         d.cleanup()
