@@ -16,7 +16,7 @@ import xarray
 from . import cmake
 
 
-def get_msis_exe(gemini_root: Path = None) -> T.Optional[str]:
+def get_msis_exe(gemini_root: Path = None) -> str | None:
     """
     find MSIS_SETUP executable
     """

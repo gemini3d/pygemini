@@ -12,8 +12,6 @@ import subprocess
 
 from .archive import extract_zst, extract_zip, extract_tar
 
-Pathlike = T.Union[str, Path]
-
 
 def git_download(path: Path, repo: str, tag: str = None):
     """
@@ -100,8 +98,8 @@ def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> dict[str, 
 
 def url_retrieve(
     url: str,
-    outfile: Pathlike,
-    filehash: T.Optional[tuple[str, str]] = None,
+    outfile: Path,
+    filehash: tuple[str, str] = None,
     overwrite: bool = False,
 ):
     """

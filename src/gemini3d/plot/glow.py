@@ -93,7 +93,7 @@ def emission_line(B: xarray.Dataset, time_str: str, fg: Figure):
     fg.suptitle(f"intensity: {time_str}")
 
 
-def save_glowframe(fg: Figure, filename: Path, fmt: T.Optional[str] = "png"):
+def save_glowframe(fg: Figure, filename: Path, fmt: str | None = "png"):
     """CREATES IMAGE FILES FROM PLOTS"""
 
     if not fmt:

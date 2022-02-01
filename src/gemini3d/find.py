@@ -4,7 +4,6 @@ functions for finding files
 
 from datetime import datetime, timedelta
 from pathlib import Path
-import typing as T
 
 import numpy as np
 
@@ -107,7 +106,7 @@ def find_stem(path: Path, stem: str, suffix: str = None) -> Path:
     raise FileNotFoundError(f"{stem} not found in {path}")
 
 
-def inputs(direc: Path, input_dir: T.Optional[Path] = None) -> Path:
+def inputs(direc: Path, input_dir: Path = None) -> Path:
     """
     find input parameter directory
 
