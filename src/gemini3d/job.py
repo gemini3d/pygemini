@@ -233,7 +233,7 @@ def get_gemini_exe(exe: str = None) -> Path:
             if e:
                 break
     if not e:
-        raise EnvironmentError(f"{name} not found. Please run:\n gemini3d.cmake.build_gemini3d()")
+        raise EnvironmentError(f"{name} not found. Please run:\n gemini3d.setup()")
 
     # %% ensure Gemini3D executable is runnable
     gemexe = Path(e).expanduser()
@@ -248,7 +248,7 @@ def get_gemini_exe(exe: str = None) -> Path:
     if ret.returncode != 0:
         raise EnvironmentError(
             f"\n{gemexe} was not runnable on your platform--try rebuilding:\n"
-            "gemini3d.cmake.build_gemini3d()\n"
+            "gemini3d.setup()\n"
             f"{ret.stderr}"
         )
 

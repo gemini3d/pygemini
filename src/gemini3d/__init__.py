@@ -34,7 +34,7 @@ SPECIES = ["O+", "ns1", "ns2", "ns3", "N+", "protons", "electrons"]
 LSP = len(SPECIES)
 
 
-def setup(targets: list[str] = None):
+def setup(targets: list[str] = None, gemini_root: Path = None, cmake_args: list[str] = None):
     """
     setup Gemini3D and other Gemini3D executables
     """
@@ -42,4 +42,4 @@ def setup(targets: list[str] = None):
     if not targets:
         targets = ["gemini3d.run", "msis_setup", "gemini.bin"]
 
-    cmake.build_gemini3d(targets)
+    cmake.build_gemini3d(targets, gemini_root, cmake_args)

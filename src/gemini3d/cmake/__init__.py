@@ -114,18 +114,16 @@ project(dummy LANGUAGES C Fortran)
 
 
 def get_gemini_root() -> Path:
-    gem_root = os.environ.get("GEMINI_ROOT")
-    if not gem_root:
-        gem_root = os.environ.get("GEMINI3D_ROOT")
-    if not gem_root:
+    gemini_root = os.environ.get("GEMINI_ROOT")
+    if not gemini_root:
         raise EnvironmentError(
             "Please set environment variable GEMINI_ROOT to (desired) top-level Gemini3D directory."
             "If Gemini3D is not already there, PyGemini will download and build Gemini3D there."
         )
-    return Path(gem_root).expanduser()
+    return Path(gemini_root).expanduser()
 
 
-def build_gemini3d(targets: list[str]):
+def build_gemini3d(targets: list[str], gemini_root: Path = None, cmake_args: list[str] = None):
     """
     build targets from gemini3d program
 
@@ -135,9 +133,15 @@ def build_gemini3d(targets: list[str]):
     if isinstance(targets, str):
         targets = [targets]
 
-    gem_root = get_gemini_root()
+    if isinstance(cmake_args, str):
+        cmake_args = [cmake_args]
+    elif cmake_args is None:
+        cmake_args = []
 
-    src_dir = Path(gem_root).expanduser()
+    if not gemini_root:
+        gemini_root = get_gemini_root()
+
+    src_dir = Path(gemini_root).expanduser()
 
     if not (src_dir / "CMakeLists.txt").is_file():
         jmeta = json.loads(importlib.resources.read_text("gemini3d", "libraries.json"))
@@ -150,7 +154,7 @@ def build_gemini3d(targets: list[str]):
         build_dir,
         run_test=False,
         install=False,
-        config_args=["-DBUILD_TESTING:BOOL=false", "-Dmsis2:BOOL=true"],
+        config_args=["-DBUILD_TESTING:BOOL=false", "-Dmsis2:BOOL=true"] + cmake_args,
         build_args=["--target", *targets],
     )
 

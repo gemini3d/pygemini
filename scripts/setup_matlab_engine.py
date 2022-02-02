@@ -19,7 +19,7 @@ matlab_path = Path(matlab).parents[1]
 
 setup_path = matlab_path / "extern/engines/python"
 if not (setup_path / "setup.py").is_file():
-    raise FileNotFoundError("Did not find Matlab Engine setup.py under:", setup_path)
+    raise FileNotFoundError(f"Did not find Matlab Engine setup.py under: {setup_path}")
 
 print("Matlab Engine setup.py at: ", setup_path)
 
