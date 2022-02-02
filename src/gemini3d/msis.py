@@ -16,7 +16,7 @@ import xarray
 from . import cmake
 
 
-def get_msis_exe(gemini_root: Path = None) -> str | None:
+def get_msis_exe(gemini_root: Path = None) -> Path | None:
     """
     find MSIS_SETUP executable
     """
@@ -31,7 +31,26 @@ def get_msis_exe(gemini_root: Path = None) -> str | None:
         if msis_exe:
             break
 
-    return msis_exe
+    return Path(msis_exe) if msis_exe else None
+
+
+def get_msis_features(exe: Path) -> dict[str, bool]:
+    """
+    tell features of msis_setup executable
+    """
+
+    if not exe or not exe.is_file():
+        raise FileNotFoundError(exe)
+
+    cmd = [str(exe), "-features"]
+    msis_path = exe.parent
+
+    ret = subprocess.run(cmd, capture_output=True, text=True, timeout=5, cwd=msis_path)
+    if ret.returncode != 0:
+        raise RuntimeError(f"{cmd} failed with return code {ret.returncode}\n{ret.stderr}")
+    r = ret.stdout
+
+    return {"msis00": "MSIS00" in r, "msis2": "MSIS2" in r}
 
 
 def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
@@ -45,7 +64,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
     if not msis_exe:
         raise EnvironmentError(
-            "Did not find gemini3d/build/msis_setup--build by:\n" "gemini3d.setup('msis_setup')\n"
+            "Did not find msis_setup. Build msis_setup by:\ngemini3d.setup('msis_setup')"
         )
 
     alt_km = xg["alt"] / 1e3
@@ -60,6 +79,13 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     msis_outfile = p.get("msis_outfile", p["indat_size"].parent / "msis_setup_out.h5")
     msis_version = p.get("msis_version", 0)
 
+    if msis_version == 20:
+        features = get_msis_features(msis_exe)
+        if not features["msis2"]:
+            raise EnvironmentError(
+                f"Need to compile Gemini3D with 'cmake -Dmsis2=true'\n Checked {msis_exe}"
+            )
+
     with h5py.File(msis_infile, "w") as f:
         f.create_dataset("/doy", dtype=np.int32, data=doy)
         f.create_dataset("/UTsec", dtype=np.float32, data=UTsec0)
@@ -73,8 +99,8 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         f.create_dataset("/alt", shape=xg["lx"], dtype=np.float32, data=alt_km)
         f.create_dataset("/msis_version", dtype=np.int32, data=msis_version)
     # %% run MSIS
-    cmd = [msis_exe, str(msis_infile), str(msis_outfile)]
-    msis_path = Path(msis_exe).parent
+    cmd = [str(msis_exe), str(msis_infile), str(msis_outfile)]
+    msis_path = msis_exe.parent
 
     logging.info(" ".join(cmd))
     ret = subprocess.run(cmd, text=True, cwd=msis_path)
