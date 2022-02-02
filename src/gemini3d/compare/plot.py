@@ -1,17 +1,12 @@
 from __future__ import annotations
 from pathlib import Path
 from datetime import datetime
-import logging
 
 import numpy as np
 import xarray
+from matplotlib.figure import Figure
 
 from .. import read
-
-try:
-    from matplotlib.figure import Figure
-except ImportError:
-    Figure = None
 
 
 def plotdiff(
@@ -32,10 +27,6 @@ def plotdiff(
     imax: int, optional
         index of maximum difference
     """
-
-    if Figure is None:
-        logging.error("Matplotlib not available")
-        return
 
     new_dir = Path(new_dir).expanduser().resolve(strict=True)
     ref_dir = Path(ref_dir).expanduser().resolve(strict=True)

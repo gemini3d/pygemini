@@ -6,11 +6,7 @@ import os
 import re
 
 import gemini3d.web
-
-try:
-    import gemini3d.plot
-except ImportError as e:
-    pytest.skip(f"Matplotlib missing {e}", allow_module_level=True)
+import gemini3d.plot
 
 
 @pytest.mark.parametrize(
