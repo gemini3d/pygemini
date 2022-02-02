@@ -39,7 +39,7 @@ def cli():
     p.add_argument(
         "libs",
         help="libraries to compile",
-        choices=["hdf5", "lapack", "mumps", "openmpi", "openmpi3", "scalapack"],
+        choices=["hdf5", "lapack", "mumps", "openmpi", "scalapack"],
         nargs="+",
     )
     p.add_argument("-prefix", help="top-level directory to install libraries under")
@@ -95,9 +95,7 @@ def setup_libs(
 
     # Note: OpenMPI needs to be before scalapack and mumps
     if "openmpi" in libs:
-        openmpi(dirs, env=env, version="", dryrun=dryrun)
-    elif "openmpi3" in libs:
-        openmpi(dirs, env=env, version="3", dryrun=dryrun)
+        openmpi(dirs, env=env, dryrun=dryrun)
 
     if "lapack" in libs:
         lapack(wipe, dirs, env=env, dryrun=dryrun)
@@ -128,7 +126,7 @@ def hdf5(dirs: dict[str, Path], env: T.Mapping[str, str]):
     set(hdf5_url {jmeta[f"hdf5"]["url"]})
     set(hdf5_sha256 {jmeta[f"hdf5"]["sha256"]})
 
-    include({(cmake_scripts / "build_hdf5.cmake").as_posix()})
+    include({(cmake_scripts / "hdf5.cmake").as_posix()})
     """
 
     workdir = dirs["workdir"] / "hdf5_dummy"
@@ -147,7 +145,7 @@ def hdf5(dirs: dict[str, Path], env: T.Mapping[str, str]):
     )
 
 
-def openmpi(dirs: dict[str, Path], env: T.Mapping[str, str], version: str, dryrun: bool = False):
+def openmpi(dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: bool = False):
     """build and install OpenMPI"""
     if os.name == "nt":
         raise EnvironmentError(
@@ -165,7 +163,7 @@ Use MPI on Windows via any of (choose one):
     jr = importlib.resources.read_text(__package__, "libraries.json")
     jmeta = json.loads(jr)
 
-    ompi_version = jmeta[f"openmpi{version}"]["tag"]
+    ompi_version = jmeta["openmpi"]["tag"]
 
     mpi_dir = f"openmpi-{ompi_version}"
     install_dir = dirs["prefix"] / mpi_dir
@@ -296,8 +294,8 @@ def intel_compilers() -> T.Mapping[str, str]:
     return get_compilers(
         "Intel",
         FC="ifort",
-        CC="icl" if os.name == "nt" else "icc",
-        CXX="icl" if os.name == "nt" else "icpc",
+        CC="icx",
+        CXX="icx" if os.name == "nt" else "icpx",
     )
 
 
