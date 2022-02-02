@@ -22,7 +22,7 @@ from .constants import PARAMS, R_EARTH
 from .. import read
 from ..utils import to_datetime
 
-PLOTFUN = {"scalar": ("ne", "Ti", "Te", "J1", "J2", "J3"), "vector": ("v1", "v2", "v3")}
+PLOTFUN = {"scalar": {"ne", "Ti", "Te", "J1", "J2", "J3"}, "vector": {"v1", "v2", "v3"}}
 
 
 def plot3_all(direc: Path, var: set[str], saveplot_fmt: str = None):
