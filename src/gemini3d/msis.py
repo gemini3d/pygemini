@@ -84,8 +84,6 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     if (msis_outfile := p.get("msis_outfile")) is None:
         msis_outfile = input_dir / "msis_setup_out.h5"
 
-    print(msis_infile)
-
     msis_version = p.get("msis_version", 0)
 
     if msis_version == 20:
