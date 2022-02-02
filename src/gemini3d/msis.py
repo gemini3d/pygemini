@@ -75,8 +75,17 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     # censor BELOW-ZERO ALTITUDES SO THAT THEY DON'T GIVE INF
     alt_km[alt_km <= 0] = 1
     # %% CREATE INPUT FILE FOR FORTRAN PROGRAM
-    msis_infile = p.get("msis_infile", p["indat_size"].parent / "msis_setup_in.h5")
-    msis_outfile = p.get("msis_outfile", p["indat_size"].parent / "msis_setup_out.h5")
+    if (input_dir := p.get("indat_size")) is not None:
+        input_dir = input_dir.parent
+    if (msis_infile := p.get("msis_infile")) is None:
+        if input_dir is None:
+            raise ValueError("msis_infile, msis_outfile OR indat_size must be specified")
+        msis_infile = input_dir / "msis_setup_in.h5"
+    if (msis_outfile := p.get("msis_outfile")) is None:
+        msis_outfile = input_dir / "msis_setup_out.h5"
+
+    print(msis_infile)
+
     msis_version = p.get("msis_version", 0)
 
     if msis_version == 20:
