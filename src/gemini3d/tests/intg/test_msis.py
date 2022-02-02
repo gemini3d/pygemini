@@ -59,12 +59,7 @@ def test_msis(version, tmp_path):
         "alt": alt,
     }
 
-    try:
-        atmos = gp.msis_setup(cfg, xg)
-    except RuntimeError as e:
-        if "-Dmsis2=" in str(e):
-            pytest.skip("MSIS 2.0 wasn't available")
-        raise
+    atmos = gp.msis_setup(cfg, xg)
 
     assert atmos["Tn"].shape == lx
 
