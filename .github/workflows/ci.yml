@@ -112,7 +112,7 @@ jobs:
 
     - name: build msis_setup, gemini3d.run, gemini.bin executables
       run: python -c "import gemini3d; gemini3d.setup(gemini_root='${{ env.GEMINI_ROOT }}')"
-      timeout-minutes: 5
+      timeout-minutes: 10
 
     - name: Integration Tests
       run: pytest --pyargs gemini3d.tests.intg
