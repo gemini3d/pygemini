@@ -5,7 +5,6 @@ example of using msis_setup
 """
 
 from datetime import datetime
-import tempfile
 from pathlib import Path
 import numpy as np
 import logging
@@ -16,8 +15,7 @@ import gemini3d.msis as gm
 logging.basicConfig(level=logging.INFO)
 
 
-tmp = tempfile.TemporaryDirectory()
-tmp_path = Path(tmp.name)
+tmp_path = Path("~/temp")
 
 print("msis_setup: files under directory", tmp_path)
 
@@ -30,8 +28,6 @@ cfg = {
     "msis_infile": tmp_path / "msis_in.h5",
     "msis_outfile": tmp_path / "msis_out.h5",
 }
-
-(tmp_path / "inputs").mkdir(exist_ok=True)
 
 lx = (4, 2, 3)
 

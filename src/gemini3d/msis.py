@@ -72,17 +72,24 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     t0 = p["time"][0]
     doy = int(t0.strftime("%j"))
     UTsec0 = t0.hour * 3600 + t0.minute * 60 + t0.second + t0.microsecond / 1e6
-    # censor BELOW-ZERO ALTITUDES SO THAT THEY DON'T GIVE INF
-    alt_km[alt_km <= 0] = 1
+    # clip non-positive ALTITUDES SO THAT THEY DON'T GIVE INF
+    alt_km = alt_km.clip(min=1)
+
     # %% CREATE INPUT FILE FOR FORTRAN PROGRAM
-    if (input_dir := p.get("indat_size")) is not None:
-        input_dir = input_dir.parent
-    if (msis_infile := p.get("msis_infile")) is None:
+    if p.get("indat_size") is not None:
+        input_dir = Path(p["input_dir"]).expanduser().resolve(strict=True).parent
+
+    if p.get("msis_infile") is None:
         if input_dir is None:
             raise ValueError("msis_infile, msis_outfile OR indat_size must be specified")
         msis_infile = input_dir / "msis_setup_in.h5"
-    if (msis_outfile := p.get("msis_outfile")) is None:
+    else:
+        msis_infile = Path(p["msis_infile"]).expanduser().resolve(strict=False)
+
+    if p.get("msis_outfile") is None:
         msis_outfile = input_dir / "msis_setup_out.h5"
+    else:
+        msis_outfile = Path(p["msis_outfile"]).expanduser().resolve(strict=False)
 
     msis_version = p.get("msis_version", 0)
 
