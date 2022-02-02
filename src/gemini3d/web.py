@@ -43,7 +43,8 @@ def git_download(path: Path, repo: str, tag: str = None):
                 )
             subprocess.check_call([git, "checkout", tag], cwd=path)
     else:
-        subprocess.check_call([git, "clone", repo, "--branch", tag, path])
+        subprocess.check_call([git, "clone", repo, path])
+        subprocess.check_call([git, "checkout", tag], cwd=path)
 
 
 def download_and_extract(test_name: str, data_dir: Path) -> Path:
