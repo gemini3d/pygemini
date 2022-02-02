@@ -1,6 +1,7 @@
 name: ci
 
 env:
+  GEMINI_ROOT: ~/gemini3d
   GEMINI_CIROOT: ~/ci
   CMAKE_BUILD_TYPE: Release
   CMAKE_GENERATOR: Ninja
@@ -61,7 +62,7 @@ jobs:
       timeout-minutes: 2
 
     - name: build msis_setup, gemini3d.run, gemini.bin executables
-      run: python -c "import gemini3d; gemini3d.setup(gemini_root='~/gemini3d')"
+      run: python -c "import gemini3d; gemini3d.setup(gemini_root='${{ env.GEMINI_ROOT }}')"
       timeout-minutes: 2
 
     - name: Integration Tests
@@ -110,7 +111,7 @@ jobs:
       timeout-minutes: 2
 
     - name: build msis_setup, gemini3d.run, gemini.bin executables
-      run: python -c "import gemini3d; gemini3d.setup(gemini_root='~/gemini3d')"
+      run: python -c "import gemini3d; gemini3d.setup(gemini_root='${{ env.GEMINI_ROOT }}')"
       timeout-minutes: 5
 
     - name: Integration Tests

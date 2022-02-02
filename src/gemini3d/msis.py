@@ -20,6 +20,7 @@ def get_msis_exe(gemini_root: Path = None) -> str | None:
     """
     find MSIS_SETUP executable
     """
+
     name = "msis_setup"
 
     if not gemini_root:
@@ -40,7 +41,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     [f107a, f107, ap] = activ
     """
 
-    msis_exe = get_msis_exe(p.get("gemini_root"))
+    msis_exe = get_msis_exe(gemini_root=p.get("gemini_root"))
 
     if not msis_exe:
         raise EnvironmentError(
@@ -73,9 +74,10 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         f.create_dataset("/msis_version", dtype=np.int32, data=msis_version)
     # %% run MSIS
     cmd = [msis_exe, str(msis_infile), str(msis_outfile)]
+    msis_path = Path(msis_exe).parent
 
     logging.info(" ".join(cmd))
-    ret = subprocess.run(cmd, text=True, cwd=Path(msis_exe).parent)
+    ret = subprocess.run(cmd, text=True, cwd=msis_path)
 
     # %% MSIS 2.0 does not return error codes at this time, have to filter stdout
     if ret.returncode == 0:
@@ -95,7 +97,9 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
                 raise RuntimeError(ret.stdout)
 
     elif ret.returncode == 20:
-        raise RuntimeError("Need to compile Gemini3D with 'cmake -Dmsis2=true'")
+        raise RuntimeError(
+            f"Need to compile Gemini3D with 'cmake -Dmsis2=true'\n Ran msis_setup in {msis_path}"
+        )
     else:
         raise RuntimeError(
             f"MSIS failed to run: return code {ret.returncode}. See console for additional error info."
