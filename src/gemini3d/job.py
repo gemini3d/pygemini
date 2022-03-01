@@ -188,7 +188,7 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> str:
     if not mpiexec:
         raise FileNotFoundError(f"Cannot find mpiexec {mpiexec}")
 
-    ret = subprocess.run([mpiexec, "-help"], stdout=subprocess.PIPE, text=True, timeout=5)
+    ret = subprocess.run([mpiexec, "-help"], capture_output=True, text=True, timeout=5)
     if ret.returncode != 0:
         raise RuntimeError(f"MPIexec error code {ret.returncode}\n{ret.stderr}")
     # %% check that compiler and MPIexec compatible
@@ -198,7 +198,7 @@ def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> str:
     mpi_msg = ret.stdout.strip()
     ret = subprocess.run(
         [str(gemexe), "-compiler"],
-        stdout=subprocess.PIPE,
+        capture_output=True,
         text=True,
         timeout=5,
         cwd=gemexe.parent,
@@ -239,13 +239,21 @@ def get_gemini_exe(exe: str = None) -> Path:
     gemexe = Path(e).expanduser()
     ret = subprocess.run(
         [str(gemexe)],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         timeout=10,
         text=True,
         cwd=gemexe.parent,
     )
-    if ret.returncode != 0:
+    if ret.returncode == 0:
+        pass
+    elif ret.returncode == 3221225781 and os.name == "nt":
+        # Windows 0xc0000135, missing DLL
+        raise RuntimeError(
+            "On Windows, it's best to build Gemini3D with static libraries--including all numeric libraries "
+            "such as LAPACK.\n"
+            "Currently, we are missing a DLL on your system and gemini.bin with shared libs cannot run."
+        )
+    else:
         raise EnvironmentError(
             f"\n{gemexe} was not runnable on your platform--try rebuilding:\n"
             "gemini3d.setup()\n"

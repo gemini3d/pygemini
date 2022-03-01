@@ -5,6 +5,7 @@ using MSIS Fortran executable from Python
 from __future__ import annotations
 from pathlib import Path
 import subprocess
+import os
 import logging
 import typing as T
 import shutil
@@ -12,8 +13,6 @@ import shutil
 import numpy as np
 import h5py
 import xarray
-
-from . import cmake
 
 
 def get_msis_exe(gemini_root: Path = None) -> Path | None:
@@ -23,13 +22,26 @@ def get_msis_exe(gemini_root: Path = None) -> Path | None:
 
     name = "msis_setup"
 
-    if not gemini_root:
-        gemini_root = cmake.get_gemini_root()
+    paths = [os.environ.get("GEMINI_ROOT"), os.environ.get("CMAKE_PREFIX_PATH"), gemini_root]
+    paths = [Path(p).expanduser() for p in paths if p]
 
-    for n in [".", "build", "build/bin", "build/Release", "build/RelWithDebInfo", "build/Debug"]:
-        msis_exe = shutil.which(name, path=gemini_root / n)
-        if msis_exe:
-            break
+    if not paths:
+        raise EnvironmentError(
+            "Specify location of msis_setup executable by environment variable"
+            " GEMINI_ROOT or CMAKE_PREFIX_PATH or give gemini_root argument"
+        )
+    for path in paths:
+        for n in [
+            ".",
+            "build",
+            "build/bin",
+            "build/Release",
+            "build/RelWithDebInfo",
+            "build/Debug",
+        ]:
+            msis_exe = shutil.which(name, path=path / n)
+            if msis_exe:
+                break
 
     return Path(msis_exe) if msis_exe else None
 
