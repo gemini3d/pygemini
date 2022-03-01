@@ -63,7 +63,7 @@ jobs:
       timeout-minutes: 2
 
     - name: build msis_setup and other Gemini3D prereqs
-      run: python -c "import gemini3d; gemini3d.setup_libs(prefix='${{ env.GEMINI_ROOT }}', cmake_args=['-Dfind=true'])"
+      run: python -c "import gemini3d; gemini3d.setup_libs(prefix='${{ env.GEMINI_ROOT }}')"
       timeout-minutes: 5
 
     - name: build gemini3d.run, gemini.bin
@@ -116,7 +116,7 @@ jobs:
       timeout-minutes: 2
 
     - name: build msis_setup and other Gemini3d prereqs
-      run: python -c "import gemini3d; gemini3d.setup_libs(prefix='${{ env.GEMINI_ROOT }}', cmake_args=['-Dfind=true'])"
+      run: python -c "import gemini3d; gemini3d.setup_libs(prefix='${{ env.GEMINI_ROOT }}')"
       timeout-minutes: 10
 
     - name: build gemini3d.run, gemini.bin

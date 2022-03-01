@@ -45,12 +45,21 @@ def setup(targets: list[str] = None, gemini_root: Path = None, cmake_args: list[
     cmake.build_gemini3d(targets, gemini_root, cmake_args)
 
 
-def setup_libs(prefix: Path, targets: list[str] = None, cmake_args: list[str] = None):
+def setup_libs(
+    prefix: Path, targets: list[str] = None, find: bool = True, cmake_args: list[str] = None
+):
     """
     setup Gemini3D external libraries (needed before gemini3d.setup)
     """
 
     if not targets:
         targets = ["ffilesystem", "glow", "h5fortran", "msis", "mumps"]
+
+    if not cmake_args:
+        cmake_args = []
+    if find:
+        cmake_args += ["-Dfind:BOOL=true"]
+    else:
+        cmake_args += ["-Dfind:BOOL=false"]
 
     cmake.build_libs(prefix, targets, cmake_args)

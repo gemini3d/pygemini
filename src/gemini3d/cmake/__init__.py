@@ -195,6 +195,11 @@ def build_libs(prefix: Path, targets: list[str], cmake_args: list[str] = None):
         build_dir,
         run_test=False,
         install=True,
-        config_args=["-DBUILD_TESTING:BOOL=false", "-Dmsis2:BOOL=true"] + cmake_args,
+        config_args=[
+            f"-DCMAKE_INSTALL_PREFIX:PATH={prefix}",
+            "-DBUILD_TESTING:BOOL=false",
+            "-Dmsis2:BOOL=true",
+        ]
+        + cmake_args,
         build_args=["--target", *targets],
     )
