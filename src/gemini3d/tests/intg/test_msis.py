@@ -29,7 +29,7 @@ import gemini3d.msis as gp
 
 @pytest.mark.skipif(
     gp.get_msis_exe() is None,
-    reason="need to build msis_setup by gemini3d.setup('msis_setup')",
+    reason="need to build msis_setup by gemini3d.setup_libs()",
 )
 @pytest.mark.parametrize("version", [0, 20])
 def test_msis(version, tmp_path):

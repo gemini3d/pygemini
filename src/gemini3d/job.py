@@ -27,9 +27,6 @@ except ImportError:
     from numpy import prod  # type: ignore
 
 
-Pathlike = T.Union[str, Path]
-
-
 def runner(pr: dict[str, T.Any]) -> None:
 
     out_dir = check_outdir(pr["out_dir"])
@@ -171,7 +168,7 @@ def check_compiler():
         raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
 
 
-def check_mpiexec(mpiexec: Pathlike, gemexe: Path) -> str:
+def check_mpiexec(mpiexec: str | Path, gemexe: Path) -> str:
     """
     check if specified mpiexec exists on this system.
     If not, error as most runs are exceedingly slow with one CPU core.
@@ -263,7 +260,7 @@ def get_gemini_exe(exe: str = None) -> Path:
     return gemexe
 
 
-def check_outdir(out_dir: Pathlike) -> Path:
+def check_outdir(out_dir: str | Path) -> Path:
 
     out_dir = Path(out_dir).expanduser().resolve()
     if out_dir.is_file():

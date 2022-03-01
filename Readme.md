@@ -13,13 +13,18 @@ pip install -e pygemini
 ```
 
 Not all users need to run Gemini3D on the same device where PyGemini is installed.
-Before the first `gemini3d.run()`, the underlying Gemini3D code is built by `gemini3d.setup()`, including all necessary libraries.
+Before the first `gemini3d.run()`, one-time build Gemini3D and external libraries by:
 
-```sh
-python -m gemini3d.prereqs
+```python
+import gemini3d
+
+prefix = '~/gemlibs'
+# arbitrary Gemini3D library location
+
+gemini3d.setup_libs(prefix)
+
+gemini3d.setup(gemini_root=prefix)
 ```
-
-allows manually installing those libraries to save rebuild time, but this is optional as Gemini3D automatically downloads and builds missing libraries.
 
 ## Developers
 

@@ -1,11 +1,9 @@
+from __future__ import annotations
 import os
 import shutil
 import subprocess
 import functools
-import typing as T
 from pathlib import Path
-
-Pathlike = T.Union[str, Path]
 
 
 @functools.lru_cache()
@@ -24,7 +22,7 @@ def wsl_available() -> bool:
     return has_wsl
 
 
-def wsl_file_exist(file: Pathlike) -> bool:
+def wsl_file_exist(file: str | Path) -> bool:
     """
     path is specified as if in WSL
     NOT //wsl$/Ubuntu/etc/os-release

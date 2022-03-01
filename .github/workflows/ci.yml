@@ -45,6 +45,7 @@ jobs:
       matrix:
         python-version: [ '3.8', '3.9', '3.10' ]
     name: Linux Python ${{ matrix.python-version }}
+
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -61,9 +62,13 @@ jobs:
       run: pytest --pyargs gemini3d.tests.unit
       timeout-minutes: 2
 
-    - name: build msis_setup, gemini3d.run, gemini.bin executables
-      run: python -c "import gemini3d; gemini3d.setup(gemini_root='${{ env.GEMINI_ROOT }}')"
-      timeout-minutes: 2
+    - name: build msis_setup and other Gemini3D prereqs
+      run: python -c "import gemini3d; gemini3d.setup_libs(prefix='${{ env.GEMINI_ROOT }}', cmake_args=['-Dfind=true'])"
+      timeout-minutes: 5
+
+    - name: build gemini3d.run, gemini.bin
+      run: python -c "import gemini3d; gemini3d.setup(targets=['gemini3d.run', 'gemini.bin'], gemini_root='${{ env.GEMINI_ROOT }}')"
+      timeout-minutes: 5
 
     - name: Integration Tests
       run: pytest --pyargs gemini3d.tests.intg
@@ -110,8 +115,12 @@ jobs:
       run: pytest --pyargs gemini3d.tests.unit
       timeout-minutes: 2
 
-    - name: build msis_setup, gemini3d.run, gemini.bin executables
-      run: python -c "import gemini3d; gemini3d.setup(gemini_root='${{ env.GEMINI_ROOT }}')"
+    - name: build msis_setup and other Gemini3d prereqs
+      run: python -c "import gemini3d; gemini3d.setup_libs(prefix='${{ env.GEMINI_ROOT }}', cmake_args=['-Dfind=true'])"
+      timeout-minutes: 10
+
+    - name: build gemini3d.run, gemini.bin
+      run: python -c "import gemini3d; gemini3d.setup(targets=['gemini3d.run', 'gemini.bin'], gemini_root='${{ env.GEMINI_ROOT }}')"
       timeout-minutes: 10
 
     - name: Integration Tests

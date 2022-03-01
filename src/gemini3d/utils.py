@@ -13,7 +13,6 @@ import imp
 import xarray
 import numpy as np
 
-Pathlike = T.Union[str, Path]
 
 __all__ = ["to_datetime", "git_meta", "datetime2ymd_hourdec"]
 

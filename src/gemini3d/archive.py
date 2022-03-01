@@ -1,16 +1,13 @@
 from __future__ import annotations
 import zipfile
 import tarfile
-import typing as T
 from pathlib import Path
 import tempfile
 
 import zstandard
 
-Pathlike = T.Union[str, Path]
 
-
-def extract_zst(archive: Pathlike, out_path: Pathlike):
+def extract_zst(archive: str | Path, out_path: str | Path):
     """extract .zst file
     works on Windows, Linux, MacOS, etc.
 
@@ -38,7 +35,7 @@ def extract_zst(archive: Pathlike, out_path: Pathlike):
             z.extractall(out_path)
 
 
-def extract_zip(archive: Pathlike, outpath: Pathlike):
+def extract_zip(archive: str | Path, outpath: str | Path):
     outpath = Path(outpath).expanduser().resolve()
     # need .resolve() in case intermediate relative dir doesn't exist
 
@@ -47,7 +44,7 @@ def extract_zip(archive: Pathlike, outpath: Pathlike):
         z.extractall(outpath)
 
 
-def extract_tar(archive: Pathlike, outpath: Pathlike):
+def extract_tar(archive: str | Path, outpath: str | Path):
     outpath = Path(outpath).expanduser().resolve()
     # need .resolve() in case intermediate relative dir doesn't exist
 

@@ -165,3 +165,36 @@ def build_gemini3d(targets: list[str], gemini_root: Path = None, cmake_args: lis
                 break
         if not exe:
             raise RuntimeError(f"{t} not found in {build_dir}")
+
+
+def build_libs(prefix: Path, targets: list[str], cmake_args: list[str] = None):
+    """
+    build external libraries for Gemini3d program
+    """
+
+    if isinstance(targets, str):
+        targets = [targets]
+
+    if isinstance(cmake_args, str):
+        cmake_args = [cmake_args]
+    elif cmake_args is None:
+        cmake_args = []
+
+    prefix = Path(prefix).expanduser().resolve(strict=False)
+
+    src_dir = Path(tempfile.gettempdir()) / "gemini3d-libs"
+
+    if not (src_dir / "CMakeLists.txt").is_file():
+        jmeta = json.loads(importlib.resources.read_text("gemini3d", "libraries.json"))
+        git_download(src_dir, repo=jmeta["external"]["git"], tag=jmeta["external"]["tag"])
+
+    build_dir = src_dir / "build"
+
+    build(
+        src_dir,
+        build_dir,
+        run_test=False,
+        install=True,
+        config_args=["-DBUILD_TESTING:BOOL=false", "-Dmsis2:BOOL=true"] + cmake_args,
+        build_args=["--target", *targets],
+    )

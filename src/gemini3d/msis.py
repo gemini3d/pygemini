@@ -76,7 +76,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
     if not msis_exe:
         raise EnvironmentError(
-            "Did not find msis_setup. Build msis_setup by:\ngemini3d.setup('msis_setup')"
+            "Did not find msis_setup. Build msis_setup by:\ngemini3d.setup_libs()"
         )
 
     alt_km = xg["alt"] / 1e3
@@ -88,6 +88,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     alt_km = alt_km.clip(min=1)
 
     # %% CREATE INPUT FILE FOR FORTRAN PROGRAM
+
     if p.get("indat_size") is not None:
         input_dir = Path(p["input_dir"]).expanduser().resolve(strict=True).parent
 

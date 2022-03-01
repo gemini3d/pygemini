@@ -40,6 +40,17 @@ def setup(targets: list[str] = None, gemini_root: Path = None, cmake_args: list[
     """
 
     if not targets:
-        targets = ["gemini3d.run", "msis_setup", "gemini.bin"]
+        targets = ["gemini3d.run", "gemini.bin"]
 
     cmake.build_gemini3d(targets, gemini_root, cmake_args)
+
+
+def setup_libs(prefix: Path, targets: list[str] = None, cmake_args: list[str] = None):
+    """
+    setup Gemini3D external libraries (needed before gemini3d.setup)
+    """
+
+    if not targets:
+        targets = ["ffilesystem", "glow", "h5fortran", "msis", "mumps"]
+
+    cmake.build_libs(prefix, targets, cmake_args)
