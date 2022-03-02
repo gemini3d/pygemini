@@ -116,9 +116,12 @@ def frame(
             logging.error(f"SKIP: plot {k} at {t0} due to {e}")
 
     if "aurora" in var:
-        if aurmap_dir := cfg.get("aurmap_dir"):
-            # handle relative or absolute path to GLOW data
-            if not aurmap_dir.is_absolute():
-                aurmap_dir = path / cfg["aurmap_dir"]
+        aurmap_dir = cfg.get("aurmap_dir")
+        if not aurmap_dir:
+            return
 
-            glow(aurmap_dir, t0, saveplot_fmt, xg=xg)
+        # handle relative or absolute path to GLOW data
+        if not aurmap_dir.is_absolute():
+            aurmap_dir = path / cfg["aurmap_dir"]
+
+        glow(aurmap_dir, t0, saveplot_fmt, xg=xg)

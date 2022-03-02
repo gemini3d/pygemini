@@ -273,8 +273,9 @@ def get_compilers(compiler_name: str, **kwargs) -> T.Mapping[str, str]:
     env = os.environ
 
     for k, v in kwargs.items():
-        c = env.get(k, "")
-        if v not in c:
+        c = env.get(k)
+
+        if not c or v not in c:
             c = shutil.which(v)
         if not c:
             raise FileNotFoundError(
