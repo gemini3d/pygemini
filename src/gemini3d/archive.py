@@ -1,15 +1,16 @@
 from __future__ import annotations
-import zipfile
-import tarfile
 from pathlib import Path
-import tempfile
+import subprocess
 
-import zstandard
+from . import cmake
 
 
 def extract_zst(archive: str | Path, out_path: str | Path):
-    """extract .zst file
-    works on Windows, Linux, MacOS, etc.
+    """
+    extract .zst file
+
+    To reduce Python package prereqs we use CMake instead of Python
+    "zstandard" package. This is also more efficient computationally.
 
     Parameters
     ----------
@@ -22,43 +23,15 @@ def extract_zst(archive: str | Path, out_path: str | Path):
     """
 
     archive = Path(archive).expanduser().resolve()
-    out_path = Path(out_path).expanduser().resolve()
-    # need .resolve() in case intermediate relative dir doesn't exist
-
-    dctx = zstandard.ZstdDecompressor()
-
-    with tempfile.TemporaryFile(suffix=".tar") as ofh:
-        with archive.open("rb") as ifh:
-            dctx.copy_stream(ifh, ofh)
-        ofh.seek(0)
-        with tarfile.open(fileobj=ofh) as z:
-            z.extractall(out_path)
-
-
-def extract_zip(archive: str | Path, outpath: str | Path):
-    outpath = Path(outpath).expanduser().resolve()
-    # need .resolve() in case intermediate relative dir doesn't exist
-
-    archive = Path(archive).expanduser().resolve()
-    with zipfile.ZipFile(archive) as z:
-        z.extractall(outpath)
-
-
-def extract_tar(archive: str | Path, outpath: str | Path):
-    outpath = Path(outpath).expanduser().resolve()
-    # need .resolve() in case intermediate relative dir doesn't exist
-
-    archive = Path(archive).expanduser().resolve()
     if not archive.is_file():
-        # tarfile gives confusing error on missing file
         raise FileNotFoundError(archive)
 
-    try:
-        with tarfile.open(archive) as z:
-            z.extractall(outpath)
-    except tarfile.TarError as e:
-        raise RuntimeError(
-            f"""failed to extract {archive} with error {e}.
-This file may be corrupt or system libz may be broken.
-Try deleting {archive} or manually extracting it."""
-        )
+    out_path = Path(out_path).expanduser().resolve()
+    # need .resolve() in case intermediate relative dir doesn't exist
+    out_path.mkdir(exist_ok=True, parents=True)
+
+    subprocess.check_call([cmake.exe(), "-E", "tar", "xf", str(archive)], cwd=out_path)
+
+
+extract_tar = extract_zst
+extract_zip = extract_zst
