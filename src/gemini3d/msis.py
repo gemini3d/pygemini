@@ -14,6 +14,8 @@ import numpy as np
 import h5py
 import xarray
 
+from . import EXE_PATHS
+
 
 def get_msis_exe(gemini_root: Path = None) -> Path | None:
     """
@@ -22,7 +24,7 @@ def get_msis_exe(gemini_root: Path = None) -> Path | None:
 
     name = "msis_setup"
 
-    paths = [os.environ.get("GEMINI_ROOT"), os.environ.get("CMAKE_PREFIX_PATH"), gemini_root]
+    paths = [gemini_root, os.environ.get("CMAKE_PREFIX_PATH"), os.environ.get("GEMINI_ROOT")]
     paths = [Path(p).expanduser() for p in paths if p]
 
     if not paths:
@@ -31,19 +33,12 @@ def get_msis_exe(gemini_root: Path = None) -> Path | None:
             " GEMINI_ROOT or CMAKE_PREFIX_PATH or give gemini_root argument"
         )
     for path in paths:
-        for n in [
-            ".",
-            "build",
-            "build/bin",
-            "build/Release",
-            "build/RelWithDebInfo",
-            "build/Debug",
-        ]:
+        for n in EXE_PATHS:
             msis_exe = shutil.which(name, path=path / n)
             if msis_exe:
-                break
+                return Path(msis_exe)
 
-    return Path(msis_exe) if msis_exe else None
+    return None
 
 
 def get_msis_features(exe: Path) -> dict[str, bool]:
@@ -88,18 +83,19 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     alt_km = alt_km.clip(min=1)
 
     # %% CREATE INPUT FILE FOR FORTRAN PROGRAM
-
     if p.get("indat_size") is not None:
-        input_dir = Path(p["input_dir"]).expanduser().resolve(strict=True).parent
+        input_dir = Path(p["indat_size"]).expanduser().resolve(strict=False).parent
 
     if p.get("msis_infile") is None:
         if input_dir is None:
-            raise ValueError("msis_infile, msis_outfile OR indat_size must be specified")
+            raise ValueError("msis_infile OR indat_size must be specified")
         msis_infile = input_dir / "msis_setup_in.h5"
     else:
         msis_infile = Path(p["msis_infile"]).expanduser().resolve(strict=False)
 
     if p.get("msis_outfile") is None:
+        if input_dir is None:
+            raise ValueError("msis_outfile OR indat_size must be specified")
         msis_outfile = input_dir / "msis_setup_out.h5"
     else:
         msis_outfile = Path(p["msis_outfile"]).expanduser().resolve(strict=False)
@@ -112,6 +108,8 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
             raise EnvironmentError(
                 f"Need to compile Gemini3D with 'cmake -Dmsis2=true'\n Checked {msis_exe}"
             )
+
+    msis_infile.parent.mkdir(exist_ok=True)
 
     with h5py.File(msis_infile, "w") as f:
         f.create_dataset("/doy", dtype=np.int32, data=doy)

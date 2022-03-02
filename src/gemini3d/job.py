@@ -12,6 +12,7 @@ import shutil
 from pathlib import Path
 import numpy as np
 
+from . import EXE_PATHS
 from . import find
 from .hpc import hpc_batch_detect, hpc_batch_create
 from . import model
@@ -218,14 +219,7 @@ def get_gemini_exe(exe: str = None) -> Path:
 
     if not exe:  # allow for default dict empty
         gemini_root = cmake.get_gemini_root()
-        for n in [
-            ".",
-            "build",
-            "build/bin",
-            "build/Debug",
-            "build/RelWithDebInfo",
-            "build/Release",
-        ]:
+        for n in EXE_PATHS:
             e = shutil.which(name, path=gemini_root / n)
             if e:
                 break

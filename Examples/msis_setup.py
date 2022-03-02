@@ -14,7 +14,6 @@ import gemini3d.msis as gm
 
 logging.basicConfig(level=logging.INFO)
 
-
 tmp_path = Path("~/temp")
 
 print("msis_setup: files under directory", tmp_path)

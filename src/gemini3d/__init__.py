@@ -33,6 +33,16 @@ SPECIES = ["O+", "ns1", "ns2", "ns3", "N+", "protons", "electrons"]
 # must be list, not tuple
 LSP = len(SPECIES)
 
+EXE_PATHS = [
+    ".",
+    "bin",
+    "build",
+    "build/bin",
+    "build/Debug",
+    "build/RelWithDebInfo",
+    "build/Release",
+]
+
 
 def setup(targets: list[str] = None, gemini_root: Path = None, cmake_args: list[str] = None):
     """

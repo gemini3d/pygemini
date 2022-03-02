@@ -10,23 +10,6 @@ from datetime import datetime
 import gemini3d.msis as gp
 
 
-# @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
-# def test_build_msis(tmp_path, monkeypatch):
-#     """
-#     blanking out some env vars to help ensure self-building is tested
-#     """
-
-#     monkeypatch.setenv("GEMINI_ROOT", str(tmp_path / "gemini3d"))
-#     #    monkeypatch.setenv("HDF5_ROOT", "")
-#     #    monkeypatch.setenv("h5fortran_ROOT", "")
-#     monkeypatch.setenv("glow_ROOT", "")
-
-#     tgt = shutil.which("msis_setup", path=Path(os.environ["GEMINI_ROOT"]) / "build")
-
-#     assert tgt is not None
-#     assert Path(tgt).is_file()
-
-
 @pytest.mark.skipif(
     gp.get_msis_exe() is None,
     reason="need to build msis_setup by gemini3d.setup_libs()",
