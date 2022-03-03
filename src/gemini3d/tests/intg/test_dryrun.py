@@ -2,6 +2,7 @@
 
 import shutil
 import pytest
+from pytest import approx
 from pathlib import Path
 import importlib.resources
 
@@ -21,7 +22,7 @@ def test_memory(name, bref):
 
     assert isinstance(est, int)
 
-    assert est == bref
+    assert est == approx(bref, abs=0, rel=0)
 
 
 @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
