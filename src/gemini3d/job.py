@@ -146,7 +146,7 @@ def memory_estimate(path: Path) -> int:
         if k == "lx" or not isinstance(v, (tuple, list, np.ndarray)) or not v:
             continue
         print(k, v, grid_size)
-        grid_size += prod(v)  # type: ignore
+        grid_size += int(prod(v))
 
     LSP = 7
     x1 = gs["x1"][0]

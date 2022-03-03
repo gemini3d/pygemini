@@ -18,6 +18,7 @@ def test_memory(name, bref):
         ref = gemini3d.web.download_and_extract(name, fn.parent)
 
     est = job.memory_estimate(ref)
+
     assert isinstance(est, int)
 
     assert est == bref
