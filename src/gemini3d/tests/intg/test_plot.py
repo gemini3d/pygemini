@@ -4,11 +4,13 @@ import pytest
 import importlib.resources
 import os
 import re
+import sys
 
 import gemini3d.web
 import gemini3d.plot
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8")
 @pytest.mark.parametrize(
     "name",
     [
