@@ -34,7 +34,7 @@ def get_msis_exe(gemini_root: Path = None) -> Path | None:
         )
     for path in paths:
         for n in EXE_PATHS:
-            msis_exe = shutil.which(name, path=path / n)
+            msis_exe = shutil.which(name, path=str(path / n))
             if msis_exe:
                 return Path(msis_exe)
 

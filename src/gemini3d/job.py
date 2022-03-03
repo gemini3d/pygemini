@@ -220,7 +220,7 @@ def get_gemini_exe(exe: str = None) -> Path:
     if not exe:  # allow for default dict empty
         gemini_root = cmake.get_gemini_root()
         for n in EXE_PATHS:
-            e = shutil.which(name, path=gemini_root / n)
+            e = shutil.which(name, path=str(gemini_root / n))
             if e:
                 break
     if not e:

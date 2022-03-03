@@ -160,7 +160,7 @@ def build_gemini3d(targets: list[str], gemini_root: Path = None, cmake_args: lis
 
     for t in targets:
         for n in {"build", "build/Release", "build/Debug"}:
-            exe = shutil.which(t, path=src_dir / n)
+            exe = shutil.which(t, path=str(src_dir / n))
             if exe:
                 break
         if not exe:
