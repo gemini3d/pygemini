@@ -19,9 +19,9 @@ import json
 from pathlib import Path
 import importlib.resources
 
-from . import cmake
-from .web import url_retrieve, git_download
-from .archive import extract_tar
+from gemini3d import cmake
+from gemini3d.web import url_retrieve, git_download
+from gemini3d.archive import extract_tar
 
 # ========= user parameters ======================
 BUILDDIR = "build"
