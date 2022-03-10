@@ -293,7 +293,9 @@ def parse_setup(r: dict[str, T.Any]) -> dict[str, T.Any]:
             "E0precip",
             "Etarg",
             "Efield_latwidth",
+            "Efield_latoffset",
             "Efield_lonwidth",
+            "Efield_lonoffset",
             "altmin",
         }:
             P[k] = float(r[k])
