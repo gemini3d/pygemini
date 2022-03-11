@@ -5,7 +5,6 @@ env:
   GEMINI_ROOT: ~/gemini3d
   GEMINI_CIROOT: ~/ci
   CMAKE_BUILD_TYPE: Release
-  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -56,7 +55,7 @@ jobs:
     - run: python -m pip install .[tests,plots]
       timeout-minutes: 2
 
-    - run: sudo python -m gemini3d.install
+    - run: python -m gemini3d.install -sudo
       timeout-minutes: 2
 
     - name: Unit Tests

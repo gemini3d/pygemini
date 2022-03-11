@@ -7,11 +7,15 @@ import tempfile
 import subprocess
 import json
 from pathlib import Path
+import argparse
 import importlib.resources
 
 from .web import git_download
 from .cmake import exe
 
+P = argparse.ArgumentParser(description="Install prereqs")
+P.add_argument("-sudo", action="store_true", help="run as root")
+a = P.parse_args()
 
 src_dir = Path(tempfile.gettempdir()) / "gemini3d-libs"
 
@@ -23,9 +27,19 @@ script = src_dir / "scripts/requirements.cmake"
 if not script.is_file():
     raise FileNotFoundError(script)
 
-cmd = [exe(), "-P", str(script)]
+cmake_cmd = [exe(), "-P", str(script)]
 
-print(" ".join(cmd))
-ret = subprocess.run(cmd)
+print(" ".join(cmake_cmd))
+pkg_cmd = subprocess.check_output(cmake_cmd, text=True).strip().split(" ")
 
-raise SystemExit(ret.returncode)
+if a.sudo:
+    pkg_cmd.insert(0, "sudo")
+
+print(" ".join(pkg_cmd))
+ret = subprocess.run(pkg_cmd)
+
+if ret.returncode != 0:
+    raise SystemExit(
+        "if failure is due to permissions, "
+        "add -sudo option like \n python -m gemini3d.install -sudo"
+    )

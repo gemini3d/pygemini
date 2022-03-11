@@ -110,13 +110,13 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
             E.attrs["mlonsig"], E.attrs["sigx2"] = Esigma(
                 cfg["Efield_lonwidth"], mlonmax, mlonmin, xg["x2"]
             )
-            
+
     if "Efield_latoffset" in cfg:
         if flagdip:
             E.attrs["mlatoffset"] = cfg["Efield_latoffset"]
         else:
             E.attrs["mlatoffset"] = cfg["Efield_latoffset"]
-            
+
     if "Efield_lonoffset" in cfg:
         if flagdip:
             E.attrs["mlonoffset"] = cfg["Efield_lonoffset"]

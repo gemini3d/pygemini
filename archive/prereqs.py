@@ -251,7 +251,7 @@ def mumps(wipe: bool, dirs: dict[str, Path], env: T.Mapping[str, str], dryrun: b
 
 
 def get_json() -> T.Mapping[str, T.Any]:
-    cmake_config = Path(cmake.get_gemini_root()).expanduser() / "cmake/config/libraries.json"
+    cmake_config = Path(cmake.get_gemini_root()).expanduser() / "cmake/libraries.json"
     return json.loads(cmake_config.read_text())
 
 
