@@ -39,7 +39,10 @@ print(" ".join(pkg_cmd))
 ret = subprocess.run(pkg_cmd)
 
 if ret.returncode != 0:
-    raise SystemExit(
-        "if failure is due to permissions, "
-        "add -sudo option like \n python -m gemini3d.install -sudo"
-    )
+    if not a.sudo:
+        raise SystemExit(
+            "if failure is due to permissions, "
+            "add -sudo option like \n python -m gemini3d.install -sudo"
+        )
+    else:
+        raise SystemExit(f"failed to install packages with {pkg_cmd}")
