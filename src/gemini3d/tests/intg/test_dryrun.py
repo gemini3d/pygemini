@@ -10,6 +10,7 @@ import gemini3d
 import gemini3d.run
 import gemini3d.job as job
 import gemini3d.web
+import gemini3d.msis
 
 
 @pytest.mark.parametrize("name,bref", [("mini2dew_eq", 1238112), ("mini3d_eq", 2323072)])
@@ -35,6 +36,7 @@ def test_mpiexec():
     assert isinstance(mpiexec, str)
 
 
+@pytest.mark.skipif(gemini3d.msis.get_msis_exe() is None, reason="msis_setup not available")
 @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 @pytest.mark.parametrize("name", ["mini2dew_eq"])
 def test_dryrun(name, tmp_path):
