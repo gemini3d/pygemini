@@ -5,7 +5,7 @@ PyGemini is the Python interface to the Gemini3D ionospheric model.
 from __future__ import annotations
 from pathlib import Path
 
-from . import cmake
+from .cmake import build
 
 __version__ = "1.7.0"
 
@@ -52,7 +52,7 @@ def setup(targets: list[str] = None, gemini_root: Path = None, cmake_args: list[
     if not targets:
         targets = ["gemini3d.run", "gemini.bin"]
 
-    cmake.build_gemini3d(targets, gemini_root, cmake_args)
+    build.build_gemini3d(targets, gemini_root, cmake_args)
 
 
 def setup_libs(
@@ -72,4 +72,4 @@ def setup_libs(
     else:
         cmake_args += ["-Dfind:BOOL=false"]
 
-    cmake.build_libs(prefix, targets, cmake_args)
+    build.build_libs(prefix, targets, cmake_args)
