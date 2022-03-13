@@ -3,13 +3,23 @@ from pathlib import Path
 import subprocess
 import shutil
 import os
+import sys
 
-__all__ = ["cmake_exe", "build", "find_library"]
+__all__ = ["cmake_exe", "get_gemini_root"]
 
 
 def cmake_exe() -> str:
 
     cmake = shutil.which("cmake")
+    if not cmake:
+        # try to help if Homebrew or Ports is not on PATH
+        if sys.platform == "darwin":
+            paths = ["/opt/homebrew/bin", "/usr/local/bin", "/opt/local/bin"]
+            for path in paths:
+                cmake = shutil.which("cmake", path)
+                if cmake:
+                    break
+
     if not cmake:
         raise FileNotFoundError("CMake not found.  Try:\n    pip install cmake")
 
