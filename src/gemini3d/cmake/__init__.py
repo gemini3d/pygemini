@@ -10,10 +10,10 @@ import importlib.resources
 
 from ..web import git_download
 
-__all__ = ["exe", "build", "find_library"]
+__all__ = ["cmake_exe", "build", "find_library"]
 
 
-def exe() -> str:
+def cmake_exe() -> str:
 
     cmake = shutil.which("cmake")
     if not cmake:
@@ -41,7 +41,7 @@ def build(
     install: bool = True,
 ):
     """build and install with CMake"""
-    cmake = exe()
+    cmake = cmake_exe()
 
     cache_file = build_dir / "CMakeCache.txt"
     if wipe:
@@ -77,7 +77,7 @@ def find_library(lib_name: str, lib_path: list[str], env: T.Mapping[str, str]) -
     directly in CMake.
     """
 
-    cmake = exe()
+    cmake = cmake_exe()
 
     with importlib.resources.path("gemini3d.cmake", "FindLAPACK.cmake") as f:
         mod_path = Path(f).parent

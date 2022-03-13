@@ -11,7 +11,7 @@ import argparse
 import importlib.resources
 
 from .web import git_download
-from .cmake import exe
+from .cmake import cmake_exe
 
 P = argparse.ArgumentParser(description="Install prereqs")
 P.add_argument("-sudo", action="store_true", help="run as root")
@@ -27,7 +27,7 @@ script = src_dir / "scripts/requirements.cmake"
 if not script.is_file():
     raise FileNotFoundError(script)
 
-cmake_cmd = [exe(), "-P", str(script)]
+cmake_cmd = [cmake_exe(), "-P", str(script)]
 
 print(" ".join(cmake_cmd))
 pkg_cmd = subprocess.check_output(cmake_cmd, text=True).strip().split(" ")

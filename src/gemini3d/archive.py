@@ -2,7 +2,7 @@ from __future__ import annotations
 from pathlib import Path
 import subprocess
 
-from . import cmake
+from .cmake import cmake_exe
 
 
 def extract_zst(archive: str | Path, out_path: str | Path):
@@ -30,7 +30,7 @@ def extract_zst(archive: str | Path, out_path: str | Path):
     # need .resolve() in case intermediate relative dir doesn't exist
     out_path.mkdir(exist_ok=True, parents=True)
 
-    subprocess.check_call([cmake.exe(), "-E", "tar", "xf", str(archive)], cwd=out_path)
+    subprocess.check_call([cmake_exe(), "-E", "tar", "xf", str(archive)], cwd=out_path)
 
 
 extract_tar = extract_zst
