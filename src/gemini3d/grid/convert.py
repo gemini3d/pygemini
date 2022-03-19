@@ -64,12 +64,18 @@ def geog2geomag(glon: np.ndarray, glat: np.ndarray) -> tuple[np.ndarray, np.ndar
         np.cos(thetag) * np.cos(thetan) + np.sin(thetag) * np.sin(thetan) * np.cos(phig - phin)
     )
     argtmp = (np.cos(thetag) - np.cos(theta) * np.cos(thetan)) / (np.sin(theta) * np.sin(thetan))
-    alpha = np.arccos(max(min(argtmp, 1), -1))
+    
+    # this was originally malformed for use with arrays
+    #alpha = np.arccos(max(min(argtmp, 1), -1))
+    argshp=argtmp.shape
+    argtmp=argtmp.flatten(order="F")
+    alpha=np.zeros(argtmp.size)
+    for j in range(0,argtmp.size):
+    	alpha[j] = np.arccos(max(min(argtmp[j], 1), -1))
+    alpha=np.reshape(alpha,argshp)
 
     phi = np.empty_like(glon, dtype=float)
-
     i = ((phin > phig) & ((phin - phig) > pi)) | ((phin < phig) & ((phig - phin) < pi))
-
     phi[i] = pi - alpha[i]
     i = np.logical_not(i)
     phi[i] = alpha[i] + pi
