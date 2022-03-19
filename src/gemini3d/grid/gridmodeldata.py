@@ -137,6 +137,7 @@ def model2geogcoords(
     altlims: tuple[float, float] = None,
     glonlims: tuple[float, float] = None,
     glatlims: tuple[float, float] = None,
+    wraplon: bool = False,
 ):
     """
     Grid the scalar GEMINI output data in parm onto a regular *geographic* coordinates
@@ -159,13 +160,34 @@ def model2geogcoords(
     x2 = xg["x2"][inds2]
     x3 = xg["x3"][inds3]
 
+    # deal with possible wrapping of longitude coordinates
+    # FIXME:  inefficient; needs to be optimized.  May also cause problems on global grids...
+    if wraplon: 
+        print("...Wrapping longitude...")
+        shp=xg["lx"]
+        for i in range(1,shp[0]):
+            for j in range(1,shp[1]):
+                for k in range(1,shp[2]):
+                    dgi=glon[i,j,k]-glon[i-1,j,k]
+                    dgj=glon[i,j,k]-glon[i,j-1,k]
+                    dgk=glon[i,j,k]-glon[i,j,k-1]
+                    if np.any(np.array([dgi,dgj,dgk])<0):
+                        wrapgrid=True
+        if wrapgrid:
+            for i in range(0,shp[0]):
+                for j in range(0,shp[1]):
+                    for k in range(0,shp[2]):
+                        if glon[i,j,k]<180:
+                            glon[i,j,k]+=360
+        print("...Done wrapping longitude...")
+
     # set some defaults if not provided by user
     if altlims is None:
-        altlims = (alt.min() + 0.0001, alt.max() - 0.0001)
+        altlims = (alt.min(), alt.max())
     if glonlims is None:
-        glonlims = (glon.min() + 0.0001, glon.max() - 0.0001)
+        glonlims = (glon.min(), glon.max())
     if glatlims is None:
-        glatlims = (glat.min() + 0.0001, glat.max() - 0.0001)
+        glatlims = (glat.min(), glat.max())
 
     # define uniform grid in magnetic coords.
     alti = np.linspace(altlims[0], altlims[1], lalt)
