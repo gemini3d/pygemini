@@ -34,7 +34,7 @@ def test_file_time(name):
     assert time == t0
 
 
-@pytest.mark.parametrize("glon, glat", [(0, -60), (45, -45), (90, 30), (180, 45), (270, 60)])
+@pytest.mark.parametrize("glon, glat", [(30, -60), (45, -45), (90, 30), (180, 45), (270, 60)])
 def test_convert_scalar(glon, glat):
     phi, theta = cvt.geog2geomag(glon, glat)
 
@@ -46,7 +46,7 @@ def test_convert_scalar(glon, glat):
 
 def test_convert_numpy():
 
-    glon = np.array([0, 45, 90, 180, 270])
+    glon = np.array([30, 45, 90, 180, 270])
     glat = np.array([-60, -45, 30, 45, 60])
 
     # from IGRF, not even close to function output
