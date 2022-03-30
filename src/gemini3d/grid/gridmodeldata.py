@@ -161,8 +161,8 @@ def model2geogcoords(
     x3 = xg["x3"][inds3]
 
     # deal with possible wrapping of longitude coordinates
-    if wraplon: 
-        glon[glon<180]+=360
+    if wraplon:
+        glon[glon < 180] += 360
 
     # set some defaults if not provided by user
     if altlims is None:
