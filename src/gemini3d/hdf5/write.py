@@ -303,7 +303,7 @@ def precip(outdir: Path, P: xarray.Dataset):
                 )
 
 
-def maggrid(fn: Path, mag: dict[str, np.ndarray], gridsize: tuple[int, int, int]):
+def maggrid(fn: Path, mag: dict[str, T.Any], gridsize: tuple[int, int, int]):
     """
     hdf5 files can optionally store a gridsize variable which tells readers how to
     reshape the data into 2D or 3D arrays.

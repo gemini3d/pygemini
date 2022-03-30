@@ -5,8 +5,6 @@ function names in this module must start with "curv" so that "if" statements in 
 from __future__ import annotations
 import typing as T
 
-import numpy as np
-import xarray
 from matplotlib.figure import Figure  # does not display, save only
 from matplotlib.axes import Axes
 
@@ -15,8 +13,8 @@ from ..grid.gridmodeldata import model2magcoords
 
 def curv3d_long(
     cfg: dict[str, T.Any],
-    xg: dict[str, np.ndarray],
-    parm: xarray.DataArray,
+    xg: dict[str, T.Any],
+    parm,
     fg: Figure = None,
     *,
     lalt: int = 256,
@@ -65,8 +63,8 @@ def curv3d_long(
 
 def curv2d(
     cfg: dict[str, T.Any],
-    xg: dict[str, np.ndarray],
-    parm: xarray.DataArray,
+    xg: dict[str, T.Any],
+    parm,
     fg: Figure = None,
     *,
     lalt: int = 256,

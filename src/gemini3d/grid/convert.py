@@ -52,7 +52,7 @@ def calc_theta(r: float, parms: tuple[float, float]) -> float:
     return np.arccos(parms[0] * (r / Re) ** 2)
 
 
-def geog2geomag(glon: np.ndarray, glat: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def geog2geomag(glon, glat) -> tuple:
     """
     convert geographic to geomagnetic coordinates (see GEMINI document for details)
 
@@ -92,7 +92,7 @@ def geog2geomag(glon: np.ndarray, glat: np.ndarray) -> tuple[np.ndarray, np.ndar
     return phi, theta
 
 
-def geomag2geog(phi: np.ndarray, theta: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def geomag2geog(phi, theta) -> tuple:
     """convert from geomagnetic to geographic
 
     Parameters

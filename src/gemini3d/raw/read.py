@@ -310,7 +310,7 @@ def frame3d_curvne(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
     return dat
 
 
-def read4D(f: T.BinaryIO, lsp: int, lx: tuple[int, ...] | list[int]) -> np.ndarray:
+def read4D(f: T.BinaryIO, lsp: int, lx: tuple[int, ...] | list[int]):
     """
     read 4D array from raw file
     """
@@ -321,7 +321,7 @@ def read4D(f: T.BinaryIO, lsp: int, lx: tuple[int, ...] | list[int]) -> np.ndarr
     return np.fromfile(f, np.float64, np.prod(lx) * lsp).reshape((*lx, lsp), order="F")
 
 
-def read3D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]) -> np.ndarray:
+def read3D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]):
     """
     read 3D array from raw file
     """
@@ -332,7 +332,7 @@ def read3D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]) -> np.ndarray:
     return np.fromfile(f, np.float64, np.prod(lx)).reshape(*lx, order="F")
 
 
-def read2D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]) -> np.ndarray:
+def read2D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]):
     """
     read 2D array from raw file
     """

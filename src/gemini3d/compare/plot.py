@@ -2,7 +2,6 @@ from __future__ import annotations
 from pathlib import Path
 from datetime import datetime
 
-import numpy as np
 import xarray
 from matplotlib.figure import Figure
 
@@ -101,7 +100,7 @@ def plotdiff(
     fg.savefig(fn)
 
 
-def diff1d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
+def diff1d(A, B, name: str, fg, axs):
 
     axs[0].plot(A)
 
@@ -114,7 +113,7 @@ def diff1d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
     return abs(d).max().data
 
 
-def diff2d(A: np.ndarray, B: np.ndarray, name: str, fg, axs) -> float:
+def diff2d(A, B, name: str, fg, axs):
 
     cmap = "bwr" if name.startswith(("J", "v")) else None
 

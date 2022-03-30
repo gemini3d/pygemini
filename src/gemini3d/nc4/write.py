@@ -190,7 +190,7 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
 def _write_var(
     f,
     name: str,
-    value: np.ndarray | xarray.DataArray,
+    value,
     dims: str | tuple[str, ...] | list[str] = "",
 ):
 

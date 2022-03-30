@@ -9,7 +9,6 @@ import typing as T
 
 import numpy as np
 from numpy import pi
-import xarray
 import scipy.interpolate
 
 from .convert import Re, geog2geomag
@@ -17,7 +16,7 @@ from .convert import Re, geog2geomag
 
 def model2magcoords(
     xg: dict[str, T.Any],
-    parm: xarray.DataArray,
+    parm,
     lalt: int,
     llon: int,
     llat: int,
@@ -130,7 +129,7 @@ def model2magcoords(
 
 def model2geogcoords(
     xg: dict[str, T.Any],
-    parm: xarray.DataArray,
+    parm,
     lalt: int,
     llon: int,
     llat: int,
@@ -245,9 +244,7 @@ def model2geogcoords(
     return alti, gloni, glati, parmi
 
 
-def geomag2dipole(
-    alt: np.ndarray, mlon: np.ndarray, mlat: np.ndarray
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def geomag2dipole(alt, mlon, mlat) -> tuple:
     """Convert geomagnetic coordinates into dipole"""
 
     theta = pi / 2 - np.radians(mlat)
@@ -259,9 +256,7 @@ def geomag2dipole(
     return q, p, phi
 
 
-def geog2dipole(
-    alt: np.ndarray, glon: np.ndarray, glat: np.ndarray
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def geog2dipole(alt, glon, glat) -> tuple:
     """Convert geographic coordinates into dipole"""
 
     phi, theta = geog2geomag(glon, glat)
@@ -272,7 +267,7 @@ def geog2dipole(
     return q, p, phi
 
 
-def geomag2UENgeomag(alt, mlon, mlat) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def geomag2UENgeomag(alt, mlon, mlat) -> tuple:
     """Convert geomagnetic to UEN geomagnetic coords."""
 
     theta = pi / 2 - np.radians(mlat)
@@ -288,7 +283,7 @@ def geomag2UENgeomag(alt, mlon, mlat) -> tuple[np.ndarray, np.ndarray, np.ndarra
 
 def geog2UENgeog(
     alt, glon, glat, ref_lat: float = None, ref_lon: float = None
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple:
     """Convert geographic to UEN geographic coords."""
 
     theta = pi / 2 - np.radians(

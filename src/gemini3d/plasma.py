@@ -223,7 +223,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
     # %% MAKE UP SOME INITIAL CONDITIONS FOR FORTRAN CODE
     mindens = 1e-100
 
-    def Oplus(ns: np.ndarray) -> np.ndarray:
+    def Oplus(ns):
         ns[0, :, ix2, ix3] = rho * ne
         zref = 900e3
         i = alt[:, ix2, ix3] > zref
@@ -256,7 +256,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
 
         return ns
 
-    def molecular_density(ns: np.ndarray, xgr: np.ndarray, inds: np.ndarray) -> np.ndarray:
+    def molecular_density(ns, xgr, inds):
         """MOLECULAR DENSITIES
 
         Parameters
@@ -442,7 +442,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
     return dat
 
 
-def chapmana(z: np.ndarray, nm: float, z0: float, H: np.ndarray) -> np.ndarray:
+def chapmana(z, nm: float, z0: float, H):
     """
     create Chapman profile
 

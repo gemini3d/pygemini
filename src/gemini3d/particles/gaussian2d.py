@@ -2,7 +2,7 @@ import numpy as np
 import xarray
 
 
-def gaussian2d(pg: xarray.Dataset, Qpeak: float, Qbackground: float) -> np.ndarray:
+def gaussian2d(pg: xarray.Dataset, Qpeak: float, Qbackground: float):
 
     mlon_mean = pg.mlon.mean().item()
     mlat_mean = pg.mlat.mean().item()

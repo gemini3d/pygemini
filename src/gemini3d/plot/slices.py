@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import numpy as np
-import xarray
 import scipy.interpolate as interp
 
 from matplotlib.ticker import MultipleLocator
@@ -13,9 +11,9 @@ from ..utils import git_meta
 
 
 def plot12(
-    x: np.ndarray | xarray.DataArray,
-    z: np.ndarray | xarray.DataArray,
-    parm: np.ndarray | xarray.DataArray,
+    x,
+    z,
+    parm,
     *,
     name: str,
     cmap: str = None,
@@ -44,9 +42,9 @@ def plot12(
 
 
 def plot13(
-    y: np.ndarray | xarray.DataArray,
-    z: np.ndarray | xarray.DataArray,
-    parm: np.ndarray | xarray.DataArray,
+    y,
+    z,
+    parm,
     *,
     name: str,
     cmap: str = None,
@@ -74,9 +72,9 @@ def plot13(
 
 
 def plot23(
-    x: np.ndarray | xarray.DataArray,
-    y: np.ndarray | xarray.DataArray,
-    parm: np.ndarray | xarray.DataArray,
+    x,
+    y,
+    parm,
     name: str,
     *,
     cmap: str = None,
@@ -102,9 +100,7 @@ def plot23(
     return fg, ax
 
 
-def plot1d2(
-    x: np.ndarray, parm: np.ndarray, name: str, fg: Figure = None, ax: Axes = None
-) -> tuple[Figure, Axes]:
+def plot1d2(x, parm, name: str, fg: Figure = None, ax: Axes = None) -> tuple[Figure, Axes]:
 
     if parm.ndim != 1:
         raise ValueError("expecting 1-D data oriented east-west (along latitude)")
@@ -121,9 +117,7 @@ def plot1d2(
     return fg, ax
 
 
-def plot1d3(
-    y: np.ndarray, parm: np.ndarray, name: str, fg: Figure = None, ax: Axes = None
-) -> tuple[Figure, Axes]:
+def plot1d3(y, parm, name: str, fg: Figure = None, ax: Axes = None) -> tuple[Figure, Axes]:
 
     if parm.ndim != 1:
         raise ValueError("expecting 1-D data oriented east-west (along latitude)")

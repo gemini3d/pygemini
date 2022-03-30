@@ -4,7 +4,7 @@ import math
 import numpy as np
 
 
-def grid1d(dist: float, L: int, parms: list[float] = None) -> np.ndarray:
+def grid1d(dist: float, L: int, parms: list[float] = None):
     """
     generate 1D grid
 
@@ -34,7 +34,7 @@ def grid1d(dist: float, L: int, parms: list[float] = None) -> np.ndarray:
     return x
 
 
-def uniform1d(xmin: float, xmax: float, L: int) -> np.ndarray:
+def uniform1d(xmin: float, xmax: float, L: int):
 
     if L == 1:
         # degenerate dimension
@@ -52,7 +52,7 @@ def uniform1d(xmin: float, xmax: float, L: int) -> np.ndarray:
     return x
 
 
-def non_uniform1d(xmax: float, parms: list[float]) -> np.ndarray:
+def non_uniform1d(xmax: float, parms: list[float]):
 
     degdist = parms[0]  # distance from boundary at which we start to degrade resolution
     dx0 = parms[1]  # min step size for grid
@@ -74,7 +74,7 @@ def non_uniform1d(xmax: float, parms: list[float]) -> np.ndarray:
 
 def altitude_grid(
     alt_min: float, alt_max: float, incl_deg: float, d: tuple[float, float, float, float]
-) -> np.ndarray:
+):
 
     if alt_min < 0 or alt_max < 0:
         raise ValueError("grid values must be positive")

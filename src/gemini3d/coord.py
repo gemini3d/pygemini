@@ -7,7 +7,7 @@ pi = math.pi
 tau = math.tau
 
 
-def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def geomag2geog(thetat, phit) -> tuple:
     """geomagnetic to geographic"""
 
     # FIXME: this is for year 1985, see Schmidt spherical harmonic in MatGemini
@@ -44,7 +44,7 @@ def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> tuple[np.ndarray, np.nd
     return lat, lon
 
 
-def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def geog2geomag(lat, lon) -> tuple:
     """geographic to geomagnetic"""
 
     # FIXME: this is for year 1985, see Schmidt spherical harmonic in MatGemini
@@ -70,7 +70,7 @@ def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> tuple[np.ndarray, np.ndarra
     return thetat, phit[()]
 
 
-def geog2UEN(alt, glon, glat, thetactr, phictr):
+def geog2UEN(alt, glon, glat, thetactr, phictr) -> tuple:
     """
     Converts a set of glon,glat into magnetic up, north, east coordinates.
     thetactr and phictr are the magnetic coordinates of the center of the region of interest.
@@ -95,7 +95,7 @@ def geog2UEN(alt, glon, glat, thetactr, phictr):
     return z, x, y
 
 
-def UEN2geog(z, x, y, thetactr, phictr):
+def UEN2geog(z, x, y, thetactr, phictr) -> tuple:
     """
     converts magnetic up, north, east coordinates into geographic coordinates.
     """

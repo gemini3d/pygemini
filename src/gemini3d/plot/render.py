@@ -71,7 +71,7 @@ def frame(
             fg.savefig(plot_fn)
 
 
-def scalar(time: datetime, xg: dict[str, np.ndarray], parm: np.ndarray, name: str):
+def scalar(time: datetime, xg: dict[str, T.Any], parm, name: str):
     """
     plot scalar field data in transparent 3D volume
     """

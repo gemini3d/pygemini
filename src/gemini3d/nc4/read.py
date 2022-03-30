@@ -74,7 +74,7 @@ def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
     return flag
 
 
-def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, np.ndarray]:
+def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, T.Any]:
     """
     get simulation grid
 

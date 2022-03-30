@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import typing as T
 from datetime import datetime
 import numpy as np
 import math
@@ -26,7 +27,7 @@ from .slices import (
 
 def plot_interp(
     time: datetime,
-    xg: dict[str, np.ndarray],
+    xg: dict[str, T.Any],
     parm: xarray.DataArray,
     fg: Figure = None,
     **kwargs,

@@ -19,7 +19,7 @@ mpl.rcParams["axes.formatter.useoffset"] = False
 mpl.rcParams["axes.formatter.min_exponent"] = 4
 
 
-def grid2plotfun(xg: dict[str, np.ndarray]) -> T.Callable:
+def grid2plotfun(xg: dict[str, T.Any]) -> T.Callable:
     plotfun = None
     h1 = xg.get("h1")
 
