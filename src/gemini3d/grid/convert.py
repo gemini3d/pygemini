@@ -55,6 +55,22 @@ def calc_theta(r: float, parms: tuple[float, float]) -> float:
 def geog2geomag(glon: np.ndarray, glat: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     convert geographic to geomagnetic coordinates (see GEMINI document for details)
+
+    Parameters
+    -----------
+
+    glon: float or ndarray
+        geographic longitude in degrees
+    glat: float or ndarray
+        geographic latitude in degrees
+
+    Results
+    -------
+
+    phi: float or ndarray
+        geomagnetic longitude in radians
+    theta: float or ndarray
+        geomagnetic latitude in radians
     """
 
     thetag = pi / 2 - np.radians(glat)
@@ -65,14 +81,7 @@ def geog2geomag(glon: np.ndarray, glat: np.ndarray) -> tuple[np.ndarray, np.ndar
     )
     argtmp = (np.cos(thetag) - np.cos(theta) * np.cos(thetan)) / (np.sin(theta) * np.sin(thetan))
 
-    # this was originally malformed for use with arrays
-    # alpha = np.arccos(max(min(argtmp, 1), -1))
-    argshp = argtmp.shape
-    argtmp = argtmp.flatten(order="F")
-    alpha = np.zeros(argtmp.size)
-    for j in range(0, argtmp.size):
-        alpha[j] = np.arccos(max(min(argtmp[j], 1), -1))
-    alpha = np.reshape(alpha, argshp)
+    alpha = np.arccos(argtmp.clip(min=-1, max=1))
 
     phi = np.empty_like(glon, dtype=float)
     i = ((phin > phig) & ((phin - phig) > pi)) | ((phin < phig) & ((phig - phin) < pi))
@@ -84,7 +93,24 @@ def geog2geomag(glon: np.ndarray, glat: np.ndarray) -> tuple[np.ndarray, np.ndar
 
 
 def geomag2geog(phi: np.ndarray, theta: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """convert from geomagnetic to geographic"""
+    """convert from geomagnetic to geographic
+
+    Parameters
+    ----------
+
+    phi: float or ndarray
+        geomagnetic longitude in radians
+    theta: float or ndarray
+        geomagnetic latitude in radians
+
+    Results
+    -------
+
+    glon: float or ndarray
+        geographic longitude in degrees
+    glat: float or ndarray
+        geographic latitude in degrees
+    """
 
     phiwrap = phi % tau
 

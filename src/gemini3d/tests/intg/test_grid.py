@@ -2,6 +2,9 @@
 these test that PyGemini generates inputs that match expectations
 """
 
+from pytest import approx
+
+import numpy as np
 from datetime import datetime
 import importlib.resources
 import pytest
@@ -15,6 +18,7 @@ from gemini3d.compare import compare_grid
 import gemini3d.read
 import gemini3d.model
 import gemini3d.find
+import gemini3d.grid.convert as cvt
 
 
 @pytest.mark.parametrize("name", ["mini2dew_fang"])
@@ -28,6 +32,36 @@ def test_file_time(name):
     file = gemini3d.find.frame(test_dir, time=t0)
     time = gemini3d.read.time(file)
     assert time == t0
+
+
+@pytest.mark.parametrize("glon, glat", [(0, -60), (45, -45), (90, 30), (180, 45), (270, 60)])
+def test_convert_scalar(glon, glat):
+    phi, theta = cvt.geog2geomag(glon, glat)
+
+    glon2, glat2 = cvt.geomag2geog(phi, theta)
+
+    assert glon2 == approx(glon, rel=1e-6, abs=1e-8)
+    assert glat2 == approx(glat, rel=1e-6, abs=1e-8)
+
+
+def test_convert_numpy():
+
+    glon = np.array([0, 45, 90, 180, 270])
+    glat = np.array([-60, -45, 30, 45, 60])
+
+    # from IGRF, not even close to function output
+    # phir = np.array([0, 24.15, 17.54, 115.54, 180 ])
+    # thetar = np.array([80.59, 36.34, 8.98, 41.36, 80.59])
+
+    phi, theta = cvt.geog2geomag(glon, glat)
+
+    # assert phi == approx(np.radians(phir))
+    # assert theta == approx(np.radians(thetar))
+
+    glon2, glat2 = cvt.geomag2geog(phi, theta)
+
+    assert glon2 == approx(glon, rel=1e-6, abs=1e-8)
+    assert glat2 == approx(glat, rel=1e-6, abs=1e-8)
 
 
 @pytest.mark.parametrize(
