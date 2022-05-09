@@ -35,15 +35,6 @@ def model2magcoords(
     mlon = np.degrees(xg["phi"])
     mlat = 90 - np.degrees(xg["theta"])
     alt = xg["alt"]
-    lx1 = xg["lx"][0]
-    lx2 = xg["lx"][1]
-    lx3 = xg["lx"][2]
-    inds1 = range(2, lx1 + 2)
-    inds2 = range(2, lx2 + 2)
-    inds3 = range(2, lx3 + 2)
-    x1 = xg["x1"][inds1]
-    x2 = xg["x2"][inds2]
-    x3 = xg["x3"][inds3]
 
     # set some defaults if not provided by user
     if altlims is None:
@@ -59,71 +50,8 @@ def model2magcoords(
     mlati = np.linspace(mlatlims[0], mlatlims[1], llat)
     ALTi, MLONi, MLATi = np.meshgrid(alti, mloni, mlati, indexing="ij")
 
-    # identify the type of grid that we are using
-    minh1 = xg["h1"].min()
-    maxh1 = xg["h1"].max()
-    if abs(minh1 - 1) > 1e-4 or abs(maxh1 - 1) > 1e-4:  # curvilinear, dipole
-        flagcurv = 1
-    else:  # cartesian
-        flagcurv = 0
-        # elif others possible...
-
-    # Compute the coordinates of the intended interpolation grid IN THE MODEL SYSTEM/BASIS.
-    # There needs to be a separate transformation here for each coordinate system that the model
-    # may use...
-    if flagcurv == 1:
-        x1i, x2i, x3i = geomag2dipole(ALTi, MLONi, MLATi)
-    elif flagcurv == 0:
-        x1i, x2i, x3i = geomag2UENgeomag(ALTi, MLONi, MLATi)
-    else:
-        raise ValueError("Unsupported grid type...")
-
-    # count non singleton dimensions
-    numdims = 0
-    for idim in range(0, 3):
-        if xg["lx"][idim] > 1:
-            numdims += 1
-
-    # Execute plaid interpolation
-    # [X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
-    # if parm.ndim == 3:     # problematic to not check for singleton dimensions
-    if numdims == 3:
-        # xi=np.zeros((x1i.size,3))
-        xi = np.array((x1i.ravel(), x2i.ravel(), x3i.ravel())).transpose()
-        parmi = scipy.interpolate.interpn(
-            points=(x1, x2, x3),
-            values=parm.data,
-            xi=xi,
-            method="linear",
-            bounds_error=False,
-            fill_value=np.NaN,
-        )
-    elif numdims == 2:
-        coord1 = x1
-        coord1i = x1i
-        if parm.shape[1] == 1:
-            coord2 = x3
-            coord2i = x3i
-        else:
-            coord2 = x2
-            coord2i = x2i
-        # fi=scipy.interpolate.interp2d(coord1,coord2, parm.data, kind="linear", \
-        #                              bounds_error=False, fill_value=np.NaN)
-        # parmi=fi(coord1i.ravel(),coord2i.ravel())
-        xi = np.array((coord1i.ravel(), coord2i.ravel())).transpose()
-        parmi = scipy.interpolate.interpn(
-            points=(coord1, coord2),
-            values=parm.data,
-            xi=xi,
-            method="linear",
-            bounds_error=False,
-            fill_value=np.NaN,
-        )
-    else:
-        raise ValueError("Can only grid 2D or 3D data, check array dims...")
-
-    parmi = parmi.reshape(lalt, llon, llat)
-
+    parmi=model2pointsgeogcoords(xg,parm,ALTi,MLONi,MLATi)
+    parmi=parmi.reshape(lalt,llon,llat)
     return alti, mloni, mlati, parmi
 
 
@@ -149,15 +77,6 @@ def model2geogcoords(
     glat = xg["glat"]
     glon = xg["glon"]
     alt = xg["alt"]
-    lx1 = xg["lx"][0]
-    lx2 = xg["lx"][1]
-    lx3 = xg["lx"][2]
-    inds1 = range(2, lx1 + 2)
-    inds2 = range(2, lx2 + 2)
-    inds3 = range(2, lx3 + 2)
-    x1 = xg["x1"][inds1]
-    x2 = xg["x2"][inds2]
-    x3 = xg["x3"][inds3]
 
     # deal with possible wrapping of longitude coordinates
     if wraplon:
@@ -177,6 +96,24 @@ def model2geogcoords(
     glati = np.linspace(glatlims[0], glatlims[1], llat)
     ALTi, GLONi, GLATi = np.meshgrid(alti, gloni, glati, indexing="ij")
 
+    parmi=model2pointsgeogcoords(xg,parm,ALTi,GLONi,GLATi)
+    parmi=parmi.reshape(lalt,llon,llat)
+
+    return alti, gloni, glati, parmi
+
+
+def model2pointsgeomagcoords(xg,parm,alti,mloni,mlati):
+    # convenience variables
+    lx1 = xg["lx"][0]
+    lx2 = xg["lx"][1]
+    lx3 = xg["lx"][2]
+    inds1 = range(2, lx1 + 2)
+    inds2 = range(2, lx2 + 2)
+    inds3 = range(2, lx3 + 2)
+    x1 = xg["x1"][inds1]
+    x2 = xg["x2"][inds2]
+    x3 = xg["x3"][inds3]
+    
     # identify the type of grid that we are using
     minh1 = xg["h1"].min()
     maxh1 = xg["h1"].max()
@@ -190,12 +127,68 @@ def model2geogcoords(
     # There needs to be a separate transformation here for each coordinate system that the model
     # may use...
     if flagcurv == 1:
-        x1i, x2i, x3i = geog2dipole(ALTi, GLONi, GLATi)
+        x1i, x2i, x3i = geomag2dipole(alti, mloni, mlati)
     elif flagcurv == 0:
-        x1i, x2i, x3i = geog2UENgeog(ALTi, GLONi, GLATi)
+        x1i, x2i, x3i = geomag2UENgeomag(alti, mloni, mlati)
     else:
         raise ValueError("Unsupported grid type...")
 
+    parmi=interpmodeldata(xg,x1,x2,x3,parm,x1i,x2i,x3i)
+    return parmi
+
+
+def model2pointsgeogcoords(    
+    xg: dict[str, T.Any],
+    parm,
+    alti,
+    gloni,
+    glati
+    ):
+    """ 
+    Take a set of target geographic coords (in the model basis) and interpolate
+        model data to these.  
+    """
+    
+    # convenience variables
+    lx1 = xg["lx"][0]
+    lx2 = xg["lx"][1]
+    lx3 = xg["lx"][2]
+    inds1 = range(2, lx1 + 2)
+    inds2 = range(2, lx2 + 2)
+    inds3 = range(2, lx3 + 2)
+    x1 = xg["x1"][inds1]
+    x2 = xg["x2"][inds2]
+    x3 = xg["x3"][inds3]
+
+    # identify the type of grid that we are using
+    minh1 = xg["h1"].min()
+    maxh1 = xg["h1"].max()
+    if abs(minh1 - 1) > 1e-4 or abs(maxh1 - 1) > 1e-4:  # curvilinear, dipole
+        flagcurv = 1
+    else:  # cartesian
+        flagcurv = 0
+        # elif others possible...
+    
+    # Compute the coordinates of the intended interpolation grid IN THE MODEL SYSTEM/BASIS.
+    # There needs to be a separate transformation here for each coordinate system that the model
+    # may use...
+    if flagcurv == 1:
+        x1i, x2i, x3i = geog2dipole(alti, gloni, glati)
+    elif flagcurv == 0:
+        x1i, x2i, x3i = geog2UENgeog(alti, gloni, glati)
+    else:
+        raise ValueError("Unsupported grid type...")
+
+    parmi=interpmodeldata(xg,x1,x2,x3,parm,x1i,x2i,x3i)
+    return parmi
+
+
+def interpmodeldata(xg,x1,x2,x3,parm,x1i,x2i,x3i):
+    """ 
+    Take a set of target coordinates (in the model basis) and interpolate
+        model data to these.  
+    """
+        
     # count non singleton dimensions
     numdims = 0
     for idim in range(0, 3):
@@ -239,9 +232,8 @@ def model2geogcoords(
     else:
         raise ValueError("Can only grid 2D or 3D data, check array dims...")
 
-    parmi = parmi.reshape(lalt, llon, llat)
-
-    return alti, gloni, glati, parmi
+    #parmi = parmi.reshape(lalt, llon, llat)
+    return parmi
 
 
 def geomag2dipole(alt, mlon, mlat) -> tuple:
