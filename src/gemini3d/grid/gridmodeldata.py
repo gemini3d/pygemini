@@ -103,6 +103,11 @@ def model2geogcoords(
 
 
 def model2pointsgeomagcoords(xg,parm,alti,mloni,mlati):
+    """
+    Take a flat list of points in geomagnetic coordinates and interpolate model data to these
+      locations.  
+    """
+
     # convenience variables
     lx1 = xg["lx"][0]
     lx2 = xg["lx"][1]
@@ -145,7 +150,7 @@ def model2pointsgeogcoords(
     glati
     ):
     """ 
-    Take a set of target geographic coords (in the model basis) and interpolate
+    Take a set of target geographic coords and interpolate
         model data to these.  
     """
     
