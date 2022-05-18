@@ -50,8 +50,8 @@ def model2magcoords(
     mlati = np.linspace(mlatlims[0], mlatlims[1], llat)
     ALTi, MLONi, MLATi = np.meshgrid(alti, mloni, mlati, indexing="ij")
 
-    parmi=model2pointsgeogcoords(xg,parm,ALTi,MLONi,MLATi)
-    parmi=parmi.reshape(lalt,llon,llat)
+    parmi = model2pointsgeogcoords(xg, parm, ALTi, MLONi, MLATi)
+    parmi = parmi.reshape(lalt, llon, llat)
     return alti, mloni, mlati, parmi
 
 
@@ -96,16 +96,16 @@ def model2geogcoords(
     glati = np.linspace(glatlims[0], glatlims[1], llat)
     ALTi, GLONi, GLATi = np.meshgrid(alti, gloni, glati, indexing="ij")
 
-    parmi=model2pointsgeogcoords(xg,parm,ALTi,GLONi,GLATi)
-    parmi=parmi.reshape(lalt,llon,llat)
+    parmi = model2pointsgeogcoords(xg, parm, ALTi, GLONi, GLATi)
+    parmi = parmi.reshape(lalt, llon, llat)
 
     return alti, gloni, glati, parmi
 
 
-def model2pointsgeomagcoords(xg,parm,alti,mloni,mlati):
+def model2pointsgeomagcoords(xg, parm, alti, mloni, mlati):
     """
     Take a flat list of points in geomagnetic coordinates and interpolate model data to these
-      locations.  
+      locations.
     """
 
     # convenience variables
@@ -118,7 +118,7 @@ def model2pointsgeomagcoords(xg,parm,alti,mloni,mlati):
     x1 = xg["x1"][inds1]
     x2 = xg["x2"][inds2]
     x3 = xg["x3"][inds3]
-    
+
     # identify the type of grid that we are using
     minh1 = xg["h1"].min()
     maxh1 = xg["h1"].max()
@@ -138,22 +138,16 @@ def model2pointsgeomagcoords(xg,parm,alti,mloni,mlati):
     else:
         raise ValueError("Unsupported grid type...")
 
-    parmi=interpmodeldata(xg,x1,x2,x3,parm,x1i,x2i,x3i)
+    parmi = interpmodeldata(xg, x1, x2, x3, parm, x1i, x2i, x3i)
     return parmi
 
 
-def model2pointsgeogcoords(    
-    xg: dict[str, T.Any],
-    parm,
-    alti,
-    gloni,
-    glati
-    ):
-    """ 
-    Take a set of target geographic coords and interpolate
-        model data to these.  
+def model2pointsgeogcoords(xg: dict[str, T.Any], parm, alti, gloni, glati):
     """
-    
+    Take a set of target geographic coords and interpolate
+        model data to these.
+    """
+
     # convenience variables
     lx1 = xg["lx"][0]
     lx2 = xg["lx"][1]
@@ -173,7 +167,7 @@ def model2pointsgeogcoords(
     else:  # cartesian
         flagcurv = 0
         # elif others possible...
-    
+
     # Compute the coordinates of the intended interpolation grid IN THE MODEL SYSTEM/BASIS.
     # There needs to be a separate transformation here for each coordinate system that the model
     # may use...
@@ -184,16 +178,16 @@ def model2pointsgeogcoords(
     else:
         raise ValueError("Unsupported grid type...")
 
-    parmi=interpmodeldata(xg,x1,x2,x3,parm,x1i,x2i,x3i)
+    parmi = interpmodeldata(xg, x1, x2, x3, parm, x1i, x2i, x3i)
     return parmi
 
 
-def interpmodeldata(xg,x1,x2,x3,parm,x1i,x2i,x3i):
-    """ 
-    Take a set of target coordinates (in the model basis) and interpolate
-        model data to these.  
+def interpmodeldata(xg, x1, x2, x3, parm, x1i, x2i, x3i):
     """
-        
+    Take a set of target coordinates (in the model basis) and interpolate
+        model data to these.
+    """
+
     # count non singleton dimensions
     numdims = 0
     for idim in range(0, 3):
@@ -237,7 +231,7 @@ def interpmodeldata(xg,x1,x2,x3,parm,x1i,x2i,x3i):
     else:
         raise ValueError("Can only grid 2D or 3D data, check array dims...")
 
-    #parmi = parmi.reshape(lalt, llon, llat)
+    # parmi = parmi.reshape(lalt, llon, llat)
     return parmi
 
 
@@ -278,9 +272,7 @@ def geomag2UENgeomag(alt, mlon, mlat) -> tuple:
     return zUEN, xUEN, yUEN
 
 
-def geog2UENgeog(
-    alt, glon, glat, ref_lat: float = None, ref_lon: float = None
-) -> tuple:
+def geog2UENgeog(alt, glon, glat, ref_lat: float = None, ref_lon: float = None) -> tuple:
     """Convert geographic to UEN geographic coords."""
 
     theta = pi / 2 - np.radians(

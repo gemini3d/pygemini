@@ -29,7 +29,7 @@ def objfunr(r: float, parms: tuple[float, float]) -> float:
     q = parms[0]
     p = parms[1]
 
-    return q ** 2 * (r / Re) ** 4 + 1 / p * (r / Re) - 1
+    return q**2 * (r / Re) ** 4 + 1 / p * (r / Re) - 1
 
 
 def objfunr_derivative(r: float, parms: tuple[float, float]) -> float:
@@ -40,7 +40,7 @@ def objfunr_derivative(r: float, parms: tuple[float, float]) -> float:
     q = parms[0]
     p = parms[1]
 
-    return 4 / Re * q ** 2 * (r / Re) ** 3 + 1 / p / Re
+    return 4 / Re * q**2 * (r / Re) ** 3 + 1 / p / Re
 
 
 def calc_theta(r: float, parms: tuple[float, float]) -> float:

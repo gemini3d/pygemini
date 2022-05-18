@@ -83,13 +83,13 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     if thetad < pi / 2:
         rmin = p[-3] * Re * np.sin(thetax2min) ** 2  # last field line contains min/max r/q vals.
         rmax = p[-3] * Re * np.sin(thetamax) ** 2
-        qmin = np.cos(thetax2min) * Re ** 2 / rmin ** 2
-        qmax = np.cos(thetamax) * Re ** 2 / rmax ** 2
+        qmin = np.cos(thetax2min) * Re**2 / rmin**2
+        qmax = np.cos(thetamax) * Re**2 / rmax**2
     else:
         rmin = p[-3] * Re * np.sin(thetamax) ** 2
         rmax = p[-3] * Re * np.sin(thetax2max) ** 2
-        qmin = np.cos(thetamax) * Re ** 2 / rmin ** 2
-        qmax = np.cos(thetax2max) * Re ** 2 / rmax ** 2
+        qmin = np.cos(thetamax) * Re**2 / rmin**2
+        qmax = np.cos(thetax2max) * Re**2 / rmax**2
 
     # define q grid sans ghost cells
     if qmax < qmin:  # unclear whether this checking is necessary so leave for now
@@ -170,7 +170,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     # metric factors at cell centers and interfaces
     logging.info("calculating metric ceoffs")
     denom = np.sqrt(1 + 3 * np.cos(theta) ** 2)  # ghost cells need for these
-    xg["h1"] = r ** 3 / Re ** 2 / denom
+    xg["h1"] = r**3 / Re**2 / denom
     xg["h2"] = Re * np.sin(theta) ** 3 / denom
     xg["h3"] = r * np.sin(theta)
 
@@ -187,12 +187,12 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     )
 
     denomtmp = np.sqrt(1 + 3 * np.cos(thetaqi) ** 2)
-    xg["h1x1i"] = rqi ** 3 / Re ** 2 / denomtmp
+    xg["h1x1i"] = rqi**3 / Re**2 / denomtmp
     xg["h2x1i"] = Re * np.sin(thetaqi) ** 3 / denomtmp
     xg["h3x1i"] = rqi * np.sin(thetaqi)
 
     denomtmp = np.sqrt(1 + 3 * np.cos(thetapi) ** 2)
-    xg["h1x2i"] = rpi ** 3 / Re ** 2 / denomtmp
+    xg["h1x2i"] = rpi**3 / Re**2 / denomtmp
     xg["h2x2i"] = Re * np.sin(thetapi) ** 3 / denomtmp
     xg["h3x2i"] = rpi * np.sin(thetapi)
 

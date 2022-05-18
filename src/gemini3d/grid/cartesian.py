@@ -88,7 +88,7 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
     G = 6.67428e-11
     Me = 5.9722e24
     r = z + Re
-    g = G * Me / r ** 2
+    g = G * Me / r**2
     gz = np.broadcast_to(-g[:, None, None], (g.size, lx2, lx3))
     assert gz.shape == (lx1, lx2, lx3)
 

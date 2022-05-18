@@ -19,7 +19,7 @@ def curv3d_long(
     *,
     lalt: int = 256,
     llon: int = 256,
-    llat: int = 256
+    llat: int = 256,
 ) -> tuple[Figure, tuple[Axes]]:
     """plot dipole data vs. alt,lon,lat"""
 
@@ -68,7 +68,7 @@ def curv2d(
     fg: Figure = None,
     *,
     lalt: int = 256,
-    llat: int = 256
+    llat: int = 256,
 ) -> tuple[Figure, tuple[Axes]]:
     # grid data
     alti, mloni, mlati, parmi = model2magcoords(xg, parm, lalt, 1, llat)

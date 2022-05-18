@@ -35,7 +35,7 @@ def test_plot(name, tmp_path, monkeypatch):
     plot_names = [f.name for f in plot_files]
 
     for h in {"aurora", "J1", "J2", "J3", "v1", "v2", "v3", "ne", "Te", "Ti", "Phitop"}:
-        pat = fr"^{h}-.*\.png"
+        pat = rf"^{h}-.*\.png"
         assert (
             len(list(filter(re.compile(pat).match, plot_names))) == 1
         ), f"expected 1 {pat} plots under {tmp_path}"
