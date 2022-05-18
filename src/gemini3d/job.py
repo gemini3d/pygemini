@@ -169,7 +169,7 @@ def check_compiler():
         raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
 
 
-def check_mpiexec(mpiexec: str | Path, gemexe: Path) -> str:
+def check_mpiexec(mpiexec: str, gemexe: Path) -> str:
     """
     check if specified mpiexec exists on this system.
     If not, error as most runs are exceedingly slow with one CPU core.
