@@ -63,7 +63,7 @@ def setup_libs(
     """
 
     if not targets:
-        targets = ["ffilesystem", "glow", "h5fortran", "msis", "mumps"]
+        targets = ["ffilesystem", "glow", "h5fortran", "iniparser", "msis", "mumps"]
 
     if not cmake_args:
         cmake_args = []
