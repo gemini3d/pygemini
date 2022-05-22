@@ -11,7 +11,7 @@ transformations from dipole to spherical
 from __future__ import annotations
 import math
 import numpy as np
-from numpy import sin,cos
+from numpy import sin, cos
 
 # define module-scope constants
 Re = 6370e3
@@ -139,23 +139,23 @@ def geomag2geog(phi, theta) -> tuple:
 
 # Rotation about z axis with angle alpha
 def Rz(alpha):
-    R=np.zeros((3,3))
-    R[0,0]=cos(alpha)
-    R[0,1]=-sin(alpha)
-    R[1,0]=sin(alpha)
-    R[1,1]=cos(alpha)
-    R[2,2]=1
+    R = np.zeros((3, 3))
+    R[0, 0] = cos(alpha)
+    R[0, 1] = -sin(alpha)
+    R[1, 0] = sin(alpha)
+    R[1, 1] = cos(alpha)
+    R[2, 2] = 1
     return R
 
 
 # Rotation about y axis by angle alpha
 def Ry(alpha):
-    R=np.zeros((3,3))
-    R[0,0]=cos(alpha)
-    R[0,2]=sin(alpha)
-    R[1,1]=1
-    R[2,0]=-sin(alpha)
-    R[2,2]=cos(alpha)
+    R = np.zeros((3, 3))
+    R[0, 0] = cos(alpha)
+    R[0, 2] = sin(alpha)
+    R[1, 1] = 1
+    R[2, 0] = -sin(alpha)
+    R[2, 2] = cos(alpha)
     return R
 
 
@@ -163,57 +163,59 @@ def Ry(alpha):
 #   geomagnetic coordinates; note the
 #   rotation is done with angles -phin and -thetan so the transpose of the
 #   "standard" rotation matrices are used
-def Rgg2gm():    
-    return (Ry(thetan)).transpose()@(Rz(phin)).transpose()
+def Rgg2gm():
+    return (Ry(thetan)).transpose() @ (Rz(phin)).transpose()
 
 
 # Rotation matrix to go from geomagnetic to geographic
 def Rgm2gg():
-    return Rz(phin)@Ry(thetan)
+    return Rz(phin) @ Ry(thetan)
 
 
 # Rotate an ECEF geographic vector into ECEF geomagnetic
 def rotvec_gg2gm(e):
-    [lx1,lx2,lx3,lcomp]=e.shape
-    ex=np.array(e[:,:,:,0])
-    ey=np.array(e[:,:,:,1])
-    ez=np.array(e[:,:,:,2])
-    exflat=np.reshape(ex,[1,lx1*lx2*lx3],order="F")
-    eyflat=np.reshape(ey,[1,lx1*lx2*lx3],order="F")
-    ezflat=np.reshape(ez,[1,lx1*lx2*lx3],order="F")
-    emat=np.concatenate((exflat,eyflat,ezflat), axis=0)
-    egg=Rgg2gm()@emat
-    eggshp=np.zeros((lx1,lx2,lx3,3))
-    eggshp[:,:,:,0]=np.reshape(egg[0,:],[lx1,lx2,lx3],order="F")
-    eggshp[:,:,:,1]=np.reshape(egg[1,:],[lx1,lx2,lx3],order="F")
-    eggshp[:,:,:,2]=np.reshape(egg[2,:],[lx1,lx2,lx3],order="F")    
+    [lx1, lx2, lx3, lcomp] = e.shape
+    ex = np.array(e[:, :, :, 0])
+    ey = np.array(e[:, :, :, 1])
+    ez = np.array(e[:, :, :, 2])
+    exflat = np.reshape(ex, [1, lx1 * lx2 * lx3], order="F")
+    eyflat = np.reshape(ey, [1, lx1 * lx2 * lx3], order="F")
+    ezflat = np.reshape(ez, [1, lx1 * lx2 * lx3], order="F")
+    emat = np.concatenate((exflat, eyflat, ezflat), axis=0)
+    egg = Rgg2gm() @ emat
+    eggshp = np.zeros((lx1, lx2, lx3, 3))
+    eggshp[:, :, :, 0] = np.reshape(egg[0, :], [lx1, lx2, lx3], order="F")
+    eggshp[:, :, :, 1] = np.reshape(egg[1, :], [lx1, lx2, lx3], order="F")
+    eggshp[:, :, :, 2] = np.reshape(egg[2, :], [lx1, lx2, lx3], order="F")
     return eggshp
 
 
 # Return a set of unit vectors in the geographic directions; components in ECEF
 #   Cartesian geomagnetic
 def unitvecs_geographic(xg):
-    thetagg=pi/2-xg["glat"]*pi/180
-    phigg=xg["glon"]*pi/180
-    lx1=xg["lx"][0]; lx2=xg["lx"][1]; lx3=xg["lx"][2];
-    ergg=np.empty((lx1,lx2,lx3,3))
-    ethetagg=np.empty((lx1,lx2,lx3,3))
-    ephigg=np.empty((lx1,lx2,lx3,3))
-    
+    thetagg = pi / 2 - xg["glat"] * pi / 180
+    phigg = xg["glon"] * pi / 180
+    lx1 = xg["lx"][0]
+    lx2 = xg["lx"][1]
+    lx3 = xg["lx"][2]
+    ergg = np.empty((lx1, lx2, lx3, 3))
+    ethetagg = np.empty((lx1, lx2, lx3, 3))
+    ephigg = np.empty((lx1, lx2, lx3, 3))
+
     # unit vectors in ECEF Cartesian geographic
-    ergg[:,:,:,0]=sin(thetagg)*cos(phigg)
-    ergg[:,:,:,1]=sin(thetagg)*sin(phigg)
-    ergg[:,:,:,2]=cos(thetagg)
-    ethetagg[:,:,:,0]=cos(thetagg)*cos(phigg)
-    ethetagg[:,:,:,1]=cos(thetagg)*sin(phigg)
-    ethetagg[:,:,:,2]=-sin(thetagg)
-    ephigg[:,:,:,0]=-sin(phigg)
-    ephigg[:,:,:,1]=cos(phigg)
-    ephigg[:,:,:,2]=np.zeros(thetagg.shape)
-    
+    ergg[:, :, :, 0] = sin(thetagg) * cos(phigg)
+    ergg[:, :, :, 1] = sin(thetagg) * sin(phigg)
+    ergg[:, :, :, 2] = cos(thetagg)
+    ethetagg[:, :, :, 0] = cos(thetagg) * cos(phigg)
+    ethetagg[:, :, :, 1] = cos(thetagg) * sin(phigg)
+    ethetagg[:, :, :, 2] = -sin(thetagg)
+    ephigg[:, :, :, 0] = -sin(phigg)
+    ephigg[:, :, :, 1] = cos(phigg)
+    ephigg[:, :, :, 2] = np.zeros(thetagg.shape)
+
     # rotate into geomagnetic components (as used in grid dictionary)
-    egalt=rotvec_gg2gm(ergg)
-    eglon=rotvec_gg2gm(ephigg)
-    eglat=-1*rotvec_gg2gm(ethetagg)
-    
-    return egalt,eglon,eglat
+    egalt = rotvec_gg2gm(ergg)
+    eglon = rotvec_gg2gm(ephigg)
+    eglat = -1 * rotvec_gg2gm(ethetagg)
+
+    return egalt, eglon, eglat
