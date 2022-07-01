@@ -50,7 +50,7 @@ def model2magcoords(
     mlati = np.linspace(mlatlims[0], mlatlims[1], llat)
     ALTi, MLONi, MLATi = np.meshgrid(alti, mloni, mlati, indexing="ij")
 
-    parmi = model2pointsgeogcoords(xg, parm, ALTi, MLONi, MLATi)
+    parmi = model2pointsgeomagcoords(xg, parm, ALTi, MLONi, MLATi)
     parmi = parmi.reshape(lalt, llon, llat)
     return alti, mloni, mlati, parmi
 
