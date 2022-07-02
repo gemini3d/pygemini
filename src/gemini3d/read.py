@@ -190,7 +190,7 @@ def data(
 
     # %% Derived variables
     if flag == 1:
-        if {"ne", "v1", "Ti", "Te"} & var:
+        if {"ne", "v1", "Ti"} & var:
             dat["ne"] = (("x1", "x2", "x3"), dat["ns"][LSP - 1, :, :, :].data)
             # np.any() in case neither is an np.ndarray
             if dat["ns"].shape[0] != LSP or not np.array_equal(dat["ns"].shape[1:], lx):
