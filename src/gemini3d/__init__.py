@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .cmake import build
 
-__version__ = "1.7.0"
+__version__ = "1.6.1"
 
 PYGEMINI_ROOT = Path(__path__[0])  # type: ignore
 
