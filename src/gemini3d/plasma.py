@@ -301,7 +301,8 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
             lz = z.size
             iord = np.argsort(z)
             z = z[iord]
-            z = np.append(z, 2 * z[-1] - z[-2])
+            # z = np.append(z, 2 * z[-1] - z[-2])
+            z = np.insert(z, 0, alt[iref, ix2, ix3])
             integrand = 1 / H[iord]
             integrand = np.append(integrand, integrand[-1])
             # this cumtrapz() does NOT get initial=0, since matlab user code strips first element here
@@ -334,26 +335,25 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
     # %% SLICE THE FIELD IN HALF IF WE ARE CLOSED
     atmos = msis_setup(p, xg)
 
-    closeddip = abs(xg["r"][0, 0, 0] - xg["r"][-1, 0, 0]) < 50e3
+    closeddip: bool = abs(xg["r"][0, 0, 0] - xg["r"][-1, 0, 0]) < 50e3
     # logical flag marking the grid as closed dipole
     if closeddip:
         # closed dipole grid
-        #    [~,ialtmax]=max(xg.alt(:,1,1))
-        #    lalt=ialtmax
-        lalt = xg["lx"][0] // 2
+        i = xg["alt"][:, 0, 0].argmax()
+        # i = xg["lx"][0] // 2
         # FIXME:  needs to work with asymmetric grid...
-        alt = xg["alt"][:lalt, :, :]
-        lx1 = lalt
+        alt = xg["alt"][:i, :, :]
+        lx1 = i
         lx2 = xg["lx"][1]
         lx3 = xg["lx"][2]
-        Tn = atmos["Tn"][:lalt, :, :]
-        g = abs(xg["gx1"][:lalt, :, :])
-        g[g < 1] = 1
+        Tn = atmos["Tn"][:i, :, :]
+        g = abs(xg["gx1"][:i, :, :])
+        g = g.clip(min=1)
         for ix3 in range(lx3):
             for ix2 in range(lx2):
                 ialt = abs(g[:, ix2, ix3] - 1).argmin()
-                if ialt != lalt:
-                    g[ialt:lalt, ix2, ix3] = 1
+                if ialt != i:
+                    g[ialt:i, ix2, ix3] = 1
 
     else:
         alt = xg["alt"]
