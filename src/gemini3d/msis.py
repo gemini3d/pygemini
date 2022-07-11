@@ -5,40 +5,14 @@ using MSIS Fortran executable from Python
 from __future__ import annotations
 from pathlib import Path
 import subprocess
-import os
 import logging
 import typing as T
-import shutil
 
 import numpy as np
 import h5py
 import xarray
 
-from . import EXE_PATHS
-
-
-def get_msis_exe(gemini_root: Path = None) -> Path | None:
-    """
-    find MSIS_SETUP executable
-    """
-
-    name = "msis_setup"
-
-    paths = [gemini_root, os.environ.get("CMAKE_PREFIX_PATH"), os.environ.get("GEMINI_ROOT")]
-    paths = [Path(p).expanduser() for p in paths if p]
-
-    if not paths:
-        raise EnvironmentError(
-            "Specify location of msis_setup executable by environment variable"
-            " GEMINI_ROOT or CMAKE_PREFIX_PATH or give gemini_root argument"
-        )
-    for path in paths:
-        for n in EXE_PATHS:
-            msis_exe = shutil.which(name, path=str(path / n))
-            if msis_exe:
-                return Path(msis_exe)
-
-    return None
+from . import find
 
 
 def get_msis_features(exe: Path) -> dict[str, bool]:
@@ -67,7 +41,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     [f107a, f107, ap] = activ
     """
 
-    msis_exe = get_msis_exe(gemini_root=p.get("gemini_root"))
+    msis_exe = find.msis_exe(p.get("gemini_root"))
 
     if not msis_exe:
         raise EnvironmentError(

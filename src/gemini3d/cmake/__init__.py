@@ -5,7 +5,7 @@ import shutil
 import os
 import sys
 
-__all__ = ["cmake_exe", "get_gemini_root"]
+__all__ = ["cmake_exe"]
 
 
 def cmake_exe() -> str:
@@ -30,13 +30,3 @@ def cmake_exe() -> str:
     print("Using CMake", cmake_version)
 
     return cmake
-
-
-def get_gemini_root() -> Path:
-    gemini_root = os.environ.get("GEMINI_ROOT")
-    if not gemini_root:
-        raise EnvironmentError(
-            "Please set environment variable GEMINI_ROOT to (desired) top-level Gemini3D directory."
-            "If Gemini3D is not already there, PyGemini will download and build Gemini3D there."
-        )
-    return Path(gemini_root).expanduser()

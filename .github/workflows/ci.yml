@@ -82,7 +82,7 @@ jobs:
       timeout-minutes: 10
 
     - name: build gemini3d.run, gemini.bin
-      run: python -c "import gemini3d; gemini3d.setup(targets=['gemini3d.run', 'gemini.bin'], gemini_root='${{ env.GEMINI_ROOT }}')"
+      run: python -c "import gemini3d; gemini3d.setup(targets=['gemini3d.run', 'gemini.bin'], root='${{ env.GEMINI_ROOT }}')"
       timeout-minutes: 10
 
     - name: Integration Tests

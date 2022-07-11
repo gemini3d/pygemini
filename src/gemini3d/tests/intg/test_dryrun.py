@@ -8,7 +8,6 @@ import importlib.resources
 
 import gemini3d
 import gemini3d.run
-import gemini3d.cmake as cmake
 import gemini3d.job as job
 import gemini3d.find as find
 import gemini3d.web
@@ -28,9 +27,9 @@ def test_memory(name, bref):
     assert est == approx(bref, abs=0, rel=0)
 
 
-@pytest.mark.skipif(cmake.get_gemini_root() is None, reason="no env var GEMINI_CIROOT")
+@pytest.mark.skipif(find.gemini_root() is None, reason="no env var GEMINI_CIROOT")
 @pytest.mark.skipif(
-    not (Path(cmake.get_gemini_root()) / "build/gemini3d.run").is_file(),
+    not (Path(find.gemini_exe())).is_file(),
     reason="gemini3d.run not built",
 )
 @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
@@ -46,7 +45,7 @@ def test_mpiexec():
     assert isinstance(mpiexec, str)
 
 
-@pytest.mark.skipif(gemini3d.msis.get_msis_exe() is None, reason="msis_setup not available")
+@pytest.mark.skipif(find.msis_exe() is None, reason="msis_setup not available")
 @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 @pytest.mark.parametrize("name", ["mini2dew_eq"])
 def test_dryrun(name, tmp_path):

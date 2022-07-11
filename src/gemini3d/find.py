@@ -2,6 +2,7 @@
 functions for finding files
 """
 
+from __future__ import annotations
 from datetime import datetime, timedelta
 from pathlib import Path
 import shutil
@@ -10,9 +11,17 @@ import subprocess
 
 import numpy as np
 
-from . import EXE_PATHS
-from . import cmake
 from .utils import filename2datetime
+
+EXE_PATHS = [
+    ".",
+    "bin",
+    "build",
+    "build/bin",
+    "build/Debug",
+    "build/RelWithDebInfo",
+    "build/Release",
+]
 
 
 def config(path: Path) -> Path:
@@ -35,13 +44,16 @@ def gemini_exe(exe: str = None) -> Path:
     name = "gemini3d.run"
 
     if not exe:  # allow for default dict empty
-        gemini_root = cmake.get_gemini_root()
+        root = gemini_root()
         for n in EXE_PATHS:
-            e = shutil.which(name, path=str(gemini_root / n))
+            e = shutil.which(name, path=str(root / n))
             if e:
                 break
     if not e:
-        raise EnvironmentError(f"{name} not found. Please run:\n gemini3d.setup()")
+        raise EnvironmentError(
+            f"{name} not found."
+            "Set environment variable GEMINI_ROOT to directory above bin/gemini.bin"
+        )
 
     # %% ensure Gemini3D executable is runnable
     gemexe = Path(e).expanduser()
@@ -69,6 +81,40 @@ def gemini_exe(exe: str = None) -> Path:
         )
 
     return gemexe
+
+
+def gemini_root() -> Path:
+    root = os.environ.get("GEMINI_ROOT")
+    if not root:
+        raise EnvironmentError(
+            "Please set environment variable GEMINI_ROOT to (desired) top-level Gemini3D directory."
+            "If Gemini3D is not already there, PyGemini will download and build Gemini3D there."
+        )
+    return Path(root).expanduser()
+
+
+def msis_exe(root: Path = None) -> Path | None:
+    """
+    find MSIS_SETUP executable
+    """
+
+    name = "msis_setup"
+
+    paths = [root, os.environ.get("CMAKE_PREFIX_PATH"), os.environ.get("GEMINI_ROOT")]
+    paths = [Path(p).expanduser() for p in paths if p]
+
+    if not paths:
+        raise EnvironmentError(
+            "Specify location of msis_setup executable by environment variable"
+            " GEMINI_ROOT or CMAKE_PREFIX_PATH or give gemini_root argument"
+        )
+    for path in paths:
+        for n in EXE_PATHS:
+            msis_exe = shutil.which(name, path=str(path / n))
+            if msis_exe:
+                return Path(msis_exe)
+
+    return None
 
 
 def frame(simdir: Path, time: datetime) -> Path:

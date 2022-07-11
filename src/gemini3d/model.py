@@ -94,7 +94,7 @@ def config(params: dict[str, T.Any], out_dir: Path):
     namelist.write(nml_file, "setup", setup)
 
 
-def setup(path: Path | dict[str, T.Any], out_dir: Path, gemini_root: Path = None):
+def setup(path: Path | dict[str, T.Any], out_dir: Path, root: Path = None):
     """
     top-level function to create a new simulation FROM A FILE config.nml
 
@@ -120,8 +120,8 @@ def setup(path: Path | dict[str, T.Any], out_dir: Path, gemini_root: Path = None
 
     cfg["out_dir"] = Path(out_dir).expanduser().resolve()
 
-    if gemini_root:
-        cfg["gemini_root"] = Path(gemini_root).expanduser().resolve(strict=True)
+    if root:
+        cfg["gemini_root"] = Path(root).expanduser().resolve(strict=True)
 
     for k in {"indat_size", "indat_grid", "indat_file"}:
         cfg[k] = cfg["out_dir"] / cfg[k]
@@ -210,10 +210,10 @@ def cli():
     p = argparse.ArgumentParser()
     p.add_argument("config_file", help="path to config*.nml file")
     p.add_argument("out_dir", help="simulation output directory")
-    p.add_argument("--gemini_root", help="top-level path to Gemini3D installation")
+    p.add_argument("--root", help="top-level path to Gemini3D installation")
     P = p.parse_args()
 
-    setup(P.config_file, P.out_dir, P.gemini_root)
+    setup(P.config_file, P.out_dir, P.root)
 
 
 if __name__ == "__main__":

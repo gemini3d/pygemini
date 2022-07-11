@@ -7,7 +7,8 @@ import importlib.resources
 import shutil
 import tempfile
 
-from . import cmake_exe, get_gemini_root
+from . import cmake_exe
+from ..find import gemini_root
 from ..web import git_download
 
 
@@ -52,7 +53,7 @@ def build(
         subprocess.check_call([cmake, "--install", str(build_dir)])
 
 
-def build_gemini3d(targets: list[str], gemini_root: Path = None, cmake_args: list[str] = None):
+def build_gemini3d(targets: list[str], root: Path = None, cmake_args: list[str] = None):
     """
     build targets from gemini3d program
 
@@ -67,10 +68,10 @@ def build_gemini3d(targets: list[str], gemini_root: Path = None, cmake_args: lis
     elif cmake_args is None:
         cmake_args = []
 
-    if not gemini_root:
-        gemini_root = get_gemini_root()
+    if not root:
+        root = gemini_root()
 
-    src_dir = Path(gemini_root).expanduser()
+    src_dir = Path(root).expanduser()
 
     if not (src_dir / "CMakeLists.txt").is_file():
         jmeta = json.loads(importlib.resources.read_text("gemini3d", "libraries.json"))

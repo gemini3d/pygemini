@@ -8,10 +8,11 @@ from pytest import approx
 from datetime import datetime
 
 import gemini3d.msis as gp
+import gemini3d.find
 
 
 @pytest.mark.skipif(
-    gp.get_msis_exe() is None,
+    gemini3d.find.msis_exe() is None,
     reason="need to build msis_setup by gemini3d.setup_libs()",
 )
 @pytest.mark.parametrize("version", [0, 20])
