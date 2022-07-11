@@ -190,6 +190,22 @@ def rotvec_gg2gm(e):
     return eggshp
 
 
+def rotvec_gg2gm_points(e):
+    [lx1, lcomp] = e.shape
+    ex = np.array(e[:, 0])
+    ey = np.array(e[:, 1])
+    ez = np.array(e[:, 2])
+    exflat = np.reshape(ex, [1, lx1], order="F")
+    eyflat = np.reshape(ey, [1, lx1], order="F")
+    ezflat = np.reshape(ez, [1, lx1], order="F")
+    emat = np.concatenate((exflat, eyflat, ezflat), axis=0)
+    egg = Rgg2gm() @ emat
+    eggshp = np.zeros((lx1, 3))
+    eggshp[:, 0] = np.reshape(egg[0, :], [lx1], order="F")
+    eggshp[:, 1] = np.reshape(egg[1, :], [lx1], order="F")
+    eggshp[:, 2] = np.reshape(egg[2, :], [lx1], order="F")
+    return eggshp
+
 # Return a set of unit vectors in the geographic directions; components in ECEF
 #   Cartesian geomagnetic
 def unitvecs_geographic(xg):
@@ -219,3 +235,33 @@ def unitvecs_geographic(xg):
     eglat = -1 * rotvec_gg2gm(ethetagg)
 
     return egalt, eglon, eglat
+
+def unitvecs_geographic_points(glat,glon):
+    thetagg = pi / 2 - glat * pi / 180
+    phigg = glon * pi / 180
+    # lx1 = xg["lx"][0]
+    # lx2 = xg["lx"][1]
+    # lx3 = xg["lx"][2]
+    nvecs = len(glat)
+    ergg = np.empty((nvecs, 3))
+    ethetagg = np.empty((nvecs, 3))
+    ephigg = np.empty((nvecs, 3))
+
+    # unit vectors in ECEF Cartesian geographic
+    ergg[:, 0] = sin(thetagg) * cos(phigg)
+    ergg[:, 1] = sin(thetagg) * sin(phigg)
+    ergg[:, 2] = cos(thetagg)
+    ethetagg[:, 0] = cos(thetagg) * cos(phigg)
+    ethetagg[:, 1] = cos(thetagg) * sin(phigg)
+    ethetagg[:, 2] = -sin(thetagg)
+    ephigg[:, 0] = -sin(phigg)
+    ephigg[:, 1] = cos(phigg)
+    ephigg[:, 2] = np.zeros(thetagg.shape)
+
+    # rotate into geomagnetic components (as used in grid dictionary)
+    egalt = rotvec_gg2gm_points(ergg)
+    eglon = rotvec_gg2gm_points(ephigg)
+    eglat = -1 * rotvec_gg2gm_points(ethetagg)
+
+    return egalt, eglon, eglat
+
