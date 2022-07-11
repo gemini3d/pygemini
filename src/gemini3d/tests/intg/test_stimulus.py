@@ -17,10 +17,8 @@ from gemini3d.efield import Efield_BCs
 from gemini3d.particles import particles_BCs
 
 
-@pytest.mark.parametrize(
-    "name,file_format", [("mini2dew_fang", "h5"), ("mini2dns_fang", "h5"), ("mini3d_fang", "h5")]
-)
-def test_Efield(name, file_format, tmp_path, monkeypatch):
+@pytest.mark.parametrize("name", ["mini2dew_fang", "mini2dns_fang", "mini3d_fang"])
+def test_Efield(name, tmp_path, monkeypatch):
 
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
@@ -42,16 +40,13 @@ def test_Efield(name, file_format, tmp_path, monkeypatch):
         new_dir=cfg["E0dir"],
         ref_dir=test_dir / E0dir,
         plot=False,
-        file_format=file_format,
     )
 
     assert errs == 0, f"Efield mismatch {cfg['out_dir']}  {test_dir}"
 
 
-@pytest.mark.parametrize(
-    "name,file_format", [("mini2dew_fang", "h5"), ("mini2dns_fang", "h5"), ("mini3d_fang", "h5")]
-)
-def test_precip(name, file_format, tmp_path, monkeypatch):
+@pytest.mark.parametrize("name", ["mini2dew_fang", "mini2dns_fang", "mini3d_fang"])
+def test_precip(name, tmp_path, monkeypatch):
 
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
@@ -75,7 +70,6 @@ def test_precip(name, file_format, tmp_path, monkeypatch):
         new_dir=cfg["precdir"],
         ref_dir=test_dir / precdir,
         plot=False,
-        file_format=file_format,
     )
 
     assert errs == 0, f"precipitation mismatch {cfg['out_dir']}  {test_dir}"

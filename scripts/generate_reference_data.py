@@ -30,9 +30,6 @@ if __name__ == "__main__":
     p.add_argument("-mpiexec", help="path to desired mpiexec executable")
     p.add_argument("-gemexe", help="path to Gemini3D executable")
     p.add_argument("-f", "--force", help="force regeneration of simulation", action="store_true")
-    p.add_argument(
-        "-out_format", help="override Fortran output file format", choices=["h5", "nc", "raw"]
-    )
     P = p.parse_args()
 
     if P.only:
@@ -47,7 +44,6 @@ if __name__ == "__main__":
             "mpiexec": P.mpiexec,
             "gemexe": P.gemexe,
             "force": P.force,
-            "out_format": P.out_format,
         }
 
         gemini3d.job.runner(params)

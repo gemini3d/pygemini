@@ -81,34 +81,6 @@ def _write_var(fid, name: str, A: xarray.DataArray):
     )
 
 
-def data(outfn: Path, dat: xarray.Dataset):
-    """
-    write simulation data
-    e.g. for converting a file format from a simulation
-    """
-
-    with h5py.File(outfn, "w") as f:
-        write_time(f, to_datetime(dat.time))
-
-        for k in {
-            "ns",
-            "vs1",
-            "Ts",
-            "ne",
-            "v1",
-            "Ti",
-            "Te",
-            "J1",
-            "J2",
-            "J3",
-            "v2",
-            "v3",
-            "Phitop",
-        }:
-            if k in dat:
-                _write_var(f, k, dat[k])
-
-
 def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
     """writes grid to disk
 

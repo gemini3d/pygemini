@@ -17,7 +17,6 @@ def compare_Efield(
     *,
     tol: dict[str, float] = None,
     plot: bool = False,
-    file_format: str = None,
 ) -> int:
 
     new_dir = Path(new_dir).expanduser().resolve(strict=True)
@@ -30,7 +29,7 @@ def compare_Efield(
     # often we reuse Efield inputs without copying over files
     for t in times:
         ref = read.Efield(find.frame(ref_dir, t))
-        new = read.Efield(find.frame(new_dir, t), file_format=file_format)
+        new = read.Efield(find.frame(new_dir, t))
         for k in {"Exit", "Eyit", "Vminx1it", "Vmaxx1it"}:
             b = ref[k]
             a = new[k]

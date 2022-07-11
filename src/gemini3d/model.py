@@ -45,8 +45,6 @@ def config(params: dict[str, T.Any], out_dir: Path):
 
     logging.info(f"Creating Gemini3D configuration file under {nml_file}")
 
-    file_format = params.get("file_format", "h5")
-
     # %% base
     t0 = params["time"][0]
     tend = params["time"][-1]
@@ -68,9 +66,9 @@ def config(params: dict[str, T.Any], out_dir: Path):
 
     # %% files
     files = {
-        "indat_size": f"inputs/simsize.{file_format}",
-        "indat_grid": f"inputs/simgrid.{file_format}",
-        "indat_file": f"inputs/initial_conditions.{file_format}",
+        "indat_size": "inputs/simsize.h5",
+        "indat_grid": "inputs/simgrid.h5",
+        "indat_file": "inputs/initial_conditions.h5",
     }
     namelist.write(nml_file, "files", files)
 

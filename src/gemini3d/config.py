@@ -163,13 +163,10 @@ def parse_files(r: dict[str, T.Any]) -> dict[str, T.Any]:
     for k in {"indat_file", "indat_grid", "indat_size"}:
         P[k] = r[k]
 
-    P["file_format"] = r.get("file_format", Path(P["indat_size"]).suffix)
-    # defaults to type of input
-
     if "realbits" in r:
         P["realbits"] = int(r["realbits"])
     else:
-        P["realbits"] = 64 if P["file_format"] in {"raw", "dat"} else 32
+        P["realbits"] = 32
 
     return P
 
@@ -305,39 +302,5 @@ def parse_setup(r: dict[str, T.Any]) -> dict[str, T.Any]:
             P["setup_functions"] = [r[k]] if isinstance(r[k], str) else r[k]
         else:
             P[k] = r[k]
-
-    return P
-
-
-def read_ini(fn: Path) -> dict[str, T.Any]:
-    """parse .ini file
-    DEPRECATED
-    """
-
-    fn = find.config(fn)
-
-    with fn.open("rt") as f:
-        date = list(map(int, f.readline().split()[0].split(",")))[::-1]
-        sec = float(f.readline().split()[0])
-        t0 = datetime(date[0], date[1], date[2]) + timedelta(seconds=sec)
-
-        P: dict[str, T.Any] = {
-            "tdur": timedelta(seconds=float(f.readline().split()[0])),
-            "dtout": timedelta(seconds=float(f.readline().split()[0])),
-        }
-        P["time"] = datetime_range(t0, t0 + P["tdur"], P["dtout"])
-
-        P["f107a"], P["f107"], P["Ap"] = map(float, f.readline().split()[0].split(","))
-
-        P["tcfl"] = float(f.readline().split()[0])
-        P["Teinf"] = float(f.readline().split()[0])
-
-        P["potsolve"] = int(f.readline().split()[0])
-        P["flagperiodic"] = int(f.readline().split()[0])
-        P["flagoutput"] = int(f.readline().split()[0])
-        P["flagcap"] = int(f.readline().split()[0])
-
-        for k in {"indat_size", "indat_grid", "indat_file"}:
-            P[k] = Path(f.readline().strip().replace("'", "").replace('"', "")).expanduser()
 
     return P

@@ -11,14 +11,11 @@ import typing as T
 import numpy as np
 import xarray
 
-from .config import read_ini, read_nml
+from .config import read_nml
 from . import find
-from . import matlab
 from . import LSP
 
-from .raw import read as raw_read
 from .hdf5 import read as h5read
-from .nc4 import read as ncread
 
 
 # do NOT use lru_cache--can have weird unexpected effects with complicated setups
@@ -39,36 +36,16 @@ def config(path: Path) -> dict[str, T.Any]:
         simulation parameters from config file
     """
 
-    file = find.config(path)
-
-    if file.suffix == ".ini":
-        P = read_ini(file)
-    else:
-        P = read_nml(file)
-
-    return P
+    return read_nml(find.config(path))
 
 
-def simsize(path: Path, suffix: str = None) -> tuple[int, ...]:
+def simsize(path: Path) -> tuple[int, ...]:
     """get simulation dimensions"""
 
-    fn = find.simsize(path, suffix=suffix)
-
-    if fn.suffix.endswith("h5"):
-        return h5read.simsize(fn)
-    elif fn.suffix.endswith("nc"):
-        return ncread.simsize(fn)
-    elif fn.suffix.endswith("dat"):
-        return raw_read.simsize(fn)
-    elif fn.suffix.endswith("mat"):
-        return matlab.simsize(fn)
-    else:
-        raise ValueError("unknown simsize file type")
+    return h5read.simsize(find.simsize(path))
 
 
-def grid(
-    path: Path, *, var: set[str] = None, file_format: str = None, shape: bool = False
-) -> dict[str, T.Any]:
+def grid(path: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, T.Any]:
     """
     get simulation grid
 
@@ -79,27 +56,13 @@ def grid(
         path to simgrid.*
     var: set of str
         read only these grid variables
-    file_format: str, optional
-        force .h5, .nc, .dat (debugging)
     shape: bool, optional
         read only the shape of the grid instead of the data iteslf
     """
 
-    fn = find.grid(path, suffix=file_format)
+    fn = find.grid(path)
 
-    if not file_format:
-        file_format = fn.suffix
-
-    if file_format.endswith("dat"):
-        xg = raw_read.grid(fn.with_suffix(".dat"), shape=shape)
-    elif file_format.endswith("h5"):
-        xg = h5read.grid(fn.with_suffix(".h5"), var=var, shape=shape)
-    elif file_format.endswith("nc"):
-        xg = ncread.grid(fn.with_suffix(".nc"), var=var, shape=shape)
-    elif file_format.endswith("mat"):
-        xg = matlab.grid(fn.with_suffix(".mat"), shape=shape)
-    else:
-        raise ValueError(f"Unknown file type {fn}")
+    xg = h5read.grid(fn, var=var, shape=shape)
 
     xg["filename"] = fn
 
@@ -110,7 +73,6 @@ def data(
     fn: Path,
     var: set[str] = None,
     *,
-    file_format: str = "",
     cfg: dict[str, T.Any] = None,
     xg: dict[str, T.Any] = None,
 ) -> xarray.Dataset:
@@ -123,8 +85,6 @@ def data(
         filename for this timestep
     var: set of set
         variables to use
-    file_format: str
-        specify file extension of data files
     cfg: dict
         to avoid reading config.nml
     xg: dict
@@ -148,43 +108,16 @@ def data(
     if not cfg:
         cfg = config(fn.parent)
 
-    if not file_format:
-        file_format = cfg.get("file_format", fn.suffix)
+    flag = h5read.flagoutput(fn, cfg)
 
-    if file_format.endswith("dat"):
-        flag = cfg.get("flagoutput")
-        if flag == 3:
-            dat = raw_read.frame3d_curvne(fn, xg)
-        elif flag == 1:
-            dat = raw_read.frame3d_curv(fn, xg)
-        elif flag == 2:
-            dat = raw_read.frame3d_curvavg(fn, xg)
-        else:
-            raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
-    elif file_format.endswith("h5"):
-        flag = h5read.flagoutput(fn, cfg)
-
-        if flag == 3:
-            dat = h5read.frame3d_curvne(fn, xg)
-        elif flag == 1:
-            dat = h5read.frame3d_curv(fn, var, xg)
-        elif flag == 2:
-            dat = h5read.frame3d_curvavg(fn, var, xg)
-        else:
-            raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
-    elif file_format.endswith("nc"):
-        flag = ncread.flagoutput(fn, cfg)
-
-        if flag == 3:
-            dat = ncread.frame3d_curvne(fn, xg)
-        elif flag == 1:
-            dat = ncread.frame3d_curv(fn, var, xg)
-        elif flag == 2:
-            dat = ncread.frame3d_curvavg(fn, var, xg)
-        else:
-            raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
+    if flag == 3:
+        dat = h5read.frame3d_curvne(fn, xg)
+    elif flag == 1:
+        dat = h5read.frame3d_curv(fn, var, xg)
+    elif flag == 2:
+        dat = h5read.frame3d_curvavg(fn, var, xg)
     else:
-        raise ValueError(f"Unknown file type {fn}")
+        raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
 
     lx = (dat.dims["x1"], dat.dims["x2"], dat.dims["x3"])
 
@@ -223,22 +156,11 @@ def data(
 
 
 def glow(fn: Path) -> xarray.Dataset:
-
-    fmt = fn.suffix
-
-    if fmt.endswith("h5"):
-        dat = h5read.glow_aurmap(fn)
-    elif fmt.endswith("nc"):
-        dat = ncread.glow_aurmap(fn)
-    elif fmt.endswith("dat"):
-        dat = raw_read.glow_aurmap(fn)
-    else:
-        raise ValueError(f"Unknown file type {fn}")
-
-    return dat
+    """read GLOW data"""
+    return h5read.glow_aurmap(fn)
 
 
-def Efield(fn: Path, *, file_format: str = None) -> xarray.Dataset:
+def Efield(fn: Path) -> xarray.Dataset:
     """load Efield data "Efield_inputs"
 
     Parameters
@@ -254,30 +176,16 @@ def Efield(fn: Path, *, file_format: str = None) -> xarray.Dataset:
 
     fn = Path(fn).expanduser().resolve(strict=True)
 
-    if not file_format:
-        file_format = fn.suffix
-
-    if file_format.endswith("h5"):
-        E = h5read.Efield(fn)
-    elif file_format.endswith("nc"):
-        E = ncread.Efield(fn)
-    elif file_format.endswith("dat"):
-        E = raw_read.Efield(fn)
-    else:
-        raise ValueError(f"Unknown file type {fn}")
-
-    return E
+    return h5read.Efield(fn)
 
 
-def precip(fn: Path, *, file_format: str = None) -> xarray.Dataset:
+def precip(fn: Path) -> xarray.Dataset:
     """load precipitation to disk
 
     Parameters
     ----------
     fn: pathlib.Path
         path to precipitation file
-    file_format: str
-        file format to read
 
     Returns
     -------
@@ -287,22 +195,10 @@ def precip(fn: Path, *, file_format: str = None) -> xarray.Dataset:
 
     fn = Path(fn).expanduser().resolve(strict=True)
 
-    if not file_format:
-        file_format = fn.suffix
-
-    if file_format.endswith("h5"):
-        dat = h5read.precip(fn)
-    elif file_format.endswith("nc"):
-        dat = ncread.precip(fn)
-    else:
-        raise ValueError(f"unknown file format {file_format}")
-
-    return dat
+    return h5read.precip(fn)
 
 
-def frame(
-    simdir: Path, time: datetime, *, var: set[str] = None, file_format: str = ""
-) -> xarray.Dataset:
+def frame(simdir: Path, time: datetime, *, var: set[str] = None) -> xarray.Dataset:
     """
     load a frame of simulation data, automatically selecting the correct
     functions based on simulation parameters
@@ -315,8 +211,6 @@ def frame(
         time to load from simulation output
     var: set of str
         variable(s) to read
-    file_format: str, optional
-        "hdf5", "nc" for hdf5 or netcdf4 respectively
 
     Returns
     -------
@@ -325,9 +219,8 @@ def frame(
     """
 
     return data(
-        find.frame(simdir, time, file_format=file_format),
+        find.frame(simdir, time),
         var=var,
-        file_format=file_format,
     )
 
 
@@ -336,14 +229,7 @@ def time(file: Path) -> datetime:
     read simulation time of a file
     """
 
-    if file.suffix.endswith("h5"):
-        t = h5read.time(file)
-    elif file.suffix.endswith("nc"):
-        t = ncread.time(file)
-    else:
-        raise ValueError(f"unknown file format {file.suffix}")
-
-    return t
+    return h5read.time(file)
 
 
 def get_lxs(xg: dict[str, T.Any]) -> tuple[int, int, int]:

@@ -15,7 +15,6 @@ def compare_output(
     ref_dir: Path,
     *,
     tol: dict[str, float] = None,
-    file_format: str = "",
     plot: bool = True,
 ) -> int:
     """compare simulation outputs"""
@@ -37,12 +36,10 @@ def compare_output(
 
     for i, t in enumerate(params["time"]):
         st = f"UTsec {t}"
-        A = read.frame(new_dir, t, file_format=file_format)
+        A = read.frame(new_dir, t)
         if not A:
             raise FileNotFoundError(f"{new_dir} does not appear to contain data at {t}")
         B = read.frame(ref_dir, t)
-        # don't specify file_format for reference,
-        # so that one reference file format can check multiple "out" format
 
         names = ["ne", "v1", "v2", "v3", "Ti", "Te", "J1", "J2", "J3"]
         itols = ["N", "V", "V", "V", "T", "T", "J", "J", "J"]

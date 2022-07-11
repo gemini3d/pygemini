@@ -8,15 +8,13 @@ from .utils import err_pct, load_tol
 from .. import read
 
 
-def compare_grid(
-    new_dir: Path, ref_dir: Path, *, tol: dict[str, float] = None, file_format: str = None
-) -> int:
+def compare_grid(new_dir: Path, ref_dir: Path, *, tol: dict[str, float] = None) -> int:
 
     new_dir = Path(new_dir).expanduser().resolve(strict=True)
     ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
 
     ref = read.grid(ref_dir)
-    new = read.grid(new_dir, file_format=file_format)
+    new = read.grid(new_dir)
 
     errs = 0
 

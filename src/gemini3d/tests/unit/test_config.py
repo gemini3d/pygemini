@@ -73,11 +73,6 @@ def test_no_nml(tmp_path):
         config.read_nml(tmp_path)
 
 
-def test_no_ini(tmp_path):
-    with pytest.raises(FileNotFoundError):
-        config.read_ini(tmp_path)
-
-
 def test_nml_bad(tmp_path):
     blank = tmp_path / "foo"
     blank.touch()
@@ -123,9 +118,6 @@ def test_nml_namelist(namelist):
     if "base" in namelist:
         assert params["time"][0] == datetime(2013, 2, 20, 5)
 
-    if "files" in namelist:
-        assert params["file_format"].endswith("h5")
-
     if "precip" in namelist:
         assert params["dtprec"] == timedelta(seconds=5)
 
@@ -151,12 +143,5 @@ def test_read_config_nml(monkeypatch, tmp_path):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path))
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
-        params = read.config(cfn)
-    assert params["time"][0] == datetime(2013, 2, 20, 5)
-
-
-def test_read_config_ini():
-
-    with importlib.resources.path("gemini3d.tests.config", "config_example.ini") as cfn:
         params = read.config(cfn)
     assert params["time"][0] == datetime(2013, 2, 20, 5)

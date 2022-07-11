@@ -17,7 +17,6 @@ def compare_precip(
     *,
     tol: dict[str, float] = None,
     plot: bool = False,
-    file_format: str = None,
 ) -> int:
 
     new_dir = Path(new_dir).expanduser().resolve(strict=True)
@@ -31,7 +30,7 @@ def compare_precip(
     # often we reuse precipitation inputs without copying over files
     for t in times:
         ref = read.precip(find.frame(ref_dir, t))
-        new = read.precip(find.frame(new_dir, t), file_format=file_format)
+        new = read.precip(find.frame(new_dir, t))
 
         for k in ref.keys():
             b = ref[k]

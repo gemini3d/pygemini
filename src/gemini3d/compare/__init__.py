@@ -20,7 +20,6 @@ def compare_all(
     *,
     tol: dict[str, float] = None,
     plot: bool = True,
-    file_format: str = "",
     only: str = None,
 ) -> dict[str, int]:
     """
@@ -33,17 +32,17 @@ def compare_all(
         raise OSError(f"reference and output are the same directory: {new_dir}")
 
     # %% fail immediately if grid doesn't match as data would be non-sensical
-    if compare_grid(new_dir, ref_dir, tol=tol, file_format=file_format) != 0:
+    if compare_grid(new_dir, ref_dir, tol=tol) != 0:
         raise ValueError(f"grid values do not match {new_dir}  {ref_dir}")
 
     errs = {}
     if not only or only == "out":
-        e = compare_output(new_dir, ref_dir, tol=tol, file_format=file_format, plot=plot)
+        e = compare_output(new_dir, ref_dir, tol=tol, plot=plot)
         if e:
             errs["out"] = e
 
     if not only or only == "in":
-        e = compare_input(new_dir, ref_dir, tol=tol, file_format=file_format, plot=plot)
+        e = compare_input(new_dir, ref_dir, tol=tol, plot=plot)
         if e:
             errs["in"] = e
 

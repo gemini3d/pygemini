@@ -68,7 +68,7 @@ def equilibrium_resample(p: dict[str, T.Any], xg: dict[str, T.Any]):
     # %% WRITE OUT THE GRID
     write.grid(p, xg)
 
-    write.state(p["indat_file"], dat_interp, file_format=p.get("file_format"))
+    write.state(p["indat_file"], dat_interp)
 
 
 def model_resample(

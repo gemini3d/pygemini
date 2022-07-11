@@ -17,7 +17,6 @@ def compare_input(
     ref_dir: Path,
     *,
     tol: dict[str, float] = None,
-    file_format: str = None,
     plot: bool = True,
 ) -> int:
 
@@ -70,7 +69,6 @@ def compare_input(
             ref_indir / ref_params["precdir"].name,
             tol=tol,
             plot=plot,
-            file_format=file_format,
         )
         errs += prec_errs
 
@@ -81,7 +79,6 @@ def compare_input(
             ref_indir / ref_params["E0dir"].name,
             tol=tol,
             plot=plot,
-            file_format=file_format,
         )
         errs += efield_errs
 

@@ -19,20 +19,20 @@ import gemini3d.msis
 
 @pytest.mark.skipif(gemini3d.msis.get_msis_exe() is None, reason="msis_setup not available")
 @pytest.mark.parametrize(
-    "name,file_format",
+    "name",
     [
-        ("mini2dew_eq", "h5"),
-        ("mini2dew_fang", "h5"),
-        ("mini2dew_glow", "h5"),
-        ("mini2dns_eq", "h5"),
-        ("mini2dns_fang", "h5"),
-        ("mini2dns_glow", "h5"),
-        ("mini3d_eq", "h5"),
-        ("mini3d_fang", "h5"),
-        ("mini3d_glow", "h5"),
+        "mini2dew_eq",
+        "mini2dew_fang",
+        "mini2dew_glow",
+        "mini2dns_eq",
+        "mini2dns_fang",
+        "mini2dns_glow",
+        "mini3d_eq",
+        "mini3d_fang",
+        "mini3d_glow",
     ],
 )
-def test_runner(name, file_format, tmp_path, monkeypatch):
+def test_runner(name, tmp_path, monkeypatch):
 
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
@@ -45,11 +45,7 @@ def test_runner(name, file_format, tmp_path, monkeypatch):
     # setup new test data
     params = gemini3d.read.config(test_dir)
 
-    params["file_format"] = file_format
     params["out_dir"] = out_dir
-
-    for k in {"indat_file", "indat_size", "indat_grid"}:
-        params[k] = params[k].with_suffix("." + file_format)
 
     # patch eq_dir to use reference data
     if "eq_dir" in params:
@@ -62,9 +58,7 @@ def test_runner(name, file_format, tmp_path, monkeypatch):
     gemini3d.model.setup(params, out_dir)
 
     # %% check generated files
-    errs = compare_all(
-        params["out_dir"], ref_dir=test_dir, only="in", plot=False, file_format=file_format
-    )
+    errs = compare_all(params["out_dir"], ref_dir=test_dir, only="in", plot=False)
 
     if errs:
         for err, v in errs.items():

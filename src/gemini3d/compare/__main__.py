@@ -11,7 +11,7 @@ from .. import read
 
 
 def compare_cli(P):
-    errs = compare_all(P.new_dir, P.ref_dir, file_format=P.file_format, only=P.only, plot=True)
+    errs = compare_all(P.new_dir, P.ref_dir, only=P.only, plot=True)
 
     if errs:
         for e, v in errs.items():
@@ -66,11 +66,6 @@ if __name__ == "__main__":
     p.add_argument("-only", help="only check in or out", choices=["in", "out"])
     p.add_argument("-var", help="variable names  (only works with -plot)", nargs="+")
     p.add_argument("-t", "--time", help="requested time (if directory given)")
-    p.add_argument(
-        "-file_format",
-        help="specify file format to read from output dir",
-        choices=["h5", "nc", "raw"],
-    )
     P = p.parse_args()
 
     if P.plot:

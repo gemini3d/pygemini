@@ -38,7 +38,7 @@ def runner(pr: dict[str, T.Any]) -> None:
 
     # we don't want to overwrite an expensive simulation output
     try:
-        find.frame(out_dir, p["time"][0], file_format=p.get("out_format"))
+        find.frame(out_dir, p["time"][0])
         raise FileExistsError(f"new simulation shouldn't have data in output directory: {out_dir}")
     except FileNotFoundError:
         pass
@@ -69,9 +69,6 @@ def runner(pr: dict[str, T.Any]) -> None:
     logging.info(f"gemini executable: {gemexe}")
 
     cmd = [str(gemexe), str(out_dir)]
-
-    if pr.get("out_format"):
-        cmd += ["-out_format", pr["out_format"]]
 
     # %% attempt dry run, but don't fail in case intended for HPC
     logging.info("Gemini dry run command:")

@@ -9,8 +9,6 @@ import numpy as np
 
 from .utils import filename2datetime
 
-FILE_FORMATS = [".h5", ".nc"]
-
 
 def config(path: Path) -> Path:
     """given a path or config filename, return the full path to config file"""
@@ -18,16 +16,18 @@ def config(path: Path) -> Path:
     return find_stem(path, stem="config", suffix="nml")
 
 
-def simsize(path: Path, suffix: str = None) -> Path:
+def simsize(path: Path) -> Path:
     """gets path to simsize file"""
 
-    return find_stem(path, stem="simsize", suffix=suffix)
+    return find_stem(path, stem="simsize")
 
 
-def frame(simdir: Path, time: datetime, *, file_format: str = None) -> Path:
+def frame(simdir: Path, time: datetime) -> Path:
     """
-    the frame filenames can have different file formats
+    find frame closest to time
     """
+
+    suffix = ".h5"
 
     simdir = Path(simdir).expanduser()
 
@@ -37,42 +37,36 @@ def frame(simdir: Path, time: datetime, *, file_format: str = None) -> Path:
         + f"{time.microsecond:06d}"
     )
 
-    suffixes = [f".{file_format}"] if file_format else FILE_FORMATS
-
-    for ext in suffixes:
-        fn = simdir / (stem + ext)
-        if fn.is_file():
-            return fn
+    fn = simdir / (stem + suffix)
+    if fn.is_file():
+        return fn
 
     # %% WORKAROUND for real32 file ticks. This will be removed when datetime-fortran is implemented
     MAX_OFFSET = timedelta(seconds=1)  # 10 ms precision, allow extra accumulated tolerance
     pat = time.strftime("%Y%m%d") + "_*"
-    for ext in suffixes:
-        file_times = []
-        files = list(simdir.glob(pat + ext))
-        for fn in files:
-            file_times.append(filename2datetime(fn))
 
-        if file_times:
-            afile_times = np.array(file_times)
-            i = abs(afile_times - time).argmin()  # type: ignore
+    file_times = []
+    files = list(simdir.glob(pat + suffix))
+    for fn in files:
+        file_times.append(filename2datetime(fn))
 
-            if abs(afile_times[i] - time) <= MAX_OFFSET:
-                return files[i]
+    if file_times:
+        afile_times = np.array(file_times)
+        i = abs(afile_times - time).argmin()  # type: ignore
 
-    raise FileNotFoundError(f"{stem}{suffixes} not found in {simdir}")
+        if abs(afile_times[i] - time) <= MAX_OFFSET:
+            return files[i]
 
-
-def grid(path: Path, *, suffix=None) -> Path:
-    """given a path or filename, return the full path to simgrid file
-    we don't override FILE_FORMATS to allow outputs from a prior sim in a different
-    file format to be used in this sim.
-    """
-
-    return find_stem(path, stem="simgrid", suffix=suffix)
+    raise FileNotFoundError(f"{stem}{suffix} not found in {simdir}")
 
 
-def find_stem(path: Path, stem: str, suffix: str = None) -> Path:
+def grid(path: Path) -> Path:
+    """given a path or filename, return the full path to simgrid file"""
+
+    return find_stem(path, stem="simgrid")
+
+
+def find_stem(path: Path, stem: str, suffix: str = ".h5") -> Path:
     """find file containing stem"""
 
     path = Path(path).expanduser()
@@ -86,15 +80,12 @@ def find_stem(path: Path, stem: str, suffix: str = None) -> Path:
                 raise FileNotFoundError(f"{stem} not found in {path.parent}")
             return found
 
-    if suffix:
-        if isinstance(suffix, str):
-            if not suffix.startswith("."):
-                suffix = "." + suffix
-            suffixes = [suffix]
-        else:
-            suffixes = suffix
+    if isinstance(suffix, str):
+        if not suffix.startswith("."):
+            suffix = "." + suffix
+        suffixes = [suffix]
     else:
-        suffixes = FILE_FORMATS
+        suffixes = suffix
 
     if path.is_dir():
         for p in (path, path / "inputs"):

@@ -15,9 +15,6 @@ def cli():
     p.add_argument("-gemexe", help="path to desired gemini3d.run binary")
     p.add_argument("-n", "--cpu", help="number of CPU cores", type=int, default=0)
     p.add_argument("-f", "--force", help="force regeneration of simulation", action="store_true")
-    p.add_argument(
-        "-out_format", help="override Fortran output file format", choices=["h5", "nc", "raw"]
-    )
     p.add_argument("-v", "--verbose", action="store_true")
     P = p.parse_args()
 
@@ -30,7 +27,6 @@ def cli():
         "mpiexec": P.mpiexec,
         "gemexe": P.gemexe,
         "force": P.force,
-        "out_format": P.out_format,
         "cpu_count": P.cpu,
         "dryrun": P.dryrun,
     }

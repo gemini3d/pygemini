@@ -65,18 +65,13 @@ def test_convert_numpy():
 
 
 @pytest.mark.parametrize(
-    "name,file_format",
+    "name",
     [
-        ("mini2dew_fang", "h5"),
-        ("mini3d_fang", "h5"),
-        ("mini2dew_fang", "nc"),
-        ("mini3d_fang", "nc"),
+        "mini2dew_fang",
+        "mini3d_fang",
     ],
 )
-def test_grid(name, file_format, tmp_path, monkeypatch):
-
-    if file_format.endswith("nc"):
-        pytest.importorskip("netCDF4")
+def test_grid(name, tmp_path, monkeypatch):
 
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
@@ -94,8 +89,8 @@ def test_grid(name, file_format, tmp_path, monkeypatch):
     cfg["indat_size"] = cfg["out_dir"] / cfg["indat_size"]
     cfg["indat_grid"] = cfg["out_dir"] / cfg["indat_grid"]
 
-    write.grid(cfg, xg, file_format=file_format)
+    write.grid(cfg, xg)
 
-    errs = compare_grid(cfg["out_dir"], test_dir, file_format=file_format)
+    errs = compare_grid(cfg["out_dir"], test_dir)
 
     assert errs == 0, f"grid mismatch {cfg['out_dir']}  {test_dir}"

@@ -63,4 +63,4 @@ def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
     # FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
     # THE EFIELD DATA DO NOT NEED TO BE SMOOTHED.
 
-    write.precip(pg, cfg["precdir"], cfg["file_format"])
+    write.precip(pg, cfg["precdir"])

@@ -19,11 +19,6 @@ def cli():
     p.add_argument("exe", help="Gemini3D executable binary")
     p.add_argument("outdir", help="output directory")
     p.add_argument("refdir", help="reference directory")
-    p.add_argument(
-        "-out_format",
-        help="override config.nml output file format",
-        choices=["h5", "nc", "raw"],
-    )
     p.add_argument("-dryrun", help="only run first time step", action="store_true")
     P = p.parse_args()
 
@@ -32,7 +27,6 @@ def cli():
         P.exe,
         P.outdir,
         P.refdir,
-        out_format=P.out_format,
         dryrun=P.dryrun,
     )
 
@@ -43,7 +37,6 @@ def runner(
     outdir: Path,
     refdir: Path,
     *,
-    out_format: str = None,
     dryrun: bool = False,
 ):
     """configure and run a test
@@ -90,8 +83,6 @@ def runner(
 
     # have to get exe as absolute path
     cmd = [str(Path(exe).resolve()), str(outdir)]
-    if out_format:
-        cmd += ["-out_format", out_format]
     if dryrun:
         cmd.append("-dryrun")
 
