@@ -12,13 +12,11 @@ import shutil
 from pathlib import Path
 import numpy as np
 
-from . import EXE_PATHS
 from . import find
 from .hpc import hpc_batch_detect, hpc_batch_create
 from . import model
 from . import write
 from . import read
-from . import cmake
 from .utils import git_meta
 
 try:
@@ -65,7 +63,7 @@ def runner(pr: dict[str, T.Any]) -> None:
             model.setup(p["nml"], out_dir)
 
     # build checks
-    gemexe = get_gemini_exe(pr.get("gemexe"))
+    gemexe = find.gemini_exe(pr.get("gemexe"))
     logging.info(f"gemini executable: {gemexe}")
 
     cmd = [str(gemexe), str(out_dir)]
@@ -205,50 +203,6 @@ def check_mpiexec(mpiexec: str, gemexe: Path) -> str:
         raise EnvironmentError("MPIexec from MinGW is not compatible with Intel MPI")
 
     return mpiexec
-
-
-def get_gemini_exe(exe: str = None) -> Path:
-    """
-    find and check that Gemini executable can run on this system
-    """
-
-    name = "gemini3d.run"
-
-    if not exe:  # allow for default dict empty
-        gemini_root = cmake.get_gemini_root()
-        for n in EXE_PATHS:
-            e = shutil.which(name, path=str(gemini_root / n))
-            if e:
-                break
-    if not e:
-        raise EnvironmentError(f"{name} not found. Please run:\n gemini3d.setup()")
-
-    # %% ensure Gemini3D executable is runnable
-    gemexe = Path(e).expanduser()
-    ret = subprocess.run(
-        [str(gemexe)],
-        capture_output=True,
-        timeout=10,
-        text=True,
-        cwd=gemexe.parent,
-    )
-    if ret.returncode == 0:
-        pass
-    elif ret.returncode == 3221225781 and os.name == "nt":
-        # Windows 0xc0000135, missing DLL
-        raise RuntimeError(
-            "On Windows, it's best to build Gemini3D with static libraries--including all numeric libraries "
-            "such as LAPACK.\n"
-            "Currently, we are missing a DLL on your system and gemini.bin with shared libs cannot run."
-        )
-    else:
-        raise EnvironmentError(
-            f"\n{gemexe} was not runnable on your platform--try rebuilding:\n"
-            "gemini3d.setup()\n"
-            f"{ret.stderr}"
-        )
-
-    return gemexe
 
 
 def check_outdir(out_dir: str | Path) -> Path:

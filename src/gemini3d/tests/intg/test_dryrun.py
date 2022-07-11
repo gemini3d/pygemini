@@ -10,6 +10,7 @@ import gemini3d
 import gemini3d.run
 import gemini3d.cmake as cmake
 import gemini3d.job as job
+import gemini3d.find as find
 import gemini3d.web
 import gemini3d.msis
 
@@ -35,7 +36,7 @@ def test_memory(name, bref):
 @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 def test_mpiexec():
     try:
-        exe = job.get_gemini_exe()
+        exe = find.gemini_exe()
     except EnvironmentError:
         pytest.skip("no Gemini3D executable found")
 
