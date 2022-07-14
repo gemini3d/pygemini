@@ -228,7 +228,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
         zref = 900e3
         i = alt[:, ix2, ix3] > zref
         if any(i):
-            iord = np.argsort(alt[:, ix2, ix3])
+            iord = alt[:, ix2, ix3].argsort()
             altsort = alt[iord, ix2, ix3]
             nsort = ns[0, :, ix2, ix3]
             nsort = nsort[iord]
@@ -237,7 +237,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
             H = KB * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
             z = alt[i, ix2, ix3]
             lz = z.size
-            iord = np.argsort(z)
+            iord = z.argsort()
             z = z[iord]
             #     z=[z; 2*z(lz)-z(lz-1)];
             z = np.insert(z, 0, zref)
@@ -299,7 +299,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
             H = KB * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
             z = alt[inds, ix2, ix3]
             lz = z.size
-            iord = np.argsort(z)
+            iord = z.argsort()
             z = z[iord]
             # z = np.append(z, 2 * z[-1] - z[-2])
             z = np.insert(z, 0, alt[iref, ix2, ix3])
@@ -383,7 +383,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
                 H = KB * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
                 z = alt[inds, ix2, ix3]
                 lz = z.size
-                iord = np.argsort(z)
+                iord = z.argsort()
                 z = z[iord]
                 #     z=[z; 2*z(lz)-z(lz-1)];
                 z = np.insert(z, 0, z0f)

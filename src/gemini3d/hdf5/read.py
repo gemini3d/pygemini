@@ -43,14 +43,14 @@ def simsize(path: Path) -> tuple[int, ...]:
         elif "lx1" in f:
             if f["lx1"].ndim > 0:
                 lx = np.array(
-                    [
+                    (
                         f["lx1"][:].squeeze()[()],
                         f["lx2"][:].squeeze()[()],
                         f["lx3"][:].squeeze()[()],
-                    ]
+                    )
                 )
             else:
-                lx = np.array([f["lx1"][()], f["lx2"][()], f["lx3"][()]])
+                lx = np.array((f["lx1"][()], f["lx2"][()], f["lx3"][()]))
         else:
             raise KeyError(f"could not find '/lxs', '/lx' or '/lx1' in {path.as_posix()}")
 
@@ -110,7 +110,7 @@ def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
                 else:
                     xg[k] = f[k].shape
 
-        xg["lx"] = np.array([xg["x1"], xg["x2"], xg["x3"]])
+        xg["lx"] = np.array((xg["x1"], xg["x2"], xg["x3"]))
         return xg
 
     if isinstance(var, str):

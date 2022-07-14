@@ -281,12 +281,12 @@ def geog2UENgeog(alt, glon, glat, ref_lat: float = None, ref_lon: float = None) 
     phi = np.radians(glon)
 
     if ref_lon is None:
-        refphi = np.mean(phi)
+        refphi = phi.mean()
     else:
         refphi = np.radians(ref_lon)
 
     if ref_lat is None:
-        reftheta = np.mean(theta)
+        reftheta = theta.mean()
     else:
         reftheta = pi / 2 - np.radians(ref_lat)
 

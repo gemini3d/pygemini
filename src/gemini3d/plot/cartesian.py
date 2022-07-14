@@ -117,7 +117,7 @@ def plot_interp(
         # meridional meshgrid, this defines the grid for plotting
         # slice expects the first dim. to be "y" ("z" in the 2D case)
         # %% CONVERT ANGULAR COORDINATES TO MLAT,MLON
-        i = np.argsort(xp)  # FIXME: this was in Matlab code--what is its purpose?
+        i = xp.argsort()  # FIXME: this was in Matlab code--what is its purpose?
 
         if name == "rayleighs":
             f = interp.interp1d(xg["x2"][inds2], parm, axis=1, bounds_error=False)
@@ -147,7 +147,7 @@ def plot_interp(
         # so north dist, east dist., alt.
         # slice expects the first dim. to be "y"
         # %% CONVERT ANGULAR COORDINATES TO MLAT,MLON
-        i = np.argsort(yp)  # FIXME: this was in Matlab code--what is its purpose?
+        i = yp.argsort()  # FIXME: this was in Matlab code--what is its purpose?
 
         if name == "rayleighs":
             # FIXME: this needs to be tested
@@ -250,8 +250,8 @@ def plot3d_slice(
     ix3 = lx3 // 2 - 1  # arbitrary slice, to match Matlab
     f = interp.interp2d(xg["x2"][inds2], xg["x1"][inds1], parm[:, :, ix3], bounds_error=False)
     # CONVERT ANGULAR COORDINATES TO MLAT,MLON
-    ix = np.argsort(xp)
-    iy = np.argsort(yp)
+    ix = xp.argsort()
+    iy = yp.argsort()
     plot12(
         xp[ix], zp, f(xp, zp)[:, ix], name=name, cmap=cmap, vmin=vmin, vmax=vmax, fg=fg, ax=axs[0]
     )

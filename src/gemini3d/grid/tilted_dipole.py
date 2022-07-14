@@ -35,7 +35,8 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     pi = math.pi
 
     # arrange the grid data in a dictionary
-    xg = {"lx": np.array([cfg["lq"], cfg["lp"], cfg["lphi"]])}  # aggregate array shape variable
+    xg = {"lx": np.array((cfg["lq"], cfg["lp"], cfg["lphi"]))}
+    # aggregate array shape variable
 
     # mesh size *with* ghost cells added in
     lqg = cfg["lq"] + 4
