@@ -174,37 +174,34 @@ def Rgm2gg():
 
 # Rotate an ECEF geographic vector into ECEF geomagnetic
 def rotvec_gg2gm(e):
+
+    assert e.ndim == 4, "for 4D arrays"
+    assert e.shape[3] == 3, "last dimension must be length 3"
+    S = e.shape[:3]
+
     [lx1, lx2, lx3, lcomp] = e.shape
-    ex = np.array(e[:, :, :, 0])
-    ey = np.array(e[:, :, :, 1])
-    ez = np.array(e[:, :, :, 2])
-    exflat = np.reshape(ex, [1, lx1 * lx2 * lx3], order="F")
-    eyflat = np.reshape(ey, [1, lx1 * lx2 * lx3], order="F")
-    ezflat = np.reshape(ez, [1, lx1 * lx2 * lx3], order="F")
-    emat = np.concatenate((exflat, eyflat, ezflat), axis=0)
+    exflat = e[..., 0].ravel(order="F")
+    eyflat = e[..., 1].ravel(order="F")
+    ezflat = e[..., 2].ravel(order="F")
+    emat = np.row_stack((exflat, eyflat, ezflat))
+
     egg = Rgg2gm() @ emat
-    eggshp = np.zeros((lx1, lx2, lx3, 3))
-    eggshp[:, :, :, 0] = np.reshape(egg[0, :], [lx1, lx2, lx3], order="F")
-    eggshp[:, :, :, 1] = np.reshape(egg[1, :], [lx1, lx2, lx3], order="F")
-    eggshp[:, :, :, 2] = np.reshape(egg[2, :], [lx1, lx2, lx3], order="F")
+
+    eggshp = np.empty((lx1, lx2, lx3, 3))
+    eggshp[..., 0] = np.reshape(egg[0, :], S, order="F")
+    eggshp[..., 1] = np.reshape(egg[1, :], S, order="F")
+    eggshp[..., 2] = np.reshape(egg[2, :], S, order="F")
+
     return eggshp
 
 
 def rotvec_gg2gm_points(e):
-    [lx1, lcomp] = e.shape
-    ex = np.array(e[:, 0])
-    ey = np.array(e[:, 1])
-    ez = np.array(e[:, 2])
-    exflat = np.reshape(ex, [1, lx1], order="F")
-    eyflat = np.reshape(ey, [1, lx1], order="F")
-    ezflat = np.reshape(ez, [1, lx1], order="F")
-    emat = np.concatenate((exflat, eyflat, ezflat), axis=0)
-    egg = Rgg2gm() @ emat
-    eggshp = np.zeros((lx1, 3))
-    eggshp[:, 0] = np.reshape(egg[0, :], [lx1], order="F")
-    eggshp[:, 1] = np.reshape(egg[1, :], [lx1], order="F")
-    eggshp[:, 2] = np.reshape(egg[2, :], [lx1], order="F")
-    return eggshp
+
+    assert e.ndim == 2, "for 2D arrays"
+    assert e.shape[1] == 3, "must have 3 columns"
+
+    return (Rgg2gm() @ np.asfortranarray(e.transpose())).transpose()
+
 
 # Return a set of unit vectors in the geographic directions; components in ECEF
 #   Cartesian geomagnetic
@@ -236,7 +233,8 @@ def unitvecs_geographic(xg):
 
     return egalt, eglon, eglat
 
-def unitvecs_geographic_points(glat,glon):
+
+def unitvecs_geographic_points(glat, glon):
     thetagg = pi / 2 - glat * pi / 180
     phigg = glon * pi / 180
     # lx1 = xg["lx"][0]
@@ -264,4 +262,3 @@ def unitvecs_geographic_points(glat,glon):
     eglat = -1 * rotvec_gg2gm_points(ethetagg)
 
     return egalt, eglon, eglat
-
