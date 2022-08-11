@@ -17,7 +17,7 @@ from . import curvilinear
 mpl.rcParams["axes.formatter.limits"] = (-3, 4)
 mpl.rcParams["axes.formatter.useoffset"] = False
 mpl.rcParams["axes.formatter.min_exponent"] = 4
-
+mpl.rcParams["figure.figsize"]=(13,4.5)
 
 def grid2plotfun(xg: dict[str, T.Any]) -> T.Callable:
     plotfun = None
