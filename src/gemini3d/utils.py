@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import typing as T
 import logging
 import importlib
+import importlib.util
+# the importlib.util import is necessary on non-Windows systems at least for MyPy 0.971
 
 import xarray
 import numpy as np
