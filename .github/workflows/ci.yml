@@ -22,8 +22,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [ "3.8", "3.9" , "3.10" ]
-    name: Lint Python ${{ matrix.python-version }}
+        python-version: [ "3.8", "3.9", "3.10" ]
+    name: Lint ${{ matrix.os }} Python ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4

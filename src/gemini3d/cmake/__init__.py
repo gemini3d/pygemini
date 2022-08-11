@@ -14,7 +14,7 @@ def cmake_exe() -> str:
         if sys.platform == "darwin":
             paths = ["/opt/homebrew/bin", "/usr/local/bin", "/opt/local/bin"]
             for path in paths:
-                cmake = shutil.which("cmake", path)
+                cmake = shutil.which("cmake", path=path)
                 if cmake:
                     break
 
