@@ -64,6 +64,8 @@ def runner(pr: dict[str, T.Any]) -> None:
 
     # build checks
     gemexe = find.gemini_exe(pr.get("gemexe"))
+    if not gemexe:
+        raise FileNotFoundError("gemini3d.run executable not found")
     logging.info(f"gemini executable: {gemexe}")
 
     cmd = [str(gemexe), str(out_dir)]

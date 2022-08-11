@@ -18,9 +18,9 @@ EXE_PATHS = [
     "bin",
     "build",
     "build/bin",
-    "build/Debug",
-    "build/RelWithDebInfo",
     "build/Release",
+    "build/RelWithDebInfo",
+    "build/Debug",
 ]
 
 
@@ -36,24 +36,28 @@ def simsize(path: Path) -> Path:
     return find_stem(path, stem="simsize")
 
 
-def gemini_exe(exe: str = None) -> Path:
+def gemini_exe(exe: str = None) -> Path | None:
     """
     find and check that Gemini executable can run on this system
     """
 
     name = "gemini3d.run"
 
+    paths = [os.environ.get("GEMINI_ROOT"), os.environ.get("CMAKE_PREFIX_PATH")]
+
     if not exe:  # allow for default dict empty
-        root = gemini_root()
-        for n in EXE_PATHS:
-            e = shutil.which(name, path=str(root / n))
+        for p in paths:
+            if p:
+                for n in EXE_PATHS:
+                    # print(p, n, name)
+                    e = shutil.which(name, path=str(Path(p).expanduser() / n))
+                    if e:
+                        break
             if e:
                 break
+
     if not e:
-        raise EnvironmentError(
-            f"{name} not found."
-            "Set environment variable GEMINI_ROOT to directory above bin/gemini.bin"
-        )
+        return None
 
     # %% ensure Gemini3D executable is runnable
     gemexe = Path(e).expanduser()
@@ -65,54 +69,41 @@ def gemini_exe(exe: str = None) -> Path:
         cwd=gemexe.parent,
     )
     if ret.returncode == 0:
-        pass
-    elif ret.returncode == 3221225781 and os.name == "nt":
+        return gemexe
+
+    if ret.returncode == 3221225781 and os.name == "nt":
         # Windows 0xc0000135, missing DLL
         raise RuntimeError(
             "On Windows, it's best to build Gemini3D with static libraries--including all numeric libraries "
             "such as LAPACK.\n"
             "Currently, we are missing a DLL on your system and gemini.bin with shared libs cannot run."
         )
-    else:
-        raise EnvironmentError(
-            f"\n{gemexe} was not runnable on your platform--try rebuilding:\n"
-            "gemini3d.setup()\n"
-            f"{ret.stderr}"
-        )
 
-    return gemexe
+    raise EnvironmentError(
+        f"\n{gemexe} was not runnable on your platform--try rebuilding:\n"
+        "gemini3d.setup()\n"
+        f"{ret.stderr}"
+    )
 
 
-def gemini_root() -> Path:
-    root = os.environ.get("GEMINI_ROOT")
-    if not root:
-        raise EnvironmentError(
-            "Please set environment variable GEMINI_ROOT to (desired) top-level Gemini3D directory."
-            "If Gemini3D is not already there, PyGemini will download and build Gemini3D there."
-        )
-    return Path(root).expanduser()
-
-
-def msis_exe(root: Path = None) -> Path | None:
+def msis_exe(root: str = None) -> Path | None:
     """
     find MSIS_SETUP executable
     """
 
     name = "msis_setup"
 
-    paths = [root, os.environ.get("CMAKE_PREFIX_PATH"), os.environ.get("GEMINI_ROOT")]
-    paths = [Path(p).expanduser() for p in paths if p]
+    paths = [os.environ.get("CMAKE_PREFIX_PATH"), os.environ.get("GEMINI_ROOT")]
+    if root:
+        paths.insert(0, root)
 
-    if not paths:
-        raise EnvironmentError(
-            "Specify location of msis_setup executable by environment variable"
-            " GEMINI_ROOT or CMAKE_PREFIX_PATH or give gemini_root argument"
-        )
-    for path in paths:
-        for n in EXE_PATHS:
-            msis_exe = shutil.which(name, path=str(path / n))
-            if msis_exe:
-                return Path(msis_exe)
+    for p in paths:
+        if p:
+            for n in EXE_PATHS:
+                # print(p, n, name)
+                msis_exe = shutil.which(name, path=str(Path(p).expanduser() / n))
+                if msis_exe:
+                    return Path(msis_exe)
 
     return None
 

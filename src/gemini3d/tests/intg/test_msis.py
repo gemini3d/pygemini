@@ -18,6 +18,11 @@ import gemini3d.find
 @pytest.mark.parametrize("version", [0, 20])
 def test_msis(version, tmp_path):
 
+    if version == 20:
+        features = gp.get_msis_features(gemini3d.find.msis_exe())
+        if not features["msis2"]:
+            pytest.skip("MSIS2 not available")
+
     cfg = {
         "time": [datetime(2015, 1, 2, 12)],
         "f107": 100.0,

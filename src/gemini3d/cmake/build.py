@@ -8,7 +8,6 @@ import shutil
 import tempfile
 
 from . import cmake_exe
-from ..find import gemini_root
 from ..web import git_download
 
 
@@ -53,7 +52,7 @@ def build(
         subprocess.check_call([cmake, "--install", str(build_dir)])
 
 
-def build_gemini3d(targets: list[str], root: Path = None, cmake_args: list[str] = None):
+def build_gemini3d(root: Path, targets: list[str], cmake_args: list[str] = None):
     """
     build targets from gemini3d program
 
@@ -67,9 +66,6 @@ def build_gemini3d(targets: list[str], root: Path = None, cmake_args: list[str] 
         cmake_args = [cmake_args]
     elif cmake_args is None:
         cmake_args = []
-
-    if not root:
-        root = gemini_root()
 
     src_dir = Path(root).expanduser()
 

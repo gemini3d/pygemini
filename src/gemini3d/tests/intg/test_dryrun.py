@@ -27,11 +27,7 @@ def test_memory(name, bref):
     assert est == approx(bref, abs=0, rel=0)
 
 
-@pytest.mark.skipif(find.gemini_root() is None, reason="no env var GEMINI_CIROOT")
-@pytest.mark.skipif(
-    not (Path(find.gemini_exe())).is_file(),
-    reason="gemini3d.run not built",
-)
+@pytest.mark.skipif(find.gemini_exe() is None, reason="gemini3d.run not built")
 @pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 def test_mpiexec():
     try:
