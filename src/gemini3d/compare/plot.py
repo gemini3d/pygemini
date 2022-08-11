@@ -57,9 +57,9 @@ def plotdiff(
                 plotdiff(A[i], B[i], time, new_dir, ref_dir, name=f"{name}-{i}")
         elif is3d:
             # pick x2 and x3 slice at maximum difference
-            im = abs(A - B).argmax(dim=A.dims)
-            ix2 = im["x2"].data
-            ix3 = im["x3"].data
+            im: dict[str, xarray.DataArray] = abs(A - B).argmax(dim=...)  # type: ignore
+            ix2: int = im["x2"].data
+            ix3: int = im["x3"].data
             plotdiff(
                 A[:, :, ix3], B[:, :, ix3], time, new_dir, ref_dir, name=name + "-x2", imax=ix3
             )

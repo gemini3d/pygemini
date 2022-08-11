@@ -84,7 +84,7 @@ def frame(
 
     if not var:
         var = PARAMS
-        var.add("aurora")
+        var = var.union({"aurora", "Phitop"})
 
     if not cfg:
         cfg = read.config(path)
@@ -104,14 +104,13 @@ def frame(
 
     t0 = to_datetime(dat.time)
 
-    for k, v in dat.items():
+    for k in var.intersection(dat.data_vars):
         try:
-            if any(s in k for s in var):
-                if plotfun.__name__.startswith("curv"):
-                    fg, ax = plotfun(cfg, xg, v)
-                else:
-                    fg, ax = plotfun(t0, xg, v.squeeze(), wavelength=dat.get("wavelength"))
-                save_fig(fg, path, name=k, fmt=saveplot_fmt, time=t0)
+            if plotfun.__name__.startswith("curv"):
+                fg, ax = plotfun(cfg, xg, dat[k])
+            else:
+                fg, ax = plotfun(t0, xg, dat[k].squeeze(), wavelength=dat.get("wavelength"))
+            save_fig(fg, path, name=k, fmt=saveplot_fmt, time=t0)
         except ValueError as e:
             logging.error(f"SKIP: plot {k} at {t0} due to {e}")
 

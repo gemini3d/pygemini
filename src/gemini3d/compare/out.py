@@ -1,8 +1,8 @@
 from __future__ import annotations
 from pathlib import Path
 import logging
-import typing as T
 
+import xarray
 import numpy as np
 
 from .plot import plotdiff
@@ -22,7 +22,7 @@ def compare_output(
     new_dir = Path(new_dir).expanduser().resolve(strict=True)
     ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
 
-    ref: dict[str, T.Any] = {}
+    ref = xarray.Dataset()
     errs = 0
 
     params = read.config(new_dir)

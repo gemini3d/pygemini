@@ -40,18 +40,17 @@ def plot_all(
 
     plotfun = grid2plotfun(xg)
 
-    for k, v in dat.items():
-        if any(s in k for s in var):
-            # FIXME: for now we just look at electrons v[-1, ...]
-            cmap_name = {"ns": "ne", "Ts": "Te", "vs1": "v1"}
-            fg, ax = plotfun(
-                to_datetime(dat.time),
-                xg,
-                v[-1, :, :, :].squeeze(),
-                cmap_name[k],
-                wavelength=dat.get("wavelength"),
-            )
-            save_fig(fg, direc, name=k, fmt=saveplot_fmt)
+    for k in var.intersection(dat.data_vars):
+        # FIXME: for now we just look at electrons dat[k][-1, ...]
+        cmap_name = {"ns": "ne", "Ts": "Te", "vs1": "v1"}
+        fg, ax = plotfun(
+            to_datetime(dat.time),
+            xg,
+            dat[k][-1, :, :, :].squeeze(),
+            cmap_name[k],
+            wavelength=dat.get("wavelength"),
+        )
+        save_fig(fg, direc, name=k, fmt=saveplot_fmt)
 
 
 def Efield(direc: Path):

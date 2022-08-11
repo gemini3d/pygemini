@@ -63,7 +63,7 @@ def plot_interp(
     vmax = None
     if name.startswith("J") or name == "Phitop":
         cmap = "bwr"
-        vmax = abs(parm).max()
+        vmax = abs(parm).max().data
         vmin = -vmax
     elif name.startswith("v"):
         cmap = "bwr"
@@ -72,11 +72,11 @@ def plot_interp(
     elif name.startswith(("V", "E")):
         is_Efield = True
         cmap = "bwr"
-        vmax = abs(parm).max()
+        vmax = abs(parm).max().data
         vmin = -vmax
     elif name.startswith("T"):
         vmin = 0.0
-        vmax = parm.max()
+        vmax = parm.max().data
     elif name.startswith("n"):
         vmin = 1e-7
 
