@@ -7,15 +7,24 @@ from pytest import approx
 import numpy as np
 import math
 import xarray
+from pathlib import Path
 from datetime import datetime
 
+import gemini3d
 import gemini3d.mpi as gm
 import gemini3d.grid.uniform as grid
 import gemini3d.coord as coord
 import gemini3d.namelist as namelist
-from gemini3d.utils import to_datetime
+from gemini3d.utils import to_datetime, str2func
 
 pi = math.pi
+
+
+def test_str2func():
+
+    fun = str2func("dummy", Path(gemini3d.tests.unit.__path__[0]))
+
+    assert fun() == 0
 
 
 def test_to_datetime():

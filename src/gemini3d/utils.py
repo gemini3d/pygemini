@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 import typing as T
 import logging
 import importlib
-import imp
 
 import xarray
 import numpy as np
@@ -46,17 +45,21 @@ def str2func(name: str, path: Path = None) -> T.Callable:
             mod = importlib.import_module(mod_name)
             return getattr(mod, func_name)
     else:
-        if path is not None:
-            fid = imp.find_module(name, [path])  # type: ignore
-            try:
-                mod = imp.load_module(name, *fid)  # type: ignore
-            finally:
-                # higher except: may catch, so avoid resource leaks
-                if fid[0]:
-                    fid[0].close()
-        else:
+        if path is None:
             # file in current working directory
             mod = importlib.import_module(func_name)
+        else:
+            # https://docs.python.org/3.10/library/importlib.html#importing-a-source-file-directly
+            mod_file = path / (name + ".py")
+            if not mod_file.is_file():
+                raise FileNotFoundError(mod_file)
+            spec = importlib.util.spec_from_file_location(name, mod_file)
+            if spec is None:
+                raise ModuleNotFoundError(f"{name} not found in {mod_file}")
+            mod = importlib.util.module_from_spec(spec)
+            if mod is None:
+                raise ImportError(f"could not import {name} from {mod_file}")
+            spec.loader.exec_module(mod)  # type: ignore
 
     return getattr(mod, func_name)
 
