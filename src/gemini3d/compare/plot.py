@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime
 
 import xarray
-from matplotlib.figure import Figure
+import matplotlib as mpl
 
 from .. import read
 
@@ -29,6 +29,9 @@ def plotdiff(
 
     new_dir = Path(new_dir).expanduser().resolve(strict=True)
     ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
+
+    fg = mpl.figure.Figure(constrained_layout=True, figsize=(12, 5))
+    axs = fg.subplots(1, 3)
 
     if not name:
         name = str(A.name)
@@ -70,9 +73,6 @@ def plotdiff(
             raise ValueError("unexpected case, 2D data but in if-tree only for 3D")
 
         return
-
-    fg = Figure(constrained_layout=True, figsize=(12, 5))
-    axs = fg.subplots(1, 3)
 
     if A.ndim == 2:
         maxdiff = diff2d(A, B, name, fg, axs)

@@ -6,6 +6,8 @@ import os
 import re
 import sys
 
+import matplotlib as mpl
+
 import gemini3d.web
 import gemini3d.plot
 
@@ -29,7 +31,10 @@ def test_plot(name, tmp_path, monkeypatch):
         test_dir = gemini3d.web.download_and_extract(name, fn.parent)
 
     shutil.copytree(test_dir, tmp_path, dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.png"))
-    gemini3d.plot.frame(tmp_path, datetime(2013, 2, 20, 5), saveplot_fmt="png")
+
+    fg = mpl.figure.Figure()
+
+    gemini3d.plot.frame(fg, tmp_path, datetime(2013, 2, 20, 5), saveplot_fmt="png")
 
     plot_files = sorted((tmp_path / "plots").glob("*.png"))
     plot_names = [f.name for f in plot_files]

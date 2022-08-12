@@ -6,7 +6,8 @@ NOTE: this is made for very basic plots. The axes quantities are notional and no
 from pathlib import Path
 import argparse
 
-from matplotlib.pyplot import figure, show, close
+from matplotlib.pyplot import figure, show
+from matplotlib.figure import figaspect
 
 import gemini3d.plot.slices as slices
 import gemini3d.find as find
@@ -53,9 +54,10 @@ if __name__ == "__main__":
     if x3.size == dat["ne"][1].shape[2] + Ng:
         x3 = x3[2:-2]
 
+    fg = figure(figsize=figaspect(1 / 3), tight_layout=True)  # , constrained_layout=True)
     for p in {"ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"}:
         if p in dat:
-            fg = figure(figsize=(15, 5), tight_layout=True)  # , constrained_layout=True)
+            fg.clf()
             # %% left panel
             ax = fg.add_subplot(1, 3, 1)
             ix3 = x3.size // 2 - 1  # arbitrary slice
@@ -80,6 +82,5 @@ if __name__ == "__main__":
                 pfn = dat_file.parent / f"{p}-{dat_file.stem}.png"
                 print("writing", pfn)
                 fg.savefig(pfn, bbox_inches="tight")
-                close(fg)
 
     show()

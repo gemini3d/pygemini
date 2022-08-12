@@ -4,23 +4,24 @@ function names in this module must start with "curv" so that "if" statements in 
 
 from __future__ import annotations
 import typing as T
+from datetime import datetime
 
-from matplotlib.figure import Figure  # does not display, save only
-from matplotlib.axes import Axes
+import matplotlib as mpl
 
 from ..grid.gridmodeldata import model2magcoords
 
 
 def curv3d_long(
-    cfg: dict[str, T.Any],
+    fg: mpl.figure.Figure,
+    time: datetime,
     xg: dict[str, T.Any],
     parm,
-    fg: Figure = None,
+    cfg: dict[str, T.Any],
     *,
     lalt: int = 256,
     llon: int = 256,
     llat: int = 256,
-) -> tuple[Figure, tuple[Axes]]:
+) -> None:
     """plot dipole data vs. alt,lon,lat"""
 
     altref = 300e3
@@ -36,8 +37,7 @@ def curv3d_long(
     ilat = abs(mlati - latavg).argmin()
 
     # plot various slices through the 3D domain
-    if fg is None:
-        fg = Figure()
+
     axs = fg.subplots(1, 3)
 
     ax = axs[0]
@@ -58,18 +58,18 @@ def curv3d_long(
     ax.set_ylabel("alt")
     fg.colorbar(h, ax=ax)
 
-    return fg, axs
+    fg.suptitle(f"{time}")
 
 
 def curv2d(
-    cfg: dict[str, T.Any],
+    ax: mpl.axes.Axes,
+    time: datetime,
     xg: dict[str, T.Any],
     parm,
-    fg: Figure = None,
     *,
     lalt: int = 256,
     llat: int = 256,
-) -> tuple[Figure, tuple[Axes]]:
+) -> None:
     # grid data
     alti, mloni, mlati, parmi = model2magcoords(xg, parm, lalt, 1, llat)
 
@@ -77,12 +77,10 @@ def curv2d(
     ilon = 0
 
     # plot the meridional slice
-    if fg is None:
-        fg = Figure()
-    ax = fg.gca()
+
     h = ax.pcolormesh(mlati, alti / 1e3, parmi[:, ilon, :], shading="nearest")
     ax.set_xlabel("mlat")
     ax.set_ylabel("alt")
-    fg.colorbar(h, ax=ax)
+    ax.figure.colorbar(h, ax=ax)
 
-    return fg, (ax,)
+    ax.set_title(f"{time}")

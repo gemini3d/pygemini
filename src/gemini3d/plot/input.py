@@ -3,7 +3,7 @@ from pathlib import Path
 import typing as T
 import logging
 
-from matplotlib.figure import Figure
+import matplotlib as mpl
 
 from . import grid2plotfun
 from .core import save_fig
@@ -15,12 +15,15 @@ from ..config import datetime_range
 
 def plot_all(
     direc: Path, var: set[str] = None, saveplot_fmt: str = None, xg: dict[str, T.Any] = None
-):
+) -> None:
     """
     plot simulation inputs, under "direc/inputs"
 
     if save_dir defined, plots will not be visible while generating to speed plot writing
     """
+
+    fg = mpl.figure.Figure(figsize=mpl.figure.figaspect(1 / 4), tight_layout=True)
+    # tight_layout works better with suptitle
 
     direc = Path(direc).expanduser().resolve(strict=True)
 
@@ -40,20 +43,25 @@ def plot_all(
 
     plotfun = grid2plotfun(xg)
 
+    time = to_datetime(dat.time)
+
     for k in var.intersection(dat.data_vars):
+        fg.clf()
         # FIXME: for now we just look at electrons dat[k][-1, ...]
         cmap_name = {"ns": "ne", "Ts": "Te", "vs1": "v1"}
-        fg, ax = plotfun(
-            to_datetime(dat.time),
-            xg,
-            dat[k][-1, :, :, :].squeeze(),
-            cmap_name[k],
+
+        plotfun(
+            fg,
+            time=time,
+            xg=xg,
+            parm=dat[k][-1, :, :, :].squeeze(),
+            name=cmap_name[k],
             wavelength=dat.get("wavelength"),
         )
-        save_fig(fg, direc, name=k, fmt=saveplot_fmt)
+        save_fig(fg, direc, name=k, fmt=saveplot_fmt, time=time)
 
 
-def Efield(direc: Path):
+def Efield(direc: Path) -> None:
     """plot input E-field
 
     Parameters
@@ -63,12 +71,15 @@ def Efield(direc: Path):
         top-level simulation directory
     """
 
+    fg = mpl.figure.Figure()
+
     direc = Path(direc).expanduser()
 
     cfg = read.config(direc)
     path = find.inputs(direc, cfg.get("E0dir"))
 
     time = datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtE0"])
+
     for t in time:
         try:
             file = find.frame(path, t)
@@ -79,17 +90,19 @@ def Efield(direc: Path):
         dat = read.Efield(file)
 
         for k in {"Exit", "Eyit", "Vminx1it", "Vmaxx1it", "Vminx2ist", "Vmaxx2ist"}:
+            fg.clf()
+            ax = fg.gca()
             if dat[k].ndim == 1:
-                fg = plot2d_input(dat[k], cfg)
+                plot2d_input(ax, dat[k], cfg)
             else:
-                fg = plot3d_input(dat[k], cfg)
+                plot3d_input(ax, dat[k])
 
-            fg.suptitle(f"{k}: {t}")
+            ax.set_title(f"{k}: {t}")
 
             save_fig(fg, direc, name=f"Efield-{k}", time=t)
 
 
-def precip(direc: Path):
+def precip(direc: Path) -> None:
     """plot input precipitation
 
     Parameters
@@ -98,6 +111,8 @@ def precip(direc: Path):
     direc: pathlib.Path
         top-level simulation directory
     """
+
+    fg = mpl.figure.Figure(tight_layout=True)
 
     direc = Path(direc).expanduser()
 
@@ -116,19 +131,19 @@ def precip(direc: Path):
         dat = read.precip(file)
 
         for k in {"E0", "Q"}:
+            fg.clf()
+            ax = fg.gca()
             if dat[k].ndim == 1:
-                fg = plot2d_input(dat[k], cfg)
+                plot2d_input(ax, dat[k], cfg)
             else:
-                fg = plot3d_input(dat[k], cfg)
+                plot3d_input(ax, dat[k])
 
-            fg.suptitle(f"{k}: {t}")
+            ax.set_title(f"{k}: {t}")
 
             save_fig(fg, direc, name=f"precip-{k}", time=t)
 
 
-def plot2d_input(A, cfg: dict[str, T.Any]) -> Figure:
-    fg = Figure()
-    ax = fg.gca()
+def plot2d_input(ax: mpl.axes.Axes, A, cfg: dict[str, T.Any]) -> None:
 
     if cfg["lyp"] == 1:
         x = A["mlon"]
@@ -139,16 +154,10 @@ def plot2d_input(A, cfg: dict[str, T.Any]) -> Figure:
 
     ax.plot(x, A)
 
-    return fg
 
-
-def plot3d_input(A, cfg: dict[str, T.Any]) -> Figure:
-    fg = Figure()
-    ax = fg.gca()
+def plot3d_input(ax: mpl.axes.Axes, A) -> None:
 
     h0 = ax.pcolormesh(A["mlon"], A["mlat"], A, shading="nearest")
-    fg.colorbar(h0, ax=ax)
+    ax.figure.colorbar(h0, ax=ax)
     ax.set_ylabel("magnetic latitude")
     ax.set_xlabel("magnetic longitude")
-
-    return fg

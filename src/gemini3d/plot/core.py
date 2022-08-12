@@ -6,9 +6,8 @@ from datetime import datetime
 from matplotlib.figure import Figure
 
 
-def basic(xg: dict[str, T.Any]) -> Figure:
-    fig = Figure()
-    axs = fig.subplots(1, 3)
+def basic(fg: Figure, xg: dict[str, T.Any]) -> None:
+    axs = fg.subplots(1, 3)
     # %% x1
     lx1 = xg["x1"].size
     ax = axs[0]
@@ -33,10 +32,8 @@ def basic(xg: dict[str, T.Any]) -> Figure:
     ax.set_xlabel("index (dimensionless)")
     ax.set_title(f"x3 (northward) lx3 = {lx3}")
 
-    return fig
 
-
-def stitle(fig: Figure, xg: dict[str, T.Any], ttxt: str = ""):
+def stitle(fig: Figure, xg: dict[str, T.Any], ttxt: str = "") -> None:
     """suptitle"""
     if "time" in xg:
         ttxt += f" {xg['time']}"
@@ -47,7 +44,9 @@ def stitle(fig: Figure, xg: dict[str, T.Any], ttxt: str = ""):
     fig.suptitle(ttxt)
 
 
-def save_fig(fg: Figure, direc: Path, name: str, *, fmt: str | None = "png", time: datetime = None):
+def save_fig(
+    fg: Figure, direc: Path, name: str, *, fmt: str | None = "png", time: datetime = None
+) -> None:
     if not fmt:
         fmt = "png"
 

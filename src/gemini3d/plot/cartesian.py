@@ -7,7 +7,6 @@ import math
 import xarray
 import scipy.interpolate as interp
 from matplotlib.figure import Figure
-from matplotlib.axes import Axes
 
 from ..utils import git_meta
 from ..read import get_lxs
@@ -26,12 +25,14 @@ from .slices import (
 
 
 def plot_interp(
+    fg: Figure,
     time: datetime,
     xg: dict[str, T.Any],
     parm: xarray.DataArray,
-    fg: Figure = None,
+    *,
+    name: str = None,
     **kwargs,
-) -> tuple[Figure, tuple[Axes]]:
+) -> None:
 
     """
 
@@ -49,11 +50,8 @@ def plot_interp(
         hence the negative sign
     """
 
-    name = parm.name
-    assert isinstance(name, str)
-
-    if fg is None:
-        fg = Figure(constrained_layout=True)
+    if not name:
+        name = str(parm.name)
 
     meta = git_meta()
 
@@ -134,11 +132,18 @@ def plot_interp(
         elif parm.ndim == 2:
             f = interp.interp2d(xg["x2"][inds2], xg["x1"][inds1], parm, bounds_error=False)
             plot12(
-                xp[i], zp, f(xp, zp)[:, i], name=name, cmap=cmap, vmin=vmin, vmax=vmax, fg=fg, ax=ax
+                xp[i],
+                zp,
+                f(xp, zp)[:, i],
+                ax,
+                name=name,
+                cmap=cmap,
+                vmin=vmin,
+                vmax=vmax,
             )
         elif parm.ndim == 1:  # phitop
             f = interp.interp1d(xg["x2"][inds2], parm, bounds_error=False)
-            plot1d2(xp, f(xp), name, fg, ax)
+            plot1d2(xp, f(xp), name, ax)
         else:
             raise ValueError(f"{name}: only 2D and 1D data are expected--squeeze data")
     elif lxs[1] == 1:  # alt./lat. slice
@@ -165,17 +170,19 @@ def plot_interp(
         elif parm.ndim == 2:
             f = interp.interp2d(xg["x3"][inds3], xg["x1"][inds1], parm, bounds_error=False)
             parmp = f(yp, zp).reshape((lzp, lyp))
-            plot13(yp[i], zp, parmp[:, i], name=name, cmap=cmap, vmin=vmin, vmax=vmax, fg=fg, ax=ax)
+            plot13(yp[i], zp, parmp[:, i], ax, name=name, cmap=cmap, vmin=vmin, vmax=vmax)
         elif parm.ndim == 1:  # phitop
             f = interp.interp1d(xg["x3"][inds3], parm, bounds_error=False)
-            plot1d3(yp, f(yp), name, fg, ax)
+            plot1d3(yp, f(yp), name, ax)
         else:
             raise ValueError(f"{name}: only 2D and 1D data are expected--squeeze data")
     elif parm.ndim == 3:
-        fg, ax = plot3d_slice(
+        plot3d_slice(
             fg,
-            name,
             time,
+            xg,
+            parm,
+            name,
             meta,
             inds1,
             inds2,
@@ -190,11 +197,9 @@ def plot_interp(
             cmap,
             vmin,
             vmax,
-            parm,
-            xg,
         )
     elif name == "rayleighs":
-        ax = bright_east_north(
+        bright_east_north(
             fg,
             xg,
             parm,
@@ -211,18 +216,18 @@ def plot_interp(
         )
     elif is_Efield:
         # single 2D plot
-        ax = mag_lonlat(fg, xg, parm, cmap, vmin, vmax, name, time)
+        mag_lonlat(fg.gca(), xg, parm, cmap, vmin, vmax, name, time)
     else:
         # single 2D plot
-        ax = east_north(fg, xg, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time)
-
-    return fg, ax
+        east_north(fg.gca(), xg, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time)
 
 
 def plot3d_slice(
-    fg,
+    fg: Figure,
+    time: datetime,
+    xg: dict[str, T.Any],
+    parm,
     name,
-    time,
     meta,
     inds1,
     inds2,
@@ -237,13 +242,10 @@ def plot3d_slice(
     cmap,
     vmin,
     vmax,
-    parm,
-    xg,
-) -> tuple[Figure, tuple[Axes]]:
+) -> None:
 
-    fg.set_size_inches((18, 5))
     axs = fg.subplots(1, 3, sharey=False, sharex=False)
-    fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.99)
+    fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.98)
     # %% CONVERT TO DISTANCE UP, EAST, NORTH (left panel)
     # JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT,
     # AND AN ALTITUDE FOR THE LAT./LON. SLICE
@@ -252,9 +254,7 @@ def plot3d_slice(
     # CONVERT ANGULAR COORDINATES TO MLAT,MLON
     ix = xp.argsort()
     iy = yp.argsort()
-    plot12(
-        xp[ix], zp, f(xp, zp)[:, ix], name=name, cmap=cmap, vmin=vmin, vmax=vmax, fg=fg, ax=axs[0]
-    )
+    plot12(xp[ix], zp, f(xp, zp)[:, ix], axs[0], name=name, cmap=cmap, vmin=vmin, vmax=vmax)
     # %% LAT./LONG. SLICE COORDINATES (center panel)
     zp2 = REF_ALT
     X3, Y3, Z3 = np.meshgrid(xp, yp, zp2 * 1e3)
@@ -271,21 +271,16 @@ def plot3d_slice(
         xp[ix],
         yp[iy],
         parmp[0, ix, :],
-        name=name,
+        name,
+        axs[1],
         cmap=cmap,
         vmin=vmin,
         vmax=vmax,
-        fg=fg,
-        ax=axs[1],
     )
     # %% ALT/LAT SLICE (right panel)
     ix2 = lx2 // 2 - 1  # arbitrary slice, to match Matlab
     f = interp.interp2d(xg["x3"][inds3], xg["x1"][inds1], parm[:, ix2, :], bounds_error=False)
-    plot13(
-        yp[iy], zp, f(yp, zp)[:, iy], name=name, cmap=cmap, vmin=vmin, vmax=vmax, fg=fg, ax=axs[2]
-    )
-
-    return fg, axs
+    plot13(yp[iy], zp, f(yp, zp)[:, iy], axs[2], name=name, cmap=cmap, vmin=vmin, vmax=vmax)
 
 
 cart3d_long_ENU = plot_interp

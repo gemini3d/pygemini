@@ -3,13 +3,13 @@ from pathlib import Path
 import logging
 import typing as T
 
-from matplotlib.figure import Figure
+import matplotlib as mpl
 
 from .. import read
 from .core import basic, stitle, save_fig
 
 
-def grid(direc: Path, only: list[str] = None, saveplot_fmt: str = None):
+def grid(direc: Path, only: list[str] = None, saveplot_fmt: str = None) -> None:
     """plot 3D grid
 
     Parameters
@@ -18,6 +18,9 @@ def grid(direc: Path, only: list[str] = None, saveplot_fmt: str = None):
     direc: pathlib.Path
         top-level path of simulation grid
     """
+
+    fg3 = mpl.figure.Figure(tight_layout=True, figsize=mpl.figure.figaspect(1 / 3))
+    fg = mpl.figure.Figure()
 
     direc = Path(direc).expanduser()
 
@@ -31,19 +34,21 @@ def grid(direc: Path, only: list[str] = None, saveplot_fmt: str = None):
 
     # %% x1, x2, x3
     if "basic" in only:
-        fg = basic(xg)
-        stitle(fg, xg)
-        save_fig(fg, direc, "grid-basic")
+        basic(fg3, xg)
+        stitle(fg3, xg)
+        save_fig(fg3, direc, "grid-basic")
 
     # %% detailed altitude plot
     if "alt" in only:
-        fg = altitude(xg)
+        ax = fg.gca()
+        altitude(ax, xg)
         save_fig(fg, direc, "grid-altitude")
 
     # %% ECEF surface
     if "ecef" in only:
-        fg = Figure()
+        fg.clf()  # clear figure for 3D axes when 2D previously
         ax = fg.gca(projection="3d")
+
         ax.scatter(xg["x"], xg["y"], xg["z"])
 
         ax.set_xlabel("x [m]")
@@ -55,16 +60,15 @@ def grid(direc: Path, only: list[str] = None, saveplot_fmt: str = None):
 
     # %% lat lon map
     if "geog" in only:
-        fg = geographic(xg)
+        fg.clf()
+        geographic(fg, xg)
         save_fig(fg, direc, name="grid-geog", fmt=saveplot_fmt)
 
 
-def geographic(xg: dict[str, T.Any]) -> Figure:
+def geographic(fig: mpl.figure.Figure, xg: dict[str, T.Any]) -> None:
     """
     plots grid in geographic map
     """
-
-    fig = Figure()
 
     glon = xg["glon"]
     glat = xg["glat"]
@@ -90,10 +94,8 @@ def geographic(xg: dict[str, T.Any]) -> Figure:
     ax.set_ylabel("geographic latitude")
     stitle(fig, xg, "glat, glon")
 
-    return fig
 
-
-def altitude(xg: dict[str, T.Any]) -> Figure:
+def altitude(ax: mpl.axes.Axes, xg: dict[str, T.Any]) -> None:
     """
     plot altitude x1 grid
 
@@ -109,9 +111,6 @@ def altitude(xg: dict[str, T.Any]) -> Figure:
 
     x1_km = xg["x1"] / 1000
 
-    fig = Figure()
-    ax = fig.gca()
-
     ax.plot(x1_km, marker="*")
     ax.set_ylabel("x1 [km]")
     ax.set_xlabel("index (dimensionless)")
@@ -121,5 +120,3 @@ def altitude(xg: dict[str, T.Any]) -> Figure:
     ax.set_title(
         f"{file}  min. alt: {x1_km.min():0.1f} [km]  max. alt: {x1_km.max():0.1f} [km]  lx1: {x1_km.size}"
     )
-
-    return fig

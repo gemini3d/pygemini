@@ -3,7 +3,6 @@ from pathlib import Path
 import typing as T
 from datetime import datetime
 import logging
-import numpy as np
 import matplotlib as mpl
 
 from .. import read
@@ -17,11 +16,10 @@ from . import curvilinear
 mpl.rcParams["axes.formatter.limits"] = (-3, 4)
 mpl.rcParams["axes.formatter.useoffset"] = False
 mpl.rcParams["axes.formatter.min_exponent"] = 4
-mpl.rcParams["figure.figsize"] = (13, 4.5)
 
 
 def grid2plotfun(xg: dict[str, T.Any]) -> T.Callable:
-    plotfun = None
+
     h1 = xg.get("h1")
 
     lxs = read.get_lxs(xg)
@@ -31,17 +29,14 @@ def grid2plotfun(xg: dict[str, T.Any]) -> T.Callable:
         maxh1 = h1.max()
         if (abs(minh1 - 1) > 1e-4) or (abs(maxh1 - 1) > 1e-4):  # curvilinear grid
             if (lxs[1] > 1) and (lxs[2] > 1):
-                plotfun = curvilinear.curv3d_long  # type: ignore
+                return curvilinear.curv3d_long  # type: ignore
             else:
-                plotfun = curvilinear.curv2d  # type: ignore
+                return curvilinear.curv2d  # type: ignore
 
-    if plotfun is None:
-        if (lxs[1] > 1) and (lxs[2] > 1):
-            plotfun = cartesian.cart3d_long_ENU  # type: ignore
-        else:
-            plotfun = cartesian.cart2d  # type: ignore
+    if (lxs[1] > 1) and (lxs[2] > 1):
+        return cartesian.cart3d_long_ENU  # type: ignore
 
-    return plotfun  # type: ignore
+    return cartesian.cart2d  # type: ignore
 
 
 def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = ""):
@@ -58,12 +53,18 @@ def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = ""):
     plotfun = grid2plotfun(xg)
     cfg = read.config(direc)
 
+    fg = mpl.figure.Figure(constrained_layout=True)
+
     # %% loop over files / time
     for t in cfg["time"]:
-        frame(direc, time=t, var=var, saveplot_fmt=saveplot_fmt, xg=xg, cfg=cfg, plotfun=plotfun)
+        fg.clf()
+        frame(
+            fg, direc, time=t, var=var, saveplot_fmt=saveplot_fmt, xg=xg, cfg=cfg, plotfun=plotfun
+        )
 
 
 def frame(
+    fg: mpl.figure.Figure,
     path: Path,
     time: datetime = None,
     *,
@@ -108,9 +109,9 @@ def frame(
     for k in var.intersection(dat.data_vars):
         try:
             if plotfun.__name__.startswith("curv"):
-                fg, ax = plotfun(cfg, xg, dat[k])
+                plotfun(fg, t0, xg, dat[k], cfg)
             else:
-                fg, ax = plotfun(t0, xg, dat[k].squeeze(), wavelength=dat.get("wavelength"))
+                plotfun(fg, t0, xg, dat[k].squeeze(), wavelength=dat.get("wavelength"))
             save_fig(fg, path, name=k, fmt=saveplot_fmt, time=t0)
         except ValueError as e:
             logging.error(f"SKIP: plot {k} at {t0} due to {e}")
@@ -124,4 +125,4 @@ def frame(
         if not aurmap_dir.is_absolute():
             aurmap_dir = path / cfg["aurmap_dir"]
 
-        glow(aurmap_dir, t0, saveplot_fmt, xg=xg)
+        glow(aurmap_dir, t0, fg=fg, saveplot_fmt=saveplot_fmt, xg=xg)

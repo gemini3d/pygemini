@@ -13,9 +13,9 @@ from .. import find
 def glow(
     direc: Path,
     time: datetime,
+    fg: Figure,
     saveplot_fmt: str = None,
     xg: dict[str, T.Any] = None,
-    fg: Figure = None,
 ):
     """plots Gemini-Glow auroral emissions"""
 
@@ -27,9 +27,7 @@ def glow(
     # %% get filename
     fn = find.frame(direc, time)
 
-    # %% make plots
-    if fg is None:
-        fg = Figure(constrained_layout=True)
+    # %% make plot
 
     B = read.glow(fn)
     t_str = time.strftime("%Y-%m-%dT%H:%M:%S") + " UT"
