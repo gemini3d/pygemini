@@ -50,17 +50,17 @@ def gemini_exe(exe: str = None) -> Path | None:
             if p:
                 for n in EXE_PATHS:
                     # print(p, n, name)
-                    e = shutil.which(name, path=str(Path(p).expanduser() / n))
-                    if e:
+                    exe = shutil.which(name, path=str(Path(p).expanduser() / n))
+                    if exe:
                         break
-            if e:
+            if exe:
                 break
 
-    if not e:
+    if not exe:
         return None
 
     # %% ensure Gemini3D executable is runnable
-    gemexe = Path(e).expanduser()
+    gemexe = Path(exe).expanduser()
     ret = subprocess.run(
         [str(gemexe)],
         capture_output=True,
