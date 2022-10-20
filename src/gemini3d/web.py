@@ -10,7 +10,7 @@ import importlib.resources
 import shutil
 import subprocess
 
-from .archive import extract_zst, extract_zip
+from .archive import extract
 
 
 def git_download(path: Path, repo: str, tag: str = None):
@@ -62,12 +62,7 @@ def download_and_extract(test_name: str, data_dir: Path) -> Path:
 
     url_retrieve(z["url"], z["archive"], ("sha256", z["sha256"]))
 
-    if z["archive"].suffix == ".zst":
-        extract_zst(z["archive"], z["dir"])
-    elif z["archive"].suffix == ".zip":
-        extract_zip(z["archive"], z["dir"])
-    else:
-        raise ValueError(f"{z['archive']} is not zip or zst")
+    extract(z["archive"], z["dir"])
 
     return z["dir"]
 

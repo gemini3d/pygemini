@@ -1,7 +1,6 @@
 name: ci
 
 env:
-  CMAKE_PREFIX_PATH: ~/gemlibs
   GEMINI_ROOT: ~/gemini3d
   GEMINI_CIROOT: ~/ci
   CMAKE_BUILD_TYPE: Release
@@ -19,11 +18,19 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 3
+
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
         python-version: [ "3.8", "3.9", "3.10" ]
+        include:
+        - os: macos-latest
+          python-version: "3.10"
+        - os: windows-latest
+          python-version: "3.10"
+
     name: Lint ${{ matrix.os }} Python ${{ matrix.python-version }}
+
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
@@ -42,7 +49,10 @@ jobs:
     strategy:
       matrix:
         python-version: [ '3.7', '3.8', '3.9', '3.10' ]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
+        include:
+        - os: macos-latest
+          python-version: '3.10'
 
     runs-on: ${{ matrix.os }}
 
@@ -54,41 +64,57 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - uses: actions/checkout@v3
+    - name: Checkout Gemini3D-External
+      uses: actions/checkout@v3
+      with:
+        repository: gemini3d/external
+        path: gemext
+
+    - name: Install Prereqs (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt update
+        sudo $(cmake -P gemext/scripts/requirements.cmake) libmumps-dev
+
+    - name: Install Prereqs (Macos)
+      if: runner.os == 'macOS'
+      run: |
+        $(cmake -P gemext/scripts/requirements.cmake)
+        brew reinstall gcc
+
+    - name: Install Gemini3D libraries
+      timeout-minutes: 15
+      run: |
+        cmake -B build -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX:PATH=${{ runner.temp }}
+        cmake --build build --parallel
+        cmake --install build
+      working-directory: gemext
+
+    - name: Checkout Gemini3D
+      uses: actions/checkout@v3
+      with:
+        repository: gemini3d/gemini3d
+        path: gemini3d
+
+    - name: Install Gemini3D
+      timeout-minutes: 15
+      run: |
+        cmake -B build -DCMAKE_INSTALL_PREFIX:PATH=${{ runner.temp }} -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
+        cmake --build build --parallel
+        cmake --install build
+      working-directory: gemini3d
+
+    - name: Git Checkout ${{ github.action_repository }}
+      uses: actions/checkout@v3
 
     - name: Install Python packages
       run: python -m pip install .[tests,plots]
       timeout-minutes: 5
       # transient CI download speed
 
-    - name: PyGemini install prereq (Linux)
-      run: python -m gemini3d.install -sudo
-      if: runner.os == 'Linux'
-      timeout-minutes: 2
-
-    - name: PyGemini install prereq (MacOS)
-      if: runner.os == 'macOS'
-      run: |
-        python -m gemini3d.install
-        brew reinstall gcc
-      timeout-minutes: 7
-      # transient CI download speed
-
-    - name: Unit Tests
-      run: pytest --pyargs gemini3d.tests.unit
-      timeout-minutes: 2
-
-    - name: build msis_setup and other Gemini3D prereqs
-      run: python -c "import gemini3d; gemini3d.setup_libs(prefix='${{ env.CMAKE_PREFIX_PATH }}')"
-      timeout-minutes: 10
-
-    - name: build gemini3d.run, gemini.bin
-      run: python -c "import gemini3d; gemini3d.setup('${{ env.GEMINI_ROOT }}', targets=['gemini3d.run', 'gemini.bin'])"
-      timeout-minutes: 10
-
-    - name: Integration Tests
-      run: pytest --pyargs gemini3d.tests.intg
-      timeout-minutes: 10
+    - name: Unit and Integration Tests
+      run: pytest
+      timeout-minutes: 15
 
 # codecov coverage
     # - run: pip install codecov pytest-cov

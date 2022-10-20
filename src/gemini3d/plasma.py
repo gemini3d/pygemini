@@ -15,7 +15,7 @@ from . import read
 from . import LSP, SPECIES
 from . import write
 from .web import url_retrieve
-from .archive import extract_zst
+from .archive import extract
 from .msis import msis_setup
 
 # CONSTANTS
@@ -36,7 +36,7 @@ def equilibrium_resample(p: dict[str, T.Any], xg: dict[str, T.Any]):
                 f"{p['eq_dir']} not found and eq_url not specified in {p['nml']}"
             )
         url_retrieve(p["eq_url"], p["eq_archive"])
-        extract_zst(p["eq_archive"], p["eq_dir"])
+        extract(p["eq_archive"], p["eq_dir"])
 
     # %% READ Equilibrium SIMULATION INFO
     peq = read.config(p["eq_dir"])

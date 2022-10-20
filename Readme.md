@@ -12,20 +12,6 @@ git clone https://github.com/gemini3d/pygemini
 pip install -e pygemini
 ```
 
-Not all users need to run Gemini3D on the same device where PyGemini is installed.
-Before the first `gemini3d.run()`, one-time build Gemini3D and external libraries by:
-
-```python
-import gemini3d
-
-prefix = '~/gemlibs'
-# arbitrary Gemini3D library location
-
-gemini3d.setup_libs(prefix)
-
-gemini3d.setup(gemini_root=prefix)
-```
-
 ## Developers
 
 For those working with GEMINI Fortran code itself or to work with non-release versions of GEMINI Fortran code:
