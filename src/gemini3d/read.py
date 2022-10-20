@@ -70,7 +70,7 @@ def grid(path: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
 
 
 def data(
-    fn: Path,
+    file: Path,
     var: set[str] = None,
     *,
     cfg: dict[str, T.Any] = None,
@@ -81,7 +81,7 @@ def data(
 
     Parameters
     ----------
-    fn: pathlib.Path
+    file: pathlib.Path
         filename for this timestep
     var: set of set
         variables to use
@@ -103,21 +103,30 @@ def data(
         var = [var]
     var = set(var)
 
-    fn = Path(fn).expanduser()
+    file = Path(file).expanduser()
 
     if not cfg:
-        cfg = config(fn.parent)
+        cfg = config(file.parent)
 
-    flag = h5read.flagoutput(fn, cfg)
+    flag = h5read.flagoutput(file, cfg)
 
     if flag == 3:
-        dat = h5read.frame3d_curvne(fn, xg)
+        dat = h5read.frame3d_curvne(file, xg)
     elif flag == 1:
-        dat = h5read.frame3d_curv(fn, var, xg)
+        dat = h5read.frame3d_curv(file, var, xg)
     elif flag == 2:
-        dat = h5read.frame3d_curvavg(fn, var, xg)
+        dat = h5read.frame3d_curvavg(file, var, xg)
     else:
-        raise ValueError(f"Unsure how to read {fn} with flagoutput {flag}")
+        raise ValueError(f"Unsure how to read {file} with flagoutput {flag}")
+
+    dat.attrs["filename"] = file
+
+    dat.update(derive(dat, var, flag))
+
+    return dat
+
+
+def derive(dat: xarray.Dataset, var: set[str], flag: int) -> xarray.Dataset:
 
     lx = (dat.dims["x1"], dat.dims["x2"], dat.dims["x3"])
 
@@ -150,7 +159,7 @@ def data(
                 raise ValueError("J1 may have wrong permutation on read")
 
     if "time" not in dat:
-        dat = dat.assign_coords({"time": time(fn)})
+        dat = dat.assign_coords({"time": time(dat.filename)})
 
     return dat
 
