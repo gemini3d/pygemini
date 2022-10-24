@@ -36,25 +36,50 @@ def simsize(path: Path) -> Path:
     return find_stem(path, stem="simsize")
 
 
-def gemini_exe(exe: str = None) -> Path | None:
+def executable(name: str, root: Path = None) -> Path | None:
+
+    assert name, "executable name must be non-empty"
+
+    ep = Path(name).expanduser()
+    if ep.is_file():
+        return ep
+
+    paths = (
+        Path(p).expanduser()
+        for p in (
+            root,
+            os.environ.get("GEMINI_ROOT"),
+            os.environ.get("CMAKE_PREFIX_PATH"),
+            "~/libgem",
+            "~/libgem_gnu",
+            "~/libgem_clang",
+            "~/libgem_intel",
+        )
+        if p
+    )
+
+    for p in paths:
+        if not p:
+            continue
+
+        for n in EXE_PATHS:
+            exe = shutil.which(name, path=str(p / n))
+            # print(name, p / n, exe)
+            if exe:
+                return Path(exe)
+
+    return None
+
+
+def gemini_exe(name: str = "gemini3d.run", root: Path = None) -> Path | None:
     """
     find and check that Gemini executable can run on this system
     """
 
-    name = "gemini3d.run"
+    if not name:
+        name = "gemini3d.run"
 
-    paths = [os.environ.get("GEMINI_ROOT"), os.environ.get("CMAKE_PREFIX_PATH")]
-
-    if not exe:  # allow for default dict empty
-        for p in paths:
-            if p:
-                for n in EXE_PATHS:
-                    # print(p, n, name)
-                    exe = shutil.which(name, path=str(Path(p).expanduser() / n))
-                    if exe:
-                        break
-            if exe:
-                break
+    exe = executable(name, root)
 
     if not exe:
         return None
@@ -80,32 +105,8 @@ def gemini_exe(exe: str = None) -> Path | None:
         )
 
     raise EnvironmentError(
-        f"\n{gemexe} was not runnable on your platform--try rebuilding:\n"
-        "gemini3d.setup()\n"
-        f"{ret.stderr}"
+        f"\n{gemexe} was not runnable on your platform--try rebuilding Gemini3D\n" f"{ret.stderr}"
     )
-
-
-def msis_exe(root: str = None) -> Path | None:
-    """
-    find MSIS_SETUP executable
-    """
-
-    name = "msis_setup"
-
-    paths = [os.environ.get("CMAKE_PREFIX_PATH"), os.environ.get("GEMINI_ROOT")]
-    if root:
-        paths.insert(0, root)
-
-    for p in paths:
-        if p:
-            for n in EXE_PATHS:
-                # print(p, n, name)
-                msis_exe = shutil.which(name, path=str(Path(p).expanduser() / n))
-                if msis_exe:
-                    return Path(msis_exe)
-
-    return None
 
 
 def frame(simdir: Path, time: datetime) -> Path:

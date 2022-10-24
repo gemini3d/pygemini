@@ -11,15 +11,11 @@ import gemini3d.msis as gp
 import gemini3d.find
 
 
-@pytest.mark.skipif(
-    gemini3d.find.msis_exe() is None,
-    reason="need to build msis_setup by gemini3d.setup_libs()",
-)
-@pytest.mark.parametrize("version", [0, 20])
+@pytest.mark.parametrize("version", [0, 21])
 def test_msis(version, tmp_path):
 
-    if version == 20:
-        features = gp.get_msis_features(gemini3d.find.msis_exe())
+    if version == 21:
+        features = gp.get_msis_features(gemini3d.find.executable("msis_setup"))
         if not features["msis2"]:
             pytest.skip("MSIS2 not available")
 
@@ -62,7 +58,7 @@ def test_msis(version, tmp_path):
             "nNO": 2.9630136e11,
             "nH": 2.3853709e13,
         },
-        20: {
+        21: {
             "nO": 4.3219809e17,
             "nN2": 7.6246557e18,
             "nO2": 1.9486360e18,

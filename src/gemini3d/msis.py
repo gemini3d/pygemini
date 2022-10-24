@@ -24,14 +24,10 @@ def get_msis_features(exe: Path) -> dict[str, bool]:
         raise FileNotFoundError(exe)
 
     cmd = [str(exe), "-features"]
-    msis_path = exe.parent
 
-    ret = subprocess.run(cmd, capture_output=True, text=True, timeout=5, cwd=msis_path)
-    if ret.returncode != 0:
-        raise RuntimeError(f"{cmd} failed with return code {ret.returncode}\n{ret.stderr}")
-    r = ret.stdout
+    out = subprocess.check_output(cmd, text=True, timeout=10)
 
-    return {"msis00": "MSIS00" in r, "msis2": "MSIS2" in r}
+    return {"msis00": "MSIS00" in out, "msis2": "MSIS2" in out}
 
 
 def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
@@ -41,12 +37,10 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     [f107a, f107, ap] = activ
     """
 
-    msis_exe = find.msis_exe(p.get("gemini_root"))
+    msis_exe = find.executable("msis_setup", p.get("gemini_root"))
 
     if not msis_exe:
-        raise EnvironmentError(
-            "Did not find msis_setup. Build msis_setup by:\ngemini3d.setup_libs()"
-        )
+        raise EnvironmentError("Did not find msis_setup")
 
     alt_km = xg["alt"] / 1e3
     # % CONVERT DATES/TIMES/INDICES INTO MSIS-FRIENDLY FORMAT
@@ -76,12 +70,10 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
     msis_version = p.get("msis_version", 0)
 
-    if msis_version == 20:
+    if msis_version > 0:
         features = get_msis_features(msis_exe)
         if not features["msis2"]:
-            raise EnvironmentError(
-                f"Need to compile Gemini3D with 'cmake -Dmsis2=true'\n Checked {msis_exe}"
-            )
+            raise EnvironmentError(f"MSIS 2.x requested but not present in {msis_exe}")
 
     msis_infile.parent.mkdir(exist_ok=True)
 
@@ -99,36 +91,9 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         f.create_dataset("/msis_version", dtype=np.int32, data=msis_version)
     # %% run MSIS
     cmd = [str(msis_exe), str(msis_infile), str(msis_outfile)]
-    msis_path = msis_exe.parent
 
     logging.info(" ".join(cmd))
-    ret = subprocess.run(cmd, text=True, cwd=msis_path)
-
-    # %% MSIS 2.0 does not return error codes at this time, have to filter stdout
-    if ret.returncode == 0:
-        if msis_version == 20 and ret.stdout:
-            if [
-                e
-                for e in {
-                    "Integrals at reference height not available",
-                    "Error in pwmp",
-                    "Species not yet implemented",
-                    "problem with basis definitions",
-                    "problem with basis set",
-                    "not found. Stopping.",
-                }
-                if e in ret.stdout
-            ]:
-                raise RuntimeError(ret.stdout)
-
-    elif ret.returncode == 20:
-        raise RuntimeError(
-            f"Need to compile Gemini3D with 'cmake -Dmsis2=true'\n Ran msis_setup in {msis_path}"
-        )
-    else:
-        raise RuntimeError(
-            f"MSIS failed to run: return code {ret.returncode}. See console for additional error info."
-        )
+    subprocess.check_call(cmd, text=True)
 
     # %% load MSIS output
     # use disk coordinates for tracability

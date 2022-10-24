@@ -1,7 +1,6 @@
 name: ci
 
 env:
-  GEMINI_ROOT: ~/gemini3d
   GEMINI_CIROOT: ~/ci
   CMAKE_BUILD_TYPE: Release
   HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -85,7 +84,7 @@ jobs:
     - name: Install Gemini3D libraries
       timeout-minutes: 15
       run: |
-        cmake -B build -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX:PATH=${{ runner.temp }}
+        cmake -B build -Dfind:BOOL=true --install-prefix ${{ runner.temp }}
         cmake --build build --parallel
         cmake --install build
       working-directory: gemext
@@ -99,7 +98,7 @@ jobs:
     - name: Install Gemini3D
       timeout-minutes: 15
       run: |
-        cmake -B build -DCMAKE_INSTALL_PREFIX:PATH=${{ runner.temp }} -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
+        cmake -B build --install-prefix ${{ runner.temp }} -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
         cmake --build build --parallel
         cmake --install build
       working-directory: gemini3d
@@ -115,6 +114,8 @@ jobs:
     - name: Unit and Integration Tests
       run: pytest
       timeout-minutes: 15
+      env:
+        GEMINI_ROOT: ${{ runner.temp }}
 
 # codecov coverage
     # - run: pip install codecov pytest-cov

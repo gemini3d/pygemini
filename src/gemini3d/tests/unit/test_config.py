@@ -126,15 +126,15 @@ def test_nml_namelist(namelist):
 
 
 @pytest.mark.parametrize("namelist", ["neutral_BG"])
-def test_msis20_namelist(namelist):
+def test_msis2_namelist(namelist):
 
-    with importlib.resources.path("gemini3d.tests.config", "config_msis20.nml") as cfn:
+    with importlib.resources.path("gemini3d.tests.config", "config_msis2.nml") as cfn:
         params = config.parse_namelist(cfn, namelist)
 
     if "neutral_BG" in namelist:
         msis_version = params["msis_version"]
         assert isinstance(msis_version, int)
-        assert msis_version == 20
+        assert msis_version == 21
 
 
 def test_read_config_nml(monkeypatch, tmp_path):

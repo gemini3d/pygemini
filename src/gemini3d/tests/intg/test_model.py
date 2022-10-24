@@ -17,7 +17,6 @@ import gemini3d.find
 import gemini3d.msis
 
 
-@pytest.mark.skipif(gemini3d.find.msis_exe() is None, reason="msis_setup not available")
 @pytest.mark.parametrize(
     "name",
     [

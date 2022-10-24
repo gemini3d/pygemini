@@ -1,6 +1,5 @@
 """ test dryrun, that PyGemini can correctly invoke Gemini3D """
 
-import shutil
 import pytest
 from pytest import approx
 from pathlib import Path
@@ -27,8 +26,6 @@ def test_memory(name, bref):
     assert est == approx(bref, abs=0, rel=0)
 
 
-@pytest.mark.skipif(find.gemini_exe() is None, reason="gemini3d.run not built")
-@pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 def test_mpiexec():
     try:
         exe = find.gemini_exe()
@@ -41,8 +38,6 @@ def test_mpiexec():
     assert isinstance(mpiexec, str)
 
 
-@pytest.mark.skipif(find.msis_exe() is None, reason="msis_setup not available")
-@pytest.mark.skipif(shutil.which("mpiexec") is None, reason="no Mpiexec available")
 @pytest.mark.parametrize("name", ["mini2dew_eq"])
 def test_dryrun(name, tmp_path):
 

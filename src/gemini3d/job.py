@@ -63,7 +63,7 @@ def runner(pr: dict[str, T.Any]) -> None:
             model.setup(p["nml"], out_dir)
 
     # build checks
-    gemexe = find.gemini_exe(pr.get("gemexe"))
+    gemexe = find.gemini_exe(pr.get("gemexe", ""))
     if not gemexe:
         raise FileNotFoundError("gemini3d.run executable not found")
     logging.info(f"gemini executable: {gemexe}")
