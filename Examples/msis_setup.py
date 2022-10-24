@@ -23,9 +23,7 @@ cfg = {
     "f107": 100.0,
     "f107a": 100.0,
     "Ap": 4,
-    "msis_version": 0,
-    "msis_infile": tmp_path / "msis_in.h5",
-    "msis_outfile": tmp_path / "msis_out.h5",
+    "msis_version": 0
 }
 
 lx = (4, 2, 3)
