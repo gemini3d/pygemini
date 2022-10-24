@@ -4,14 +4,17 @@ functions for finding files
 
 from __future__ import annotations
 from datetime import datetime, timedelta
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import shutil
 import os
 import subprocess
+import logging
 
 import numpy as np
 
 from .utils import filename2datetime
+from . import wsl
+
 
 EXE_PATHS = [
     ".",
@@ -63,10 +66,16 @@ def executable(name: str, root: Path = None) -> Path | None:
             continue
 
         for n in EXE_PATHS:
-            exe = shutil.which(name, path=str(p / n))
-            # print(name, p / n, exe)
-            if exe:
-                return Path(exe)
+            if wsl.is_wsl_path(p):
+                # shutil.which() doesn't work on WSL paths
+                pexe = p / n / name
+                if pexe.is_file():
+                    return wsl.win_path2wsl_path(pexe)  # type: ignore
+            else:
+                exe = shutil.which(name, path=str(p / n))
+                logging.debug(f"{name} {p / n} => {exe}")
+                if exe:
+                    return Path(exe)
 
     return None
 
@@ -85,16 +94,20 @@ def gemini_exe(name: str = "gemini3d.run", root: Path = None) -> Path | None:
         return None
 
     # %% ensure Gemini3D executable is runnable
-    gemexe = Path(exe).expanduser()
+    if os.name == "nt" and isinstance(exe, PurePosixPath):
+        cmd0 = ["wsl", str(exe)]
+    else:
+        cmd0 = [str(exe)]
+
     ret = subprocess.run(
-        [str(gemexe)],
+        cmd0,
         capture_output=True,
         timeout=10,
         text=True,
-        cwd=gemexe.parent,
     )
+
     if ret.returncode == 0:
-        return gemexe
+        return exe
 
     if ret.returncode == 3221225781 and os.name == "nt":
         # Windows 0xc0000135, missing DLL
@@ -105,7 +118,7 @@ def gemini_exe(name: str = "gemini3d.run", root: Path = None) -> Path | None:
         )
 
     raise EnvironmentError(
-        f"\n{gemexe} was not runnable on your platform--try rebuilding Gemini3D\n" f"{ret.stderr}"
+        f"\n{exe} was not runnable on your platform--try rebuilding Gemini3D\n" f"{ret.stderr}"
     )
 
 

@@ -2,8 +2,9 @@
 
 import pytest
 from pytest import approx
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import importlib.resources
+import os
 
 import gemini3d
 import gemini3d.run
@@ -32,7 +33,10 @@ def test_mpiexec():
     except EnvironmentError:
         pytest.skip("no Gemini3D executable found")
 
-    assert isinstance(exe, Path)
+    assert isinstance(exe, (Path, PurePosixPath))
+
+    if os.name == "nt" and isinstance(exe, PurePosixPath):
+        pytest.skip("WSL check_mpiexec() not implemented")
 
     mpiexec = job.check_mpiexec("mpiexec", exe)
     assert isinstance(mpiexec, str)

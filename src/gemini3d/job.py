@@ -9,7 +9,7 @@ import os
 import logging
 import subprocess
 import shutil
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import numpy as np
 
 from . import find
@@ -17,6 +17,7 @@ from .hpc import hpc_batch_detect, hpc_batch_create
 from . import model
 from . import write
 from . import read
+from . import wsl
 from .utils import git_meta
 
 try:
@@ -68,12 +69,15 @@ def runner(pr: dict[str, T.Any]) -> None:
         raise FileNotFoundError("gemini3d.run executable not found")
     logging.info(f"gemini executable: {gemexe}")
 
-    cmd = [str(gemexe), str(out_dir)]
+    if os.name == "nt" and isinstance(gemexe, PurePosixPath):
+        cmd = ["wsl", str(gemexe), str(wsl.win_path2wsl_path(out_dir))]
+    else:
+        cmd = [str(gemexe), str(out_dir)]
 
     # %% attempt dry run, but don't fail in case intended for HPC
     logging.info("Gemini dry run command:")
     logging.info(" ".join(cmd))
-    proc = subprocess.run(cmd + ["-dryrun"], cwd=gemexe.parent)
+    proc = subprocess.run(cmd + ["-dryrun"])
 
     if proc.returncode != 0:
         raise RuntimeError(f"Gemini dry run failed. {' '.join(cmd)}")
@@ -87,26 +91,27 @@ def runner(pr: dict[str, T.Any]) -> None:
     if batcher:
         job_file = hpc_batch_create(batcher, out_dir, cmd)
         print("Please examine batch file", job_file, "and when ready submit the job as usual.")
-    else:
-        try:
-            import psutil
+        return None
 
-            avail_memory = psutil.virtual_memory().available
-            if avail_memory < 2 * ram_use_bytes:
-                logging.warning(
-                    f"""
-    Computer RAM available: {avail_memory/1e9:.1} GB but simulation needs {ram_use_bytes/1e9:.1}
-    Gemini3D may run out of RAM on this computer, which may make the run exceedingly slow or fail.
-    """
-                )
-        except ImportError:
-            pass
+    try:
+        import psutil
 
-        print("\nBEGIN Gemini run with command:")
-        print(" ".join(cmd), "\n")
-        ret = subprocess.run(cmd, cwd=gemexe.parent).returncode
-        if ret != 0:
-            raise RuntimeError("Gemini run failed")
+        avail_memory = psutil.virtual_memory().available
+        if avail_memory < 2 * ram_use_bytes:
+            logging.warning(
+                f"""
+Computer RAM available: {avail_memory/1e9:.1} GB but simulation needs {ram_use_bytes/1e9:.1}
+Gemini3D may run out of RAM on this computer, which may make the run exceedingly slow or fail.
+"""
+            )
+    except ImportError:
+        pass
+
+    print("\nBEGIN Gemini run with command:")
+    print(" ".join(cmd), "\n")
+    ret = subprocess.run(cmd).returncode
+    if ret != 0:
+        raise RuntimeError("Gemini run failed")
 
 
 def memory_estimate(path: Path) -> int:
@@ -196,7 +201,6 @@ def check_mpiexec(mpiexec: str, gemexe: Path) -> str:
         capture_output=True,
         text=True,
         timeout=5,
-        cwd=gemexe.parent,
     )
     if ret.returncode != 0:
         raise RuntimeError(f"{gemexe} not executable")

@@ -8,14 +8,19 @@ from pytest import approx
 from datetime import datetime
 
 import gemini3d.msis as gp
-import gemini3d.find
+import gemini3d.find as find
+
+
+def test_find_msis():
+    msis_exe = find.executable("msis_setup")
+    assert msis_exe, "Did not find msis_setup"
 
 
 @pytest.mark.parametrize("version", [0, 21])
 def test_msis(version, tmp_path):
 
     if version == 21:
-        features = gp.get_msis_features(gemini3d.find.executable("msis_setup"))
+        features = gp.get_msis_features(find.executable("msis_setup"))
         if not features["msis2"]:
             pytest.skip("MSIS2 not available")
 
