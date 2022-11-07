@@ -192,7 +192,7 @@ def Efield(file: Path) -> xarray.Dataset:
     return dat
 
 
-def data(file, cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
+def data(file, cfg: dict[str, T.Any], xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
 
     var = {"ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3", "Phi"}
 

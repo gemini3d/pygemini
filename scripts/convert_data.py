@@ -18,18 +18,11 @@ CLVL = 6
 
 p = argparse.ArgumentParser()
 p.add_argument("indir", help="Gemini .dat file directory")
-p.add_argument("-o", "--outdir", help="directory to write HDF5 files")
+p.add_argument("outdir", help="directory to write HDF5 files")
 P = p.parse_args()
 
 indir = Path(P.indir).expanduser()
-if P.outdir:
-    outdir = Path(P.outdir).expanduser()
-elif indir.is_file():
-    outdir = indir.parent
-elif indir.is_dir():
-    outdir = indir
-else:
-    raise FileNotFoundError(indir)
+outdir = Path(P.outdir).expanduser()
 
 if indir.is_file():
     infiles = [indir]
@@ -47,7 +40,7 @@ if "flagoutput" not in cfg:
     raise LookupError(f"need to specify flagoutput in {indir}/config.nml")
 
 try:
-    xg = raw_read.grid(indir)
+    xg: dict | None = raw_read.grid(indir)
 except FileNotFoundError:
     xg = None
 
