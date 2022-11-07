@@ -11,7 +11,15 @@ from ..utils import git_meta
 
 
 def plot12(
-    x, z, parm, ax: Axes, *, name: str, cmap: str = None, vmin: float = None, vmax: float = None
+    x,
+    z,
+    parm,
+    ax: Axes,
+    *,
+    name: str,
+    cmap: str | None = None,
+    vmin: float | None = None,
+    vmax: float | None = None,
 ) -> None:
 
     if parm.ndim != 2:
@@ -32,9 +40,9 @@ def plot13(
     ax: Axes,
     *,
     name: str,
-    cmap: str = None,
-    vmin: float = None,
-    vmax: float = None,
+    cmap: str | None = None,
+    vmin: float | None = None,
+    vmax: float | None = None,
 ) -> None:
 
     if parm.ndim != 2:
@@ -48,7 +56,15 @@ def plot13(
 
 
 def plot23(
-    x, y, parm, name: str, ax: Axes, *, cmap: str = None, vmin: float = None, vmax: float = None
+    x,
+    y,
+    parm,
+    name: str,
+    ax: Axes,
+    *,
+    cmap: str | None = None,
+    vmin: float | None = None,
+    vmax: float | None = None,
 ) -> None:
 
     if parm.ndim != 2:

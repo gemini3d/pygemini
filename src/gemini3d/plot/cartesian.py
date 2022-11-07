@@ -30,7 +30,7 @@ def plot_interp(
     xg: dict[str, T.Any],
     parm: xarray.DataArray,
     *,
-    name: str = None,
+    name: str | None = None,
     **kwargs,
 ) -> None:
 

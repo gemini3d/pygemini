@@ -11,7 +11,7 @@ from . import read
 from . import write
 
 
-def magcalc(direc: Path, dang: float, xg: dict[str, T.Any] = None):
+def magcalc(direc: Path, dang: float, xg: dict[str, T.Any] | None = None):
     """
     Parameters
     ----------

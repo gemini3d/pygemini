@@ -13,7 +13,7 @@ import subprocess
 from .archive import extract
 
 
-def git_download(path: Path, repo: str, tag: str = None):
+def git_download(path: Path, repo: str, tag: str | None = None):
     """
     Use Git to download code repo.
     """
@@ -91,7 +91,7 @@ def get_test_params(test_name: str, url_file: Path, ref_dir: Path) -> dict[str, 
 def url_retrieve(
     url: str,
     outfile: Path,
-    filehash: tuple[str, str] = None,
+    filehash: tuple[str, str] | None = None,
     overwrite: bool = False,
 ):
     """

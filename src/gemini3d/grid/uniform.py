@@ -4,7 +4,7 @@ import math
 import numpy as np
 
 
-def grid1d(dist: float, L: int, parms: list[float] = None):
+def grid1d(dist: float, L: int, parms: list[float] | None = None):
     """
     generate 1D grid
 

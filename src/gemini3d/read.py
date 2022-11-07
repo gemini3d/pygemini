@@ -45,7 +45,7 @@ def simsize(path: Path) -> tuple[int, ...]:
     return h5read.simsize(find.simsize(path))
 
 
-def grid(path: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, T.Any]:
+def grid(path: Path, *, var: set[str] | None = None, shape: bool = False) -> dict[str, T.Any]:
     """
     get simulation grid
 
@@ -71,10 +71,10 @@ def grid(path: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, 
 
 def data(
     file: Path,
-    var: set[str] = None,
+    var: set[str] | None = None,
     *,
-    cfg: dict[str, T.Any] = None,
-    xg: dict[str, T.Any] = None,
+    cfg: dict[str, T.Any] | None = None,
+    xg: dict[str, T.Any] | None = None,
 ) -> xarray.Dataset:
     """
     knowing the filename for a simulation time step, read the data for that time step
@@ -207,7 +207,7 @@ def precip(fn: Path) -> xarray.Dataset:
     return h5read.precip(fn)
 
 
-def frame(simdir: Path, time: datetime, *, var: set[str] = None) -> xarray.Dataset:
+def frame(simdir: Path, time: datetime, *, var: set[str] | None = None) -> xarray.Dataset:
     """
     load a frame of simulation data, automatically selecting the correct
     functions based on simulation parameters

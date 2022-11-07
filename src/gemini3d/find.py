@@ -39,7 +39,7 @@ def simsize(path: Path) -> Path:
     return find_stem(path, stem="simsize")
 
 
-def executable(name: str, root: Path = None) -> Path | None:
+def executable(name: str, root: Path | None = None) -> Path | None:
 
     assert name, "executable name must be non-empty"
 
@@ -80,7 +80,7 @@ def executable(name: str, root: Path = None) -> Path | None:
     return None
 
 
-def gemini_exe(name: str = "gemini3d.run", root: Path = None) -> Path | None:
+def gemini_exe(name: str = "gemini3d.run", root: Path | None = None) -> Path | None:
     """
     find and check that Gemini executable can run on this system
     """
@@ -197,7 +197,7 @@ def find_stem(path: Path, stem: str, suffix: str = ".h5") -> Path:
     raise FileNotFoundError(f"{stem} not found in {path}")
 
 
-def inputs(direc: Path, input_dir: Path = None) -> Path:
+def inputs(direc: Path, input_dir: Path | None = None) -> Path:
     """
     find input parameter directory
 

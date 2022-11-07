@@ -94,7 +94,7 @@ def config(params: dict[str, T.Any], out_dir: Path):
     namelist.write(nml_file, "setup", setup)
 
 
-def setup(path: Path | dict[str, T.Any], out_dir: Path, root: Path = None):
+def setup(path: Path | dict[str, T.Any], out_dir: Path, root: Path | None = None):
     """
     top-level function to create a new simulation FROM A FILE config.nml
 

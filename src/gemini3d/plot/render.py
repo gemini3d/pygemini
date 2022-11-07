@@ -25,7 +25,7 @@ from ..utils import to_datetime
 PLOTFUN = {"scalar": {"ne", "Ti", "Te", "J1", "J2", "J3"}, "vector": {"v1", "v2", "v3"}}
 
 
-def plot3_all(direc: Path, var: set[str], saveplot_fmt: str = None):
+def plot3_all(direc: Path, var: set[str], saveplot_fmt: str | None = None):
 
     direc = Path(direc).expanduser().resolve(strict=True)
 
@@ -37,9 +37,9 @@ def plot3_all(direc: Path, var: set[str], saveplot_fmt: str = None):
 def frame(
     direc: Path,
     time: datetime,
-    var: set[str] = None,
-    saveplot_fmt: str = None,
-    xg: dict[str, T.Any] = None,
+    var: set[str] | None = None,
+    saveplot_fmt: str | None = None,
+    xg: dict[str, T.Any] | None = None,
 ):
     """
     plot plasma quantities in 3D

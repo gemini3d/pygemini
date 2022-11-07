@@ -14,8 +14,8 @@ def glow(
     direc: Path,
     time: datetime,
     fg: Figure,
-    saveplot_fmt: str = None,
-    xg: dict[str, T.Any] = None,
+    saveplot_fmt: str | None = None,
+    xg: dict[str, T.Any] | None = None,
 ):
     """plots Gemini-Glow auroral emissions"""
 

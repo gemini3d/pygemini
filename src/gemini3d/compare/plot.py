@@ -15,8 +15,8 @@ def plotdiff(
     new_dir: Path,
     ref_dir: Path,
     *,
-    name: str = None,
-    imax: int = None,
+    name: str | None = None,
+    imax: int | None = None,
 ):
     """
 

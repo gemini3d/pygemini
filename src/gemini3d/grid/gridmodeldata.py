@@ -20,9 +20,9 @@ def model2magcoords(
     lalt: int,
     llon: int,
     llat: int,
-    altlims: tuple[float, float] = None,
-    mlonlims: tuple[float, float] = None,
-    mlatlims: tuple[float, float] = None,
+    altlims: tuple[float, float] | None = None,
+    mlonlims: tuple[float, float] | None = None,
+    mlatlims: tuple[float, float] | None = None,
 ):
     """
     Grid the scalar GEMINI output data in parm onto a regular *geomagnetic* coordinates
@@ -61,9 +61,9 @@ def model2geogcoords(
     lalt: int,
     llon: int,
     llat: int,
-    altlims: tuple[float, float] = None,
-    glonlims: tuple[float, float] = None,
-    glatlims: tuple[float, float] = None,
+    altlims: tuple[float, float] | None = None,
+    glonlims: tuple[float, float] | None = None,
+    glatlims: tuple[float, float] | None = None,
     wraplon: bool = False,
 ):
     """
@@ -272,7 +272,9 @@ def geomag2UENgeomag(alt, mlon, mlat) -> tuple:
     return zUEN, xUEN, yUEN
 
 
-def geog2UENgeog(alt, glon, glat, ref_lat: float = None, ref_lon: float = None) -> tuple:
+def geog2UENgeog(
+    alt, glon, glat, ref_lat: float | None = None, ref_lon: float | None = None
+) -> tuple:
     """Convert geographic to UEN geographic coords."""
 
     theta = pi / 2 - np.radians(

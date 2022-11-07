@@ -19,7 +19,7 @@ import numpy as np
 __all__ = ["to_datetime", "git_meta", "datetime2ymd_hourdec"]
 
 
-def str2func(name: str, path: Path = None) -> T.Callable:
+def str2func(name: str, path: Path | None = None) -> T.Callable:
     """
     expects one of (in priority order):
 
@@ -94,7 +94,7 @@ def to_datetime(times: xarray.DataArray | np.datetime64 | datetime) -> datetime:
     return time
 
 
-def git_meta(path: Path = None) -> dict[str, str]:
+def git_meta(path: Path | None = None) -> dict[str, str]:
     """
     provide metadata about a Git repo in a dictionary
 

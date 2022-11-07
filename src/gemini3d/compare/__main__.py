@@ -23,7 +23,12 @@ def compare_cli(P):
 
 
 def plot_cli(
-    new_dir: Path, ref_dir: Path, *, time_str: str = None, var: set[str] = None, only: str = None
+    new_dir: Path,
+    ref_dir: Path,
+    *,
+    time_str: str | None = None,
+    var: set[str] | None = None,
+    only: str | None = None,
 ):
     ref_path = Path(ref_dir).expanduser().resolve(strict=True)
     new_path = Path(new_dir).expanduser().resolve(strict=True)

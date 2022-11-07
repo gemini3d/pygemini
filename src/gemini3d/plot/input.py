@@ -14,7 +14,10 @@ from ..config import datetime_range
 
 
 def plot_all(
-    direc: Path, var: set[str] = None, saveplot_fmt: str = None, xg: dict[str, T.Any] = None
+    direc: Path,
+    var: set[str] | None = None,
+    saveplot_fmt: str | None = None,
+    xg: dict[str, T.Any] | None = None,
 ) -> None:
     """
     plot simulation inputs, under "direc/inputs"

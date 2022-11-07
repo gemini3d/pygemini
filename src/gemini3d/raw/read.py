@@ -213,7 +213,7 @@ def data(file, cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curv(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
+def frame3d_curv(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
     """
     curvilinear
 
@@ -268,7 +268,7 @@ def frame3d_curv(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curvavg(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
+def frame3d_curvavg(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
     """
 
     Parameters
@@ -305,7 +305,7 @@ def frame3d_curvavg(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curvne(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
+def frame3d_curvne(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
 
     if not file.is_file():
         raise FileNotFoundError(file)
@@ -365,7 +365,7 @@ def read2D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]):
     return np.fromfile(f, np.float64, np.prod(lx[1:])).reshape(*lx[1:], order="F")
 
 
-def glow_aurmap(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
+def glow_aurmap(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
     """
     read the auroral output from GLOW
     """

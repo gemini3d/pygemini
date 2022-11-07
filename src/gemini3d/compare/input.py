@@ -16,7 +16,7 @@ def compare_input(
     new_dir: Path,
     ref_dir: Path,
     *,
-    tol: dict[str, float] = None,
+    tol: dict[str, float] | None = None,
     plot: bool = True,
 ) -> int:
 

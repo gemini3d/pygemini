@@ -76,7 +76,7 @@ def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
     return flag
 
 
-def grid(file: Path, *, var: set[str] = None, shape: bool = False) -> dict[str, T.Any]:
+def grid(file: Path, *, var: set[str] | None = None, shape: bool = False) -> dict[str, T.Any]:
     """
     get simulation grid
 
@@ -168,7 +168,7 @@ def precip(file: Path) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curvne(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
+def frame3d_curvne(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
     """
     just Ne
     """
@@ -186,7 +186,7 @@ def frame3d_curvne(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
     return dat
 
 
-def frame3d_curv(file: Path, var: set[str], xg: dict[str, T.Any] = None) -> xarray.Dataset:
+def frame3d_curv(file: Path, var: set[str], xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
     """
     curvilinear
 
@@ -247,7 +247,9 @@ def frame3d_curv(file: Path, var: set[str], xg: dict[str, T.Any] = None) -> xarr
     return dat
 
 
-def frame3d_curvavg(file: Path, var: set[str], xg: dict[str, T.Any] = None) -> xarray.Dataset:
+def frame3d_curvavg(
+    file: Path, var: set[str], xg: dict[str, T.Any] | None = None
+) -> xarray.Dataset:
     """
 
     Parameters
@@ -293,7 +295,7 @@ def frame3d_curvavg(file: Path, var: set[str], xg: dict[str, T.Any] = None) -> x
     return dat
 
 
-def glow_aurmap(file: Path, xg: dict[str, T.Any] = None) -> xarray.Dataset:
+def glow_aurmap(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
     """
     read the auroral output from GLOW
 

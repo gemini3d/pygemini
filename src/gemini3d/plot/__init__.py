@@ -39,7 +39,7 @@ def grid2plotfun(xg: dict[str, T.Any]) -> T.Callable:
     return cartesian.cart2d  # type: ignore
 
 
-def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = ""):
+def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str = ""):
 
     direc = Path(direc).expanduser().resolve(strict=True)
 
@@ -66,13 +66,13 @@ def plot_all(direc: Path, var: set[str] = None, saveplot_fmt: str = ""):
 def frame(
     fg: mpl.figure.Figure,
     path: Path,
-    time: datetime = None,
+    time: datetime | None = None,
     *,
-    plotfun: T.Callable = None,
-    saveplot_fmt: str = None,
-    var: set[str] = None,
-    xg: dict[str, T.Any] = None,
-    cfg: dict[str, T.Any] = None,
+    plotfun: T.Callable | None = None,
+    saveplot_fmt: str | None = None,
+    var: set[str] | None = None,
+    xg: dict[str, T.Any] | None = None,
+    cfg: dict[str, T.Any] | None = None,
 ):
     """
     Parameters

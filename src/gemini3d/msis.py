@@ -93,7 +93,12 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         f.create_dataset("/msis_version", dtype=np.int32, data=msis_version)
     # %% run MSIS
     if os.name == "nt" and isinstance(msis_exe, PurePosixPath):
-        cmd = ["wsl", str(msis_exe), str(wsl.win_path2wsl_path(msis_infile)), str(wsl.win_path2wsl_path(msis_outfile))]
+        cmd = [
+            "wsl",
+            str(msis_exe),
+            str(wsl.win_path2wsl_path(msis_infile)),
+            str(wsl.win_path2wsl_path(msis_outfile)),
+        ]
     else:
         cmd = [str(msis_exe), str(msis_infile), str(msis_outfile)]
 

@@ -90,7 +90,7 @@ def makegrid(
 
 
 def magframe(
-    filename: str | Path, *, cfg: dict[str, T.Any] = None, time: datetime = None
+    filename: str | Path, *, cfg: dict[str, T.Any] | None = None, time: datetime | None = None
 ) -> dict[str, T.Any]:
     """
     # example use

@@ -18,9 +18,9 @@ def compare_all(
     new_dir: Path,
     ref_dir: Path,
     *,
-    tol: dict[str, float] = None,
+    tol: dict[str, float] | None = None,
     plot: bool = True,
-    only: str = None,
+    only: str | None = None,
 ) -> dict[str, int]:
     """
     compare two directories across time steps

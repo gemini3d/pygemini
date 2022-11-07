@@ -47,7 +47,7 @@ def parse_os_release(txt: str) -> list[str]:
     return like
 
 
-def get_package_manager(like: list[str] = None) -> str:
+def get_package_manager(like: list[str] | None = None) -> str:
     if not like:
         like = os_release()
     if isinstance(like, str):

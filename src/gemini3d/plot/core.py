@@ -45,7 +45,7 @@ def stitle(fig: Figure, xg: dict[str, T.Any], ttxt: str = "") -> None:
 
 
 def save_fig(
-    fg: Figure, direc: Path, name: str, *, fmt: str | None = "png", time: datetime = None
+    fg: Figure, direc: Path, name: str, *, fmt: str | None = "png", time: datetime | None = None
 ) -> None:
     if not fmt:
         fmt = "png"
