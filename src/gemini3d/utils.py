@@ -221,13 +221,13 @@ def datetime2ymd_hourdec(dt: datetime) -> str:
     )
 
 
-def filename2datetime(path: Path) -> datetime:
+def filename2datetime(path: Path | str) -> datetime:
     """
     Gemini3D datafiles use a file naming pattern that we translate to a datetime
 
     path need not exist.
     """
 
-    name = path.name
+    name = path.name if isinstance(path, Path) else path
 
     return datetime.strptime(name[:8], "%Y%m%d") + timedelta(seconds=float(name[9:21]))

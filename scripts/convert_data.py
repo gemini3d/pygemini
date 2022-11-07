@@ -40,9 +40,9 @@ if "flagoutput" not in cfg:
     raise LookupError(f"need to specify flagoutput in {indir}/config.nml")
 
 try:
-    xg: dict | None = raw_read.grid(indir)
+    xg = raw_read.grid(indir)
 except FileNotFoundError:
-    xg = None
+    xg = {}
 
 for infile in infiles:
     if infile.name in {"simsize", "simgrid", "initial_conditions"}:
@@ -53,4 +53,4 @@ for infile in infiles:
 
     dat = raw_read.data(infile, cfg=cfg, xg=xg)
 
-    write.state(outfile, dat, xg=xg)
+    write.state(outfile, dat)
