@@ -10,6 +10,7 @@ on:
     paths:
     - "**.py"
     - ".github/workflows/ci.yml"
+    - "!scripts/"
 
 
 jobs:

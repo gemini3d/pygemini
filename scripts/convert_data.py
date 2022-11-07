@@ -9,7 +9,7 @@ from pathlib import Path
 import argparse
 
 import gemini3d.raw.read as raw_read
-import geminied.read as read
+import gemini3d.read as read
 import gemini3d.write as write
 
 LSP = 7
