@@ -12,7 +12,7 @@ from datetime import datetime
 
 import numpy as np
 import h5py
-from matplotlib.pyplot import figure, show, draw, pause
+from matplotlib.pyplot import figure, draw, pause
 
 import gemini3d.utils as utils
 
@@ -37,9 +37,6 @@ def get_xlims(path: Path, time: datetime) -> tuple[typing.Any, typing.Any, typin
 
     pat = time2stem(time) + ".*.h5"
 
-    u = np.array([0, 0, 0])
-    uold = u.copy()
-
     fg = figure()
     ax = fg.gca()
 
@@ -51,28 +48,20 @@ def get_xlims(path: Path, time: datetime) -> tuple[typing.Any, typing.Any, typin
     for i, f in enumerate(files):
         with h5py.File(f, "r") as fh:
             if fh["x1lims"][0] not in x1 and fh["x1lims"][1] not in x1:
-                u[0] += 1
                 x1new = np.linspace(fh["x1lims"][0], fh["x1lims"][1], fh["nsall"].shape[-1])
                 x1 = np.append(x1, x1new)
-            if fh["x2lims"][0] not in x2 and fh["x2lims"][1] not in x2:
-                u[1] += 1
-                x2new = np.linspace(fh["x2lims"][0], fh["x2lims"][1], fh["nsall"].shape[-2])
-                x2 = np.append(x2, x2new)
-            if fh["x3lims"][0] not in x3 and fh["x3lims"][1] not in x3:
-                u[2] += 1
-                x3new = np.linspace(fh["x3lims"][0], fh["x3lims"][1], fh["nsall"].shape[-3])
-                x3 = np.append(x3, x3new)
-            if (u == uold).all():
-                raise ValueError("no new data found in file", f, " at time", time)
-            uold = u.copy()
-            print(i, u)
+
+            x2new = np.linspace(fh["x2lims"][0], fh["x2lims"][1], fh["nsall"].shape[-2])
+            x2 = np.append(x2, x2new)
+
+            x3new = np.linspace(fh["x3lims"][0], fh["x3lims"][1], fh["nsall"].shape[-3])
+            x3 = np.append(x3, x3new)
+
             ax.plot(*np.meshgrid(x2new, x3new), linestyle="", marker=".", color=str(i / N * M))
             ax.set_ylabel("x2")
             ax.set_xlabel("x3")
             draw()
             pause(0.05)
-
-    print("patches per axis:", u)
 
     x1.sort()
     x2.sort()
@@ -155,16 +144,6 @@ for n in names:
 # FIXME: Does ForestClaw have a way to write this without this inefficient scan?
 
 x1, x2, x3 = get_xlims(indir, times[0])
-
-x, y = np.meshgrid(x2, x3)
-fg = figure()
-ax = fg.gca()
-ax.plot(x, y, linestyle="", marker=".")
-ax.set_ylabel("x2")
-ax.set_xlabel("x3")
-show()
-
-raise SystemExit()
 
 for t in times:
     combine_files(indir, outdir, t, data_vars, x1, x2, x3)
