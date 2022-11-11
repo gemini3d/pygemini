@@ -90,11 +90,11 @@ def test_nml_bad(tmp_path):
         config.parse_namelist(blank, "base")
 
 
-@pytest.mark.parametrize("group", ["base", ("base", "flags", "files", "precip", "efield")])
+@pytest.mark.parametrize("group", ["base", "flags", "files", "precip", "efield"])
 def test_namelist_exists(group):
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
-        assert config.namelist_exists(cfn, "base")
+        assert config.namelist_exists(cfn, group)
 
 
 def test_nml_gemini_env_root(monkeypatch, tmp_path):
