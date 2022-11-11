@@ -17,11 +17,12 @@ from matplotlib.pyplot import figure, draw, pause
 import gemini3d.utils as utils
 
 data_vars = {"J1all", "J2all", "J3all", "Phiall", "Tsall", "nsall", "vsall", "v2avgall", "v3avgall"}
+COMP_LEVEL = 6  # arbitrary GZIP compression level
 
 
 def time2stem(time: datetime) -> str:
     UTsec = time.hour * 3600 + time.minute * 60 + time.second
-    return f"{time:%Y%m%d}_{UTsec}"
+    return f"{time:%Y%m%d}_{UTsec}.{time.microsecond:06d}"
 
 
 def get_xlims(
@@ -37,7 +38,7 @@ def get_xlims(
     x2: typing.Any = np.ndarray(0)
     x3: typing.Any = np.ndarray(0)
 
-    pat = time2stem(time) + ".*.h5"
+    pat = time2stem(time) + "_*.h5"
 
     if plotgrid:
         fg = figure()
@@ -77,7 +78,7 @@ def get_xlims(
 def combine_files(indir: Path, outdir: Path, time: datetime, var: set[str], x1, x2, x3):
 
     stem = time2stem(time)
-    pat = stem + ".*.h5"
+    pat = stem + "_*.h5"
     outfn = outdir / (stem + ".h5")
 
     with h5py.File(outfn, "w") as oh:
@@ -127,7 +128,16 @@ def convert_var(
                 shape = (lx[2], lx[1])
             else:
                 raise ValueError(f"{v}: ndim {ih[v].ndim} not supported: {oh.filename}")
-            oh.create_dataset(name=v, shape=shape, dtype=ih[v].dtype)
+            oh.create_dataset(
+                name=v,
+                shape=shape,
+                dtype=ih[v].dtype,
+                compression="gzip",
+                compression_opts=COMP_LEVEL,
+                shuffle=True,
+                fletcher32=True,
+                fillvalue=np.nan,
+            )
 
         if ih[v].ndim == 4:
             oh[v][:, ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1] = ih[v]
