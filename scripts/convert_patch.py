@@ -24,7 +24,9 @@ def time2stem(time: datetime) -> str:
     return f"{time:%Y%m%d}_{UTsec}"
 
 
-def get_xlims(path: Path, time: datetime) -> tuple[typing.Any, typing.Any, typing.Any]:
+def get_xlims(
+    path: Path, time: datetime, plotgrid: bool = False
+) -> tuple[typing.Any, typing.Any, typing.Any]:
     """
     build up each axis by scanning files
 
@@ -37,8 +39,9 @@ def get_xlims(path: Path, time: datetime) -> tuple[typing.Any, typing.Any, typin
 
     pat = time2stem(time) + ".*.h5"
 
-    fg = figure()
-    ax = fg.gca()
+    if plotgrid:
+        fg = figure()
+        ax = fg.gca()
 
     files = sorted(path.glob(pat))
 
@@ -57,15 +60,16 @@ def get_xlims(path: Path, time: datetime) -> tuple[typing.Any, typing.Any, typin
             x3new = np.linspace(fh["x3lims"][0], fh["x3lims"][1], fh["nsall"].shape[-3])
             x3 = np.append(x3, x3new)
 
-            ax.plot(*np.meshgrid(x2new, x3new), linestyle="", marker=".", color=str(i / N * M))
-            ax.set_ylabel("x2")
-            ax.set_xlabel("x3")
-            draw()
-            pause(0.05)
+            if plotgrid:
+                ax.plot(*np.meshgrid(x2new, x3new), linestyle="", marker=".", color=str(i / N * M))
+                ax.set_ylabel("x2")
+                ax.set_xlabel("x3")
+                draw()
+                pause(0.05)
 
-    x1.sort()
-    x2.sort()
-    x3.sort()
+    x1 = np.unique(x1)
+    x2 = np.unique(x2)
+    x3 = np.unique(x3)
 
     return x1, x2, x3
 
@@ -81,11 +85,9 @@ def combine_files(indir: Path, outdir: Path, time: datetime, var: set[str], x1, 
         oh.create_dataset(name="x2", dtype=np.float32, data=x2)
         oh.create_dataset(name="x3", dtype=np.float32, data=x3)
 
-        lx1 = x1.size
-        lx2 = x2.size
-        lx3 = x3.size
+        lx = (x1.size, x2.size, x3.size)
 
-        print("write", outfn, "  lx1, lx2, lx3 =", lx1, lx2, lx3)
+        print("write", outfn, "  lx1, lx2, lx3 =", lx)
 
         for f in indir.glob(pat):
             with h5py.File(f, "r") as ih:
@@ -102,27 +104,43 @@ def combine_files(indir: Path, outdir: Path, time: datetime, var: set[str], x1, 
                     (ih["x3lims"][1] == x3).nonzero()[0].item(),
                 )
                 for v in var:
-                    if v in ih:
-                        if v not in oh:
-                            if ih[v].ndim == 4:
-                                shape: tuple[int, ...] = (ih[v].shape[0], lx3, lx2, lx1)
-                            elif ih[v].ndim == 3:
-                                shape = (lx3, lx2, lx1)
-                            oh.create_dataset(name=v, shape=shape, dtype=ih[v].dtype)
+                    convert_var(oh, ih, v, lx, ix1, ix2, ix3)
 
-                        if ih[v].ndim == 4:
-                            oh[v][
-                                :, ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1
-                            ] = ih[v]
-                        elif ih[v].ndim == 3:
-                            oh[v][
-                                ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1
-                            ] = ih[v]
+
+def convert_var(
+    oh: h5py.File,
+    ih: h5py.File,
+    v: str,
+    lx: tuple[int, int, int],
+    ix1: tuple[int, int],
+    ix2: tuple[int, int],
+    ix3: tuple[int, int],
+):
+
+    if v in ih:
+        if v not in oh:
+            if ih[v].ndim == 4:
+                shape: tuple[int, ...] = (ih[v].shape[0], *lx[::-1])
+            elif ih[v].ndim == 3:
+                shape = lx[::-1]
+            elif ih[v].ndim == 2:
+                shape = (lx[2], lx[1])
+            else:
+                raise ValueError(f"{v}: ndim {ih[v].ndim} not supported: {oh.filename}")
+            oh.create_dataset(name=v, shape=shape, dtype=ih[v].dtype)
+
+        if ih[v].ndim == 4:
+            oh[v][:, ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1] = ih[v]
+        elif ih[v].ndim == 3:
+            oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1] = ih[v]
+        elif ih[v].ndim == 2:
+            oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1] = ih[v]
 
 
 p = argparse.ArgumentParser()
 p.add_argument("indir", help="ForestGemini patch .h5 data directory")
 p.add_argument("-o", "--outdir", help="directory to write combined HDF5 files")
+p.add_argument("-plotgrid", help="plot grid per patch", action="store_true")
 P = p.parse_args()
 
 indir = Path(P.indir).expanduser()
@@ -143,7 +161,7 @@ for n in names:
 # Need to get extents by scanning all files.
 # FIXME: Does ForestClaw have a way to write this without this inefficient scan?
 
-x1, x2, x3 = get_xlims(indir, times[0])
+x1, x2, x3 = get_xlims(indir, times[0], P.plotgrid)
 
 for t in times:
     combine_files(indir, outdir, t, data_vars, x1, x2, x3)
