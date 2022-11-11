@@ -144,4 +144,7 @@ def test_read_config_nml(monkeypatch, tmp_path):
 
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         params = read.config(cfn)
+
     assert params["time"][0] == datetime(2013, 2, 20, 5)
+    assert params["dtprec"] == timedelta(seconds=5)
+    assert params["W0BG"] == pytest.approx(3000.0)

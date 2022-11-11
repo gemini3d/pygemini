@@ -55,3 +55,8 @@ E0_dir = 'inputs/Efield_inputs/'
 dtglow = 5.0
 dtglowout = 60.0            ! dtglowout: how often to do Glow file output
 /
+
+&precip_BG
+PhiWBG=1e-3
+W0BG=3e3
+/

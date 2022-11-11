@@ -57,6 +57,7 @@ def read_nml(fn: Path) -> dict[str, T.Any]:
         "neutral_BG",
         "neutral_perturb",
         "precip",
+        "precip_BG",
         "efield",
         "glow",
     }:
@@ -90,6 +91,8 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
 
     r = namelist.read(file, nml)
 
+    P = {}
+
     if nml == "base":
         P = parse_base(r)
     elif nml == "flags":
@@ -107,6 +110,12 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
             "dtprec": timedelta(seconds=float(r["dtprec"])),
             "precdir": r["prec_dir"],
         }
+    elif nml == "precip_BG":
+        for k in r:
+            if k in {"W0BG", "PhiWBG"}:
+                P[k] = float(r[k])
+            else:
+                P[k] = r[k]
     elif nml == "efield":
         P = {
             "dtE0": timedelta(seconds=float(r["dtE0"])),

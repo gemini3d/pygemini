@@ -21,9 +21,7 @@ from .hdf5 import read as h5read
 # do NOT use lru_cache--can have weird unexpected effects with complicated setups
 def config(path: Path) -> dict[str, T.Any]:
     """
-    read simulation input configuration
-
-    .nml is strongly preferred, .ini is legacy.
+    read simulation input configuration from .nml Fortran namelist file
 
     Parameters
     ----------
