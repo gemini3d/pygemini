@@ -30,13 +30,19 @@ EXE_PATHS = [
 def config(path: Path) -> Path:
     """given a path or config filename, return the full path to config file"""
 
-    return find_stem(path, stem="config", suffix="nml")
+    p = find_stem(path, stem="config", suffix=".nml")
+    if not p:
+        raise FileNotFoundError(f"config.nml not found in {path}")
+    return p
 
 
 def simsize(path: Path) -> Path:
     """gets path to simsize file"""
 
-    return find_stem(path, stem="simsize")
+    p = find_stem(path, stem="simsize", suffix=".h5")
+    if not p:
+        raise FileNotFoundError(f"simsize.h5 not found in {path}")
+    return p
 
 
 def executable(name: str, root: Path | None = None) -> Path | None:
@@ -163,10 +169,14 @@ def frame(simdir: Path, time: datetime) -> Path:
 def grid(path: Path) -> Path:
     """given a path or filename, return the full path to simgrid file"""
 
-    return find_stem(path, stem="simgrid")
+    for s in ("amrgrid", "simgrid"):
+        p = find_stem(path, stem=s)
+        if p:
+            return p
+    raise FileNotFoundError(f"{s} not found in {path}")
 
 
-def find_stem(path: Path, stem: str, suffix: str = ".h5") -> Path:
+def find_stem(path: Path, stem: str, suffix: str = ".h5") -> Path | None:
     """find file containing stem"""
 
     path = Path(path).expanduser()
@@ -176,25 +186,15 @@ def find_stem(path: Path, stem: str, suffix: str = ".h5") -> Path:
             return path
         else:
             found = find_stem(path.parent, stem, path.suffix)
-            if not found:
-                raise FileNotFoundError(f"{stem} not found in {path.parent}")
-            return found
-
-    if isinstance(suffix, str):
-        if not suffix.startswith("."):
-            suffix = "." + suffix
-        suffixes = [suffix]
-    else:
-        suffixes = suffix
-
-    if path.is_dir():
+            if found:
+                return found
+    elif path.is_dir():
         for p in (path, path / "inputs"):
-            for suff in suffixes:
-                f = p / (stem + suff)
-                if f.is_file():
-                    return f
+            f = p / (stem + suffix)
+            if f.is_file():
+                return f
 
-    raise FileNotFoundError(f"{stem} not found in {path}")
+    return None
 
 
 def inputs(direc: Path, input_dir: Path | None = None) -> Path:

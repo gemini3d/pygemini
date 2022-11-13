@@ -97,10 +97,10 @@ def grid(file: Path, *, var: set[str] | None = None, shape: bool = False) -> dic
     Transpose on read to undo the transpose operation we had to do in write_grid C => Fortran order.
     """
 
-    xg: dict[str, T.Any] = {}
-
     if not file.is_file():
         file = find.grid(file)
+
+    xg: dict[str, T.Any] = {"filename": file}
 
     if shape:
         with h5py.File(file, "r") as f:
@@ -128,7 +128,7 @@ def grid(file: Path, *, var: set[str] | None = None, shape: bool = False) -> dic
                 else:
                     xg[k] = f[k]
 
-    xg["lx"] = simsize(file.with_name("simsize.h5"))
+    xg["lx"] = simsize(file.parent)
 
     return xg
 
@@ -206,17 +206,20 @@ def frame3d_curv(file: Path, var: set[str], xg: dict[str, T.Any] | None = None) 
     if not xg:
         xg = grid(file.parent, var={"x1", "x2", "x3"})
 
-    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
+    if xg["filename"].stem == "amrgrid":
+        # FIXME: perhaps make a config.nml flag indicating AMR grid used?
+        dat = xarray.Dataset(coords={"x1": xg["x1"], "x2": xg["x2"], "x3": xg["x3"]})
+    else:
+        dat = xarray.Dataset(
+            coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+        )
 
     lx = xg["lx"]
 
-    p4n = (0, 3, 2, 1)
-    p3n = (2, 1, 0)
+    p4 = (0, 3, 2, 1)
+    p3 = (2, 1, 0)
 
     with h5py.File(file, "r") as f:
-
-        p4 = p4n
-        p3 = p3n
 
         if {"ne", "ns", "v1", "Ti"} & var:
             dat["ns"] = (("species", "x1", "x2", "x3"), f["/nsall"][:].transpose(p4))

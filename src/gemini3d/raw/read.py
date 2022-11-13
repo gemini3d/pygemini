@@ -35,6 +35,8 @@ def simsize(path: Path) -> tuple[int, ...]:
     """
 
     file = find.find_stem(path, stem="simsize", suffix=".dat")
+    if not file:
+        raise FileNotFoundError(f"did not find simsize.dat in {path}")
 
     fsize = file.stat().st_size
     if fsize == 12:
@@ -68,14 +70,16 @@ def grid(file: Path, shape: bool = False) -> dict[str, T.Any]:
     lx = simsize(file)
 
     if not file.is_file():
-        file = find.find_stem(file, stem="simgrid", suffix=".dat")
+        f = find.find_stem(file, stem="simgrid", suffix=".dat")
+    if not f:
+        raise FileNotFoundError(f"did not find simgrid.dat in {file}")
 
     if len(lx) == 2:
-        return grid2(file, lx)
+        return grid2(f, lx)
     elif len(lx) == 3:
-        return grid3(file, lx)
-    else:
-        raise ValueError("lx must be 2-D or 3-D")
+        return grid3(f, lx)
+
+    raise ValueError("lx must be 2-D or 3-D")
 
 
 def grid2(file: Path, lx: tuple[int, ...] | list[int]) -> dict[str, T.Any]:
