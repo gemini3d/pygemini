@@ -9,6 +9,7 @@ from pathlib import Path
 import argparse
 import typing
 from datetime import datetime
+import logging
 
 import numpy as np
 import h5py
@@ -16,7 +17,17 @@ from matplotlib.pyplot import figure, draw, pause
 
 import gemini3d.utils as utils
 
-data_vars = {"J1all", "J2all", "J3all", "Phiall", "Tsall", "nsall", "vsall", "v2avgall", "v3avgall"}
+data_vars = {
+    "J1all",
+    "J2all",
+    "J3all",
+    "Phiall",
+    "Tsall",
+    "nsall",
+    "vs1all",
+    "v2avgall",
+    "v3avgall",
+}
 COMP_LEVEL = 6  # arbitrary GZIP compression level
 
 
@@ -52,13 +63,19 @@ def get_xlims(
     for i, f in enumerate(files):
         with h5py.File(f, "r") as fh:
             if fh["x1lims"][0] not in x1 and fh["x1lims"][1] not in x1:
-                x1new = np.linspace(fh["x1lims"][0], fh["x1lims"][1], fh["nsall"].shape[-1])
+                x1new = np.linspace(
+                    fh["x1lims"][0], fh["x1lims"][1], num=fh["nsall"].shape[-1], endpoint=False
+                )
                 x1 = np.append(x1, x1new)
 
-            x2new = np.linspace(fh["x2lims"][0], fh["x2lims"][1], fh["nsall"].shape[-2])
+            x2new = np.linspace(
+                fh["x2lims"][0], fh["x2lims"][1], num=fh["nsall"].shape[-2], endpoint=False
+            )
             x2 = np.append(x2, x2new)
 
-            x3new = np.linspace(fh["x3lims"][0], fh["x3lims"][1], fh["nsall"].shape[-3])
+            x3new = np.linspace(
+                fh["x3lims"][0], fh["x3lims"][1], num=fh["nsall"].shape[-3], endpoint=False
+            )
             x3 = np.append(x3, x3new)
 
             if plotgrid:
@@ -82,30 +99,25 @@ def combine_files(indir: Path, outdir: Path, time: datetime, var: set[str], x1, 
     outfn = outdir / (stem + ".h5")
 
     with h5py.File(outfn, "w") as oh:
-        oh.create_dataset(name="x1", dtype=np.float32, data=x1)
-        oh.create_dataset(name="x2", dtype=np.float32, data=x2)
-        oh.create_dataset(name="x3", dtype=np.float32, data=x3)
-
         lx = (x1.size, x2.size, x3.size)
 
         print("write", outfn, "  lx1, lx2, lx3 =", lx)
 
         for f in indir.glob(pat):
             with h5py.File(f, "r") as ih:
-                ix1 = (
-                    (ih["x1lims"][0] == x1).nonzero()[0].item(),
-                    (ih["x1lims"][1] == x1).nonzero()[0].item(),
-                )
-                ix2 = (
-                    (ih["x2lims"][0] == x2).nonzero()[0].item(),
-                    (ih["x2lims"][1] == x2).nonzero()[0].item(),
-                )
-                ix3 = (
-                    (ih["x3lims"][0] == x3).nonzero()[0].item(),
-                    (ih["x3lims"][1] == x3).nonzero()[0].item(),
-                )
+                ix1 = get_indices(ih["x1lims"], x1)
+                ix2 = get_indices(ih["x2lims"], x2)
+                ix3 = get_indices(ih["x3lims"], x3)
                 for v in var:
                     convert_var(oh, ih, v, lx, ix1, ix2, ix3)
+
+
+def get_indices(lims: tuple[float, float], x) -> tuple[int, int]:
+
+    i0 = (lims[0] >= x).nonzero()[0][-1].item()
+    i1 = (lims[1] > x).nonzero()[0][-1].item()
+
+    return i0, i1
 
 
 def convert_var(
@@ -118,40 +130,52 @@ def convert_var(
     ix3: tuple[int, int],
 ):
 
-    if v in ih:
-        if v not in oh:
-            if ih[v].ndim == 4:
-                shape: tuple[int, ...] = (ih[v].shape[0], *lx[::-1])
-            elif ih[v].ndim == 3:
-                shape = lx[::-1]
-            elif ih[v].ndim == 2:
-                shape = (lx[2], lx[1])
-            else:
-                raise ValueError(f"{v}: ndim {ih[v].ndim} not supported: {oh.filename}")
-            oh.create_dataset(
-                name=v,
-                shape=shape,
-                dtype=ih[v].dtype,
-                compression="gzip",
-                compression_opts=COMP_LEVEL,
-                shuffle=True,
-                fletcher32=True,
-                fillvalue=np.nan,
-            )
+    if v not in ih:
+        logging.debug(f"variable {v} not in {ih.filename}")
+        return
 
+    if v not in oh:
         if ih[v].ndim == 4:
-            oh[v][:, ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1] = ih[v]
+            shape: tuple[int, ...] = (ih[v].shape[0], *lx[::-1])
         elif ih[v].ndim == 3:
-            oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1] = ih[v]
+            shape = lx[::-1]
         elif ih[v].ndim == 2:
-            oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1] = ih[v]
+            shape = (lx[2], lx[1])
+        else:
+            raise ValueError(f"{v}: ndim {ih[v].ndim} not supported: {oh.filename}")
+
+        oh.create_dataset(
+            name=v,
+            shape=shape,
+            dtype=ih[v].dtype,
+            compression="gzip",
+            compression_opts=COMP_LEVEL,
+            shuffle=True,
+            fletcher32=True,
+            fillvalue=np.nan,
+        )
+
+    logging.debug(
+        f"{Path(ih.filename).stem}=>{Path(oh.filename).stem}:{v}:  {ih[v].shape}  {ix1} {ix2} {ix3} {oh[v].shape}"
+    )
+
+    if ih[v].ndim == 4:
+        oh[v][:, ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1] = ih[v]
+    elif ih[v].ndim == 3:
+        oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1] = ih[v]
+    elif ih[v].ndim == 2:
+        oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1] = ih[v]
 
 
 p = argparse.ArgumentParser()
 p.add_argument("indir", help="ForestGemini patch .h5 data directory")
 p.add_argument("-o", "--outdir", help="directory to write combined HDF5 files")
 p.add_argument("-plotgrid", help="plot grid per patch", action="store_true")
+p.add_argument("-v", "--verbose", action="store_true")
 P = p.parse_args()
+
+if P.verbose:
+    logging.basicConfig(level=logging.DEBUG)
 
 indir = Path(P.indir).expanduser()
 if not indir.is_dir():
@@ -172,6 +196,29 @@ for n in names:
 # FIXME: Does ForestClaw have a way to write this without this inefficient scan?
 
 x1, x2, x3 = get_xlims(indir, times[0], P.plotgrid)
+
+outgrid = outdir / "amrgrid.h5"
+print("write", outgrid)
+with h5py.File(outgrid, "w") as oh, h5py.File(indir / "inputs/simgrid.h5", "r") as ih:
+    oh["x1"] = x1.astype(np.float32)
+    oh["x2"] = x2.astype(np.float32)
+    oh["x3"] = x3.astype(np.float32)
+    oh.create_dataset(
+        "alt",
+        data=ih["alt"][:],
+        compression="gzip",
+        compression_opts=COMP_LEVEL,
+        shuffle=True,
+        fletcher32=True,
+    )
+    oh.create_dataset(
+        "theta",
+        data=ih["theta"][:],
+        compression="gzip",
+        compression_opts=COMP_LEVEL,
+        shuffle=True,
+        fletcher32=True,
+    )
 
 for t in times:
     combine_files(indir, outdir, t, data_vars, x1, x2, x3)
