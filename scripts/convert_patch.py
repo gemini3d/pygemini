@@ -36,16 +36,13 @@ def time2stem(time: datetime) -> str:
     return f"{time:%Y%m%d}_{UTsec}.{time.microsecond:06d}"
 
 
-def get_xlims(
-    path: Path, time: datetime, plotgrid: bool = False
-) -> tuple[typing.Any, typing.Any, typing.Any]:
+def get_xlims(path: Path, time: datetime, plotgrid: bool = False) -> tuple[typing.Any, typing.Any]:
     """
     build up each axis by scanning files
 
     Remember HDF5 datasets are always in C-order, even when written from Fortran program.
     """
 
-    x1: typing.Any = np.ndarray(0)
     x2: typing.Any = np.ndarray(0)
     x3: typing.Any = np.ndarray(0)
 
@@ -62,11 +59,11 @@ def get_xlims(
 
     for i, f in enumerate(files):
         with h5py.File(f, "r") as fh:
-            if fh["x1lims"][0] not in x1 and fh["x1lims"][1] not in x1:
-                x1new = np.linspace(
-                    fh["x1lims"][0], fh["x1lims"][1], num=fh["nsall"].shape[-1], endpoint=False
-                )
-                x1 = np.append(x1, x1new)
+            # TODO: AMR code needs to write actual x1 points, as it's not linearly spaced
+            # x1new = np.linspace(
+            #     fh["x1lims"][0], fh["x1lims"][1], num=fh["nsall"].shape[-1], endpoint=False
+            # )
+            # x1 = np.append(x1, x1new)
 
             x2new = np.linspace(
                 fh["x2lims"][0], fh["x2lims"][1], num=fh["nsall"].shape[-2], endpoint=False
@@ -85,11 +82,10 @@ def get_xlims(
                 draw()
                 pause(0.05)
 
-    x1 = np.unique(x1)
     x2 = np.unique(x2)
     x3 = np.unique(x3)
 
-    return x1, x2, x3
+    return x2, x3
 
 
 def combine_files(indir: Path, outdir: Path, time: datetime, var: set[str], x1, x2, x3):
@@ -98,18 +94,16 @@ def combine_files(indir: Path, outdir: Path, time: datetime, var: set[str], x1, 
     pat = stem + "_*.h5"
     outfn = outdir / (stem + ".h5")
 
+    lx = (x1.size, x2.size, x3.size)
+
+    print("write", outfn, "lx: ", lx)
     with h5py.File(outfn, "w") as oh:
-        lx = (x1.size, x2.size, x3.size)
-
-        print("write", outfn, "  lx1, lx2, lx3 =", lx)
-
         for f in indir.glob(pat):
             with h5py.File(f, "r") as ih:
-                ix1 = get_indices(ih["x1lims"], x1)
                 ix2 = get_indices(ih["x2lims"], x2)
                 ix3 = get_indices(ih["x3lims"], x3)
                 for v in var:
-                    convert_var(oh, ih, v, lx, ix1, ix2, ix3)
+                    convert_var(oh, ih, v, lx, ix2, ix3)
 
 
 def get_indices(lims: tuple[float, float], x) -> tuple[int, int]:
@@ -125,7 +119,6 @@ def convert_var(
     ih: h5py.File,
     v: str,
     lx: tuple[int, int, int],
-    ix1: tuple[int, int],
     ix2: tuple[int, int],
     ix3: tuple[int, int],
 ):
@@ -156,13 +149,13 @@ def convert_var(
         )
 
     logging.debug(
-        f"{Path(ih.filename).stem}=>{Path(oh.filename).stem}:{v}:  {ih[v].shape}  {ix1} {ix2} {ix3} {oh[v].shape}"
+        f"{Path(ih.filename).stem}=>{Path(oh.filename).stem}:{v}:  {ih[v].shape}  ix2: {ix2} ix3: {ix3} {oh[v].shape}"
     )
 
     if ih[v].ndim == 4:
-        oh[v][:, ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1] = ih[v]
+        oh[v][:, ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, :] = ih[v]
     elif ih[v].ndim == 3:
-        oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, ix1[0] : ix1[1] + 1] = ih[v]
+        oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, :] = ih[v]
     elif ih[v].ndim == 2:
         oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1] = ih[v]
 
@@ -195,30 +188,22 @@ for n in names:
 # Need to get extents by scanning all files.
 # FIXME: Does ForestClaw have a way to write this without this inefficient scan?
 
-x1, x2, x3 = get_xlims(indir, times[0], P.plotgrid)
+x2, x3 = get_xlims(indir, times[0], P.plotgrid)
+
+simgrid = indir / "inputs/simgrid.h5"
+with h5py.File(simgrid, "r") as fh:
+    x1 = fh["x1"][2:-2]
 
 outgrid = outdir / "amrgrid.h5"
 print("write", outgrid)
-with h5py.File(outgrid, "w") as oh, h5py.File(indir / "inputs/simgrid.h5", "r") as ih:
+with h5py.File(outgrid, "w") as oh:
+    oh["alt"] = h5py.ExternalLink(simgrid, "/alt")
+    oh["theta"] = h5py.ExternalLink(simgrid, "/theta")
+
     oh["x1"] = x1.astype(np.float32)
     oh["x2"] = x2.astype(np.float32)
     oh["x3"] = x3.astype(np.float32)
-    oh.create_dataset(
-        "alt",
-        data=ih["alt"][:],
-        compression="gzip",
-        compression_opts=COMP_LEVEL,
-        shuffle=True,
-        fletcher32=True,
-    )
-    oh.create_dataset(
-        "theta",
-        data=ih["theta"][:],
-        compression="gzip",
-        compression_opts=COMP_LEVEL,
-        shuffle=True,
-        fletcher32=True,
-    )
+
 
 for t in times:
     combine_files(indir, outdir, t, data_vars, x1, x2, x3)
