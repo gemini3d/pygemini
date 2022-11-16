@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 import typing as T
 from datetime import datetime
 import numpy as np
@@ -82,9 +83,14 @@ def plot_interp(
     lxs = get_lxs(xg)
 
     lx1, lx2, lx3 = lxs
-    inds1 = slice(2, lx1 + 2)
-    inds2 = slice(2, lx2 + 2)
-    inds3 = slice(2, lx3 + 2)
+    if xg.get("filename", Path()).stem == "amrgrid":
+        inds1 = slice(0, lx1)
+        inds2 = slice(0, lx2)
+        inds3 = slice(0, lx3)
+    else:
+        inds1 = slice(2, lx1 + 2)
+        inds2 = slice(2, lx2 + 2)
+        inds3 = slice(2, lx3 + 2)
     # %% SIZE OF PLOT GRID THAT WE ARE INTERPOLATING ONTO
     meantheta = xg["theta"].mean()
     # this is a mag colat. coordinate and is only used for defining grid in linspaces below
@@ -250,6 +256,7 @@ def plot3d_slice(
     # JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT,
     # AND AN ALTITUDE FOR THE LAT./LON. SLICE
     ix3 = lx3 // 2 - 1  # arbitrary slice, to match Matlab
+
     f = interp.interp2d(xg["x2"][inds2], xg["x1"][inds1], parm[:, :, ix3], bounds_error=False)
     # CONVERT ANGULAR COORDINATES TO MLAT,MLON
     ix = xp.argsort()
@@ -267,6 +274,7 @@ def plot3d_slice(
     ).reshape((1, lxp, lyp))
 
     parmp = parmp[:, :, iy]  # must be indexed in two steps
+
     plot23(
         xp[ix],
         yp[iy],

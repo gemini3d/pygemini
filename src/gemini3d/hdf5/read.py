@@ -128,7 +128,10 @@ def grid(file: Path, *, var: set[str] | None = None, shape: bool = False) -> dic
                 else:
                     xg[k] = f[k]
 
-    xg["lx"] = simsize(file.parent)
+    if file.stem == "amrgrid":
+        xg["lx"] = np.array((xg["x1"].size, xg["x2"].size, xg["x3"].size))
+    else:
+        xg["lx"] = simsize(file.parent)
 
     return xg
 
@@ -206,7 +209,7 @@ def frame3d_curv(file: Path, var: set[str], xg: dict[str, T.Any] | None = None) 
     if not xg:
         xg = grid(file.parent, var={"x1", "x2", "x3"})
 
-    if xg["filename"].stem == "amrgrid":
+    if xg.get("filename", Path()).stem == "amrgrid":
         # FIXME: perhaps make a config.nml flag indicating AMR grid used?
         dat = xarray.Dataset(coords={"x1": xg["x1"], "x2": xg["x2"], "x3": xg["x3"]})
     else:
