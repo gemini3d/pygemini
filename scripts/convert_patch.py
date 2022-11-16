@@ -98,6 +98,14 @@ def combine_files(indir: Path, outdir: Path, time: datetime, var: set[str], x1, 
 
     print("write", outfn, "lx: ", lx)
     with h5py.File(outfn, "w") as oh:
+        oh.create_dataset("/time/ymd", dtype=np.int32, data=(time.year, time.month, time.day))
+        oh.create_dataset("/time/hms", dtype=np.int32, data=(time.hour, time.minute, time.second))
+        oh.create_dataset("/time/microsecond", dtype=np.int32, data=time.microsecond)
+        oh.create_dataset(
+            "/time/UThour",
+            dtype=np.float32,
+            data=time.hour + time.minute / 60 + time.second / 3600 + time.microsecond / 3600e6,
+        )
         for f in indir.glob(pat):
             with h5py.File(f, "r") as ih:
                 ix2 = get_indices(ih["x2lims"], x2)

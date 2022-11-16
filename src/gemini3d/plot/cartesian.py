@@ -265,7 +265,17 @@ def plot3d_slice(
     # CONVERT ANGULAR COORDINATES TO MLAT,MLON
     ix = xp.argsort()
     iy = yp.argsort()
-    plot12(xp[ix], zp, f(xp, zp)[:, ix], axs[0], name=name, ref_alt=ref_alt, cmap=cmap, vmin=vmin, vmax=vmax)
+    plot12(
+        xp[ix],
+        zp,
+        f(xp, zp)[:, ix],
+        axs[0],
+        name=name,
+        ref_alt=ref_alt,
+        cmap=cmap,
+        vmin=vmin,
+        vmax=vmax,
+    )
     # %% LAT./LONG. SLICE COORDINATES (center panel)
     X3, Y3, Z3 = np.meshgrid(xp, yp, ref_alt * 1e3)
     # transpose: so north dist, east dist., alt.
