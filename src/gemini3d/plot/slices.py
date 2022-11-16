@@ -6,7 +6,7 @@ from matplotlib.ticker import MultipleLocator
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 
-from .constants import CB_LBL, REF_ALT
+from .constants import CB_LBL
 from ..utils import git_meta
 
 
@@ -17,6 +17,7 @@ def plot12(
     ax: Axes,
     *,
     name: str,
+    ref_alt: float,
     cmap: str | None = None,
     vmin: float | None = None,
     vmax: float | None = None,
@@ -29,7 +30,7 @@ def plot12(
     ax.yaxis.set_major_locator(MultipleLocator(100))
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("upward dist. (km)")
-    ax.axhline(REF_ALT, color="w", linestyle="--", linewidth=2)
+    ax.axhline(ref_alt, color="w", linestyle="--", linewidth=2)
     ax.figure.colorbar(hi, ax=ax, label=CB_LBL[name])
 
 

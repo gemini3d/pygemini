@@ -32,6 +32,7 @@ def plot_interp(
     parm: xarray.DataArray,
     *,
     name: str | None = None,
+    ref_alt: float = REF_ALT,
     **kwargs,
 ) -> None:
 
@@ -143,6 +144,7 @@ def plot_interp(
                 f(xp, zp)[:, i],
                 ax,
                 name=name,
+                ref_alt=ref_alt,
                 cmap=cmap,
                 vmin=vmin,
                 vmax=vmax,
@@ -203,6 +205,7 @@ def plot_interp(
             cmap,
             vmin,
             vmax,
+            ref_alt,
         )
     elif name == "rayleighs":
         bright_east_north(
@@ -248,6 +251,7 @@ def plot3d_slice(
     cmap,
     vmin,
     vmax,
+    ref_alt: float,
 ) -> None:
 
     axs = fg.subplots(1, 3, sharey=False, sharex=False)
@@ -261,10 +265,9 @@ def plot3d_slice(
     # CONVERT ANGULAR COORDINATES TO MLAT,MLON
     ix = xp.argsort()
     iy = yp.argsort()
-    plot12(xp[ix], zp, f(xp, zp)[:, ix], axs[0], name=name, cmap=cmap, vmin=vmin, vmax=vmax)
+    plot12(xp[ix], zp, f(xp, zp)[:, ix], axs[0], name=name, ref_alt=ref_alt, cmap=cmap, vmin=vmin, vmax=vmax)
     # %% LAT./LONG. SLICE COORDINATES (center panel)
-    zp2 = REF_ALT
-    X3, Y3, Z3 = np.meshgrid(xp, yp, zp2 * 1e3)
+    X3, Y3, Z3 = np.meshgrid(xp, yp, ref_alt * 1e3)
     # transpose: so north dist, east dist., alt.
     parmp = interp.interpn(
         points=(xg["x1"][inds1], xg["x2"][inds2], xg["x3"][inds3]),
