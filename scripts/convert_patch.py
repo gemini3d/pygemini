@@ -103,7 +103,7 @@ def combine_files(indir: Path, outdir: Path, time: datetime, var: set[str], x1, 
         oh.create_dataset("/time/microsecond", dtype=np.int32, data=time.microsecond)
         oh.create_dataset(
             "/time/UThour",
-            dtype=np.float32,
+            dtype=np.float64,
             data=time.hour + time.minute / 60 + time.second / 3600 + time.microsecond / 3600e6,
         )
         for f in indir.glob(pat):
