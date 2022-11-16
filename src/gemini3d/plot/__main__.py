@@ -21,14 +21,16 @@ def cli():
     )
     p = p.parse_args()
 
+    var = set(p.var)
+
     if p.mayavi:
         from .render import plot3d_all
 
-        plot3d_all(p.direc, p.var, saveplot_fmt=p.save)
+        plot3d_all(p.direc, var, saveplot_fmt=p.save)
         return
 
     if "all" in p.which:
-        plot_all(p.direc, p.var, saveplot_fmt=p.save)
+        plot_all(p.direc, var, saveplot_fmt=p.save)
     if "grid" in p.which:
         grid.grid(p.direc)
     if "Efield" in p.which:
@@ -36,7 +38,7 @@ def cli():
     if "precip" in p.which:
         input.precip(p.direc)
     if "input" in p.which:
-        input.plot_all(p.direc, p.var, saveplot_fmt=p.save)
+        input.plot_all(p.direc, var, saveplot_fmt=p.save)
 
 
 if __name__ == "__main__":
