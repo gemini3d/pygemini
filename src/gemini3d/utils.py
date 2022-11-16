@@ -16,7 +16,7 @@ import xarray
 import numpy as np
 
 
-__all__ = ["to_datetime", "git_meta", "datetime2ymd_hourdec"]
+__all__ = ["to_datetime", "git_meta", "datetime2stem"]
 
 
 def str2func(name: str, path: Path | None = None) -> T.Callable:
@@ -206,7 +206,7 @@ def get_cpu_count() -> int:
     return max_cpu
 
 
-def datetime2ymd_hourdec(dt: datetime) -> str:
+def datetime2stem(dt: datetime) -> str:
     """
     convert datetime to ymd_hourdec string for filename stem
     """

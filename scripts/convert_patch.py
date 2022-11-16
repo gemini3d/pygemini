@@ -31,11 +31,6 @@ data_vars = {
 COMP_LEVEL = 6  # arbitrary GZIP compression level
 
 
-def time2stem(time: datetime) -> str:
-    UTsec = time.hour * 3600 + time.minute * 60 + time.second
-    return f"{time:%Y%m%d}_{UTsec}.{time.microsecond:06d}"
-
-
 def get_xlims(path: Path, time: datetime, plotgrid: bool = False) -> tuple[typing.Any, typing.Any]:
     """
     build up each axis by scanning files
@@ -46,7 +41,7 @@ def get_xlims(path: Path, time: datetime, plotgrid: bool = False) -> tuple[typin
     x2: typing.Any = np.ndarray(0)
     x3: typing.Any = np.ndarray(0)
 
-    pat = time2stem(time) + "_*.h5"
+    pat = utils.datetime2stem(time) + "_*.h5"
 
     if plotgrid:
         fg = figure()
@@ -90,7 +85,7 @@ def get_xlims(path: Path, time: datetime, plotgrid: bool = False) -> tuple[typin
 
 def combine_files(indir: Path, outdir: Path, time: datetime, var: set[str], x1, x2, x3):
 
-    stem = time2stem(time)
+    stem = utils.datetime2stem(time)
     pat = stem + "_*.h5"
     outfn = outdir / (stem + ".h5")
 

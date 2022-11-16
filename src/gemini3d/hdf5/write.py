@@ -12,7 +12,7 @@ import h5py
 import numpy as np
 import xarray
 
-from ..utils import datetime2ymd_hourdec, to_datetime
+from ..utils import datetime2stem, to_datetime
 
 CLVL = 3  # GZIP compression level: larger => better compression, slower to write
 
@@ -225,7 +225,7 @@ def Efield(outdir: Path, E: xarray.Dataset):
 
     for t in E.time:
         time: datetime = to_datetime(t)
-        fn = outdir / (datetime2ymd_hourdec(time) + ".h5")
+        fn = outdir / (datetime2stem(time) + ".h5")
 
         # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
         with h5py.File(fn, "w") as f:
@@ -258,7 +258,7 @@ def precip(outdir: Path, P: xarray.Dataset):
 
     for t in P.time:
         time: datetime = to_datetime(t)
-        fn = outdir / (datetime2ymd_hourdec(time) + ".h5")
+        fn = outdir / (datetime2stem(time) + ".h5")
 
         with h5py.File(fn, "w") as f:
             write_time(f, to_datetime(time))
