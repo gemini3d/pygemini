@@ -11,23 +11,21 @@ import typing
 import numpy as np
 import h5py
 
+from . import filenames2times, time2filename, patch_grid
 from .. import utils
+from .plot import grid_step
 
 try:
-    from matplotlib.pyplot import figure, draw, pause
+    from matplotlib.pyplot import figure
 except ImportError:
-    figure = draw = pause = None
+    figure = None
 
 COMP_LEVEL = 6  # arbitrary GZIP compression level
 
 
 def convert(indir: Path, outdir: Path, data_vars: set[str], plotgrid: bool = False):
 
-    # get times from filenames
-    times = []
-    names = set([f.stem[:21] for f in indir.glob("*_*.*_*.h5")])
-    for n in names:
-        times.append(utils.filename2datetime(n))
+    times = filenames2times(indir)
 
     # Need to get extents by scanning all files.
     # FIXME: Does ForestClaw have a way to write this without this inefficient scan?
@@ -75,32 +73,15 @@ def get_xlims(path: Path, time: datetime, plotgrid: bool = False) -> tuple[typin
     files = sorted(path.glob(pat))
 
     N = len(files)  # number of shades to plot
-    M = 0.9  # arbitrary max grayscale value [0, 1]
 
     for i, f in enumerate(files):
-        with h5py.File(f, "r") as fh:
-            # TODO: AMR code needs to write actual x1 points, as it's not linearly spaced
-            # x1new = np.linspace(
-            #     fh["x1lims"][0], fh["x1lims"][1], num=fh["nsall"].shape[-1], endpoint=False
-            # )
-            # x1 = np.append(x1, x1new)
+        x2new, x3new = patch_grid(f)
 
-            x2new = np.linspace(
-                fh["x2lims"][0], fh["x2lims"][1], num=fh["nsall"].shape[-2], endpoint=False
-            )
-            x2 = np.append(x2, x2new)
+        x2 = np.append(x2, x2new)
+        x3 = np.append(x3, x3new)
 
-            x3new = np.linspace(
-                fh["x3lims"][0], fh["x3lims"][1], num=fh["nsall"].shape[-3], endpoint=False
-            )
-            x3 = np.append(x3, x3new)
-
-            if plotgrid:
-                ax.plot(*np.meshgrid(x2new, x3new), linestyle="", marker=".", color=str(i / N * M))
-                ax.set_ylabel("x2")
-                ax.set_xlabel("x3")
-                draw()
-                pause(0.05)
+        if plotgrid:
+            grid_step(x2new, x3new, i, N, ax)
 
     x2 = np.unique(x2)
     x3 = np.unique(x3)
@@ -129,11 +110,11 @@ def combine_files(
     x3,
 ):
 
-    stem = utils.datetime2stem(time)
-    pat = stem + "_*.h5"
-    outfn = outdir / (stem + ".h5")
+    outfn = time2filename(outdir, time)
 
     lx = (x1.size, x2.size, x3.size)
+
+    pat = utils.datetime2stem(time) + "_*.h5"
 
     print("write", outfn, "lx: ", lx)
     with h5py.File(outfn, "w") as oh:
