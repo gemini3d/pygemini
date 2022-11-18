@@ -1,10 +1,11 @@
 from pathlib import Path
 
-from matplotlib.pyplot import Figure, Axes, draw, pause
+from matplotlib.pyplot import figure, Axes, draw, pause
 import numpy as np
 import h5py
 
-from . import filenames2times, time2filename, patch_grid
+from . import filenames2times, patch_grid
+from .. import utils
 
 
 def grid_step(x2new, x3new, i: int, N: int, ax: Axes) -> None:
@@ -20,16 +21,26 @@ def grid_step(x2new, x3new, i: int, N: int, ax: Axes) -> None:
 
 def patch(indir: Path, var: str):
 
+    LSP = 7
+    p4 = (0, 3, 2, 1)
+    # p3 = (2, 1, 0)
+
+    ix1 = 10  # TODO arbitrary, needs to be physically references like in plot12, plot23, etc.
+
     times = filenames2times(indir)
 
-    fg = Figure()
-    ax = fg.gca()
-
     for t in times:
-        file = time2filename(indir, t)
-        with h5py.File(file, "r") as fh:
-            v = fh[var][:]
+        fg = figure()
+        ax = fg.gca()
+        ax.set_title(str(t))
+        pat = utils.datetime2stem(t) + "_*.h5"
+        for file in indir.glob(pat):
+            with h5py.File(file, "r") as fh:
+                if var == "ne":
+                    v = fh["/nsall"][:].transpose(p4)[LSP - 1, :, :, :]
 
-        x2, x3 = patch_grid(file)
+            x2, x3 = patch_grid(file)
 
-        ax.pcolormesh(*np.meshgrid(x2, x3), v)
+            ax.pcolormesh(x2, x3, v[ix1, :, :].transpose())
+            draw()
+            pause(0.05)
