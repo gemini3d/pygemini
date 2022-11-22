@@ -38,10 +38,11 @@ def patch(indir: Path, var: str):
 
         fg = figure()
         ax = fg.gca()
-        ax.set_title(str(t))
+        ax.set_title(f"{var}: {t}")
 
         pat = utils.datetime2stem(t) + "_*.h5"
         for file in indir.glob(pat):
+            wid = file.stem.split("_")[-1]
             with h5py.File(file, "r") as fh:
                 if var == "ne":
                     v = fh["/nsall"][:].transpose(p4)[LSP - 1, :, :, :]
@@ -50,6 +51,13 @@ def patch(indir: Path, var: str):
             x2, x3 = patch_grid(file)
 
             h = ax.pcolormesh(x2, x3, v[ix1, :, :].transpose(), vmin=clim[0], vmax=clim[1])
+            ax.text(
+                x2[x2.size // 2],
+                x3[x3.size // 2],
+                wid,
+                verticalalignment="center",
+                horizontalalignment="center",
+            )
             if first:
                 fg.colorbar(h, ax=ax)
                 first = False
