@@ -28,15 +28,18 @@ def patch(indir: Path, var: str):
 
     # arbitrary user parameters
     clim_ne = (1e8, 1e11)
+    plot_dir = indir / "plots"
 
     ix1 = 10  # TODO arbitrary, needs to be physically referenced like in plot12, plot23, etc.
 
     times = filenames2times(indir)
 
+    fg = figure()
+
     for t in times:
         first = True
 
-        fg = figure()
+        fg.clf()
         ax = fg.gca()
         ax.set_title(f"{var}: {t}")
 
@@ -64,3 +67,8 @@ def patch(indir: Path, var: str):
 
             draw()
             pause(0.05)
+
+        pause(0.5)
+        plot_fn = plot_dir / f"{var}_{t:%Y-%m-%d_%H%M%S}.png"
+        print("save plot", plot_fn)
+        fg.savefig(plot_fn)
