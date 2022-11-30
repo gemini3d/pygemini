@@ -31,7 +31,7 @@ def plot_interp(
     xg: dict[str, T.Any],
     parm: xarray.DataArray,
     *,
-    name: str | None = None,
+    name: str = "",
     ref_alt: float = REF_ALT,
     **kwargs,
 ) -> None:
@@ -59,26 +59,23 @@ def plot_interp(
 
     cmap = None
     is_Efield = False
-    vmin = None
-    vmax = None
+
     if name.startswith("J") or name == "Phitop":
         cmap = "bwr"
-        vmax = abs(parm).max().data
-        vmin = -vmax
+        clim = (-abs(parm).max().data, abs(parm).max().data)
     elif name.startswith("v"):
         cmap = "bwr"
-        vmax = 80.0
-        vmin = -vmax
+        clim = (-80.0, 80.0)
     elif name.startswith(("V", "E")):
         is_Efield = True
         cmap = "bwr"
-        vmax = abs(parm).max().data
-        vmin = -vmax
+        clim = (-abs(parm).max().data, abs(parm).max().data)
     elif name.startswith("T"):
-        vmin = 0.0
-        vmax = parm.max().data
+        clim = (0.0, parm.max().data)
     elif name.startswith("n"):
-        vmin = 1e-7
+        clim = (1e-7, None)
+    else:
+        clim = (None, None)
 
     # %% SIZE OF SIMULATION
     lxs = get_lxs(xg)
@@ -138,17 +135,7 @@ def plot_interp(
             ax.set_xlabel("eastward dist. (km)")
         elif parm.ndim == 2:
             f = interp.interp2d(xg["x2"][inds2], xg["x1"][inds1], parm, bounds_error=False)
-            plot12(
-                xp[i],
-                zp,
-                f(xp, zp)[:, i],
-                ax,
-                name=name,
-                ref_alt=ref_alt,
-                cmap=cmap,
-                vmin=vmin,
-                vmax=vmax,
-            )
+            plot12(xp[i], zp, f(xp, zp)[:, i], ax, name=name, ref_alt=ref_alt, cmap=cmap, clim=clim)
         elif parm.ndim == 1:  # phitop
             f = interp.interp1d(xg["x2"][inds2], parm, bounds_error=False)
             plot1d2(xp, f(xp), name, ax)
@@ -178,7 +165,7 @@ def plot_interp(
         elif parm.ndim == 2:
             f = interp.interp2d(xg["x3"][inds3], xg["x1"][inds1], parm, bounds_error=False)
             parmp = f(yp, zp).reshape((lzp, lyp))
-            plot13(yp[i], zp, parmp[:, i], ax, name=name, cmap=cmap, vmin=vmin, vmax=vmax)
+            plot13(yp[i], zp, parmp[:, i], ax, clim, name=name, cmap=cmap)
         elif parm.ndim == 1:  # phitop
             f = interp.interp1d(xg["x3"][inds3], parm, bounds_error=False)
             plot1d3(yp, f(yp), name, ax)
@@ -203,8 +190,7 @@ def plot_interp(
             yp,
             zp,
             cmap,
-            vmin,
-            vmax,
+            clim,
             ref_alt,
         )
     elif name == "rayleighs":
@@ -217,18 +203,17 @@ def plot_interp(
             inds2,
             inds3,
             cmap,
-            vmin,
-            vmax,
+            clim,
             name,
             time,
             kwargs["wavelength"],
         )
     elif is_Efield:
         # single 2D plot
-        mag_lonlat(fg.gca(), xg, parm, cmap, vmin, vmax, name, time)
+        mag_lonlat(fg.gca(), xg, parm, cmap, clim, name, time)
     else:
         # single 2D plot
-        east_north(fg.gca(), xg, parm, xp, yp, inds2, inds3, cmap, vmin, vmax, name, time)
+        east_north(fg.gca(), xg, parm, xp, yp, inds2, inds3, cmap, clim, name, time)
 
 
 def plot3d_slice(
@@ -249,8 +234,7 @@ def plot3d_slice(
     yp,
     zp,
     cmap,
-    vmin,
-    vmax,
+    clim: tuple[float, float],
     ref_alt: float,
 ) -> None:
 
@@ -265,17 +249,7 @@ def plot3d_slice(
     # CONVERT ANGULAR COORDINATES TO MLAT,MLON
     ix = xp.argsort()
     iy = yp.argsort()
-    plot12(
-        xp[ix],
-        zp,
-        f(xp, zp)[:, ix],
-        axs[0],
-        name=name,
-        ref_alt=ref_alt,
-        cmap=cmap,
-        vmin=vmin,
-        vmax=vmax,
-    )
+    plot12(xp[ix], zp, f(xp, zp)[:, ix], axs[0], clim, name=name, ref_alt=ref_alt, cmap=cmap)
     # %% LAT./LONG. SLICE COORDINATES (center panel)
     X3, Y3, Z3 = np.meshgrid(xp, yp, ref_alt * 1e3)
     # transpose: so north dist, east dist., alt.
@@ -288,20 +262,11 @@ def plot3d_slice(
 
     parmp = parmp[:, :, iy]  # must be indexed in two steps
 
-    plot23(
-        xp[ix],
-        yp[iy],
-        parmp[0, ix, :],
-        name,
-        axs[1],
-        cmap=cmap,
-        vmin=vmin,
-        vmax=vmax,
-    )
+    plot23(xp[ix], yp[iy], parmp[0, ix, :], name, axs[1], cmap=cmap, clim=clim)
     # %% ALT/LAT SLICE (right panel)
     ix2 = lx2 // 2 - 1  # arbitrary slice, to match Matlab
     f = interp.interp2d(xg["x3"][inds3], xg["x1"][inds1], parm[:, ix2, :], bounds_error=False)
-    plot13(yp[iy], zp, f(yp, zp)[:, iy], axs[2], name=name, cmap=cmap, vmin=vmin, vmax=vmax)
+    plot13(yp[iy], zp, f(yp, zp)[:, iy], axs[2], clim, name=name, cmap=cmap)
 
 
 cart3d_long_ENU = plot_interp
