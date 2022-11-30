@@ -1,6 +1,30 @@
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools>=61.0.0", "wheel"]
+
+[project]
+name = "gemini3d"
+description = "3-D ionospheric model plotting suite"
+keywords = ["mesosphere", "stratosphere", "thermosphere", "ionosphere"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Atmospheric Science"
+]
+requires-python = ">=3.7"
+dynamic = ["version", "readme"]
+dependencies = ["python-dateutil", "numpy", "xarray>=0.16.0", "scipy", "h5py", "matplotlib >= 3.1"]
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type = "text/markdown"}
+version = {attr = "gemini3d.__version__"}
+
+[project.optional-dependencies]
+tests = ["pytest"]
+lint = ["flake8", "flake8-bugbear", "flake8-builtins", "flake8-blind-except", "mypy",
+  "types-python-dateutil"]
 
 [tool.black]
 line-length = 100
