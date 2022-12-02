@@ -34,10 +34,6 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
 
     pi = math.pi
 
-    # arrange the grid data in a dictionary
-    xg = {"lx": np.array((cfg["lq"], cfg["lp"], cfg["lphi"]))}
-    # aggregate array shape variable
-
     # mesh size *with* ghost cells added in
     lqg = cfg["lq"] + 4
     lpg = cfg["lp"] + 4
@@ -128,7 +124,28 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     phi[1] = phi[2] - phistride
     phi[-2] = phi[-3] + phistride
     phi[-1] = phi[-3] + 2 * phistride
+    
+    # At this point we have all the arrays and sizes and the remainder will be 
+    #  coordinate conversions and construction of grid dictionary
+    xg=generate_tilted_dipole3d(q,p,phi)
+    return xg
 
+
+
+# coordinate conversions etc. needed to generate the full grid information
+def generate_tilted_dipole3d(q,p,phi):
+    # various sizes used internally
+    lqg=q.size
+    lpg=p.size
+    lphig=phi.size
+    lq=lqg-4
+    lp=lpg-4
+    lphi=lphig-4
+    
+    # arrange the grid data in a dictionary
+    xg = {"lx": np.array((lq,lp,lphi))}
+    # aggregate array shape variable
+    
     # %% allocate meridional slice, including ghost cells - this later gets extended into 3D
     r = np.empty((lqg, lpg))
     theta = np.empty((lqg, lpg))
@@ -146,25 +163,25 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     # %% define cell interfaces and convert coordinates
     logging.info("converting q interface values to r,theta")
     qi = 1 / 2 * (q[1:-2] + q[2:-1])
-    rqi = np.empty((cfg["lq"] + 1, cfg["lp"]))
-    thetaqi = np.empty((cfg["lq"] + 1, cfg["lp"]))
+    rqi = np.empty((lq + 1, lp))
+    thetaqi = np.empty((lq + 1, lp))
     for iq in range(rqi.shape[0]):
         for ip in range(rqi.shape[1]):
             rqi[iq, ip], thetaqi[iq, ip] = qp2rtheta(qi[iq], p[ip + 2])
             # shift by 2 to exclude ghost
-    rqi = np.broadcast_to(rqi[:, :, None], (*rqi.shape, cfg["lphi"]))
-    thetaqi = np.broadcast_to(thetaqi[:, :, None], (*thetaqi.shape, cfg["lphi"]))
+    rqi = np.broadcast_to(rqi[:, :, None], (*rqi.shape, lphi))
+    thetaqi = np.broadcast_to(thetaqi[:, :, None], (*thetaqi.shape, lphi))
 
     logging.info("converting p interface values to r,theta")
     pi = 1 / 2 * (p[1:-2] + p[2:-1])
-    rpi = np.empty((cfg["lq"], cfg["lp"] + 1))
-    thetapi = np.empty((cfg["lq"], cfg["lp"] + 1))
+    rpi = np.empty((lq, lp + 1))
+    thetapi = np.empty((lq, lp + 1))
     for iq in range(rpi.shape[0]):
         for ip in range(rpi.shape[1]):
             rpi[iq, ip], thetapi[iq, ip] = qp2rtheta(q[iq + 2], pi[ip])
             # shift non interface index by two to exclude ghost
-    rpi = np.broadcast_to(rpi[:, :, None], (*rpi.shape, cfg["lphi"]))
-    thetapi = np.broadcast_to(thetapi[:, :, None], (*thetapi.shape, cfg["lphi"]))
+    rpi = np.broadcast_to(rpi[:, :, None], (*rpi.shape, lphi))
+    thetapi = np.broadcast_to(thetapi[:, :, None], (*thetapi.shape, lphi))
 
     # phii = 1 / 2 * (phi[1:-2] + phi[2:-1])
 
@@ -199,9 +216,9 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
 
     # spherical unit vectors (expressed in a Cartesian basis), these should not have ghost cells
     logging.info("calculating spherical unit vectors")
-    xg["er"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
-    xg["etheta"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
-    xg["ephi"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
+    xg["er"] = np.empty((lq, lp, lphi, 3))
+    xg["etheta"] = np.empty((lq, lp, lphi, 3))
+    xg["ephi"] = np.empty((lq, lp, lphi, 3))
     xg["er"][..., 0] = np.sin(theta[2:-2, 2:-2, 2:-2]) * np.cos(phispher[2:-2, 2:-2, 2:-2])
     xg["er"][..., 1] = np.sin(theta[2:-2, 2:-2, 2:-2]) * np.sin(phispher[2:-2, 2:-2, 2:-2])
     xg["er"][..., 2] = np.cos(theta[2:-2, 2:-2, 2:-2])
@@ -214,9 +231,9 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
 
     # now do the dipole unit vectors
     logging.info("calculating dipole unit vectors")
-    xg["e1"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
-    xg["e2"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
-    xg["e3"] = np.empty((cfg["lq"], cfg["lp"], cfg["lphi"], 3))
+    xg["e1"] = np.empty((lq, lp, lphi, 3))
+    xg["e2"] = np.empty((lq, lp, lphi, 3))
+    xg["e3"] = np.empty((lq, lp, lphi, 3))
     xg["e1"][..., 0] = (
         -3
         * np.cos(theta[2:-2, 2:-2, 2:-2])
@@ -254,11 +271,13 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     logging.info("calculating average inclination angle for each field line...")
     proj = np.sum(xg["er"] * xg["e1"], axis=3)
     Imat = np.arccos(proj)
-    if cfg["gridflag"] == 0:  # open dipole
-        xg["I"] = Imat.mean(axis=0)
-    else:  # closed dipole
-        Imathalf = Imat[: cfg["lq"] // 2, :, :]
-        xg["I"] = Imathalf.mean(axis=0)
+    #if cfg["gridflag"] == 0:  # open dipole
+    #    xg["I"] = Imat.mean(axis=0)
+    #else:  # closed dipole
+    #    Imathalf = Imat[: lq // 2, :, :]
+    #    xg["I"] = Imathalf.mean(axis=0)
+    Imathalf = Imat[: lq // 2, :, :]
+    xg["I"] = Imathalf.mean(axis=0)
     xg["I"] = 90 - np.degrees(np.minimum(xg["I"], math.pi - xg["I"]))
     # ignore parallel vs. anti-parallel
 
@@ -295,7 +314,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     inull = r[2:-2, 2:-2, 2:-2] < Re + 79.95e3
     # note addressing of r to produce array sans ghost cells
 
-    xg["nullpts"] = np.zeros((cfg["lq"], cfg["lp"], cfg["lphi"]))
+    xg["nullpts"] = np.zeros((lq, lp, lphi))
     xg["nullpts"][inull] = 1
     # may need to convert inull to linear index?
 
@@ -330,7 +349,10 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     xg["dx3h"] = xg["x3i"][1:] - xg["x3i"][:-1]
 
     # center lat/lon of grid also required
-    xg["glonctr"] = cfg["glon"]
-    xg["glatctr"] = cfg["glat"]
+    #xg["glonctr"] = cfg["glon"]
+    #xg["glatctr"] = cfg["glat"]
 
+    xg["glonctr"] = np.mean(xg["glon"])
+    xg["glatctr"] = np.mean(xg["glat"])
+    
     return xg
