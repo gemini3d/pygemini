@@ -124,28 +124,27 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     phi[1] = phi[2] - phistride
     phi[-2] = phi[-3] + phistride
     phi[-1] = phi[-3] + 2 * phistride
-    
-    # At this point we have all the arrays and sizes and the remainder will be 
+
+    # At this point we have all the arrays and sizes and the remainder will be
     #  coordinate conversions and construction of grid dictionary
-    xg=generate_tilted_dipole3d(q,p,phi)
+    xg = generate_tilted_dipole3d(q, p, phi)
     return xg
 
 
-
 # coordinate conversions etc. needed to generate the full grid information
-def generate_tilted_dipole3d(q,p,phi):
+def generate_tilted_dipole3d(q, p, phi):
     # various sizes used internally
-    lqg=q.size
-    lpg=p.size
-    lphig=phi.size
-    lq=lqg-4
-    lp=lpg-4
-    lphi=lphig-4
-    
+    lqg = q.size
+    lpg = p.size
+    lphig = phi.size
+    lq = lqg - 4
+    lp = lpg - 4
+    lphi = lphig - 4
+
     # arrange the grid data in a dictionary
-    xg = {"lx": np.array((lq,lp,lphi))}
+    xg = {"lx": np.array((lq, lp, lphi))}
     # aggregate array shape variable
-    
+
     # %% allocate meridional slice, including ghost cells - this later gets extended into 3D
     r = np.empty((lqg, lpg))
     theta = np.empty((lqg, lpg))
@@ -271,9 +270,9 @@ def generate_tilted_dipole3d(q,p,phi):
     logging.info("calculating average inclination angle for each field line...")
     proj = np.sum(xg["er"] * xg["e1"], axis=3)
     Imat = np.arccos(proj)
-    #if cfg["gridflag"] == 0:  # open dipole
+    # if cfg["gridflag"] == 0:  # open dipole
     #    xg["I"] = Imat.mean(axis=0)
-    #else:  # closed dipole
+    # else:  # closed dipole
     #    Imathalf = Imat[: lq // 2, :, :]
     #    xg["I"] = Imathalf.mean(axis=0)
     Imathalf = Imat[: lq // 2, :, :]
@@ -349,10 +348,10 @@ def generate_tilted_dipole3d(q,p,phi):
     xg["dx3h"] = xg["x3i"][1:] - xg["x3i"][:-1]
 
     # center lat/lon of grid also required
-    #xg["glonctr"] = cfg["glon"]
-    #xg["glatctr"] = cfg["glat"]
+    # xg["glonctr"] = cfg["glon"]
+    # xg["glatctr"] = cfg["glat"]
 
     xg["glonctr"] = np.mean(xg["glon"])
     xg["glatctr"] = np.mean(xg["glat"])
-    
+
     return xg
