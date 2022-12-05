@@ -107,6 +107,7 @@ def frame(
     t0 = to_datetime(dat.time)
 
     for k in var.intersection(dat.data_vars):
+        fg.clf()
         try:
             if plotfun.__name__.startswith("curv"):
                 plotfun(fg, t0, xg, dat[k], cfg)
