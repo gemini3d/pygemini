@@ -53,7 +53,9 @@ def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str = ""):
     plotfun = grid2plotfun(xg)
     cfg = read.config(direc)
 
-    fg = mpl.figure.Figure(constrained_layout=True)
+#    fg = mpl.figure.Figure(constrained_layout=True)
+    fg = mpl.figure.Figure(constrained_layout=True, dpi=150, figsize=(18,4.5))
+
 
     # %% loop over files / time
     for t in cfg["time"]:
