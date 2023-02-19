@@ -415,14 +415,27 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
     if closeddip:
         # closed dipole grid
         # FIXME:  This code only works for symmetric grids...
+
         if 2 * lx1 == xg["lx"][0]:
             ns = np.concatenate((ns, ns[:, ::-1, :, :]), 1)
             Ts = np.concatenate((Ts, Ts[:, ::-1, :, :]), 1)
             vsx1 = np.concatenate((vsx1, vsx1[:, ::-1, :, :]), 1)
         else:
-            ns = np.concatenate((ns, ns[:, lx1, :, :], ns[:, ::-1, :, :]), 1)
-            Ts = np.concatenate((Ts, Ts[:, lx1, :, :], Ts[:, ::-1, :, :]), 1)
-            vsx1 = np.concatenate((vsx1, vsx1[:, lx1, :, :], vsx1[:, ::-1, :, :]), 1)
+            nsp = ns[:, -1, :, :][:, None, :, :]
+            tsp = Ts[:, -1, :, :][:, None, :, :]
+            vsp = vsx1[:, -1, :, :][:, None, :, :]
+            if 2 * lx1 == xg["lx"][0] - 1:
+                # off by one, fill with end point
+                ns = np.concatenate((ns, nsp, ns[:, ::-1, :, :]), 1)
+                Ts = np.concatenate((Ts, tsp, Ts[:, ::-1, :, :]), 1)
+                vsx1 = np.concatenate((vsx1, vsp, vsx1[:, ::-1, :, :]), 1)
+            elif 2 * lx1 == xg["lx"][0] - 2:
+                # off by two, fill with end point
+                ns = np.concatenate((ns, nsp, nsp, ns[:, ::-1, :, :]), 1)
+                Ts = np.concatenate((Ts, tsp, tsp, Ts[:, ::-1, :, :]), 1)
+                vsx1 = np.concatenate((vsx1, vsp, vsp, vsx1[:, ::-1, :, :]), 1)
+            else:
+                raise ValueError(f"closed dipole lalt: 2*lx1={2*lx1} != grid lx1: {xg['lx'][0]}")
 
     dat = xarray.Dataset(
         {

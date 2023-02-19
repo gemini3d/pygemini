@@ -65,7 +65,7 @@ def plot_interp(
         clim = (-abs(parm).max().data, abs(parm).max().data)
     elif name.startswith("v"):
         cmap = "bwr"
-        #clim = (-80.0, 80.0)
+        # clim = (-80.0, 80.0)
         clim = (-abs(parm).max().data, abs(parm).max().data)
     elif name.startswith(("V", "E")):
         is_Efield = True
@@ -116,7 +116,7 @@ def plot_interp(
     # %% INTERPOLATE ONTO PLOTTING GRID
     if lxs[2] == 1:  # alt./lon. slice
         ax = fg.gca()
-        #ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
+        # ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
         # meridional meshgrid, this defines the grid for plotting
         # slice expects the first dim. to be "y" ("z" in the 2D case)
         # %% CONVERT ANGULAR COORDINATES TO MLAT,MLON
@@ -144,7 +144,7 @@ def plot_interp(
             raise ValueError(f"{name}: only 2D and 1D data are expected--squeeze data")
     elif lxs[1] == 1:  # alt./lat. slice
         ax = fg.gca()
-        #ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
+        # ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
         # so north dist, east dist., alt.
         # slice expects the first dim. to be "y"
         # %% CONVERT ANGULAR COORDINATES TO MLAT,MLON
@@ -240,7 +240,7 @@ def plot3d_slice(
 ) -> None:
 
     axs = fg.subplots(1, 3, sharey=False, sharex=False)
-    #fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.98)
+    # fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.98)
     # %% CONVERT TO DISTANCE UP, EAST, NORTH (left panel)
     # JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT,
     # AND AN ALTITUDE FOR THE LAT./LON. SLICE
