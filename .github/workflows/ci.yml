@@ -70,6 +70,12 @@ jobs:
         repository: gemini3d/external
         path: gemext
 
+    - name: Checkout GemGI (for simulation config.nml inputs)
+      uses: actions/checkout@v3
+      with:
+        repository: gemini3d/gemci
+        path: gemci
+
     - name: Install Prereqs (Linux)
       if: runner.os == 'Linux'
       run: |
@@ -117,6 +123,7 @@ jobs:
       timeout-minutes: 15
       env:
         GEMINI_ROOT: ${{ runner.temp }}
+        GEMCI_ROOT: ${{ github.workspace }}/gemci
 
 # codecov coverage
     # - run: pip install codecov pytest-cov

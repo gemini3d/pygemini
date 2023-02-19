@@ -3,8 +3,11 @@ these test that PyGemini generates inputs that match expectations
 """
 
 import logging
-import pytest
 import os
+from pathlib import Path
+import h5py
+
+import pytest
 
 import gemini3d
 import gemini3d.web
@@ -30,7 +33,7 @@ import gemini3d.msis
         "mini3d_glow",
     ],
 )
-def test_runner(name, tmp_path, monkeypatch, helpers):
+def test_model_setup(name, tmp_path, monkeypatch, helpers):
 
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
@@ -61,3 +64,37 @@ def test_runner(name, tmp_path, monkeypatch, helpers):
         for err, v in errs.items():
             logging.error(f"compare:{err}: {v} errors")
         raise ValueError(f"compare_input: new generated inputs do not match reference for: {name}")
+
+
+@pytest.mark.parametrize("name", ["tohoku2d_eq", "tohoku3d_eq"])
+@pytest.mark.skipif(not os.environ.get("GEMCI_ROOT"), reason="GEMCI_ROOT not set")
+def test_equilibrium_setup(name, tmp_path, monkeypatch):
+
+    cfg_dir = Path(os.environ["GEMCI_ROOT"]) / "cfg/equilibrium" / name
+
+    if not os.environ.get("GEMINI_CIROOT"):
+        monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
+
+    params = gemini3d.read.config(cfg_dir)
+
+    out_dir = tmp_path
+    print("generating equilibrium files in", out_dir)
+    gemini3d.model.setup(params, out_dir)
+
+    assert (out_dir / "inputs").is_dir()
+    for n in (
+        "config.nml",
+        "initial_conditions.h5",
+        "msis_setup_in.h5",
+        "msis_setup_out.h5",
+        "setup_grid.json",
+        "simgrid.h5",
+        "simsize.h5",
+    ):
+        assert (out_dir / "inputs" / n).is_file()
+
+    with h5py.File(out_dir / "inputs/simsize.h5", "r") as f:
+        lx = f["/lx"][:]
+    assert lx[0] == params["lq"]
+    assert lx[1] == params["lp"]
+    assert lx[2] == params["lphi"]
