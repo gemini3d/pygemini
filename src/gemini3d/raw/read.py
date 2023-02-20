@@ -91,7 +91,11 @@ def grid2(file: Path, lx: tuple[int, ...] | list[int]) -> dict[str, T.Any]:
         raise FileNotFoundError(file)
 
     with file.open("rb") as f:
-        xg = {"lx": lx, "mlon": np.fromfile(f, ft, lx[0]), "mlat": np.fromfile(f, ft, lx[1])}
+        xg = {
+            "lx": lx,
+            "mlon": np.fromfile(f, ft, lx[0]),
+            "mlat": np.fromfile(f, ft, lx[1]),
+        }
 
     return xg
 
@@ -196,7 +200,9 @@ def Efield(file: Path) -> xarray.Dataset:
     return dat
 
 
-def data(file, cfg: dict[str, T.Any], xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
+def data(
+    file, cfg: dict[str, T.Any], xg: dict[str, T.Any] | None = None
+) -> xarray.Dataset:
 
     var = {"ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3", "Phi"}
 
@@ -243,7 +249,9 @@ def frame3d_curv(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Datas
     except FileNotFoundError:
         # perhaps converting raw data, and didn't have the huge grid file
         logging.error("simgrid.dat missing, returning data without grid information")
-        dat = xarray.Dataset(coords={"x1": range(lx[0]), "x2": range(lx[1]), "x3": range(lx[2])})
+        dat = xarray.Dataset(
+            coords={"x1": range(lx[0]), "x2": range(lx[1]), "x3": range(lx[2])}
+        )
 
     with file.open("rb") as f:
         dat = dat.assign_coords({"time": time(f)})
@@ -296,7 +304,9 @@ def frame3d_curvavg(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Da
     except FileNotFoundError:
         # perhaps converting raw data, and didn't have the huge grid file
         logging.error("simgrid.dat missing, returning data without grid information")
-        dat = xarray.Dataset(coords={"x1": range(lx[0]), "x2": range(lx[1]), "x3": range(lx[2])})
+        dat = xarray.Dataset(
+            coords={"x1": range(lx[0]), "x2": range(lx[1]), "x3": range(lx[2])}
+        )
 
     with file.open("rb") as f:
         dat = dat.assign_coords({"time": time(f)})
@@ -326,7 +336,9 @@ def frame3d_curvne(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dat
     except FileNotFoundError:
         # perhaps converting raw data, and didn't have the huge grid file
         logging.error("simgrid.dat missing, returning data without grid information")
-        dat = xarray.Dataset(coords={"x1": range(lx[0]), "x2": range(lx[1]), "x3": range(lx[2])})
+        dat = xarray.Dataset(
+            coords={"x1": range(lx[0]), "x2": range(lx[1]), "x3": range(lx[2])}
+        )
 
     with file.open("rb") as f:
         dat = dat.assign_coords({"time": time(f)})
@@ -378,7 +390,9 @@ def glow_aurmap(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Datase
     if not xg:
         xg = grid(file.parent)
 
-    dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
+    dat = xarray.Dataset(
+        coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+    )
 
     if not len(lx) == 3:
         raise ValueError(f"lx must have 3 elements, you have lx={lx}")
