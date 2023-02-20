@@ -38,14 +38,20 @@ def test_model_config(tmp_path):
 
 def test_datetime_range():
     # datetime_range is a closed interval
-    t = config.datetime_range(datetime(2012, 1, 1), datetime(2010, 1, 1), timedelta(seconds=1))
+    t = config.datetime_range(
+        datetime(2012, 1, 1), datetime(2010, 1, 1), timedelta(seconds=1)
+    )
     assert isinstance(t, list)
     assert len(t) == 0
 
-    t = config.datetime_range(datetime(2012, 1, 1), datetime(2012, 1, 1), timedelta(seconds=1))
+    t = config.datetime_range(
+        datetime(2012, 1, 1), datetime(2012, 1, 1), timedelta(seconds=1)
+    )
     assert t == [datetime(2012, 1, 1)]
 
-    t = config.datetime_range(datetime(2012, 1, 1), datetime(2012, 1, 1), timedelta(seconds=-1))
+    t = config.datetime_range(
+        datetime(2012, 1, 1), datetime(2012, 1, 1), timedelta(seconds=-1)
+    )
     assert t == [datetime(2012, 1, 1)]
 
     # this is how pandas.date_range works
@@ -58,7 +64,9 @@ def test_datetime_range():
 
     # this is how pandas.date_range works
     t = config.datetime_range(
-        datetime(2012, 1, 1, 0, 0, 0), datetime(2012, 1, 1, 0, 1, 30), timedelta(minutes=1)
+        datetime(2012, 1, 1, 0, 0, 0),
+        datetime(2012, 1, 1, 0, 1, 30),
+        timedelta(minutes=1),
     )
     assert t == [datetime(2012, 1, 1, 0, 0, 0), datetime(2012, 1, 1, 0, 1, 0)]
 
@@ -106,7 +114,9 @@ def test_nml_gemini_env_root(monkeypatch, tmp_path):
         cfg = config.parse_namelist(cfn, "setup")
 
     assert isinstance(cfg["eq_dir"], Path)
-    assert cfg["eq_dir"] == Path(os.environ.get("GEMINI_CIROOT")).expanduser() / "test2d_eq"
+    assert (
+        cfg["eq_dir"] == Path(os.environ.get("GEMINI_CIROOT")).expanduser() / "test2d_eq"
+    )
 
 
 @pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])

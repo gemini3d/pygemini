@@ -28,7 +28,9 @@ def test_plot(name, tmp_path, monkeypatch, helpers):
     # get files if needed
     test_dir = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
 
-    shutil.copytree(test_dir, tmp_path, dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.png"))
+    shutil.copytree(
+        test_dir, tmp_path, dirs_exist_ok=True, ignore=shutil.ignore_patterns("*.png")
+    )
 
     fg = mpl.figure.Figure()
 

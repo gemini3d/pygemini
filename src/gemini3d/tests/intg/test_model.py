@@ -63,7 +63,9 @@ def test_model_setup(name, tmp_path, monkeypatch, helpers):
     if errs:
         for err, v in errs.items():
             logging.error(f"compare:{err}: {v} errors")
-        raise ValueError(f"compare_input: new generated inputs do not match reference for: {name}")
+        raise ValueError(
+            f"compare_input: new generated inputs do not match reference for: {name}"
+        )
 
 
 @pytest.mark.parametrize("name", ["tohoku2d_eq", "tohoku3d_eq"])
