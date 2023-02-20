@@ -48,7 +48,9 @@ def compare_output(
             a = A[k]
             b = B[k]
 
-            assert a.shape == b.shape, f"{k} time {i} {t}: shape: ref {b.shape} != data {a.shape}"
+            assert (
+                a.shape == b.shape
+            ), f"{k} time {i} {t}: shape: ref {b.shape} != data {a.shape}"
 
             if not np.allclose(a, b, rtol=tol[f"rtol{j}"], atol=tol[f"atol{j}"]):
                 errs += 1
@@ -61,20 +63,27 @@ def compare_output(
             itols = ["N", "V", "V", "V"]
             for k, j in zip(names, itols):
                 if np.allclose(
-                    ref[k], a, rtol=0.0001 * tol[f"rtol{j}"], atol=0.0001 * tol[f"atol{j}"]
+                    ref[k],
+                    a,
+                    rtol=0.0001 * tol[f"rtol{j}"],
+                    atol=0.0001 * tol[f"atol{j}"],
                 ):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
         if i == 3:
             for k in {"Ti", "Te"}:
-                if np.allclose(ref[k], A[k], rtol=0.01 * tol["rtolT"], atol=0.1 * tol["atolT"]):
+                if np.allclose(
+                    ref[k], A[k], rtol=0.01 * tol["rtolT"], atol=0.1 * tol["atolT"]
+                ):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
         if i == 2:
             for k in {"J1", "J2", "J3"}:
-                if np.allclose(ref[k], a, rtol=0.01 * tol["rtolJ"], atol=0.1 * tol["atolJ"]):
+                if np.allclose(
+                    ref[k], a, rtol=0.01 * tol["rtolJ"], atol=0.1 * tol["atolJ"]
+                ):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 

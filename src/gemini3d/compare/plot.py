@@ -37,7 +37,9 @@ def plotdiff(
         name = str(A.name)
 
     assert A.shape == B.shape, f"{name}: size of new and ref arrays don't match"
-    assert 1 < A.ndim <= 4, f"failed to plot {A.ndim}-D array {name}: for 4D, 3D, or 2D arrays"
+    assert (
+        1 < A.ndim <= 4
+    ), f"failed to plot {A.ndim}-D array {name}: for 4D, 3D, or 2D arrays"
 
     lx = read.simsize(new_dir)
     is3d = lx[1] != 1 and lx[2] != 1
@@ -64,10 +66,22 @@ def plotdiff(
             ix2: int = im["x2"].data
             ix3: int = im["x3"].data
             plotdiff(
-                A[:, :, ix3], B[:, :, ix3], time, new_dir, ref_dir, name=name + "-x2", imax=ix3
+                A[:, :, ix3],
+                B[:, :, ix3],
+                time,
+                new_dir,
+                ref_dir,
+                name=name + "-x2",
+                imax=ix3,
             )
             plotdiff(
-                A[:, ix2, :], B[:, ix2, :], time, new_dir, ref_dir, name=name + "-x3", imax=ix2
+                A[:, ix2, :],
+                B[:, ix2, :],
+                time,
+                new_dir,
+                ref_dir,
+                name=name + "-x3",
+                imax=ix2,
             )
         else:
             raise ValueError("unexpected case, 2D data but in if-tree only for 3D")
