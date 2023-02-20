@@ -103,7 +103,9 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
     """
 
     if "lx" not in xg:
-        xg["lx"] = np.array((xg["x1"].shape, xg["x2"].shape, xg["x3"].shape)).astype(np.int32)
+        xg["lx"] = np.array((xg["x1"].shape, xg["x2"].shape, xg["x3"].shape)).astype(
+            np.int32
+        )
 
     logging.info(f"write_grid: {size_fn}")
     with h5py.File(size_fn, "w") as h:
@@ -300,4 +302,6 @@ def write_time(fid: h5py.File, time: datetime):
     """
 
     fid["/time/ymd"] = np.array((time.year, time.month, time.day)).astype(np.int32)
-    fid["/time/UTsec"] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
+    fid["/time/UTsec"] = (
+        time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
+    )
