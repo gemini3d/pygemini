@@ -50,7 +50,9 @@ def convert(indir: Path, outdir: Path, data_vars: set[str], plotgrid: bool = Fal
         combine_files(indir, outdir, t, data_vars, x1, x2, x3)
 
 
-def get_xlims(path: Path, time: datetime, plotgrid: bool = False) -> tuple[typing.Any, typing.Any]:
+def get_xlims(
+    path: Path, time: datetime, plotgrid: bool = False
+) -> tuple[typing.Any, typing.Any]:
     """
     build up each axis by scanning files
 
@@ -118,13 +120,20 @@ def combine_files(
 
     print("write", outfn, "lx: ", lx)
     with h5py.File(outfn, "w") as oh:
-        oh.create_dataset("/time/ymd", dtype=np.int32, data=(time.year, time.month, time.day))
-        oh.create_dataset("/time/hms", dtype=np.int32, data=(time.hour, time.minute, time.second))
+        oh.create_dataset(
+            "/time/ymd", dtype=np.int32, data=(time.year, time.month, time.day)
+        )
+        oh.create_dataset(
+            "/time/hms", dtype=np.int32, data=(time.hour, time.minute, time.second)
+        )
         oh.create_dataset("/time/microsecond", dtype=np.int32, data=time.microsecond)
         oh.create_dataset(
             "/time/UThour",
             dtype=np.float64,
-            data=time.hour + time.minute / 60 + time.second / 3600 + time.microsecond / 3600e6,
+            data=time.hour
+            + time.minute / 60
+            + time.second / 3600
+            + time.microsecond / 3600e6,
         )
         for f in indir.glob(pat):
             with h5py.File(f, "r") as ih:

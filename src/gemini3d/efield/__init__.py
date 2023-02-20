@@ -80,7 +80,9 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
     E = xarray.Dataset(
         coords={
-            "time": datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtE0"]),
+            "time": datetime_range(
+                cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtE0"]
+            ),
             "mlat": np.linspace(mlatmin - latbuf, mlatmax + latbuf, llat),
             "mlon": np.linspace(mlonmin - lonbuf, mlonmax + lonbuf, llon),
         }

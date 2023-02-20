@@ -60,7 +60,14 @@ def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str = ""):
     for t in cfg["time"]:
         fg.clf()
         frame(
-            fg, direc, time=t, var=var, saveplot_fmt=saveplot_fmt, xg=xg, cfg=cfg, plotfun=plotfun
+            fg,
+            direc,
+            time=t,
+            var=var,
+            saveplot_fmt=saveplot_fmt,
+            xg=xg,
+            cfg=cfg,
+            plotfun=plotfun,
         )
 
 
