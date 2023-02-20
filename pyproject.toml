@@ -30,7 +30,7 @@ lint = ["flake8", "flake8-bugbear", "flake8-builtins", "flake8-blind-except", "m
   "types-python-dateutil"]
 
 [tool.black]
-line-length = 100
+line-length = 90
 exclude = '''
 /(
     \.eggs
