@@ -36,7 +36,13 @@ def qp2rtheta(q: float, p: float, verbose: bool = False) -> tuple[float, float]:
 
 
 def newton_exact(
-    f, fprime, x0: float, parms: tuple[float, float], maxit: int, tol: float, verbose: bool = False
+    f,
+    fprime,
+    x0: float,
+    parms: tuple[float, float],
+    maxit: int,
+    tol: float,
+    verbose: bool = False,
 ) -> tuple[float, int, bool]:
     """
     1D Newton solver, tweaked for dipole coordinate conversion problem, parms arg
@@ -67,7 +73,14 @@ def newton_exact(
             fval = f(root, parms)
             if verbose:
                 print(
-                    "Iteration ", it, "; root ", root, "; fval ", fval, "; derivative ", derivative
+                    "Iteration ",
+                    it,
+                    "; root ",
+                    root,
+                    "; fval ",
+                    fval,
+                    "; derivative ",
+                    derivative,
                 )
             it += 1
             converged = abs(fval) < tol
