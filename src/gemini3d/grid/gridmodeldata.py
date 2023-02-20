@@ -266,7 +266,9 @@ def geomag2UENgeomag(alt, mlon, mlat) -> tuple:
     meantheta = theta.mean()
     meanphi = phi.mean()
     yUEN = -1 * Re * (theta - meantheta)  # north dist. runs backward from zenith angle
-    xUEN = Re * np.sin(meantheta) * (phi - meanphi)  # some warping done here (using meantheta)
+    xUEN = (
+        Re * np.sin(meantheta) * (phi - meanphi)
+    )  # some warping done here (using meantheta)
     zUEN = alt
 
     return zUEN, xUEN, yUEN
@@ -293,7 +295,9 @@ def geog2UENgeog(
         reftheta = pi / 2 - np.radians(ref_lat)
 
     yUEN = -1 * Re * (theta - reftheta)  # north dist. runs backward from zenith angle
-    xUEN = Re * np.sin(reftheta) * (phi - refphi)  # some warping done here (using meantheta)
+    xUEN = (
+        Re * np.sin(reftheta) * (phi - refphi)
+    )  # some warping done here (using meantheta)
     zUEN = alt
 
     return zUEN, xUEN, yUEN

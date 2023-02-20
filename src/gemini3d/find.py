@@ -124,7 +124,8 @@ def gemini_exe(name: str = "gemini3d.run", root: Path | None = None) -> Path | N
         )
 
     raise EnvironmentError(
-        f"\n{exe} was not runnable on your platform--try rebuilding Gemini3D\n" f"{ret.stderr}"
+        f"\n{exe} was not runnable on your platform--try rebuilding Gemini3D\n"
+        f"{ret.stderr}"
     )
 
 
@@ -148,7 +149,9 @@ def frame(simdir: Path, time: datetime) -> Path:
         return fn
 
     # %% WORKAROUND for real32 file ticks. This will be removed when datetime-fortran is implemented
-    MAX_OFFSET = timedelta(seconds=1)  # 10 ms precision, allow extra accumulated tolerance
+    MAX_OFFSET = timedelta(
+        seconds=1
+    )  # 10 ms precision, allow extra accumulated tolerance
     pat = time.strftime("%Y%m%d") + "_*"
 
     file_times = []

@@ -47,9 +47,13 @@ def read_var(file: Path, var: set[str]) -> dict[str, typing.Any]:
     if {"ne", "v1", "Ti"} & var:
         dat["ne"] = dat["ns"][LSP - 1, :, :, :]
     if "v1" in var:
-        dat["v1"] = (dat["ns"][:6, :, :, :] * dat["vs1"][:6, :, :, :]).sum(axis=0) / dat["ne"]
+        dat["v1"] = (dat["ns"][:6, :, :, :] * dat["vs1"][:6, :, :, :]).sum(axis=0) / dat[
+            "ne"
+        ]
     if "Ti" in var:
-        dat["Ti"] = (dat["ns"][:6, :, :, :] * dat["Ts"][:6, :, :, :]).sum(axis=0) / dat["ne"]
+        dat["Ti"] = (dat["ns"][:6, :, :, :] * dat["Ts"][:6, :, :, :]).sum(axis=0) / dat[
+            "ne"
+        ]
     if "Te" in var:
         dat["Te"] = dat["Ts"][LSP - 1, :, :, :]
 
@@ -87,7 +91,11 @@ def patch(indir: Path, var: set[str]) -> None:
                 x2, x3 = patch_grid(file)
 
                 h = ax.pcolormesh(
-                    x2, x3, dat[k][ix1, :, :].transpose(), vmin=clim[k][0], vmax=clim[k][1]
+                    x2,
+                    x3,
+                    dat[k][ix1, :, :].transpose(),
+                    vmin=clim[k][0],
+                    vmax=clim[k][1],
                 )
                 ax.text(
                     x2[x2.size // 2],

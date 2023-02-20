@@ -9,7 +9,7 @@ import logging
 import numpy as np
 import xarray
 from scipy.integrate import cumtrapz
-from scipy.interpolate import interp1d, interp2d, interpn
+from scipy.interpolate import interp1d, interpn, RegularGridInterpolator
 
 from . import read
 from . import LSP, SPECIES
@@ -112,15 +112,17 @@ def model_resample(
         )
 
     # %% INTERPOLATE ONTO NEWER GRID
-    # to avoid IEEE754 rounding issues leading to bounds error,
-    # cast the arrays to the same precision,
-    # preferring float32 to save disk space and IO time
-    X2 = xgin["x2"][2:-2].astype(np.float32)
-    X1 = xgin["x1"][2:-2].astype(np.float32)
-    X3 = xgin["x3"][2:-2].astype(np.float32)
-    x1i = xg["x1"][2:-2].astype(np.float32)
-    x2i = xg["x2"][2:-2].astype(np.float32)
-    x3i = xg["x3"][2:-2].astype(np.float32)
+    """
+    Note that float64 upcasting is used to match fast internal
+    Cython code. The coordinates and values need to same type
+    to avoid false bounds errors due to IEEE754 rounding.
+    """
+    X2 = xgin["x2"][2:-2].astype(np.float64)
+    X1 = xgin["x1"][2:-2].astype(np.float64)
+    X3 = xgin["x3"][2:-2].astype(np.float64)
+    x1i = xg["x1"][2:-2]
+    x2i = xg["x2"][2:-2]
+    x3i = xg["x3"][2:-2]
 
     if lx3 > 1 and lx2 > 1:
         # 3-D
@@ -134,9 +136,10 @@ def model_resample(
                 # the .data is to avoid OutOfMemoryError
                 dat_interp[k][i, :, :, :] = interpn(
                     points=(X1, X2, X3),
-                    values=dat[k][i, :, :, :].data,
+                    values=dat[k][i, :, :, :].data.astype(np.float64),
                     xi=(X1i, X2i, X3i),
-                    bounds_error=True,
+                    bounds_error=False,
+                    fill_value=None,
                 )
 
     elif lx3 == 1:
@@ -144,10 +147,16 @@ def model_resample(
         logging.info("interpolating grid for 2-D simulation in x1, x2")
         # [X2,X1]=meshgrid(xgin.x2(3:end-2),xgin.x1(3:end-2));
         # [X2i,X1i]=meshgrid(xg.x2(3:end-2),xg.x1(3:end-2));
+        X1i, X2i = np.meshgrid(x1i, x2i, indexing="ij")
         for i in range(LSP):
             for k in {"ns", "vs1", "Ts"}:
-                f = interp2d(X2, X1, dat[k][i, :, :, :], bounds_error=True)
-                dat_interp[k][i, :, :, :] = f(x2i, x1i)[:, :, None]
+                f = RegularGridInterpolator(
+                    (X1, X2),
+                    dat[k][i, :, :, 0].data.astype(np.float64),
+                    bounds_error=False,
+                    fill_value=None,
+                )
+                dat_interp[k][i, :, :, :] = f((X1i, X2i))[:, :, None]
 
     elif lx2 == 1:
         # 2-D north-south
@@ -167,14 +176,19 @@ def model_resample(
 
         X1 = xgin["x1"][2:-2]
         # new grid
-        x3i = xg["x3"][2:-2].astype(np.float32)
-        x1i = xg["x1"][2:-2].astype(np.float32)
-
+        x3i = xg["x3"][2:-2]
+        x1i = xg["x1"][2:-2]
+        X1i, X3i = np.meshgrid(x1i, x3i, indexing="ij")
         # for each species
         for i in range(LSP):
             for k in {"ns", "vs1", "Ts"}:
-                f = interp2d(X3, X1, dat[k][i, :, :, :], bounds_error=True)
-                dat_interp[k][i, :, :, :] = f(x3i, x1i)[:, None, :]
+                f = RegularGridInterpolator(
+                    (X1, X3),
+                    dat[k][i, :, 0, :].data.astype(np.float64),
+                    bounds_error=False,
+                    fill_value=None,
+                )
+                dat_interp[k][i, :, :, :] = f((X1i, X3i))[:, None, :]
 
     else:
         raise ValueError("Not sure if this is 2-D or 3-D simulation")
@@ -435,7 +449,9 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
                 Ts = np.concatenate((Ts, tsp, tsp, Ts[:, ::-1, :, :]), 1)
                 vsx1 = np.concatenate((vsx1, vsp, vsp, vsx1[:, ::-1, :, :]), 1)
             else:
-                raise ValueError(f"closed dipole lalt: 2*lx1={2*lx1} != grid lx1: {xg['lx'][0]}")
+                raise ValueError(
+                    f"closed dipole lalt: 2*lx1={2*lx1} != grid lx1: {xg['lx'][0]}"
+                )
 
     dat = xarray.Dataset(
         {

@@ -43,7 +43,9 @@ def simsize(path: Path) -> tuple[int, ...]:
     return h5read.simsize(find.simsize(path))
 
 
-def grid(path: Path, *, var: set[str] | None = None, shape: bool = False) -> dict[str, T.Any]:
+def grid(
+    path: Path, *, var: set[str] | None = None, shape: bool = False
+) -> dict[str, T.Any]:
     """
     get simulation grid
 
@@ -146,7 +148,8 @@ def derive(dat: xarray.Dataset, var: set[str], flag: int) -> xarray.Dataset:
         if "Ti" in var:
             dat["Ti"] = (
                 ("x1", "x2", "x3"),
-                (dat["ns"][:6, :, :, :] * dat["Ts"][:6, :, :, :]).sum(axis=0).data / dat["ne"].data,
+                (dat["ns"][:6, :, :, :] * dat["Ts"][:6, :, :, :]).sum(axis=0).data
+                / dat["ne"].data,
             )
         if "Te" in var:
             dat["Te"] = (("x1", "x2", "x3"), dat["Ts"][LSP - 1, :, :, :].data)

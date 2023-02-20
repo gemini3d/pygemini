@@ -121,7 +121,9 @@ def git_meta(path: Path | None = None) -> dict[str, str]:
         else:
             return meta
 
-    ret = subprocess.run([git, "-C", str(path), "--version"], stdout=subprocess.PIPE, text=True)
+    ret = subprocess.run(
+        [git, "-C", str(path), "--version"], stdout=subprocess.PIPE, text=True
+    )
     if ret.returncode != 0:
         logging.error("Git was not available or is too old")
         return meta
@@ -144,7 +146,9 @@ def git_meta(path: Path | None = None) -> dict[str, str]:
     meta["branch"] = ret.stdout.strip()
 
     ret = subprocess.run(
-        [git, "-C", str(path), "remote", "get-url", "origin"], stdout=subprocess.PIPE, text=True
+        [git, "-C", str(path), "remote", "get-url", "origin"],
+        stdout=subprocess.PIPE,
+        text=True,
     )
     if ret.returncode != 0:
         logging.error(f"{path} could not determine Git remote")

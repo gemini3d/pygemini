@@ -86,12 +86,16 @@ def test_rotvec_gg2gm():
 
 def test_rotvec_gg2gm_points():
     x = np.array([[1, 2, 3], [-3, -2, 1]])
-    yt = np.array([[-2.10913391, 1.59665488, 2.64617598], [0.70672483, -3.48769204, 1.15609009]])
+    yt = np.array(
+        [[-2.10913391, 1.59665488, 2.64617598], [0.70672483, -3.48769204, 1.15609009]]
+    )
 
     assert cvt.rotvec_gg2gm_points(x) == approx(yt)
 
 
-@pytest.mark.parametrize("glon, glat", [(30, -60), (45, -45), (90, 30), (180, 45), (270, 60)])
+@pytest.mark.parametrize(
+    "glon, glat", [(30, -60), (45, -45), (90, 30), (180, 45), (270, 60)]
+)
 def test_convert_scalar(glon, glat):
     phi, theta = cvt.geog2geomag(glon, glat)
 

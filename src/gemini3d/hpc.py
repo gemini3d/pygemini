@@ -15,7 +15,9 @@ def hpc_submit_job(batcher: str, job_file: Path):
     if batcher == "qsub":
         subprocess.run(["qsub", str(job_file)])
     else:
-        raise LookupError(f"batcher {batcher} not yet listed. Please raise a Gemini Github Issue.")
+        raise LookupError(
+            f"batcher {batcher} not yet listed. Please raise a Gemini Github Issue."
+        )
 
 
 def hpc_batch_create(batcher: str, out_dir: Path, cmd: list[str]) -> Path:
@@ -39,13 +41,17 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: list[str]) -> Path:
     Nchar = 6  # arbitrary number of characters
 
     if batcher == "qsub":
-        template = importlib.resources.read_text(__package__, "templates/qsub_template.job")
+        template = importlib.resources.read_text(
+            __package__, "templates/qsub_template.job"
+        )
         job_file = out_dir / f"{binascii.b2a_hex(os.urandom(Nchar)).decode('ascii')}.job"
         print("writing job file", job_file)
         text = template + "\n" + " ".join(cmd)
         job_file.write_text(text)
     else:
-        raise LookupError(f"batcher {batcher} not yet listed. Please raise a Gemini Github Issue.")
+        raise LookupError(
+            f"batcher {batcher} not yet listed. Please raise a Gemini Github Issue."
+        )
 
     return job_file
 

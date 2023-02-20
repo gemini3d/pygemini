@@ -60,7 +60,20 @@ def test_grid1d():
 
     x = grid.grid1d(100.0, 5, [200, 0.5, 9.5, 10])
     assert x == approx(
-        [-50.25, -40.25, -30.25, -20.25, -10.25, -0.25, 0.25, 10.25, 20.25, 30.25, 40.25, 50.25],
+        [
+            -50.25,
+            -40.25,
+            -30.25,
+            -20.25,
+            -10.25,
+            -0.25,
+            0.25,
+            10.25,
+            20.25,
+            30.25,
+            40.25,
+            50.25,
+        ],
         rel=1e-6,
         abs=1e-8,
     )
@@ -96,7 +109,9 @@ def test_max_mpi(size, N, M):
 def test_coord():
     theta, phi = coord.geog2geomag(0, 0)
     assert isinstance(theta, float) and isinstance(phi, float)
-    assert [theta, phi] == approx([1.50863496978059, 1.24485046147953], abs=1e-6, rel=0.001)
+    assert [theta, phi] == approx(
+        [1.50863496978059, 1.24485046147953], abs=1e-6, rel=0.001
+    )
 
     lat, lon = coord.geomag2geog(0, 0)
     assert isinstance(lon, float) and isinstance(lat, float)
@@ -111,4 +126,6 @@ def test_coord():
 
     z, x, y = coord.geog2UEN(0.0, 0, 0, pi / 2, pi / 2)
     assert isinstance(z, float) and isinstance(y, float) and isinstance(x, float)
-    assert [z, x, y] == approx([0, -2076275.16205889, 395967.844181141], abs=1e-6, rel=0.001)
+    assert [z, x, y] == approx(
+        [0, -2076275.16205889, 395967.844181141], abs=1e-6, rel=0.001
+    )

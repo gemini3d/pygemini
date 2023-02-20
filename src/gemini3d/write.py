@@ -101,7 +101,9 @@ def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]):
 
     fn = fn.expanduser()
     if fn.is_dir():
-        raise FileNotFoundError(f"{fn} is a directory, but I need a JSON file name to write.")
+        raise FileNotFoundError(
+            f"{fn} is a directory, but I need a JSON file name to write."
+        )
 
     jm = {"python": {"platform": sys.platform, "version": sys.version}, "git": git_meta}
 

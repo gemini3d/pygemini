@@ -28,7 +28,9 @@ def test_grid(name, tmp_path):
     with pytest.raises(FileNotFoundError):
         find.grid(tmp_path / "not_exist")
 
-    test_dir = gemini3d.web.download_and_extract(name, gemini3d.PYGEMINI_ROOT / "tests/data")
+    test_dir = gemini3d.web.download_and_extract(
+        name, gemini3d.PYGEMINI_ROOT / "tests/data"
+    )
 
     fn = find.grid(test_dir)
     assert fn.name.endswith("simgrid.h5")

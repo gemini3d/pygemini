@@ -76,7 +76,9 @@ def flagoutput(file: Path, cfg: dict[str, T.Any]) -> int:
     return flag
 
 
-def grid(file: Path, *, var: set[str] | None = None, shape: bool = False) -> dict[str, T.Any]:
+def grid(
+    file: Path, *, var: set[str] | None = None, shape: bool = False
+) -> dict[str, T.Any]:
     """
     get simulation grid
 
@@ -179,7 +181,9 @@ def frame3d_curvne(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dat
     if not xg:
         xg = grid(file.parent, var={"x1", "x2", "x3"})
 
-    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
+    dat = xarray.Dataset(
+        coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+    )
 
     p3 = (2, 1, 0)
 
@@ -189,7 +193,9 @@ def frame3d_curvne(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dat
     return dat
 
 
-def frame3d_curv(file: Path, var: set[str], xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
+def frame3d_curv(
+    file: Path, var: set[str], xg: dict[str, T.Any] | None = None
+) -> xarray.Dataset:
     """
     curvilinear
 
@@ -269,7 +275,9 @@ def frame3d_curvavg(
     if not xg:
         xg = grid(file.parent, var={"x1", "x2", "x3"})
 
-    dat = xarray.Dataset(coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
+    dat = xarray.Dataset(
+        coords={"x1": xg["x1"][2:-2], "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+    )
 
     p3 = (2, 1, 0)
 
@@ -314,12 +322,17 @@ def glow_aurmap(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Datase
     if not xg:
         xg = grid(file.parents[1], var={"x2", "x3"})
 
-    dat = xarray.Dataset(coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]})
+    dat = xarray.Dataset(
+        coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
+    )
 
     p3 = (0, 2, 1)
 
     with h5py.File(file, "r") as h:
-        dat["rayleighs"] = (("wavelength", "x2", "x3"), h["/aurora/iverout"][:].transpose(p3))
+        dat["rayleighs"] = (
+            ("wavelength", "x2", "x3"),
+            h["/aurora/iverout"][:].transpose(p3),
+        )
 
     return dat
 
@@ -340,7 +353,9 @@ def time(file: Path) -> datetime:
 
         t = ymd + timedelta(hours=hour)
     except KeyError:
-        logging.error(f"/time group missing from {file}, getting time from filename pattern.")
+        logging.error(
+            f"/time group missing from {file}, getting time from filename pattern."
+        )
         t = filename2datetime(file)
 
     return t

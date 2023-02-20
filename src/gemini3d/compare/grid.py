@@ -8,7 +8,9 @@ from .utils import err_pct, load_tol
 from .. import read
 
 
-def compare_grid(new_dir: Path, ref_dir: Path, *, tol: dict[str, float] | None = None) -> int:
+def compare_grid(
+    new_dir: Path, ref_dir: Path, *, tol: dict[str, float] | None = None
+) -> int:
 
     new_dir = Path(new_dir).expanduser().resolve(strict=True)
     ref_dir = Path(ref_dir).expanduser().resolve(strict=True)

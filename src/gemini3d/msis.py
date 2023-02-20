@@ -121,7 +121,9 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         if v.startswith("n"):  # type: ignore
             assert (atmos[v] >= 0).all(), "density cannot be negative: {v}"
         elif v.startswith("T"):  # type: ignore
-            assert (atmos[v] < 100000).all(), "temperature above 100,000 K unexpected: {v}"
+            assert (
+                atmos[v] < 100000
+            ).all(), "temperature above 100,000 K unexpected: {v}"
 
     # Mitra, 1968
     atmos["nNO"] = 0.4 * np.exp(-3700.0 / atmos["Tn"]) * atmos["nO2"] + 5e-7 * atmos["nO"]

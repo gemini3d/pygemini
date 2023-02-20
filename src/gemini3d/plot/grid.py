@@ -9,7 +9,9 @@ from .. import read
 from .core import basic, stitle, save_fig
 
 
-def grid(direc: Path, only: list[str] | None = None, saveplot_fmt: str | None = None) -> None:
+def grid(
+    direc: Path, only: list[str] | None = None, saveplot_fmt: str | None = None
+) -> None:
     """plot 3D grid
 
     Parameters

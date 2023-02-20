@@ -78,7 +78,9 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
 
     # find the min/max q values for the grid across both hemispheres
     if thetad < pi / 2:
-        rmin = p[-3] * Re * np.sin(thetax2min) ** 2  # last field line contains min/max r/q vals.
+        rmin = (
+            p[-3] * Re * np.sin(thetax2min) ** 2
+        )  # last field line contains min/max r/q vals.
         rmax = p[-3] * Re * np.sin(thetamax) ** 2
         qmin = np.cos(thetax2min) * Re**2 / rmin**2
         qmax = np.cos(thetamax) * Re**2 / rmax**2
@@ -155,7 +157,9 @@ def generate_tilted_dipole3d(q, p, phi):
         for ip in range(lpg):
             r[iq, ip], theta[iq, ip] = qp2rtheta(q[iq], p[ip])
 
-    r = np.broadcast_to(r[:, :, None], (*r.shape, lphig))  # just tile for longitude to save time
+    r = np.broadcast_to(
+        r[:, :, None], (*r.shape, lphig)
+    )  # just tile for longitude to save time
     theta = np.broadcast_to(theta[:, :, None], (*theta.shape, lphig))
     phispher = np.broadcast_to(phi[None, None, :], (lqg, lpg, phi.size))
 
@@ -218,11 +222,19 @@ def generate_tilted_dipole3d(q, p, phi):
     xg["er"] = np.empty((lq, lp, lphi, 3))
     xg["etheta"] = np.empty((lq, lp, lphi, 3))
     xg["ephi"] = np.empty((lq, lp, lphi, 3))
-    xg["er"][..., 0] = np.sin(theta[2:-2, 2:-2, 2:-2]) * np.cos(phispher[2:-2, 2:-2, 2:-2])
-    xg["er"][..., 1] = np.sin(theta[2:-2, 2:-2, 2:-2]) * np.sin(phispher[2:-2, 2:-2, 2:-2])
+    xg["er"][..., 0] = np.sin(theta[2:-2, 2:-2, 2:-2]) * np.cos(
+        phispher[2:-2, 2:-2, 2:-2]
+    )
+    xg["er"][..., 1] = np.sin(theta[2:-2, 2:-2, 2:-2]) * np.sin(
+        phispher[2:-2, 2:-2, 2:-2]
+    )
     xg["er"][..., 2] = np.cos(theta[2:-2, 2:-2, 2:-2])
-    xg["etheta"][..., 0] = np.cos(theta[2:-2, 2:-2, 2:-2]) * np.cos(phispher[2:-2, 2:-2, 2:-2])
-    xg["etheta"][..., 1] = np.cos(theta[2:-2, 2:-2, 2:-2]) * np.sin(phispher[2:-2, 2:-2, 2:-2])
+    xg["etheta"][..., 0] = np.cos(theta[2:-2, 2:-2, 2:-2]) * np.cos(
+        phispher[2:-2, 2:-2, 2:-2]
+    )
+    xg["etheta"][..., 1] = np.cos(theta[2:-2, 2:-2, 2:-2]) * np.sin(
+        phispher[2:-2, 2:-2, 2:-2]
+    )
     xg["etheta"][..., 2] = -np.sin(theta[2:-2, 2:-2, 2:-2])
     xg["ephi"][..., 0] = -np.sin(phispher[2:-2, 2:-2, 2:-2])
     xg["ephi"][..., 1] = np.cos(phispher[2:-2, 2:-2, 2:-2])
@@ -247,7 +259,9 @@ def generate_tilted_dipole3d(q, p, phi):
         * np.sin(phispher[2:-2, 2:-2, 2:-2])
         / denom[2:-2, 2:-2, 2:-2]
     )
-    xg["e1"][..., 2] = (1 - 3 * np.cos(theta[2:-2, 2:-2, 2:-2]) ** 2) / denom[2:-2, 2:-2, 2:-2]
+    xg["e1"][..., 2] = (1 - 3 * np.cos(theta[2:-2, 2:-2, 2:-2]) ** 2) / denom[
+        2:-2, 2:-2, 2:-2
+    ]
     xg["e2"][..., 0] = (
         np.cos(phispher[2:-2, 2:-2, 2:-2])
         * (1 - 3 * np.cos(theta[2:-2, 2:-2, 2:-2]) ** 2)
@@ -303,10 +317,14 @@ def generate_tilted_dipole3d(q, p, phi):
     # compute Cartesian coordinates
     xg["z"] = r[2:-2, 2:-2, 2:-2] * np.cos(theta[2:-2, 2:-2, 2:-2])
     xg["x"] = (
-        r[2:-2, 2:-2, 2:-2] * np.sin(theta[2:-2, 2:-2, 2:-2]) * np.cos(phispher[2:-2, 2:-2, 2:-2])
+        r[2:-2, 2:-2, 2:-2]
+        * np.sin(theta[2:-2, 2:-2, 2:-2])
+        * np.cos(phispher[2:-2, 2:-2, 2:-2])
     )
     xg["y"] = (
-        r[2:-2, 2:-2, 2:-2] * np.sin(theta[2:-2, 2:-2, 2:-2]) * np.sin(phispher[2:-2, 2:-2, 2:-2])
+        r[2:-2, 2:-2, 2:-2]
+        * np.sin(theta[2:-2, 2:-2, 2:-2])
+        * np.sin(phispher[2:-2, 2:-2, 2:-2])
     )
 
     # determine grid cells that are "null" - i.e. not included in the computations
@@ -319,7 +337,9 @@ def generate_tilted_dipole3d(q, p, phi):
 
     # compute geographic coordinates for the entire grid
     xg["alt"] = r[2:-2, 2:-2, 2:-2] - Re
-    [xg["glon"], xg["glat"]] = geomag2geog(phispher[2:-2, 2:-2, 2:-2], theta[2:-2, 2:-2, 2:-2])
+    [xg["glon"], xg["glat"]] = geomag2geog(
+        phispher[2:-2, 2:-2, 2:-2], theta[2:-2, 2:-2, 2:-2]
+    )
 
     # at this point we are done with the works arrays to put them in the structure and deallocate
     # assign spherical variables to dictionary and clear out work array to save memory

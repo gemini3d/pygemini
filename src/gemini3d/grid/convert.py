@@ -77,9 +77,12 @@ def geog2geomag(glon, glat) -> tuple:
     phig = np.radians(glon % 360)
 
     theta = np.arccos(
-        np.cos(thetag) * np.cos(thetan) + np.sin(thetag) * np.sin(thetan) * np.cos(phig - phin)
+        np.cos(thetag) * np.cos(thetan)
+        + np.sin(thetag) * np.sin(thetan) * np.cos(phig - phin)
     )
-    argtmp = (np.cos(thetag) - np.cos(theta) * np.cos(thetan)) / (np.sin(theta) * np.sin(thetan))
+    argtmp = (np.cos(thetag) - np.cos(theta) * np.cos(thetan)) / (
+        np.sin(theta) * np.sin(thetan)
+    )
 
     alpha = np.arccos(argtmp.clip(min=-1, max=1))
 
@@ -118,7 +121,8 @@ def geomag2geog(phi, theta) -> tuple:
         np.cos(theta) * np.cos(thetan) - np.sin(theta) * np.sin(thetan) * np.cos(phiwrap)
     )
     beta = np.arccos(
-        (np.cos(theta) - np.cos(thetag2p) * np.cos(thetan)) / (np.sin(thetag2p) * np.sin(thetan))
+        (np.cos(theta) - np.cos(thetag2p) * np.cos(thetan))
+        / (np.sin(thetag2p) * np.sin(thetan))
     )
 
     phig2 = np.empty_like(phi, dtype=float)
