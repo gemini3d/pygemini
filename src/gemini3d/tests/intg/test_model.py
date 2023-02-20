@@ -67,14 +67,13 @@ def test_model_setup(name, tmp_path, monkeypatch, helpers):
 
 
 @pytest.mark.parametrize("name", ["tohoku2d_eq", "tohoku3d_eq"])
-@pytest.mark.skipif(not os.environ.get("GEMCI_ROOT"), reason="GEMCI_ROOT not set")
+@pytest.mark.skipif(
+    not os.environ.get("GEMCI_ROOT") or not Path(os.environ["GEMCI_ROOT"]).is_dir(),
+    reason="GEMCI_ROOT not set",
+)
 def test_equilibrium_setup(name, tmp_path, monkeypatch):
 
-    r = Path(os.environ["GEMCI_ROOT"])
-    if not r.is_dir():
-        raise NotADirectoryError(f"GEMCI_ROOT={r} is not a directory")
-
-    cfg_dir = r / "cfg/equilibrium" / name
+    cfg_dir = Path(os.environ["GEMCI_ROOT"]) / "cfg/equilibrium" / name
 
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
