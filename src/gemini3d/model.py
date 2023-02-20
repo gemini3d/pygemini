@@ -61,7 +61,10 @@ def config(params: dict[str, T.Any], out_dir: Path):
     namelist.write(nml_file, namelist="base", data=base)
 
     # %% flags
-    flags = {"flagoutput": params.get("flagoutput", 1), "potsolve": params.get("potsolve", 1)}
+    flags = {
+        "flagoutput": params.get("flagoutput", 1),
+        "potsolve": params.get("potsolve", 1),
+    }
     namelist.write(nml_file, "flags", flags)
 
     # %% files

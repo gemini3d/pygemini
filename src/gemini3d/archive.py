@@ -21,7 +21,9 @@ def cmake_exe() -> str:
         raise FileNotFoundError("CMake not found.  Try:\n    pip install cmake")
 
     cmake_version = (
-        subprocess.check_output([cmake, "--version"], text=True).split("\n")[0].split(" ")[2]
+        subprocess.check_output([cmake, "--version"], text=True)
+        .split("\n")[0]
+        .split(" ")[2]
     )
 
     print("Using CMake", cmake_version)

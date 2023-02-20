@@ -90,7 +90,10 @@ def makegrid(
 
 
 def magframe(
-    filename: str | Path, *, cfg: dict[str, T.Any] | None = None, time: datetime | None = None
+    filename: str | Path,
+    *,
+    cfg: dict[str, T.Any] | None = None,
+    time: datetime | None = None,
 ) -> dict[str, T.Any]:
     """
     # example use
@@ -147,7 +150,9 @@ def magframe(
     phi = phi.reshape(gridsize)
 
     # Sanity check the grid size and total number of grid points
-    assert lpoints == np.prod(gridsize), "Incompatible data size and grid specification..."
+    assert lpoints == np.prod(
+        gridsize
+    ), "Incompatible data size and grid specification..."
 
     # Create grid alt, magnetic latitude, and longitude (assume input points
     # have been permuted in this order)...
@@ -164,7 +169,11 @@ def magframe(
         ilatsort = mlat[0, 0, :].argsort()
         ilonsort = mlon[0, :, 0].argsort()
 
-        dat = {"mlat": mlat[0, 0, ilatsort], "mlon": mlon[0, ilonsort, 0], "r": r[:, 0, 0]}
+        dat = {
+            "mlat": mlat[0, 0, ilatsort],
+            "mlon": mlon[0, ilonsort, 0],
+            "r": r[:, 0, 0],
+        }
         # assume already sorted properly
 
     with h5py.File(filename, "r") as f:

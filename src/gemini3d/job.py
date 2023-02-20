@@ -38,7 +38,9 @@ def runner(pr: dict[str, T.Any]) -> None:
     # we don't want to overwrite an expensive simulation output
     try:
         find.frame(out_dir, p["time"][0])
-        raise FileExistsError(f"new simulation shouldn't have data in output directory: {out_dir}")
+        raise FileExistsError(
+            f"new simulation shouldn't have data in output directory: {out_dir}"
+        )
     except FileNotFoundError:
         pass
 
@@ -90,7 +92,11 @@ def runner(pr: dict[str, T.Any]) -> None:
     batcher = hpc_batch_detect()
     if batcher:
         job_file = hpc_batch_create(batcher, out_dir, cmd)
-        print("Please examine batch file", job_file, "and when ready submit the job as usual.")
+        print(
+            "Please examine batch file",
+            job_file,
+            "and when ready submit the job as usual.",
+        )
         return None
 
     try:
@@ -215,7 +221,9 @@ def check_outdir(out_dir: str | Path) -> Path:
 
     out_dir = Path(out_dir).expanduser().resolve()
     if out_dir.is_file():
-        raise NotADirectoryError(f"please specify output DIRECTORY, you specified {out_dir}")
+        raise NotADirectoryError(
+            f"please specify output DIRECTORY, you specified {out_dir}"
+        )
     if not out_dir.is_dir():
         out_dir.mkdir(parents=True, exist_ok=True)
 

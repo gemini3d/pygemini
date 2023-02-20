@@ -36,7 +36,9 @@ def wsl_file_exist(file: str | PurePosixPath) -> bool:
         return False
 
     try:
-        return subprocess.run(["wsl", "test", "-f", str(file)], timeout=10).returncode == 0
+        return (
+            subprocess.run(["wsl", "test", "-f", str(file)], timeout=10).returncode == 0
+        )
     except subprocess.TimeoutExpired:
         return False
 

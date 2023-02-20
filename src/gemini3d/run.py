@@ -14,7 +14,9 @@ def cli():
     p.add_argument("-mpiexec", help="path to desired mpiexec executable")
     p.add_argument("-gemexe", help="path to desired gemini3d.run binary")
     p.add_argument("-n", "--cpu", help="number of CPU cores", type=int, default=0)
-    p.add_argument("-f", "--force", help="force regeneration of simulation", action="store_true")
+    p.add_argument(
+        "-f", "--force", help="force regeneration of simulation", action="store_true"
+    )
     p.add_argument("-v", "--verbose", action="store_true")
     P = p.parse_args()
 
