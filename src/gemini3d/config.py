@@ -214,7 +214,7 @@ def expand_envvar(P: dict[str, T.Any]) -> dict[str, T.Any]:
                     envvar = P[k][i0 + 1 : i1]
                     envpath = os.environ.get(envvar)
                     if not envpath:
-                        raise ValueError(
+                        raise EnvironmentError(
                             f"Environment variable {envvar} not found, specified in {k}"
                         )
                     P[k] = P[k].replace(P[k][i0 : i1 + 1], envpath)
