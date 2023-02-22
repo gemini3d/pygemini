@@ -126,7 +126,9 @@ def plot_interp(
             f = interp.interp1d(xg["x2"][inds2], parm, axis=1, bounds_error=False)
             # hack for pcolormesh to put labels in center of pixel
             wl = kwargs["wavelength"] + [""]
-            hi = ax.pcolormesh(xp / 1e3, np.arange(len(wl)), f(xp)[:, i], shading="nearest")
+            hi = ax.pcolormesh(
+                xp / 1e3, np.arange(len(wl)), f(xp)[:, i], shading="nearest"
+            )
             ax.set_yticks(np.arange(len(wl)) + 0.5)
             ax.set_yticklabels(wl)
             ax.set_ylim(0, len(wl) - 1)
@@ -135,8 +137,22 @@ def plot_interp(
             ax.set_ylabel(r"wavelength $\AA$")
             ax.set_xlabel("eastward dist. (km)")
         elif parm.ndim == 2:
-            f = interp.interp2d(xg["x2"][inds2], xg["x1"][inds1], parm, bounds_error=False)
-            plot12(xp[i], zp, f(xp, zp)[:, i], ax, name=name, ref_alt=ref_alt, cmap=cmap, clim=clim)
+            Xp, Zp = np.meshgrid(xp, zp)
+            f = interp.RegularGridInterpolator(
+                (xg["x1"][inds1].astype(np.float64), xg["x2"][inds2].astype(np.float64)),
+                parm.data.astype(np.float64),
+                bounds_error=False,
+            )
+            plot12(
+                xp[i],
+                zp,
+                f((Xp, Zp))[:, i],
+                ax,
+                name=name,
+                ref_alt=ref_alt,
+                cmap=cmap,
+                clim=clim,
+            )
         elif parm.ndim == 1:  # phitop
             f = interp.interp1d(xg["x2"][inds2], parm, bounds_error=False)
             plot1d2(xp, f(xp), name, ax)
@@ -155,7 +171,9 @@ def plot_interp(
             f = interp.interp1d(xg["x3"][inds3], parm, axis=1, bounds_error=False)
             # hack for pcolormesh to put labels in center of pixel
             wl = kwargs["wavelength"] + [""]
-            hi = ax.pcolormesh(np.arange(len(wl)), yp / 1e3, f(yp)[:, i].T, shading="nearest")
+            hi = ax.pcolormesh(
+                np.arange(len(wl)), yp / 1e3, f(yp)[:, i].T, shading="nearest"
+            )
             ax.set_xticks(np.arange(len(wl)) + 0.5)
             ax.set_xticklabels(wl)
             ax.set_xlim(0, len(wl) - 1)
@@ -164,8 +182,13 @@ def plot_interp(
             ax.set_xlabel(r"wavelength $\AA$")
             ax.set_ylabel("northward dist. (km)")
         elif parm.ndim == 2:
-            f = interp.interp2d(xg["x3"][inds3], xg["x1"][inds1], parm, bounds_error=False)
-            parmp = f(yp, zp).reshape((lzp, lyp))
+            Yp, Zp = np.meshgrid(yp, zp)
+            f = interp.RegularGridInterpolator(
+                (xg["x1"][inds1], xg["x3"][inds3]),
+                parm.data.astype(np.float64),
+                bounds_error=False,
+            )
+            parmp = f((Yp, Zp)).reshape((lzp, lyp))
             plot13(yp[i], zp, parmp[:, i], ax, clim, name=name, cmap=cmap)
         elif parm.ndim == 1:  # phitop
             f = interp.interp1d(xg["x3"][inds3], parm, bounds_error=False)
@@ -246,11 +269,25 @@ def plot3d_slice(
     # AND AN ALTITUDE FOR THE LAT./LON. SLICE
     ix3 = lx3 // 2 - 1  # arbitrary slice, to match Matlab
 
-    f = interp.interp2d(xg["x2"][inds2], xg["x1"][inds1], parm[:, :, ix3], bounds_error=False)
+    f = interp.RegularGridInterpolator(
+        (xg["x1"][inds1], xg["x2"][inds2]),
+        parm[:, :, ix3].data.astype(np.float64),
+        bounds_error=False,
+    )
     # CONVERT ANGULAR COORDINATES TO MLAT,MLON
     ix = xp.argsort()
     iy = yp.argsort()
-    plot12(xp[ix], zp, f(xp, zp)[:, ix], axs[0], clim, name=name, ref_alt=ref_alt, cmap=cmap)
+    Xp, Zp = np.meshgrid(xp, zp)
+    plot12(
+        xp[ix],
+        zp,
+        f((Xp, Zp))[:, ix],
+        axs[0],
+        clim,
+        name=name,
+        ref_alt=ref_alt,
+        cmap=cmap,
+    )
     # %% LAT./LONG. SLICE COORDINATES (center panel)
     X3, Y3, Z3 = np.meshgrid(xp, yp, ref_alt * 1e3)
     # transpose: so north dist, east dist., alt.
@@ -266,8 +303,14 @@ def plot3d_slice(
     plot23(xp[ix], yp[iy], parmp[0, ix, :], name, axs[1], cmap=cmap, clim=clim)
     # %% ALT/LAT SLICE (right panel)
     ix2 = lx2 // 2 - 1  # arbitrary slice, to match Matlab
-    f = interp.interp2d(xg["x3"][inds3], xg["x1"][inds1], parm[:, ix2, :], bounds_error=False)
-    plot13(yp[iy], zp, f(yp, zp)[:, iy], axs[2], clim, name=name, cmap=cmap)
+    f = interp.RegularGridInterpolator(
+        (xg["x1"][inds1], xg["x3"][inds3]),
+        parm[:, ix2, :].data.astype(np.float64),
+        bounds_error=False,
+    )
+
+    Yp, Zp = np.meshgrid(yp, zp)
+    plot13(yp[iy], zp, f((Yp, Zp))[:, iy], axs[2], clim, name=name, cmap=cmap)
 
 
 cart3d_long_ENU = plot_interp

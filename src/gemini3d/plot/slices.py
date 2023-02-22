@@ -1,6 +1,6 @@
 from __future__ import annotations
 from datetime import datetime
-
+import numpy as np
 import scipy.interpolate as interp
 
 from matplotlib.ticker import MultipleLocator
@@ -124,10 +124,21 @@ def bright_east_north(
     axs = fg.subplots(2, 2, sharey=True, sharex=True).ravel()
     fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.99)
     # arbitrary pick of which emission lines to plot lat/lon slices
+    Xp, Yp = np.meshgrid(xp, yp, indexing="ij")
     for j, i in enumerate([1, 3, 4, 8]):
-        f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm[i, :, :], bounds_error=False)
+        f = interp.RegularGridInterpolator(
+            (grid["x2"][inds2], grid["x3"][inds3]),
+            parm[i, :, :].data.astype(np.float64),
+            bounds_error=False,
+        )
         hi = axs[j].pcolormesh(
-            xp / 1e3, yp / 1e3, f(yp, xp), shading="nearest", cmap=cmap, vmin=clim[0], vmax=clim[1]
+            xp / 1e3,
+            yp / 1e3,
+            f((Yp, Xp)),
+            shading="nearest",
+            cmap=cmap,
+            vmin=clim[0],
+            vmax=clim[1],
         )
         axs[j].set_title(wavelength[i] + r"$\AA$")
         fg.colorbar(hi, ax=axs[j], label="Rayleighs")
@@ -154,9 +165,20 @@ def east_north(
 
     meta = git_meta()
 
-    f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm, bounds_error=False)
+    Xp, Yp = np.meshgrid(xp, yp, indexing="ij")
+    f = interp.RegularGridInterpolator(
+        (grid["x2"][inds2], grid["x3"][inds3]),
+        parm.data.astype(np.float64),
+        bounds_error=False,
+    )
     hi = ax.pcolormesh(
-        xp / 1e3, yp / 1e3, f(yp, xp), cmap=cmap, vmin=clim[0], vmax=clim[1], shading="nearest"
+        xp / 1e3,
+        yp / 1e3,
+        f((Yp, Xp)),
+        cmap=cmap,
+        vmin=clim[0],
+        vmax=clim[1],
+        shading="nearest",
     )
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("northward dist. (km)")
@@ -165,7 +187,13 @@ def east_north(
 
 
 def mag_lonlat(
-    ax: Axes, grid, parm, cmap: str | None, clim: tuple[float, float], name: str, time: datetime
+    ax: Axes,
+    grid,
+    parm,
+    cmap: str | None,
+    clim: tuple[float, float],
+    name: str,
+    time: datetime,
 ) -> None:
 
     if parm.ndim != 2:
@@ -174,7 +202,13 @@ def mag_lonlat(
     meta = git_meta()
 
     hi = ax.pcolormesh(
-        grid["mlon"], grid["mlat"], parm, cmap=cmap, vmin=clim[0], vmax=clim[1], shading="nearest"
+        grid["mlon"],
+        grid["mlat"],
+        parm,
+        cmap=cmap,
+        vmin=clim[0],
+        vmax=clim[1],
+        shading="nearest",
     )
     ax.set_xlabel("magnetic longitude (deg.)")
     ax.set_ylabel("magnetic latitude (deg.)")

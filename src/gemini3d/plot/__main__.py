@@ -17,7 +17,10 @@ def cli():
     p.add_argument("--mayavi", help="do 3D Mayavi plots", action="store_true")
     p.add_argument("-var", help="plot these variables", nargs="+", default=[])
     p.add_argument(
-        "-save", help="save plot format", choices=["png", "svg", "eps", "pdf"], default="png"
+        "-save",
+        help="save plot format",
+        choices=["png", "svg", "eps", "pdf"],
+        default="png",
     )
     p = p.parse_args()
 
