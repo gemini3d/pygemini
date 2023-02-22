@@ -62,14 +62,20 @@ def curv3d_long(
 
 
 def curv2d(
-    ax: mpl.axes.Axes,
+    fg: mpl.figure.Figure,
     time: datetime,
     xg: dict[str, T.Any],
     parm,
+    cfg: dict[str, T.Any],
     *,
     lalt: int = 256,
     llat: int = 256,
 ) -> None:
+    """
+    Note: leave "cfg" argument so that the polymorphic function call
+    is the same as other cases.
+    """
+
     # grid data
     alti, mloni, mlati, parmi = model2magcoords(xg, parm, lalt, 1, llat)
 
@@ -77,7 +83,7 @@ def curv2d(
     ilon = 0
 
     # plot the meridional slice
-
+    ax = fg.gca()
     h = ax.pcolormesh(mlati, alti / 1e3, parmi[:, ilon, :], shading="nearest")
     ax.set_xlabel("mlat")
     ax.set_ylabel("alt")
