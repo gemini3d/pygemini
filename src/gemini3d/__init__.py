@@ -5,7 +5,7 @@ PyGemini is the Python interface to the Gemini3D ionospheric model.
 from __future__ import annotations
 from pathlib import Path
 
-__version__ = "1.7.0"
+__version__ = "1.7.1"
 
 PYGEMINI_ROOT = Path(__path__[0])  # type: ignore
 
