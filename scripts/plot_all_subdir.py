@@ -36,8 +36,8 @@ def main(top: Path, resume: bool) -> None:
     """
 
     dirs = (d for d in top.iterdir() if d.is_dir())
-    
-    N = os.cpu_count() 
+
+    N = os.cpu_count()
     if N is None:
         N = 2
     else:
@@ -56,7 +56,10 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("top_dir", help="Top level directory to look one level below")
     p.add_argument(
-        "-r", "--resume", help="skip directories that already have plots", action="store_true"
+        "-r",
+        "--resume",
+        help="skip directories that already have plots",
+        action="store_true",
     )
     P = p.parse_args()
 
