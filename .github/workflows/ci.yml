@@ -13,7 +13,10 @@ on:
     paths:
     - "**.py"
     - ".github/workflows/ci.yml"
+    - "src/gemini3d/libraries.json"
     - "!scripts/**"
+    - "!example/**"
+    - "!Examples/**"
 
 
 jobs:
