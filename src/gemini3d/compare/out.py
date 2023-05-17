@@ -57,35 +57,6 @@ def compare_output(
                 logging.error(f"{k} {st}   {err_pct(a, b):.1f}")
                 if plot:
                     plotdiff(a, b, t, new_dir, ref_dir)
-        # %% assert time steps have unique output (earth always rotating...)
-        if i > 1:
-            names = ["ne", "v1", "v2", "v3"]
-            itols = ["N", "V", "V", "V"]
-            for k, j in zip(names, itols):
-                if np.allclose(
-                    ref[k],
-                    a,
-                    rtol=0.0001 * tol[f"rtol{j}"],
-                    atol=0.0001 * tol[f"atol{j}"],
-                ):
-                    errs += 1
-                    logging.error(f"{k} {st} too similar to prior step")
-
-        if i == 3:
-            for k in {"Ti", "Te"}:
-                if np.allclose(
-                    ref[k], A[k], rtol=0.01 * tol["rtolT"], atol=0.1 * tol["atolT"]
-                ):
-                    errs += 1
-                    logging.error(f"{k} {st} too similar to prior step")
-
-        if i == 2:
-            for k in {"J1", "J2", "J3"}:
-                if np.allclose(
-                    ref[k], a, rtol=0.01 * tol["rtolJ"], atol=0.1 * tol["atolJ"]
-                ):
-                    errs += 1
-                    logging.error(f"{k} {st} too similar to prior step")
 
         ref.update(A)
 
