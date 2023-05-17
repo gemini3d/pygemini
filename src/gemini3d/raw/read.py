@@ -46,6 +46,9 @@ def simsize(path: Path) -> tuple[int, ...]:
     else:
         raise ValueError(f"{file} is not expected 8 bytes (2-D) or 12 bytes (3-D) long")
 
+    if any(i < 1 for i in lx):
+        raise ValueError(f"{file} has nonpositive grid size {lx}")
+
     return lx
 
 
@@ -169,9 +172,6 @@ def Efield(file: Path) -> xarray.Dataset:
 
     lx = simsize(file.parent)
 
-    assert lx[0] > 0, "must have strictly positive number of longitude cells"
-    assert lx[1] > 0, "must have strictly positive number of latitude cells"
-
     m = grid2(file.parent / "simgrid.dat", lx)
 
     if ((m["mlat"] < -90) | (m["mlat"] > 90)).any():
@@ -181,10 +181,7 @@ def Efield(file: Path) -> xarray.Dataset:
 
     with file.open("rb") as f:
         """
-        NOTE:
-        this is mistakenly a float from Matlab
-        to keep compatibility with old files, we left it as real64.
-        New work should be using HDF5 instead of raw in any case.
+        NOTE: this is a float64 from Matlab raw generation
         """
         dat["flagdirich"] = int(np.fromfile(f, ft, 1))
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
@@ -196,6 +193,22 @@ def Efield(file: Path) -> xarray.Dataset:
         filesize = file.stat().st_size
         if f.tell() != filesize:
             logging.error(f"{file} size {filesize} != file read position {f.tell()}")
+
+    return dat
+
+
+def neutral2(file: Path) -> dict[str, T.Any]:
+    """
+    Read 2D neutral data from raw files
+    """
+
+    lx = simsize(file.parent)
+
+    dat: dict[str, T.Any] = {}
+
+    with file.open("rb") as f:
+        for p in ("dn0all", "dnN2all", "dnO2all", "dvnrhoall", "dvnzall", "dTnall"):
+            dat[p] = read2D(f, lx)
 
     return dat
 
@@ -351,7 +364,7 @@ def read4D(f: T.BinaryIO, lsp: int, lx: tuple[int, ...] | list[int]):
     read 4D array from raw file
     """
 
-    if not len(lx) == 3:
+    if len(lx) != 3:
         raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
     return np.fromfile(f, np.float64, np.prod(lx) * lsp).reshape((*lx, lsp), order="F")
@@ -362,7 +375,7 @@ def read3D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]):
     read 3D array from raw file
     """
 
-    if not len(lx) == 3:
+    if len(lx) != 3:
         raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
     return np.fromfile(f, np.float64, np.prod(lx)).reshape(*lx, order="F")
@@ -373,10 +386,12 @@ def read2D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]):
     read 2D array from raw file
     """
 
-    if not len(lx) == 3:
-        raise ValueError(f"lx must have 3 elements, you have lx={lx}")
+    if len(lx) == 3:
+        return np.fromfile(f, np.float64, np.prod(lx[1:])).reshape(*lx[1:], order="F")
+    elif len(lx) == 2:
+        return np.fromfile(f, np.float64, np.prod(lx)).reshape(*lx, order="F")
 
-    return np.fromfile(f, np.float64, np.prod(lx[1:])).reshape(*lx[1:], order="F")
+    raise ValueError(f"lx must have 2 or 3 elements, you have lx={lx}")
 
 
 def glow_aurmap(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
@@ -392,7 +407,7 @@ def glow_aurmap(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Datase
         coords={"wavelength": WAVELEN, "x2": xg["x2"][2:-2], "x3": xg["x3"][2:-2]}
     )
 
-    if not len(lx) == 3:
+    if len(lx) != 3:
         raise ValueError(f"lx must have 3 elements, you have lx={lx}")
 
     with file.open("rb") as f:

@@ -1,21 +1,17 @@
 #!/usr/bin/env python3
 """
-convert Gemini3D old raw binary data to HDF5 .h5
-
-For clarity, the user must provide a config.nml for the original raw data.
+convert Gemini3D old raw binary neutral data to HDF5 .h5
+requires "simsize.dat" file to be present in the same directory at the neutral .dat files
 """
 
 import typing
 from pathlib import Path
 import argparse
+import h5py
 
 import gemini3d.raw.read as raw_read
-import gemini3d.read as read
+
 import gemini3d.write as write
-
-LSP = 7
-CLVL = 6
-
 
 p = argparse.ArgumentParser()
 p.add_argument("indir", help="Gemini .dat file directory")
@@ -34,15 +30,15 @@ elif indir.is_dir():
 else:
     raise FileNotFoundError(indir)
 
-cfg = read.config(indir)
-if "flagoutput" not in cfg:
-    raise LookupError(f"need to specify flagoutput in {indir}/config.nml")
+outdir.mkdir(parents=True, exist_ok=True)
 
-try:
-    xg = raw_read.grid(indir)
-except FileNotFoundError:
-    xg = {}
-
+# %% convert simsize
+lx = raw_read.simsize(indir)
+print(f"{indir} lx:", lx)
+with h5py.File(outdir / "simsize.h5", "w") as f:
+    f["lx1"] = lx[0]
+    f["lx2"] = lx[1]
+# %% convert data
 i = 0
 for infile in infiles:
     if infile.stem in {"simsize", "simgrid", "initial_conditions"}:
@@ -52,9 +48,9 @@ for infile in infiles:
     print(infile, "=>", outfile)
     i += 1
 
-    dat = raw_read.data(infile, cfg=cfg, xg=xg)
+    dat = raw_read.neutral2(infile)
 
-    write.state(outfile, dat)
+    write.neutral2(dat, outfile)
 
 if i == 0:
     raise FileNotFoundError(f"no .dat files found in {indir}")

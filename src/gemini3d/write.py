@@ -94,6 +94,21 @@ def precip(precip: xarray.Dataset, outdir: Path):
     h5write.precip(outdir, precip)
 
 
+def neutral2(data: dict[str, T.Any], outfile: Path):
+    """
+    writes 2D neutral data to disk
+
+    Parameters
+    ----------
+    data: dict
+        neutral data
+    outdir: pathlib.Path
+        directory to write files into
+    """
+
+    h5write.neutral(outfile, data)
+
+
 def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]):
     """
     writes JSON file with sim setup metadata

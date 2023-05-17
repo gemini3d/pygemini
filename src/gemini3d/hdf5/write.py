@@ -212,7 +212,7 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
             h["/glatctr"] = xg["glatctr"]
 
 
-def Efield(outdir: Path, E: xarray.Dataset):
+def Efield(outdir: Path, E: xarray.Dataset) -> None:
     """
     write Efield to disk
     """
@@ -248,7 +248,7 @@ def Efield(outdir: Path, E: xarray.Dataset):
                 f[f"/{k}"] = E[k].loc[time].astype(np.float32)
 
 
-def precip(outdir: Path, P: xarray.Dataset):
+def precip(outdir: Path, P: xarray.Dataset) -> None:
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f.create_dataset("/llon", data=P.mlon.size, dtype=np.int32)
         f.create_dataset("/llat", data=P.mlat.size, dtype=np.int32)
@@ -274,6 +274,33 @@ def precip(outdir: Path, P: xarray.Dataset):
                     shuffle=True,
                     fletcher32=True,
                 )
+
+
+def neutral(fn: Path, N) -> None:
+    """
+    write neutral data to disk
+
+    Parameters
+    ----------
+
+    fn: pathlib.Path
+        output filename
+
+    N: dict of str, numpy.ndarray
+        neutral data
+    """
+
+    with h5py.File(fn, "w") as f:
+        for k in {"dn0all", "dnN2all", "dnO2all", "dvnrhoall", "dvnzall", "dTnall"}:
+            f.create_dataset(
+                f"/{k}",
+                data=N[k],
+                dtype=np.float32,
+                compression="gzip",
+                compression_opts=CLVL,
+                shuffle=True,
+                fletcher32=True,
+            )
 
 
 def maggrid(fn: Path, mag: dict[str, T.Any], gridsize: tuple[int, int, int]):
