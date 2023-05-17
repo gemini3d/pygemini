@@ -115,7 +115,6 @@ def plotdiff(
 
 
 def diff1d(A, B, name: str, fg, axs):
-
     axs[0].plot(A)
 
     axs[1].plot(B)
@@ -128,7 +127,6 @@ def diff1d(A, B, name: str, fg, axs):
 
 
 def diff2d(A, B, name: str, fg, axs):
-
     cmap = "bwr" if name.startswith(("J", "v")) else None
 
     bmin = min(A.min(), B.min())

@@ -26,7 +26,6 @@ PLOTFUN = {"scalar": {"ne", "Ti", "Te", "J1", "J2", "J3"}, "vector": {"v1", "v2"
 
 
 def plot3_all(direc: Path, var: set[str], saveplot_fmt: str | None = None):
-
     direc = Path(direc).expanduser().resolve(strict=True)
 
     cfg = read.config(direc)

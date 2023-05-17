@@ -229,7 +229,6 @@ def frame3d_curv(
     p3 = (2, 1, 0)
 
     with h5py.File(file, "r") as f:
-
         if {"ne", "ns", "v1", "Ti"} & var:
             dat["ns"] = (("species", "x1", "x2", "x3"), f["/nsall"][:].transpose(p4))
 

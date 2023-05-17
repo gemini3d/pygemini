@@ -15,7 +15,6 @@ __all__ = ["datetime_range", "read_nml"]
 
 
 def datetime_range(start: datetime, stop: datetime, step: timedelta) -> list[datetime]:
-
     """
     Generate range of datetime over a closed interval.
     pandas.date_range also defaults to a closed interval.
@@ -136,7 +135,6 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
 
 
 def parse_base(r: dict[str, T.Any]) -> dict[str, T.Any]:
-
     P: dict[str, T.Any] = {
         "tdur": timedelta(seconds=float(r["tdur"])),
         "dtout": timedelta(seconds=float(r["dtout"])),
@@ -157,7 +155,6 @@ def parse_base(r: dict[str, T.Any]) -> dict[str, T.Any]:
 
 
 def _parse_flags(r: dict[str, T.Any]) -> dict[str, T.Any]:
-
     P = {}
     for k in r:
         P[k] = int(r[k])
@@ -166,7 +163,6 @@ def _parse_flags(r: dict[str, T.Any]) -> dict[str, T.Any]:
 
 
 def parse_files(r: dict[str, T.Any]) -> dict[str, T.Any]:
-
     P = {}
 
     for k in {"indat_file", "indat_grid", "indat_size"}:
@@ -225,7 +221,6 @@ def expand_envvar(P: dict[str, T.Any]) -> dict[str, T.Any]:
 
 
 def parse_neutral_perturb(r: dict[str, T.Any]) -> dict[str, T.Any]:
-
     P = {
         "interptype": int(r["interptype"]),
         "sourcedir": r["source_dir"],
@@ -241,7 +236,6 @@ def parse_neutral_perturb(r: dict[str, T.Any]) -> dict[str, T.Any]:
 
 
 def parse_neutral_BG(r: dict[str, T.Any]) -> dict[str, T.Any]:
-
     P: dict[str, T.Any] = {}
 
     P["flagneuBG"] = False

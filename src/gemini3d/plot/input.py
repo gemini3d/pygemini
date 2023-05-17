@@ -9,6 +9,7 @@ from . import grid2plotfun
 from .core import save_fig
 
 from .. import find, read
+from ..efield import get_times as efield_times
 from ..utils import to_datetime
 from ..config import datetime_range
 
@@ -81,9 +82,7 @@ def Efield(direc: Path) -> None:
     cfg = read.config(direc)
     path = find.inputs(direc, cfg.get("E0dir"))
 
-    time = datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtE0"])
-
-    for t in time:
+    for t in efield_times(cfg):
         try:
             file = find.frame(path, t)
         except FileNotFoundError:
@@ -147,7 +146,6 @@ def precip(direc: Path) -> None:
 
 
 def plot2d_input(ax: mpl.axes.Axes, A, cfg: dict[str, T.Any]) -> None:
-
     if cfg["lyp"] == 1:
         x = A["mlon"]
         ax.set_xlabel("magnetic longitude")
@@ -159,7 +157,6 @@ def plot2d_input(ax: mpl.axes.Axes, A, cfg: dict[str, T.Any]) -> None:
 
 
 def plot3d_input(ax: mpl.axes.Axes, A) -> None:
-
     h0 = ax.pcolormesh(A["mlon"], A["mlat"], A, shading="nearest")
     ax.figure.colorbar(h0, ax=ax)
     ax.set_ylabel("magnetic latitude")

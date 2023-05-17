@@ -19,7 +19,6 @@ mpl.rcParams["axes.formatter.min_exponent"] = 4
 
 
 def grid2plotfun(xg: dict[str, T.Any]) -> T.Callable:
-
     h1 = xg.get("h1")
 
     lxs = read.get_lxs(xg)
@@ -40,7 +39,6 @@ def grid2plotfun(xg: dict[str, T.Any]) -> T.Callable:
 
 
 def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str = ""):
-
     direc = Path(direc).expanduser().resolve(strict=True)
 
     if not var:

@@ -22,7 +22,6 @@ def plot12(
     ref_alt: float,
     cmap: str | None = None,
 ) -> None:
-
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
 
@@ -46,7 +45,6 @@ def plot13(
     name: str,
     cmap: str | None = None,
 ) -> None:
-
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
 
@@ -69,7 +67,6 @@ def plot23(
     *,
     cmap: str | None = None,
 ) -> None:
-
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
 
@@ -82,7 +79,6 @@ def plot23(
 
 
 def plot1d2(x, parm, name: str, ax: Axes) -> None:
-
     if parm.ndim != 1:
         raise ValueError("expecting 1-D data oriented east-west (along latitude)")
 
@@ -92,7 +88,6 @@ def plot1d2(x, parm, name: str, ax: Axes) -> None:
 
 
 def plot1d3(y, parm, name: str, ax: Axes) -> None:
-
     if parm.ndim != 1:
         raise ValueError("expecting 1-D data oriented east-west (along latitude)")
 
@@ -115,7 +110,6 @@ def bright_east_north(
     time: datetime,
     wavelength,
 ) -> None:
-
     if parm.ndim != 3:
         raise ValueError(f"Expected 3D data but got {parm.ndim}D data.")
 
@@ -159,7 +153,6 @@ def east_north(
     name: str,
     time: datetime,
 ) -> None:
-
     if parm.ndim != 2:
         raise ValueError(f"Expected 2D data but got {parm.ndim}D data.")
 
@@ -195,7 +188,6 @@ def mag_lonlat(
     name: str,
     time: datetime,
 ) -> None:
-
     if parm.ndim != 2:
         raise ValueError(f"Expected 2D data but got {parm.ndim}D data.")
 

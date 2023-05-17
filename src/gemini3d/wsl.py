@@ -22,7 +22,6 @@ def wsl_available() -> bool:
 
 
 def is_wsl_path(path: Path) -> bool:
-
     return os.name == "nt" and path.as_posix().startswith(("//wsl$", "//wsl.localhost"))
 
 

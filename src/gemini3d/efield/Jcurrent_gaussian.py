@@ -3,7 +3,6 @@ import numpy as np
 
 
 def Jcurrent_gaussian(E: xarray.Dataset, gridflag: int, flagdip: bool) -> xarray.Dataset:
-
     if E.mlon.size > 1:
         shapelon = np.exp(-((E.mlon - E.mlonmean) ** 2) / 2 / E.mlonsig**2)
     else:

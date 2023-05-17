@@ -178,7 +178,6 @@ def Rgm2gg():
 
 # Rotate an ECEF geographic vector into ECEF geomagnetic
 def rotvec_gg2gm(e):
-
     assert e.ndim == 4, "for 4D arrays"
     assert e.shape[3] == 3, "last dimension must be length 3"
     S = e.shape[:3]
@@ -200,7 +199,6 @@ def rotvec_gg2gm(e):
 
 
 def rotvec_gg2gm_points(e):
-
     assert e.ndim == 2, "for 2D arrays"
     assert e.shape[1] == 3, "must have 3 columns"
 

@@ -199,7 +199,6 @@ def model_resample(
 
 
 def check_density(n: xarray.DataArray):
-
     if not np.isfinite(n).all():
         raise ValueError("non-finite density")
     if (n < 0).any():
@@ -209,7 +208,6 @@ def check_density(n: xarray.DataArray):
 
 
 def check_drift(v: xarray.DataArray):
-
     if not np.isfinite(v).all():
         raise ValueError("non-finite drift")
     if (abs(v) > 10e3).any():
@@ -217,7 +215,6 @@ def check_drift(v: xarray.DataArray):
 
 
 def check_temperature(Ts: xarray.DataArray):
-
     if not np.isfinite(Ts).all():
         raise ValueError("non-finite temperature")
     if (Ts < 0).any():

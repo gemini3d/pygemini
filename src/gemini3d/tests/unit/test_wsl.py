@@ -5,7 +5,6 @@ import gemini3d.wsl as wsl
 
 @pytest.mark.skipif(not wsl.wsl_available(), reason="WSL not available")
 def test_wsl_path():
-
     wsl_temp = wsl.wsl_tempfile()
     assert wsl_temp, "could not get WSL tempfile"
 

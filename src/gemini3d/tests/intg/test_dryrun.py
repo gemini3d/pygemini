@@ -15,7 +15,6 @@ import gemini3d.msis
 
 @pytest.mark.parametrize("name,bref", [("mini2dew_eq", 1238112), ("mini3d_eq", 2323072)])
 def test_memory(name, bref, helpers):
-
     ref = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
 
     est = job.memory_estimate(ref)
@@ -42,7 +41,6 @@ def test_mpiexec():
 
 @pytest.mark.parametrize("name", ["mini2dew_eq"])
 def test_dryrun(name, tmp_path, helpers):
-
     ref = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
 
     params = {

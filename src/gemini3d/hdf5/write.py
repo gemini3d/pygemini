@@ -249,7 +249,6 @@ def Efield(outdir: Path, E: xarray.Dataset):
 
 
 def precip(outdir: Path, P: xarray.Dataset):
-
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f.create_dataset("/llon", data=P.mlon.size, dtype=np.int32)
         f.create_dataset("/llat", data=P.mlat.size, dtype=np.int32)

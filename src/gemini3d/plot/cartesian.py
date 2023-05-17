@@ -35,7 +35,6 @@ def plot_interp(
     ref_alt: float = REF_ALT,
     **kwargs,
 ) -> None:
-
     """
 
     Parameters
@@ -261,7 +260,6 @@ def plot3d_slice(
     clim: tuple[float, float],
     ref_alt: float,
 ) -> None:
-
     axs = fg.subplots(1, 3, sharey=False, sharex=False)
     # fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.98)
     # %% CONVERT TO DISTANCE UP, EAST, NORTH (left panel)

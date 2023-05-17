@@ -21,7 +21,6 @@ import gemini3d.plot
     ],
 )
 def test_plot(name, tmp_path, monkeypatch, helpers):
-
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 

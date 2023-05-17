@@ -120,7 +120,6 @@ def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]):
 
 
 def maggrid(filename: Path, xmag: dict[str, T.Any]):
-
     filename = Path(filename).expanduser()
 
     # %% default value for gridsize

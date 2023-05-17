@@ -18,7 +18,6 @@ def test_find_msis():
 
 @pytest.mark.parametrize("version", [0, 21])
 def test_msis(version, tmp_path):
-
     if version == 21:
         features = gp.get_msis_features(find.executable("msis_setup"))
         if not features["msis2"]:

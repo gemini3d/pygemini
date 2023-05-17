@@ -165,7 +165,6 @@ def equilibrium(cfg: dict[str, T.Any]):
 
 
 def interp(cfg: dict[str, T.Any]) -> None:
-
     if "lxp" in cfg and "lyp" in cfg:
         xg = cartesian.cart3d(cfg)
     elif "lq" in cfg and "lp" in cfg and "lphi" in cfg:

@@ -18,7 +18,6 @@ def compare_precip(
     tol: dict[str, float] | None = None,
     plot: bool = False,
 ) -> int:
-
     new_dir = Path(new_dir).expanduser().resolve(strict=True)
     ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
 

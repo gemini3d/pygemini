@@ -54,7 +54,6 @@ def test_simsize(name, tmp_path):
 
 @pytest.mark.parametrize("name", ["mini2dew_fang"])
 def test_frame(name, tmp_path):
-
     t = datetime(2013, 2, 20, 5)
 
     with pytest.raises(FileNotFoundError):

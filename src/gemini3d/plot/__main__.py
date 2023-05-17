@@ -4,7 +4,6 @@ from . import plot_all, grid, input
 
 
 def cli():
-
     p = argparse.ArgumentParser()
     p.add_argument("direc", help="directory to plot")
     p.add_argument(

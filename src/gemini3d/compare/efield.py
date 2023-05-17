@@ -1,23 +1,27 @@
 from __future__ import annotations
 from pathlib import Path
-from datetime import datetime
+import typing
 import logging
 
 import numpy as np
 
 from .utils import err_pct, load_tol
 from .plot import plotdiff
+from ..efield import get_times as efield_times
 from .. import read, find
 
 
 def compare_Efield(
-    times: list[datetime],
+    ref_cfg: dict[str, typing.Any],
     new_dir: Path,
     ref_dir: Path,
     *,
     tol: dict[str, float] | None = None,
     plot: bool = False,
 ) -> int:
+    """
+    Compare input electric field data to reference data
+    """
 
     new_dir = Path(new_dir).expanduser().resolve(strict=True)
     ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
@@ -26,8 +30,8 @@ def compare_Efield(
         tol = load_tol()
 
     efield_errs = 0
-    # often we reuse Efield inputs without copying over files
-    for t in times:
+
+    for t in efield_times(ref_cfg):
         ref = read.Efield(find.frame(ref_dir, t))
         new = read.Efield(find.frame(new_dir, t))
         for k in {"Exit", "Eyit", "Vminx1it", "Vmaxx1it"}:

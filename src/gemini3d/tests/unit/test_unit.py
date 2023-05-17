@@ -21,7 +21,6 @@ pi = math.pi
 
 
 def test_str2func():
-
     fun = str2func("dummy", Path(gemini3d.tests.unit.__path__[0]))
 
     assert fun() == 0

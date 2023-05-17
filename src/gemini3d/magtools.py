@@ -18,7 +18,6 @@ def makegrid(
     lphi: int = 16,
     write_grid: bool = False,
 ) -> dict[str, T.Any]:
-
     """
     dang: float
         ANGULAR RANGE TO COVER FOR THE CALCULATIONS

@@ -5,6 +5,7 @@ generate, read, write Electric Field
 from __future__ import annotations
 import typing as T
 import logging
+from datetime import datetime
 
 import xarray
 import numpy as np
@@ -12,6 +13,15 @@ import numpy as np
 from .. import write
 from ..config import datetime_range
 from ..utils import str2func
+
+
+def get_times(cfg: dict[str, T.Any]) -> list[datetime]:
+    """
+    vector of times to generate Efield
+    in general, the Efield time step may be distinct from the simulation time step
+    """
+
+    return datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtE0"])
 
 
 def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
@@ -80,9 +90,7 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
     E = xarray.Dataset(
         coords={
-            "time": datetime_range(
-                cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtE0"]
-            ),
+            "time": get_times(cfg),
             "mlat": np.linspace(mlatmin - latbuf, mlatmax + latbuf, llat),
             "mlon": np.linspace(mlonmin - lonbuf, mlonmax + lonbuf, llon),
         }
@@ -203,7 +211,6 @@ def Esigma(pwidth: float, pmax: float, pmin: float, px) -> tuple[float, T.Any]:
 
 
 def check_finite(v: xarray.DataArray, name: str | None = None):
-
     i = np.logical_not(np.isfinite(v))
 
     if i.any():

@@ -18,7 +18,6 @@ from gemini3d.particles import particles_BCs
 
 @pytest.mark.parametrize("name", ["mini2dew_fang", "mini2dns_fang", "mini3d_fang"])
 def test_Efield(name, tmp_path, monkeypatch, helpers):
-
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
@@ -34,7 +33,7 @@ def test_Efield(name, tmp_path, monkeypatch, helpers):
     cfg["E0dir"] = cfg["out_dir"] / cfg["E0dir"]
     Efield_BCs(cfg, xg)
     errs = compare_Efield(
-        cfg["time"],
+        cfg,
         new_dir=cfg["E0dir"],
         ref_dir=test_dir / E0dir,
         plot=False,
@@ -45,7 +44,6 @@ def test_Efield(name, tmp_path, monkeypatch, helpers):
 
 @pytest.mark.parametrize("name", ["mini2dew_fang", "mini2dns_fang", "mini3d_fang"])
 def test_precip(name, tmp_path, monkeypatch, helpers):
-
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 

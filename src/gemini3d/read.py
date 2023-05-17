@@ -127,7 +127,6 @@ def data(
 
 
 def derive(dat: xarray.Dataset, var: set[str], flag: int) -> xarray.Dataset:
-
     lx = (dat.dims["x1"], dat.dims["x2"], dat.dims["x3"])
 
     # %% Derived variables
@@ -243,7 +242,6 @@ def time(file: Path) -> datetime:
 
 
 def get_lxs(xg: dict[str, T.Any]) -> tuple[int, int, int]:
-
     lx = None
     for k in ("lx", "lxs", "lx1"):
         if k in xg:

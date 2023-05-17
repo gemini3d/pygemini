@@ -48,7 +48,6 @@ def git_download(path: Path, repo: str, tag: str | None = None):
 
 
 def download_and_extract(test_name: str, data_dir: Path) -> Path:
-
     ref_file = data_dir / "ref_data.json"
 
     if not ref_file.is_file():

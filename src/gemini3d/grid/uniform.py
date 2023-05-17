@@ -35,7 +35,6 @@ def grid1d(dist: float, L: int, parms: list[float] | None = None):
 
 
 def uniform1d(xmin: float, xmax: float, L: int):
-
     if L == 1:
         # degenerate dimension
         # add 2 ghost cells on each side
@@ -53,7 +52,6 @@ def uniform1d(xmin: float, xmax: float, L: int):
 
 
 def non_uniform1d(xmax: float, parms: list[float]):
-
     degdist = parms[0]  # distance from boundary at which we start to degrade resolution
     dx0 = parms[1]  # min step size for grid
     dxincr = parms[2]  # max step size increase for grid
@@ -75,7 +73,6 @@ def non_uniform1d(xmax: float, parms: list[float]):
 def altitude_grid(
     alt_min: float, alt_max: float, incl_deg: float, d: tuple[float, float, float, float]
 ):
-
     if alt_min < 0 or alt_max < 0:
         raise ValueError("grid values must be positive")
     if alt_max <= alt_min:

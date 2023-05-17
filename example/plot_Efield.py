@@ -13,7 +13,6 @@ import gemini3d.read as read
 
 
 def plotVmaxx1it(ax: mpl.axes.Axes, V: xarray.DataArray) -> None:
-
     ax.set_title("Vmaxx1it: Potential")
     if V.ndim == 1:
         ax.plot(dat["mlat"], V)

@@ -6,7 +6,6 @@ import sys
 
 
 def cmake_exe() -> str:
-
     cmake = shutil.which("cmake")
     if not cmake:
         # try to help if Homebrew or Ports is not on PATH

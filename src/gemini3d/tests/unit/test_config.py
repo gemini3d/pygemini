@@ -100,13 +100,11 @@ def test_nml_bad(tmp_path):
 
 @pytest.mark.parametrize("group", ["base", "flags", "files", "precip", "efield"])
 def test_namelist_exists(group):
-
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         assert config.namelist_exists(cfn, group)
 
 
 def test_nml_gemini_env_root(monkeypatch, tmp_path):
-
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path))
 
@@ -121,7 +119,6 @@ def test_nml_gemini_env_root(monkeypatch, tmp_path):
 
 @pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])
 def test_nml_namelist(namelist):
-
     with importlib.resources.path("gemini3d.tests.config", "config_example.nml") as cfn:
         params = config.parse_namelist(cfn, namelist)
 
@@ -137,7 +134,6 @@ def test_nml_namelist(namelist):
 
 @pytest.mark.parametrize("namelist", ["neutral_BG"])
 def test_msis2_namelist(namelist):
-
     with importlib.resources.path("gemini3d.tests.config", "config_msis2.nml") as cfn:
         params = config.parse_namelist(cfn, namelist)
 
@@ -148,7 +144,6 @@ def test_msis2_namelist(namelist):
 
 
 def test_read_config_nml(monkeypatch, tmp_path):
-
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path))
 

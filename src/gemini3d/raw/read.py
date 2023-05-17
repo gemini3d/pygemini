@@ -203,7 +203,6 @@ def Efield(file: Path) -> xarray.Dataset:
 def data(
     file, cfg: dict[str, T.Any], xg: dict[str, T.Any] | None = None
 ) -> xarray.Dataset:
-
     var = {"ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3", "Phi"}
 
     flag = cfg.get("flagoutput")
@@ -320,7 +319,6 @@ def frame3d_curvavg(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Da
 
 
 def frame3d_curvne(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
-
     if not file.is_file():
         raise FileNotFoundError(file)
 
@@ -408,7 +406,6 @@ def glow_aurmap(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Datase
 
 
 def time(f: T.BinaryIO) -> datetime:
-
     t = np.fromfile(f, np.float64, 4)
 
     return datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])

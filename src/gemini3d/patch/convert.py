@@ -24,7 +24,6 @@ COMP_LEVEL = 6  # arbitrary GZIP compression level
 
 
 def convert(indir: Path, outdir: Path, data_vars: set[str], plotgrid: bool = False):
-
     times = filenames2times(indir)
 
     # Need to get extents by scanning all files.
@@ -111,7 +110,6 @@ def combine_files(
     x2,
     x3,
 ):
-
     outfn = time2filename(outdir, time)
 
     lx = (x1.size, x2.size, x3.size)
@@ -151,7 +149,6 @@ def convert_var(
     ix2: tuple[int, int],
     ix3: tuple[int, int],
 ):
-
     if v not in ih:
         logging.debug(f"variable {v} not in {ih.filename}")
         return

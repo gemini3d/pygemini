@@ -36,7 +36,6 @@ def filenames2times(indir: Path) -> list[datetime]:
 
 
 def patch_grid(file: Path) -> tuple[typing.Any, typing.Any]:
-
     with h5py.File(file, "r") as fh:
         # TODO: AMR code needs to write actual x1 points, as it's not linearly spaced
         # x1new = np.linspace(

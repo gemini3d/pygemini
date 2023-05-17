@@ -34,7 +34,6 @@ import gemini3d.msis
     ],
 )
 def test_model_setup(name, tmp_path, monkeypatch, helpers):
-
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
@@ -74,7 +73,6 @@ def test_model_setup(name, tmp_path, monkeypatch, helpers):
     reason="GEMCI_ROOT not set",
 )
 def test_equilibrium_setup(name, tmp_path, monkeypatch):
-
     cfg_dir = Path(os.environ["GEMCI_ROOT"]) / "cfg/equilibrium" / name
 
     if not os.environ.get("GEMINI_CIROOT"):

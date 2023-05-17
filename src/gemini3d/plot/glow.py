@@ -49,7 +49,6 @@ def glow(
 
 
 def emissions(B: xarray.Dataset, time_str: str, fg: Figure, txt: str):
-
     fg.clf()
 
     x = B.x2 if B.x2.size > 1 else B.x3
@@ -69,7 +68,6 @@ def emissions(B: xarray.Dataset, time_str: str, fg: Figure, txt: str):
 
 
 def emission_line(B: xarray.Dataset, time_str: str, fg: Figure):
-
     fg.clf()
 
     # arbitrary pick of which emission lines to plot lat/lon slices

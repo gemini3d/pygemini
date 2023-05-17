@@ -28,7 +28,6 @@ except ImportError:
 
 
 def runner(pr: dict[str, T.Any]) -> None:
-
     out_dir = check_outdir(pr["out_dir"])
 
     config_file = find.config(pr["config_file"])
@@ -170,7 +169,6 @@ def memory_estimate(path: Path) -> int:
 
 
 def check_compiler():
-
     fc = os.environ.get("FC")
     fc = shutil.which(fc) if fc else shutil.which("gfortran")
     if not fc:
@@ -218,7 +216,6 @@ def check_mpiexec(mpiexec: str, gemexe: Path) -> str:
 
 
 def check_outdir(out_dir: str | Path) -> Path:
-
     out_dir = Path(out_dir).expanduser().resolve()
     if out_dir.is_file():
         raise NotADirectoryError(

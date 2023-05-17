@@ -106,7 +106,6 @@ def test_convert_scalar(glon, glat):
 
 
 def test_convert_numpy():
-
     glon = np.array((30, 45, 90, 180, 270))
     glat = np.array((-60, -45, 30, 45, 60))
 
@@ -133,7 +132,6 @@ def test_convert_numpy():
     ],
 )
 def test_grid(name, tmp_path, monkeypatch, helpers):
-
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 

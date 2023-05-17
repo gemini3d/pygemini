@@ -19,23 +19,30 @@ def compare_input(
     tol: dict[str, float] | None = None,
     plot: bool = True,
 ) -> int:
+    """
+    compares simulation input data to reference data, including:
+
+    * background plasma
+    * precipitation
+    * electric field
+    """
 
     names = {"ns", "Ts", "vs1"}
 
     new_dir = Path(new_dir).expanduser().resolve(strict=True)
     ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
 
-    ref_params = read.config(ref_dir)
-    ref_indir = ref_dir / ref_params["indat_file"].parts[-2]
-    ref = read.data(ref_indir / ref_params["indat_file"].name, var=names)
+    ref_cfg = read.config(ref_dir)
+    ref_indir = ref_dir / ref_cfg["indat_file"].parts[-2]
+    ref = read.data(ref_indir / ref_cfg["indat_file"].name, var=names)
 
-    new_params = read.config(new_dir)
-    if len(new_params["time"]) <= 1:
+    new_cfg = read.config(new_dir)
+    if len(new_cfg["time"]) <= 1:
         raise ValueError(
             f"{new_dir} simulation did not run long enough, must run for more than one time step"
         )
-    new_indir = new_dir / new_params["indat_file"].parts[-2]
-    new = read.data(new_indir / new_params["indat_file"].name, var=names)
+    new_indir = new_dir / new_cfg["indat_file"].parts[-2]
+    new = read.data(new_indir / new_cfg["indat_file"].name, var=names)
 
     if tol is None:
         tol = load_tol()
@@ -60,23 +67,23 @@ def compare_input(
                     # just plot electron density
                     a = a[-1]
                     b = b[-1]
-                plotdiff(a, b, ref_params["time"][0], new_dir, ref_dir)
+                plotdiff(a, b, ref_cfg["time"][0], new_dir, ref_dir)
 
-    if "precdir" in new_params:
+    if "precdir" in new_cfg:
         prec_errs = compare_precip(
-            ref_params["time"],
-            new_indir / new_params["precdir"].name,
-            ref_indir / ref_params["precdir"].name,
+            ref_cfg["time"],
+            new_indir / new_cfg["precdir"].name,
+            ref_indir / ref_cfg["precdir"].name,
             tol=tol,
             plot=plot,
         )
         errs += prec_errs
 
-    if "E0dir" in new_params:
+    if "E0dir" in new_cfg:
         efield_errs = compare_Efield(
-            ref_params["time"],
-            new_indir / new_params["E0dir"].name,
-            ref_indir / ref_params["E0dir"].name,
+            ref_cfg,
+            new_indir / new_cfg["E0dir"].name,
+            ref_indir / ref_cfg["E0dir"].name,
             tol=tol,
             plot=plot,
         )

@@ -11,7 +11,6 @@ from .. import utils
 
 
 def grid_step(x2new, x3new, i: int, N: int, ax: Axes) -> None:
-
     M = 0.9  # arbitrary max grayscale value [0, 1]
 
     ax.plot(*np.meshgrid(x2new, x3new), linestyle="", marker=".", color=str(i / N * M))
@@ -22,7 +21,6 @@ def grid_step(x2new, x3new, i: int, N: int, ax: Axes) -> None:
 
 
 def read_var(file: Path, var: set[str]) -> dict[str, typing.Any]:
-
     # a priori parameter based on Gemini3D data structure in the HDF5 files and memory
     LSP = 7
     p4 = (0, 3, 2, 1)
@@ -61,7 +59,6 @@ def read_var(file: Path, var: set[str]) -> dict[str, typing.Any]:
 
 
 def patch(indir: Path, var: set[str]) -> None:
-
     # arbitrary user parameters
     clim = {
         "ne": (1e8, 1e11),
@@ -85,7 +82,6 @@ def patch(indir: Path, var: set[str]) -> None:
 
             pat = utils.datetime2stem(t) + "_*.h5"
             for file in indir.glob(pat):
-
                 dat = read_var(file, {k})
 
                 x2, x3 = patch_grid(file)

@@ -46,7 +46,6 @@ def simsize(path: Path) -> Path:
 
 
 def executable(name: str, root: Path | None = None) -> Path | None:
-
     assert name, "executable name must be non-empty"
 
     ep = Path(name).expanduser()
