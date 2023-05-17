@@ -3,6 +3,8 @@ import subprocess
 import os
 import shutil
 from pathlib import Path
+import importlib.resources as pkgr
+import sys
 
 from datetime import datetime, timedelta
 import typing as T
@@ -16,7 +18,35 @@ import xarray
 import numpy as np
 
 
-__all__ = ["to_datetime", "git_meta", "datetime2stem"]
+__all__ = ["get_pkg_file", "str2func", "to_datetime", "git_meta", "datetime2stem"]
+
+
+def get_pkg_file(package: str, filename: str) -> Path:
+    """Get a file from a package.
+    This function works for Python 3.7, 3.8 using a deprecated method,
+    and uses the recommended method for Python >= 3.9
+
+    Parameters
+    ----------
+    package : str
+        Package name.
+    filename : str
+        File name.
+
+    Returns
+    -------
+    Path
+        Path to the file.
+
+    NOTE: this probably assumes the install is Zip safe
+    """
+
+    if sys.version_info < (3, 9):
+        with pkgr.path(package, filename) as f:
+            return f
+    else:
+        with pkgr.as_file(pkgr.files(package).joinpath(filename)) as f:
+            return f
 
 
 def str2func(name: str, path: Path | None = None) -> T.Callable:
