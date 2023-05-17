@@ -31,9 +31,9 @@ jobs:
         python-version: ["3.9", "3.10", "3.11"]
         include:
         - os: macos-latest
-          python-version: "3.10"
+          python-version: "3.11"
         - os: windows-latest
-          python-version: "3.10"
+          python-version: "3.11"
 
     name: Lint ${{ matrix.os }} Python ${{ matrix.python-version }}
 
@@ -58,7 +58,7 @@ jobs:
         os: [ubuntu-latest]
         include:
         - os: macos-latest
-          python-version: '3.10'
+          python-version: '3.11'
 
     runs-on: ${{ matrix.os }}
 
