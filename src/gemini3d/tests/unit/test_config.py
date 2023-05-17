@@ -151,9 +151,7 @@ def test_read_config_nml(monkeypatch, tmp_path):
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path))
 
-    params = read.config(
-        get_pkg_file("gemini3d.tests.config", "config_example.nml")
-    )
+    params = read.config(get_pkg_file("gemini3d.tests.config", "config_example.nml"))
 
     assert params["time"][0] == datetime(2013, 2, 20, 5)
     assert params["dtprec"] == timedelta(seconds=5)

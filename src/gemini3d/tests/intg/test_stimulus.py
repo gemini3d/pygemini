@@ -61,7 +61,7 @@ def test_precip(name, tmp_path, monkeypatch, helpers):
     particles_BCs(cfg, xg)
 
     errs = compare_precip(
-        cfg["time"],
+        cfg,
         new_dir=cfg["precdir"],
         ref_dir=test_dir / precdir,
         plot=False,

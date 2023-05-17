@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import datetime
+import typing
 from pathlib import Path
 import logging
 
@@ -8,10 +8,11 @@ import numpy as np
 from .plot import plotdiff
 from .utils import err_pct, load_tol
 from .. import read, find
+from ..particles import get_times as precip_times
 
 
 def compare_precip(
-    times: list[datetime],
+    cfg: dict[str, typing.Any],
     new_dir: Path,
     ref_dir: Path,
     *,
@@ -27,7 +28,7 @@ def compare_precip(
         tol = load_tol()
 
     # often we reuse precipitation inputs without copying over files
-    for t in times:
+    for t in precip_times(cfg):
         ref = read.precip(find.frame(ref_dir, t))
         new = read.precip(find.frame(new_dir, t))
 

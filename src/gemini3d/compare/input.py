@@ -71,7 +71,7 @@ def compare_input(
 
     if "precdir" in new_cfg:
         prec_errs = compare_precip(
-            ref_cfg["time"],
+            ref_cfg,
             new_indir / new_cfg["precdir"].name,
             ref_indir / ref_cfg["precdir"].name,
             tol=tol,

@@ -5,7 +5,7 @@ import logging
 import xarray
 import numpy as np
 
-from ..config import datetime_range
+from . import get_times as precip_times
 
 
 def precip_grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
@@ -69,7 +69,7 @@ def precip_grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     latbuf = 0.01 * (mlatmax - mlatmin)
     lonbuf = 0.01 * (mlonmax - mlonmin)
 
-    time = datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtprec"])
+    time = precip_times(cfg)
 
     pg = xarray.Dataset(
         {

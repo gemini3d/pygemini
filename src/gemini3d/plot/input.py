@@ -10,8 +10,8 @@ from .core import save_fig
 
 from .. import find, read
 from ..efield import get_times as efield_times
+from ..particles import get_times as precip_times
 from ..utils import to_datetime
-from ..config import datetime_range
 
 
 def plot_all(
@@ -105,7 +105,8 @@ def Efield(direc: Path) -> None:
 
 
 def precip(direc: Path) -> None:
-    """plot input precipitation
+    """
+    plot input precipitation
 
     Parameters
     ----------
@@ -121,9 +122,7 @@ def precip(direc: Path) -> None:
     cfg = read.config(direc)
     precip_path = find.inputs(direc, cfg.get("precdir"))
 
-    time = datetime_range(cfg["time"][0], cfg["time"][0] + cfg["tdur"], cfg["dtprec"])
-
-    for t in time:
+    for t in precip_times(cfg):
         try:
             file = find.frame(precip_path, t)
         except FileNotFoundError:

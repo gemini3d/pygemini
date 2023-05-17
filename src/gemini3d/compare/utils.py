@@ -1,8 +1,9 @@
 from __future__ import annotations
-import importlib.resources
 import json
 
 import xarray
+
+from ..utils import get_pkg_file
 
 
 def err_pct(a: xarray.DataArray, b: xarray.DataArray) -> float:
@@ -12,5 +13,5 @@ def err_pct(a: xarray.DataArray, b: xarray.DataArray) -> float:
 
 
 def load_tol() -> dict[str, float]:
-    tol_json = importlib.resources.read_text("gemini3d.compare", "tolerance.json")
+    tol_json = get_pkg_file("gemini3d.compare", "tolerance.json").read_text()
     return json.loads(tol_json)
