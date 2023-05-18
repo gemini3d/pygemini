@@ -91,6 +91,8 @@ def cart3d(p: dict[str, T.Any]) -> dict[str, T.Any]:
     g = G * Me / r**2
     gz = np.broadcast_to(-g[:, None, None], (g.size, lx2, lx3))
     assert gz.shape == (lx1, lx2, lx3)
+    
+    print("Grid size:  ",lx1,"x",lx2,"x",lx3)
 
     # DISTANCE EW AND NS (FROM ENU (or UEN in our case - cyclic permuted) COORD. SYSTEM)
     # #NEED TO BE CONVERTED TO DIPOLE SPHERICAL AND THEN
