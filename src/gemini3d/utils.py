@@ -213,8 +213,9 @@ def git_meta(path: Path | None = None) -> dict[str, str]:
 def get_cpu_count() -> int:
     """get a physical CPU count
 
-    Note: len(os.sched_getaffinity(0)) and multiprocessing.cpu_count don't help either
-    We'd like to use HWLOC instead, but for now we leave PSUtil.
+    Note: len(os.sched_getaffinity(0)) and multiprocessing.cpu_count
+    can give hyperthreaded CPU count rather than physical CPU count.
+    Hence we use PSUtil. HWLOC would also work.
 
     Returns
     -------
