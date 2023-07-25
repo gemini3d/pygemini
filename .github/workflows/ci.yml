@@ -92,10 +92,20 @@ jobs:
       if: runner.os == 'macOS'
       run: $(cmake -P gemext/scripts/requirements.cmake)
 
-    - name: Install Gemini3D libraries
+    - name: Cache install Gemini3D-External
+      id: cache-gemext
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ runner.temp }}/libgem
+        key: ${{ runner.os }}-gemext-${{ hashFiles('gemext/cmake/libraries.json') }}
+      # weak check that gemini3d/external has changed since last cache update
+
+    - name: Non-Cache Install Gemini3D-External
+      if: steps.cache-gemext.outputs.cache-hit != 'true'
       timeout-minutes: 15
       run: |
-        cmake -B build -Dfind:BOOL=true --install-prefix ${{ runner.temp }}
+        cmake -B build -Dfind:BOOL=true --install-prefix ${{ runner.temp }}/libgem
         cmake --build build --parallel
         cmake --install build
       working-directory: gemext
@@ -109,7 +119,7 @@ jobs:
     - name: Install Gemini3D
       timeout-minutes: 15
       run: |
-        cmake -B build --install-prefix ${{ runner.temp }} -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
+        cmake -B build --install-prefix ${{ runner.temp }}/libgem -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}/libgem
         cmake --build build --parallel
         cmake --install build
       working-directory: gemini3d
@@ -126,7 +136,7 @@ jobs:
       run: pytest
       timeout-minutes: 15
       env:
-        GEMINI_ROOT: ${{ runner.temp }}
+        GEMINI_ROOT: ${{ runner.temp }}/libgem
         GEMCI_ROOT: ${{ github.workspace }}/gemci
 
 # codecov coverage
