@@ -86,7 +86,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt update
-        sudo $(cmake -P gemext/scripts/requirements.cmake) libmumps-dev
+        sudo $(cmake -P gemext/scripts/requirements.cmake)
 
     - name: Install Prereqs (Macos)
       if: runner.os == 'macOS'
