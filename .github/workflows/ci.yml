@@ -3,6 +3,7 @@ name: ci
 env:
   GEMINI_CIROOT: ~/ci
   CMAKE_BUILD_TYPE: Release
+  CMAKE_PREFIX_PATH: ~/libgem
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   CC: gcc-12
   CXX: g++-12
@@ -97,7 +98,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: |
-          ${{ runner.temp }}/libgem
+          ${{ env.CMAKE_PREFIX_PATH }}
         key: ${{ runner.os }}-gemext-${{ hashFiles('gemext/cmake/libraries.json') }}
       # weak check that gemini3d/external has changed since last cache update
 
@@ -105,7 +106,7 @@ jobs:
       if: steps.cache-gemext.outputs.cache-hit != 'true'
       timeout-minutes: 15
       run: |
-        cmake -B build -Dfind:BOOL=true --install-prefix ${{ runner.temp }}/libgem
+        cmake -B build -Dfind:BOOL=true --install-prefix ${{ env.CMAKE_PREFIX_PATH }}
         cmake --build build --parallel
         cmake --install build
       working-directory: gemext
@@ -119,7 +120,7 @@ jobs:
     - name: Install Gemini3D
       timeout-minutes: 15
       run: |
-        cmake -B build --install-prefix ${{ runner.temp }}/libgem -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}/libgem
+        cmake -B build --install-prefix ${{ env.CMAKE_PREFIX_PATH }}
         cmake --build build --parallel
         cmake --install build
       working-directory: gemini3d
@@ -136,7 +137,6 @@ jobs:
       run: pytest
       timeout-minutes: 15
       env:
-        GEMINI_ROOT: ${{ runner.temp }}/libgem
         GEMCI_ROOT: ${{ github.workspace }}/gemci
 
 # codecov coverage
