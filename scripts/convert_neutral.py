@@ -50,12 +50,12 @@ for infile in infiles:
 
     dat = raw_read.neutral2(infile)
 
-    dat["dn0all"]=dat["dn0all"].transpose()
-    dat["dnN2all"]=dat["dnN2all"].transpose()
-    dat["dnO2all"]=dat["dnO2all"].transpose()
-    dat["dvnrhoall"]=dat["dvnrhoall"].transpose()
-    dat["dvnzall"]=dat["dvnzall"].transpose()  
-    dat["dTnall"]=dat["dTnall"].transpose()
+    dat["dn0all"] = dat["dn0all"].transpose()
+    dat["dnN2all"] = dat["dnN2all"].transpose()
+    dat["dnO2all"] = dat["dnO2all"].transpose()
+    dat["dvnrhoall"] = dat["dvnrhoall"].transpose()
+    dat["dvnzall"] = dat["dvnzall"].transpose()
+    dat["dTnall"] = dat["dTnall"].transpose()
 
     write.neutral2(dat, outfile)
 
