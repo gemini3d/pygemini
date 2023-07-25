@@ -1,5 +1,9 @@
 """
-setup a new simulation
+gemini3d.model: setup a new simulation
+
+Command line usage:
+
+    python -m gemini3d.model python -m gemini3d.model /path/to/sim_equil/config.nml /path/to/sim_eq/
 """
 
 from __future__ import annotations

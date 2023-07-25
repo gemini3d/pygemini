@@ -1,3 +1,11 @@
+"""
+gemini3d.plot: functions to plot Gemini3D output
+
+Command line usage:
+
+    python -m gemini3d.plot path/to/data
+"""
+
 from __future__ import annotations
 from pathlib import Path
 import typing as T
@@ -38,14 +46,24 @@ def grid2plotfun(xg: dict[str, T.Any]) -> T.Callable:
     return cartesian.cart2d  # type: ignore
 
 
-def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str = ""):
+def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str | None = None):
+    """
+    gemini3d.plot.plot_all(direc, var=None, saveplot_fmt="")
+
+    Parameters
+    ---------
+
+    direc: pathlib.Path
+        directory of simulation output to plot
+    var: set of str, optional
+        variables to plot, default is all
+    saveplot_fmt: str, optional
+        format to save plots, default is n
+    """
     direc = Path(direc).expanduser().resolve(strict=True)
 
     if not var:
         var = PARAMS
-
-    if {"png", "pdf", "eps"} & var:
-        raise ValueError("please use saveplot_fmt='png' or similar for plot format")
 
     xg = read.grid(direc)
     plotfun = grid2plotfun(xg)

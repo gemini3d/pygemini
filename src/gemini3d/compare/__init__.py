@@ -1,5 +1,9 @@
 """
-compare simulation outputs to verify model performance
+gemini3d.compare: compare simulation outputs to verify model performance
+
+Command line usage:
+
+    python -m gemini3d.compare /path/to/ref_data /path/to/new_data
 """
 
 from __future__ import annotations
@@ -12,6 +16,8 @@ from .grid import compare_grid
 # keep these two convenience imports for users
 from .efield import compare_Efield
 from .precip import compare_precip
+
+__all__ = ["compare_all"]
 
 
 def compare_all(
