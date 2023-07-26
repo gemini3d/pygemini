@@ -58,10 +58,6 @@ def executable(name: str, root: Path | None = None) -> Path | None:
             root,
             os.environ.get("GEMINI_ROOT"),
             os.environ.get("CMAKE_PREFIX_PATH"),
-            "~/libgem",
-            "~/libgem_gnu",
-            "~/libgem_clang",
-            "~/libgem_intel",
         )
         if p
     )
