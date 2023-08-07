@@ -45,8 +45,9 @@ def simsize(path: Path) -> Path:
     return p
 
 
-def executable(name: str, root: Path | None = None) -> Path | None:
-    assert name, "executable name must be non-empty"
+def executable(name: str, root: Path | None = None) -> Path:
+    if not name:
+        raise ValueError("executable name must be non-empty")
 
     ep = Path(name).expanduser()
     if ep.is_file():
@@ -78,10 +79,10 @@ def executable(name: str, root: Path | None = None) -> Path | None:
                 if exe:
                     return Path(exe)
 
-    return None
+    raise FileNotFoundError(f"{name} not found")
 
 
-def gemini_exe(name: str = "gemini3d.run", root: Path | None = None) -> Path | None:
+def gemini_exe(name: str = "gemini3d.run", root: Path | None = None) -> Path:
     """
     find and check that Gemini executable can run on this system
     """
@@ -92,7 +93,7 @@ def gemini_exe(name: str = "gemini3d.run", root: Path | None = None) -> Path | N
     exe = executable(name, root)
 
     if not exe:
-        return None
+        raise FileNotFoundError(f"Gemini3D executable {name} not found")
 
     # %% ensure Gemini3D executable is runnable
     if os.name == "nt" and isinstance(exe, PurePosixPath):

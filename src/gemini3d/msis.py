@@ -41,9 +41,6 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
 
     msis_exe = find.executable("msis_setup", p.get("gemini_root"))
 
-    if not msis_exe:
-        raise EnvironmentError("Did not find msis_setup")
-
     alt_km = xg["alt"] / 1e3
     # % CONVERT DATES/TIMES/INDICES INTO MSIS-FRIENDLY FORMAT
     t0 = p["time"][0]
