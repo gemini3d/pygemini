@@ -34,7 +34,7 @@ def compare_input(
 
     ref_cfg = read.config(ref_dir)
     ref_indir = ref_dir / ref_cfg["indat_file"].parts[-2]
-    ref = read.data(ref_indir / ref_cfg["indat_file"].name, var=names)
+    ref = read.frame(ref_indir / ref_cfg["indat_file"].name, var=names)
 
     new_cfg = read.config(new_dir)
     if len(new_cfg["time"]) <= 1:
@@ -42,7 +42,7 @@ def compare_input(
             f"{new_dir} simulation did not run long enough, must run for more than one time step"
         )
     new_indir = new_dir / new_cfg["indat_file"].parts[-2]
-    new = read.data(new_indir / new_cfg["indat_file"].name, var=names)
+    new = read.frame(new_indir / new_cfg["indat_file"].name, var=names)
 
     if tol is None:
         tol = load_tol()

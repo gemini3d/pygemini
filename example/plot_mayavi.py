@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     var = {"ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"}
 
-    dat = gemini3d.read.data(P.fn, var=var, cfg=cfg)
+    dat = gemini3d.read.frame(P.fn, var=var, cfg=cfg)
 
     mlab.USE_LOD_ACTOR = True  # this didn't help RAM or performance
 

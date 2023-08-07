@@ -42,19 +42,19 @@ def plot_cli(
 
         ref_params = read.config(ref_path)
         ref_indir = ref_path / ref_params["indat_file"].parts[-2]
-        ref = read.data(ref_indir / ref_params["indat_file"].name, var=var)
+        ref = read.frame(ref_indir / ref_params["indat_file"].name, var=var)
 
         new_params = read.config(new_path)
         new_indir = new_path / new_params["indat_file"].parts[-2]
-        new = read.data(new_indir / new_params["indat_file"].name, var=var)
+        new = read.frame(new_indir / new_params["indat_file"].name, var=var)
     else:
         if not ref_path.is_file():
             raise FileNotFoundError(f"{ref_path} must be a file when not specifying time")
         if not new_path.is_file():
             raise FileNotFoundError(f"{new_path} must be a file when not specifying time")
 
-        new = read.data(new_path, var=var)
-        ref = read.data(ref_path, var=var)
+        new = read.frame(new_path, var=var)
+        ref = read.frame(ref_path, var=var)
 
         new_path = new_path.parent
         ref_path = ref_path.parent

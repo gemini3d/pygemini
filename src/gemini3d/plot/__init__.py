@@ -117,7 +117,7 @@ def frame(
 
     if time is None:
         # read a specific filename
-        dat = read.data(path, var)
+        dat = read.frame(path, var=var)
         path = path.parent
     else:
         dat = read.frame(path, time, var=var)

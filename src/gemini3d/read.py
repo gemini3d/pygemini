@@ -69,33 +69,33 @@ def grid(
     return xg
 
 
-def data(
-    file: Path,
+def frame(
+    path: Path,
+    time: datetime | None = None,
     var: set[str] | None = None,
     *,
     cfg: dict[str, T.Any] | None = None,
     xg: dict[str, T.Any] | None = None,
 ) -> xarray.Dataset:
     """
-    knowing the filename for a simulation time step, read the data for that time step
+    load a frame of simulation data, automatically selecting the correct
+    functions based on simulation parameters
 
     Parameters
     ----------
     file: pathlib.Path
         filename for this timestep
-    var: set of set
-        variables to use
+    time: datetime.datetime
+        time to load from simulation output
+    var: set of str
+        variable(s) to read
     cfg: dict
         to avoid reading config.nml
     xg: dict
         to avoid reading simgrid.*, useful to save time when reading data files in a loop
-
-    Returns
-    -------
-    dat: xarray.Dataset
-        simulation outputs
     """
 
+    # %% default variables
     if not var:
         var = {"ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3", "Phi"}
 
@@ -103,23 +103,28 @@ def data(
         var = [var]
     var = set(var)
 
-    file = Path(file).expanduser()
-
+    # %% file or directory
+    path = Path(path).expanduser()
+    if path.is_dir():
+        if time is None:
+            raise ValueError("must specify time for directory")
+        path = find.frame(path, time)
+    # %% config file needed
     if not cfg:
-        cfg = config(file.parent)
+        cfg = config(path.parent)
 
-    flag = h5read.flagoutput(file, cfg)
+    flag = h5read.flagoutput(path, cfg)
 
     if flag == 3:
-        dat = h5read.frame3d_curvne(file, xg)
+        dat = h5read.frame3d_curvne(path, xg)
     elif flag == 1:
-        dat = h5read.frame3d_curv(file, var, xg)
+        dat = h5read.frame3d_curv(path, var, xg)
     elif flag == 2:
-        dat = h5read.frame3d_curvavg(file, var, xg)
+        dat = h5read.frame3d_curvavg(path, var, xg)
     else:
-        raise ValueError(f"Unsure how to read {file} with flagoutput {flag}")
+        raise ValueError(f"Unsure how to read {path} with flagoutput {flag}")
 
-    dat.attrs["filename"] = file
+    dat.attrs["filename"] = path
 
     dat.update(derive(dat, var, flag))
 
@@ -205,32 +210,6 @@ def precip(fn: Path) -> xarray.Dataset:
     fn = Path(fn).expanduser().resolve(strict=True)
 
     return h5read.precip(fn)
-
-
-def frame(simdir: Path, time: datetime, *, var: set[str] | None = None) -> xarray.Dataset:
-    """
-    load a frame of simulation data, automatically selecting the correct
-    functions based on simulation parameters
-
-    Parameters
-    ----------
-    simdir: pathlib.Path
-        top-level directory of simulation output
-    time: datetime.datetime
-        time to load from simulation output
-    var: set of str
-        variable(s) to read
-
-    Returns
-    -------
-    dat: xarray.Dataset
-        simulation output for this time step
-    """
-
-    return data(
-        find.frame(simdir, time),
-        var=var,
-    )
 
 
 def time(file: Path) -> datetime:

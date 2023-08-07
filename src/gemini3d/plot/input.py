@@ -40,7 +40,7 @@ def plot_all(
     if not xg:
         xg = read.grid(direc)
 
-    dat = read.data(init_file, var={"ns", "Ts", "vs1"})
+    dat = read.frame(init_file, var={"ns", "Ts", "vs1"})
 
     if not dat:
         raise ValueError(f"No data in {init_file}")
