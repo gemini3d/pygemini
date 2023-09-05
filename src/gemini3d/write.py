@@ -11,7 +11,7 @@ from .utils import git_meta
 from .hdf5 import write as h5write
 
 
-def state(out_file: Path, dat: xarray.Dataset, **kwargs):
+def state(out_file: Path, dat: xarray.Dataset, **kwargs) -> None:
     """
     WRITE STATE VARIABLE DATA.
     NOTE: WE don't write ANY OF THE ELECTRODYNAMIC
@@ -36,7 +36,7 @@ def state(out_file: Path, dat: xarray.Dataset, **kwargs):
     h5write.state(out_file, dat)
 
 
-def grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
+def grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> None:
     """writes grid to disk
 
     Parameters
@@ -59,7 +59,7 @@ def grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
     meta(input_dir / "setup_grid.json", git_meta(), cfg)
 
 
-def Efield(E: xarray.Dataset, outdir: Path):
+def Efield(E: xarray.Dataset, outdir: Path) -> None:
     """writes E-field to disk
 
     Parameters
@@ -77,7 +77,7 @@ def Efield(E: xarray.Dataset, outdir: Path):
     h5write.Efield(outdir, E)
 
 
-def precip(precip: xarray.Dataset, outdir: Path):
+def precip(precip: xarray.Dataset, outdir: Path) -> None:
     """writes precipitation to disk
 
     Parameters
@@ -109,7 +109,7 @@ def neutral2(data: dict[str, T.Any], outfile: Path):
     h5write.neutral(outfile, data)
 
 
-def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]):
+def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]) -> None:
     """
     writes JSON file with sim setup metadata
     """
@@ -134,7 +134,7 @@ def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]):
     fn.write_text(js)
 
 
-def maggrid(filename: Path, xmag: dict[str, T.Any]):
+def maggrid(filename: Path, xmag: dict[str, T.Any]) -> None:
     filename = Path(filename).expanduser()
 
     # %% default value for gridsize
@@ -148,7 +148,4 @@ def maggrid(filename: Path, xmag: dict[str, T.Any]):
         gridsize = xmag["gridsize"]
 
     # %% write the file
-    if not filename.parent.is_dir():
-        raise FileNotFoundError(f"{filename.parent} parent directory does not exist")
-
     h5write.maggrid(filename, xmag, gridsize)

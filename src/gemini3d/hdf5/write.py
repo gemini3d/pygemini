@@ -17,7 +17,7 @@ from ..utils import datetime2stem, to_datetime
 CLVL = 3  # GZIP compression level: larger => better compression, slower to write
 
 
-def state(fn: Path, dat: xarray.Dataset):
+def state(fn: Path, dat: xarray.Dataset) -> None:
     """
     write STATE VARIABLE initial conditions
 
@@ -42,7 +42,7 @@ def state(fn: Path, dat: xarray.Dataset):
             _write_var(f, "/Phiall", dat["Phitop"])
 
 
-def _write_var(fid, name: str, A: xarray.DataArray):
+def _write_var(fid, name: str, A: xarray.DataArray) -> None:
     """
     NOTE: The .transpose() reverses the dimension order.
     The HDF Group never implemented the intended H5T_array_create(..., perm)
@@ -81,7 +81,7 @@ def _write_var(fid, name: str, A: xarray.DataArray):
     )
 
 
-def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]):
+def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]) -> None:
     """writes grid to disk
 
     Parameters
@@ -303,7 +303,7 @@ def neutral(fn: Path, N) -> None:
             )
 
 
-def maggrid(fn: Path, mag: dict[str, T.Any], gridsize: tuple[int, int, int]):
+def maggrid(fn: Path, mag: dict[str, T.Any], gridsize: tuple[int, int, int]) -> None:
     """
     hdf5 files can optionally store a gridsize variable which tells readers how to
     reshape the data into 2D or 3D arrays.
@@ -322,7 +322,7 @@ def maggrid(fn: Path, mag: dict[str, T.Any], gridsize: tuple[int, int, int]):
         f["/gridsize"] = np.asarray(gridsize).astype(np.int32)
 
 
-def write_time(fid: h5py.File, time: datetime):
+def write_time(fid: h5py.File, time: datetime) -> None:
     """
     write time to HDF5 file as year-month-day, UTsec
     """

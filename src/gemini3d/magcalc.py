@@ -1,7 +1,6 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-import logging
 from math import pi, radians
 import typing as T
 
@@ -11,7 +10,13 @@ from . import read
 from . import write
 
 
-def magcalc(direc: Path, dang: float, xg: dict[str, T.Any] | None = None):
+def magcalc(
+    direc: Path,
+    dang: float,
+    Ltheta: int = 40,
+    Lphi: int = 40,
+    xg: dict[str, T.Any] | None = None,
+):
     """
     Parameters
     ----------
@@ -20,29 +25,26 @@ def magcalc(direc: Path, dang: float, xg: dict[str, T.Any] | None = None):
       top-level simulation path
 
     dang: float, optional
-      ANGULAR RANGE TO COVER FOR THE CALCLUATIONS.
-      THIS IS FOR THE FIELD POINTS - SOURCE POINTS COVER ENTIRE GRID.
+      ANGULAR RANGE TO COVER FOR THE FIELD POINTS - SOURCE POINTS COVER ENTIRE GRID
+
+    Ltheta: int, optional
+        number of points in theta
+
+    Lphi: int, optional
+        number of points in phi
 
     xg: dict, optional
       simulation grid
     """
 
     direc = Path(direc).expanduser()
-    if not direc.is_dir():
-        raise NotADirectoryError(direc)
 
     cfg = read.config(direc)
 
     if not xg:
         xg = read.grid(direc)
-        lx3 = xg["lx"][2]
 
-    if lx3 == 1:
-        flag2D = True
-        logging.info("2D meshgrid")
-    else:
-        flag2D = False
-        logging.info("3D meshgrid")
+    flag2D = any(xg["lx"][1:] == 1)
 
     # %% TABULATE THE SOURCE OR GRID CENTER LOCATION
     if "sourcemlon" not in cfg:
@@ -52,19 +54,20 @@ def magcalc(direc: Path, dang: float, xg: dict[str, T.Any] | None = None):
         thdist = pi / 2 - radians(cfg["sourcemlat"])  # zenith angle of source location
         phidist = radians(cfg["sourcemlon"])
 
-    # %% FIELD POINTS OF INTEREST (CAN/SHOULD BE DEFINED INDEPENDENT OF SIMULATION GRID)
-    ltheta = 10
-    lphi = 1 if flag2D else 10
+    # %% FIELD POINTS OF INTEREST
+    # CAN/SHOULD BE DEFINED INDEPENDENT OF SIMULATION GRID
+    if flag2D:
+        Lphi = 1
 
     thmin = thdist - radians(dang)
     thmax = thdist + radians(dang)
     phimin = phidist - radians(dang)
     phimax = phidist + radians(dang)
 
-    theta = np.linspace(thmin, thmax, ltheta)
-    phi = phidist if flag2D else np.linspace(phimin, phimax, lphi)
+    theta = np.linspace(thmin, thmax, Ltheta)
+    phi = phidist if flag2D else np.linspace(phimin, phimax, Lphi)
 
-    r = 6370e3 * np.ones((ltheta, lphi))
+    r = 6370e3 * np.ones((Ltheta, Lphi))
     # use ground level for altitude for all field points
     phi, theta = np.meshgrid(phi, theta)
 
@@ -74,8 +77,8 @@ def magcalc(direc: Path, dang: float, xg: dict[str, T.Any] | None = None):
         "phi": phi,
         "theta": theta,
     }
-    filename = direc / "inputs/magfieldpoints.h5"
-    write.maggrid(filename, mag)
+
+    write.maggrid(direc / "inputs/magfieldpoints.h5", mag)
 
 
 if __name__ == "__main__":
