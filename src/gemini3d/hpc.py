@@ -41,8 +41,10 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: list[str]) -> Path:
     Nchar = 6  # arbitrary number of characters
 
     if batcher == "qsub":
-        template = importlib.resources.read_text(
-            __package__, "templates/qsub_template.job"
+        template = (
+            importlib.resources.files("gemini3d.templates")
+            .joinpath("qsub_template.job")
+            .read_text()
         )
         job_file = out_dir / f"{binascii.b2a_hex(os.urandom(Nchar)).decode('ascii')}.job"
         print("writing job file", job_file)

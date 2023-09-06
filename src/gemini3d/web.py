@@ -51,7 +51,9 @@ def download_and_extract(test_name: str, data_dir: Path) -> Path:
     ref_file = data_dir / "ref_data.json"
 
     if not ref_file.is_file():
-        jmeta = json.loads(importlib.resources.read_text("gemini3d", "libraries.json"))
+        jmeta = json.loads(
+            importlib.resources.files("gemini3d").joinpath("libraries.json").read_text()
+        )
         url_retrieve(url=jmeta["ref_data"]["url"], outfile=ref_file)
 
     z = get_test_params(test_name, url_file=ref_file, ref_dir=data_dir)
