@@ -371,3 +371,166 @@ def generate_tilted_dipole3d(q, p, phi):
     xg["glatctr"] = xg["glat"].mean()
 
     return xg
+
+
+# Generate a grid with nonuniform x2 spacing that attempts to keep differential
+#   lengths in the x2-direction approximately constant.  
+def tilted_dipole3d_NUx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
+    """make tilted dipole grid
+
+    Parameters
+    -----------
+
+    cfg: dict
+        simulation parameters
+
+    Returns
+    -------
+
+    xg: dict
+        simulation grid
+    """
+
+    # parameter controlling altitude of top of grid in open dipole.
+    gopen = cfg.get("grid_openparm", 100.0)
+
+    pi = math.pi
+
+    # mesh size *with* ghost cells added in
+    lqg = cfg["lq"] + 4
+    lpg = cfg["lp"] + 4
+    lphig = cfg["lphi"] + 4
+    logging.info(f"mesh size of:  {cfg['lq']} x {cfg['lp']} x {cfg['lphi']}")
+
+    print(" Generating reference uniform grid...")
+    ###########################################################################
+    # We first generate a grid that is uniform in x2 to get total extents
+    ###########################################################################
+    # phi,theta coordinates at the "center" of the grid
+    phid, thetad = geog2geomag(cfg["glon"], cfg["glat"])
+
+    # find the "corners" of the grid in the source hemisphere
+    thetax2max = thetad + math.radians(cfg["dtheta"] / 2)
+    thetax2min = thetad - math.radians(cfg["dtheta"] / 2)
+    if thetad < pi / 2:  # northern hemisphere
+        pmax: float = (Re + cfg["altmin"]) / Re / np.sin(thetax2min) ** 2
+        # bottom left grid point p
+        qtmp = (Re / (Re + cfg["altmin"])) ** 2 * np.cos(
+            thetax2min
+        )  # %bottom left grid q (also bottom right)
+        pmin: float = np.sqrt(
+            np.cos(thetax2max) / np.sin(thetax2max) ** 4 / qtmp
+        )  # bottom right grid p
+    else:
+        pmax = (Re + cfg["altmin"]) / Re / np.sin(thetax2max) ** 2
+        qtmp = (Re / (Re + cfg["altmin"])) ** 2 * np.cos(thetax2max)
+        pmin = np.sqrt(np.cos(thetax2max) / np.sin(thetax2min) ** 4 / qtmp)
+
+    # set the L-shell grid, sans ghost cells
+    p = np.empty(lpg)
+    p[2:-2] = np.linspace(pmin, pmax, cfg["lp"])  # sans ghost cells
+
+    # find the max zenith angle (theta) for the grid, need to detect grid type and hemisphere
+    if cfg["gridflag"] == 0:  # open dipole grid
+        if thetad < pi / 2:  # northern hemisphere
+            thetamax = thetax2min + pi / gopen
+        else:  # southern hemisphere
+            thetamax = thetax2max - pi / gopen
+    else:  # closed dipole grid, reflect theta about equator
+        if thetad < pi / 2:  # northern
+            thetamax = pi - thetax2min
+        else:  # southern
+            thetamax = pi - thetax2max
+
+    # find the min/max q values for the grid across both hemispheres
+    if thetad < pi / 2:
+        rmin = (
+            p[-3] * Re * np.sin(thetax2min) ** 2
+        )  # last field line contains min/max r/q vals.
+        rmax = p[-3] * Re * np.sin(thetamax) ** 2
+        qmin = np.cos(thetax2min) * Re**2 / rmin**2
+        qmax = np.cos(thetamax) * Re**2 / rmax**2
+    else:
+        rmin = p[-3] * Re * np.sin(thetamax) ** 2
+        rmax = p[-3] * Re * np.sin(thetax2max) ** 2
+        qmin = np.cos(thetamax) * Re**2 / rmin**2
+        qmax = np.cos(thetax2max) * Re**2 / rmax**2
+
+    # define q grid sans ghost cells
+    if qmax < qmin:  # unclear whether this checking is necessary so leave for now
+        qtmp = qmax
+        qmax = qmin
+        qmin = qtmp
+    q = np.empty(lqg)
+    q[2:-2] = np.linspace(qmin, qmax, cfg["lq"])
+
+    # define phi grid sans ghost cells
+    phimin = phid - np.deg2rad(cfg["dphi"] / 2)
+    phimax = phid + np.deg2rad(cfg["dphi"] / 2)
+    phi = np.empty(lphig)
+    if cfg["lphi"] != 1:
+        phi[2:-2] = np.linspace(phimin, phimax, cfg["lphi"])
+    else:
+        phi[2:-2] = phid
+
+    # assuming uniform spacing in ghost region, add ghost cells
+    pstride = p[3] - p[2]
+    p[0] = p[2] - 2 * pstride
+    p[1] = p[2] - pstride
+    p[-2] = p[-3] + pstride
+    p[-1] = p[-3] + 2 * pstride
+    qstride = q[3] - q[2]
+    q[0] = q[2] - 2 * qstride
+    q[1] = q[2] - qstride
+    q[-2] = q[-3] + qstride
+    q[-1] = q[-3] + 2 * qstride
+    if cfg["lphi"] != 1:
+        phistride = phi[3] - phi[2]
+    else:
+        phistride = 0.1  # just use some random value if this is a 2D dipole mesh
+    phi[0] = phi[2] - 2 * phistride
+    phi[1] = phi[2] - phistride
+    phi[-2] = phi[-3] + phistride
+    phi[-1] = phi[-3] + 2 * phistride
+
+    # At this point we have all the arrays and sizes and the remainder will be
+    #  coordinate conversions and construction of grid dictionary
+    xg = generate_tilted_dipole3d(q, p, phi)
+    ###########################################################################
+    
+    print(" Generating nonuniform grid...")
+    # Determine a target differential spacing based on user extents and number of
+    #   grid points.  
+    dx2=xg["dx2b"][1:-2]
+    h2=xg["h2"][2:-2,2:-2,2:-2]
+    i1=h2.shape[0]-1
+    i3=h2.shape[2]//2
+    lx2=xg["lx"][1]
+    h2ref=h2[i1,:,i3]
+    dl2=h2ref*dx2
+    l2total=np.sum(dl2)
+    dl2ref=l2total/lx2
+    print(" Using reference spacing of ",dl2ref/1e3," (km)")
+    
+    # In order to form our p array we need to convert locations one at a time to
+    #   r,theta and then calculate the next metric factor to determine length
+    pnew=np.empty(lpg)
+    pnew[2]=p[2]
+    for ip in range(2,lpg-3):
+        rnew, thetanew = qp2rtheta(q[i1], p[ip])
+        dp=dl2ref/(Re*np.sin(thetanew)**3/np.sqrt(1+3*np.cos(thetanew)**2))
+        pnew[ip+1]=pnew[ip]+dp
+    pstride = pnew[3] - pnew[2]
+    pnew[0] = pnew[2] - 2 * pstride
+    pnew[1] = pnew[2] - pstride
+    pstride= pnew[-3] - pnew[-4]
+    pnew[-2] = pnew[-3] + pstride
+    pnew[-1] = pnew[-3] + 2 * pstride
+    
+    # At this point we have a fully formed x2 coordinate and we can pass it off
+    #   to the code that produces the mesh structure.  
+    xg = generate_tilted_dipole3d(q, pnew, phi)
+    
+    return xg
+
+
