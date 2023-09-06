@@ -62,7 +62,9 @@ for p in {"ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"}:
         # %% left panel
         ax = fg.add_subplot(1, 3, 1)
         ix3 = x3.size // 2 - 1  # arbitrary slice
-        slices.plot12(x2, x1, dat[p][1][:, :, ix3], clim=clim, name=p, ax=ax, ref_alt=100.)
+        slices.plot12(
+            x2, x1, dat[p][1][:, :, ix3], clim=clim, name=p, ax=ax, ref_alt=100.0
+        )
         # %% middle panel
         ax = fg.add_subplot(1, 3, 2)
         ix1 = x1.size // 2 - 1  # arbitrary slice

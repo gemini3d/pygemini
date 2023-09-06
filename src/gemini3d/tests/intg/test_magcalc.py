@@ -6,9 +6,9 @@ import h5py
 import gemini3d.web
 import gemini3d.magcalc as gm
 
+
 @pytest.mark.parametrize("name", ["mini2dew_fang", "mini2dns_fang", "mini3d_fang"])
 def test_dryrun(name, tmp_path, monkeypatch, helpers):
-
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
