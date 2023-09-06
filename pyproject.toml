@@ -13,7 +13,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Topic :: Scientific/Engineering :: Atmospheric Science"
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dynamic = ["version", "readme"]
 dependencies = ["python-dateutil", "numpy", "xarray>=0.16.0", "scipy", "h5py", "matplotlib >= 3.1"]
 

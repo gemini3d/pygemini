@@ -53,33 +53,25 @@ def executable(name: str, root: Path | None = None) -> Path:
     if ep.is_file():
         return ep
 
-    paths = (
-        Path(p).expanduser()
-        for p in (
-            root,
-            os.environ.get("GEMINI_ROOT"),
-            os.environ.get("CMAKE_PREFIX_PATH"),
-        )
-        if p
-    )
+    paths = (root, os.environ.get("GEMINI_ROOT"), os.environ.get("CMAKE_PREFIX_PATH"))
 
     for p in paths:
         if not p:
             continue
+        p = Path(p).expanduser()
 
         for n in EXE_PATHS:
+            exe = p / n / name
+            logging.debug(f"checking {exe} for existance and executable permission")
             if wsl.is_wsl_path(p):
                 # shutil.which() doesn't work on WSL paths
-                pexe = p / n / name
-                if pexe.is_file():
-                    return wsl.win_path2wsl_path(pexe)  # type: ignore
+                if exe.is_file():
+                    return wsl.win_path2wsl_path(exe)  # type: ignore
             else:
-                exe = shutil.which(name, path=str(p / n))
-                logging.debug(f"{name} {p / n} => {exe}")
-                if exe:
+                if exe := shutil.which(exe, path=p / n):
                     return Path(exe)
 
-    raise FileNotFoundError(f"{name} not found")
+    raise FileNotFoundError(f"{name} not found, search paths: {paths}")
 
 
 def gemini_exe(name: str = "gemini3d.run", root: Path | None = None) -> Path:
@@ -91,9 +83,6 @@ def gemini_exe(name: str = "gemini3d.run", root: Path | None = None) -> Path:
         name = "gemini3d.run"
 
     exe = executable(name, root)
-
-    if not exe:
-        raise FileNotFoundError(f"Gemini3D executable {name} not found")
 
     # %% ensure Gemini3D executable is runnable
     if os.name == "nt" and isinstance(exe, PurePosixPath):
