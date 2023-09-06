@@ -108,7 +108,7 @@ jobs:
       if: steps.cache-gemext.outputs.cache-hit != 'true'
       timeout-minutes: 15
       run: |
-        cmake -B build -Dfind:BOOL=true --install-prefix ${{ env.CMAKE_PREFIX_PATH }}
+        cmake -B build -Dfind:BOOL=true -Damr:BOOL=false --install-prefix ${{ env.CMAKE_PREFIX_PATH }}
         cmake --build build --parallel
         cmake --install build
       working-directory: gemext
