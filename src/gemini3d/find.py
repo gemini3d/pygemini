@@ -61,14 +61,14 @@ def executable(name: str, root: Path | None = None) -> Path:
         p = Path(p).expanduser()
 
         for n in EXE_PATHS:
-            exe = p / n / name
-            logging.debug(f"checking {exe} for existance and executable permission")
+            e = p / n / name
+            logging.debug(f"checking {e} for existance and executable permission")
             if wsl.is_wsl_path(p):
                 # shutil.which() doesn't work on WSL paths
-                if exe.is_file():
-                    return wsl.win_path2wsl_path(exe)  # type: ignore
+                if e.is_file():
+                    return wsl.win_path2wsl_path(e)  # type: ignore
             else:
-                if exe := shutil.which(exe, path=p / n):
+                if exe := shutil.which(e, path=p / n):
                     return Path(exe)
 
     raise FileNotFoundError(f"{name} not found, search paths: {paths}")
