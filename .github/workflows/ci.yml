@@ -68,6 +68,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+# always need this for requirements.cmake
     - name: Checkout Gemini3D-External
       uses: actions/checkout@v3
       with:
@@ -114,12 +115,14 @@ jobs:
       working-directory: gemext
 
     - name: Checkout Gemini3D
+      if: steps.cache-gemext.outputs.cache-hit != 'true'
       uses: actions/checkout@v3
       with:
         repository: gemini3d/gemini3d
         path: gemini3d
 
-    - name: Install Gemini3D
+    - name: non-cache Install Gemini3D
+      if: steps.cache-gemext.outputs.cache-hit != 'true'
       timeout-minutes: 15
       run: |
         cmake -B build --install-prefix ${{ env.CMAKE_PREFIX_PATH }}
