@@ -367,11 +367,7 @@ def generate_tilted_dipole3d(q, p, phi):
     xg["dx2h"] = xg["x2i"][1:] - xg["x2i"][:-1]
     xg["dx3h"] = xg["x3i"][1:] - xg["x3i"][:-1]
 
-    # center lat/lon of grid also required
-    # xg["glonctr"] = cfg["glon"]
-    # xg["glatctr"] = cfg["glat"]
-
-    xg["glonctr"] = np.mean(xg["glon"])
-    xg["glatctr"] = np.mean(xg["glat"])
+    xg["glonctr"] = xg["glon"].mean()
+    xg["glatctr"] = xg["glat"].mean()
 
     return xg
