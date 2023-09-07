@@ -175,7 +175,7 @@ def precip(file: Path) -> xarray.Dataset:
 
 def frame3d_curvne(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
     """
-    just Ne
+    reads only dataset "ne" from a 3D curvilinear simulation output
     """
 
     if not xg:
@@ -197,7 +197,7 @@ def frame3d_curv(
     file: Path, var: set[str], xg: dict[str, T.Any] | None = None
 ) -> xarray.Dataset:
     """
-    curvilinear
+    read datasets from 3D curvilinear simulation output
 
     Parameters
     ----------
@@ -262,6 +262,7 @@ def frame3d_curvavg(
     file: Path, var: set[str], xg: dict[str, T.Any] | None = None
 ) -> xarray.Dataset:
     """
+    read datasets from an averaged 3D curvilinear simulation output
 
     Parameters
     ----------

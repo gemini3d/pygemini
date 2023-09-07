@@ -107,7 +107,9 @@ def frame(
     path = Path(path).expanduser()
     if path.is_dir():
         if time is None:
-            raise ValueError("must specify time for directory")
+            raise ValueError(
+                f"must specify time when giving directory {path} instead of file"
+            )
         path = find.frame(path, time)
     # %% config file needed
     if not cfg:
