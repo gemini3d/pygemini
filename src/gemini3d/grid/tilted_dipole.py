@@ -373,10 +373,10 @@ def generate_tilted_dipole3d(q, p, phi):
     return xg
 
 
-# Generate a grid with nonuniform x2 spacing that attempts to keep differential
-#   lengths in the x2-direction approximately constant.  
 def tilted_dipole3d_NUx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
-    """make tilted dipole grid
+    """
+    Generate a tilted dipole grid with nonuniform x2 spacing that
+    attempts to keep differentiallengths in the x2-direction approximately constant.
 
     Parameters
     -----------
@@ -403,9 +403,9 @@ def tilted_dipole3d_NUx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     logging.info(f"mesh size of:  {cfg['lq']} x {cfg['lp']} x {cfg['lphi']}")
 
     print(" Generating reference uniform grid...")
-    ###########################################################################
-    # We first generate a grid that is uniform in x2 to get total extents
-    ###########################################################################
+    """
+    We first generate a grid that is uniform in x2 to get total extents
+    """
     # phi,theta coordinates at the "center" of the grid
     phid, thetad = geog2geomag(cfg["glon"], cfg["glat"])
 
@@ -492,45 +492,49 @@ def tilted_dipole3d_NUx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     phi[1] = phi[2] - phistride
     phi[-2] = phi[-3] + phistride
     phi[-1] = phi[-3] + 2 * phistride
-
-    # At this point we have all the arrays and sizes and the remainder will be
-    #  coordinate conversions and construction of grid dictionary
+    """
+    At this point we have all the arrays and sizes and the remainder will be
+    coordinate conversions and construction of grid dictionary
+    """
     xg = generate_tilted_dipole3d(q, p, phi)
-    ###########################################################################
-    
+
     print(" Generating nonuniform grid...")
     # Determine a target differential spacing based on user extents and number of
-    #   grid points.  
-    dx2=xg["dx2b"][1:-2]
-    h2=xg["h2"][2:-2,2:-2,2:-2]
-    i1=h2.shape[0]-1
-    i3=h2.shape[2]//2
-    lx2=xg["lx"][1]
-    h2ref=h2[i1,:,i3]
-    dl2=h2ref*dx2
-    l2total=np.sum(dl2)
-    dl2ref=l2total/lx2
-    print(" Using reference spacing of ",dl2ref/1e3," (km)")
-    
-    # In order to form our p array we need to convert locations one at a time to
-    #   r,theta and then calculate the next metric factor to determine length
-    pnew=np.empty(lpg)
-    pnew[2]=p[2]
-    for ip in range(2,lpg-3):
+    #   grid points.
+    dx2 = xg["dx2b"][1:-2]
+    h2 = xg["h2"][2:-2, 2:-2, 2:-2]
+    i1 = h2.shape[0] - 1
+    i3 = h2.shape[2] // 2
+    lx2 = xg["lx"][1]
+    h2ref = h2[i1, :, i3]
+    dl2 = h2ref * dx2
+    l2total = np.sum(dl2)
+    dl2ref = l2total / lx2
+    print(" Using reference spacing of ", dl2ref / 1e3, " (km)")
+
+    """
+    In order to form our p array we need to convert locations one at a time to
+     r,theta and then calculate the next metric factor to determine length
+    """
+    pnew = np.empty(lpg)
+    pnew[2] = p[2]
+    for ip in range(2, lpg - 3):
         rnew, thetanew = qp2rtheta(q[i1], p[ip])
-        dp=dl2ref/(Re*np.sin(thetanew)**3/np.sqrt(1+3*np.cos(thetanew)**2))
-        pnew[ip+1]=pnew[ip]+dp
+        dp = dl2ref / (
+            Re * np.sin(thetanew) ** 3 / np.sqrt(1 + 3 * np.cos(thetanew) ** 2)
+        )
+        pnew[ip + 1] = pnew[ip] + dp
     pstride = pnew[3] - pnew[2]
     pnew[0] = pnew[2] - 2 * pstride
     pnew[1] = pnew[2] - pstride
-    pstride= pnew[-3] - pnew[-4]
+    pstride = pnew[-3] - pnew[-4]
     pnew[-2] = pnew[-3] + pstride
     pnew[-1] = pnew[-3] + 2 * pstride
-    
-    # At this point we have a fully formed x2 coordinate and we can pass it off
-    #   to the code that produces the mesh structure.  
+
+    """
+    At this point we have a fully formed x2 coordinate and we can pass it off
+       to the code that produces the mesh structure.
+    """
     xg = generate_tilted_dipole3d(q, pnew, phi)
-    
+
     return xg
-
-
