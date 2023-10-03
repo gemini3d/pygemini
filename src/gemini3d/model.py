@@ -164,7 +164,7 @@ def equilibrium(cfg: dict[str, T.Any]):
 
     # %% Equilibrium input generation
     dat = equilibrium_state(cfg, xg)
-
+    
     write.state(cfg["indat_file"], dat)
 
 

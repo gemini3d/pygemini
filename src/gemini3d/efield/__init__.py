@@ -196,6 +196,7 @@ def Efield_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     # LEAVE THE SPATIAL AND TEMPORAL INTERPOLATION TO THE
     # FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
     # THE EFIELD DATA DO NOT TYPICALLY NEED TO BE SMOOTHED.
+    print("Size used for Efield input:  ",llon,llat);
     write.Efield(E, cfg["E0dir"])
 
     return E

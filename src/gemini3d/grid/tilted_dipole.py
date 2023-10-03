@@ -497,8 +497,15 @@ def tilted_dipole3d_NUx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     coordinate conversions and construction of grid dictionary
     """
     xg = generate_tilted_dipole3d(q, p, phi)
+<<<<<<< HEAD
 
     print(" Generating nonuniform grid...")
+=======
+    ###########################################################################
+    print(" Uniform grid lat lims:  ", xg["glat"].min(), xg["glat"].max())
+    
+    print(" Generating non-uniform grid...")
+>>>>>>> 1da8795 (magtools bugfixes)
     # Determine a target differential spacing based on user extents and number of
     #   grid points.
     dx2 = xg["dx2b"][1:-2]
@@ -530,6 +537,7 @@ def tilted_dipole3d_NUx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     pstride = pnew[-3] - pnew[-4]
     pnew[-2] = pnew[-3] + pstride
     pnew[-1] = pnew[-3] + 2 * pstride
+<<<<<<< HEAD
 
     """
     At this point we have a fully formed x2 coordinate and we can pass it off
@@ -537,4 +545,14 @@ def tilted_dipole3d_NUx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     """
     xg = generate_tilted_dipole3d(q, pnew, phi)
 
+=======
+    
+    print(" Shifting end L-shell by:  ", pnew[-3]-p[-3], pnew[-3], p[-3])
+    
+    # At this point we have a fully formed x2 coordinate and we can pass it off
+    #   to the code that produces the mesh structure.  
+    xg = generate_tilted_dipole3d(q, pnew, phi)
+    print(" Non-uniform grid lat lims:  ", xg["glat"].min(), xg["glat"].max())
+    
+>>>>>>> 1da8795 (magtools bugfixes)
     return xg

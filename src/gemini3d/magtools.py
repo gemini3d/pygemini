@@ -81,11 +81,93 @@ def makegrid(
     }
 
     if write_grid:
-        filename = direc / "inputs/TESTmagfieldpoints.h5"
+        filename = direc / "inputs/magfieldpoints.h5"
         print("Writing grid to", filename)
         write.maggrid(filename, mag)
 
     return mag
+
+
+def makegrid_full(
+    direc: str,
+    ltheta: int = 16,
+    lphi: int = 16,
+    write_grid: bool = False,
+) -> dict[str, T.Any]:
+    """
+     Make a field point to cover the entire mlat/mlon range for a given simulation grid
+    """
+
+    direc = Path(direc).expanduser()
+    assert direc.is_dir(), f"{direc} is not a directory"
+
+    # SIMULATION METADATA
+    cfg = read.config(direc)
+
+    # WE ALSO NEED TO LOAD THE GRID FILE
+    xg = read.grid(direc)
+    print("Grid loaded")
+
+    # lx1 = xg.lx(1);
+    lx3 = xg["lx"][2]
+    # lh=lx1;   %possibly obviated in this version - need to check
+    flag2D = lx3 == 1
+    if flag2D:
+        print("2D meshgrid")
+    else:
+        print("3D meshgrid")
+
+    # TABULATE THE SOURCE OR GRID CENTER LOCATION
+    if "sourcemlon" not in cfg.keys():
+        thdist = xg["theta"].mean()
+        phidist = xg["phi"].mean()
+    else:
+        thdist = np.pi / 2 - np.radians(cfg["sourcemlat"])
+        # zenith angle of source location
+        phidist = np.radians(cfg["sourcemlon"])
+
+    # FIELD POINTS OF INTEREST (CAN/SHOULD BE DEFINED INDEPENDENT OF SIMULATION GRID)
+    # ltheta = 40
+    lphi = 1 if flag2D else ltheta
+    lr = 1
+
+    # Computer a buffer region around the grid
+    thmin = xg["theta"].min()
+    thmax = xg["theta"].max()
+    dtheta=thmax-thmin
+    thmin=thmin-dtheta/5
+    thmax=thmax+dtheta/5
+    phimin = xg["phi"].min()
+    phimax = xg["phi"].max()
+    dphi=phimax-phimin
+    phimin=phimin-dphi/5
+    phimax=phimax+dtheta/5
+
+    theta = np.linspace(thmin, thmax, ltheta)
+    phi = phidist if flag2D else np.linspace(phimin, phimax, lphi)
+
+    r = RE * np.ones((ltheta, lphi))
+    # use ground level for altitude for all field points
+
+    phi, theta = np.meshgrid(phi, theta, indexing="ij")
+
+    # %% CREATE AN INPUT FILE OF FIELD POINTS
+    gridsize = np.array([lr, ltheta, lphi], dtype=np.int32)
+    mag = {
+        "r": r.astype(np.float32).ravel(),
+        "phi": phi.astype(np.float32).ravel(),
+        "theta": theta.astype(np.float32).ravel(),
+        "gridsize": gridsize,
+        "lpoints": gridsize.prod(),
+    }
+
+    if write_grid:
+        filename = direc / "inputs/magfieldpoints.h5"
+        print("Writing grid to", filename)
+        write.maggrid(filename, mag)
+
+    return mag
+
 
 
 def magframe(
@@ -177,8 +259,9 @@ def magframe(
 
     with h5py.File(filename, "r") as f:
         for k in {"Br", "Btheta", "Bphi"}:
-            dat[k] = f[f"/magfields/{k}"][:].reshape((lr, ltheta, lphi))
-            if not flatlist:
-                dat[k] = dat[k][:, ilatsort, ilonsort]
-
+            if flatlist:
+                dat[k] = f[f"/magfields/{k}"][:]                
+            else:
+                dat[k] = f[f"/magfields/{k}"][:].reshape((lr, ltheta, lphi))
+                
     return dat
