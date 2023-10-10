@@ -297,6 +297,7 @@ def parse_setup(r: dict[str, T.Any]) -> dict[str, T.Any]:
             "Efield_lonwidth",
             "Efield_lonoffset",
             "altmin",
+            "grid_openparm",
         }:
             P[k] = float(r[k])
         elif k == "eqdir":  # eqdir obsolete, should use eq_dir
