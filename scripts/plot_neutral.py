@@ -22,6 +22,6 @@ with h5py.File(file, "r") as f:
         ax = fg.gca()
 
         ax.set_title(k)
-        ax.pcolormesh(f[k][:].T)
+        ax.pcolormesh(f[k][:].transpose(), shading="nearest")
 
 plt.show()

@@ -132,16 +132,16 @@ def diff2d(A, B, name: str, fg, axs):
     bmin = min(A.min(), B.min())
     bmax = max(A.max(), B.max())
 
-    hi = axs[0].pcolormesh(A, cmap=cmap, vmin=bmin, vmax=bmax)
+    hi = axs[0].pcolormesh(A, cmap=cmap, vmin=bmin, vmax=bmax, shading="nearest")
     fg.colorbar(hi, ax=axs[0])
 
-    hi = axs[1].pcolormesh(B, cmap=cmap, vmin=bmin, vmax=bmax)
+    hi = axs[1].pcolormesh(B, cmap=cmap, vmin=bmin, vmax=bmax, shading="nearest")
     fg.colorbar(hi, ax=axs[1])
 
     dAB = A - B
     b = max(abs(dAB.min()), abs(dAB.max()))
 
-    hi = axs[2].pcolormesh(A - B, cmap="bwr", vmin=-b, vmax=b)
+    hi = axs[2].pcolormesh(A - B, cmap="bwr", vmin=-b, vmax=b, shading="nearest")
     fg.colorbar(hi, ax=axs[2])
 
     return abs(dAB).max().data

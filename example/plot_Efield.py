@@ -19,7 +19,7 @@ def plotVmaxx1it(ax: mpl.axes.Axes, V: xarray.DataArray) -> None:
         ax.set_ylabel("Potential [V]")
         ax.set_xlabel("mag. latitude [deg.]")
     elif V.ndim == 2:
-        hi = ax.pcolormesh(dat["mlon"], dat["mlat"], V, cmap="bwr")
+        hi = ax.pcolormesh(dat["mlon"], dat["mlat"], V, cmap="bwr", shading="nearest")
         ax.set_xlabel("mag. longitude [deg.]")
         ax.set_ylabel("mag. latitude [deg.]")
         ax.figure.colorbar(hi, ax=ax).set_label("potential [V]")

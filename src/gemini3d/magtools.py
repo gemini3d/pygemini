@@ -95,7 +95,7 @@ def makegrid_full(
     write_grid: bool = False,
 ) -> dict[str, T.Any]:
     """
-     Make a field point to cover the entire mlat/mlon range for a given simulation grid
+    Make a field point to cover the entire mlat/mlon range for a given simulation grid
     """
 
     direc = Path(direc).expanduser()
@@ -119,10 +119,10 @@ def makegrid_full(
 
     # TABULATE THE SOURCE OR GRID CENTER LOCATION
     if "sourcemlon" not in cfg.keys():
-        thdist = xg["theta"].mean()
+        # thdist = xg["theta"].mean()
         phidist = xg["phi"].mean()
     else:
-        thdist = np.pi / 2 - np.radians(cfg["sourcemlat"])
+        # thdist = np.pi / 2 - np.radians(cfg["sourcemlat"])
         # zenith angle of source location
         phidist = np.radians(cfg["sourcemlon"])
 
@@ -134,14 +134,14 @@ def makegrid_full(
     # Computer a buffer region around the grid
     thmin = xg["theta"].min()
     thmax = xg["theta"].max()
-    dtheta=thmax-thmin
-    thmin=thmin-dtheta/5
-    thmax=thmax+dtheta/5
+    dtheta = thmax - thmin
+    thmin = thmin - dtheta / 5
+    thmax = thmax + dtheta / 5
     phimin = xg["phi"].min()
     phimax = xg["phi"].max()
-    dphi=phimax-phimin
-    phimin=phimin-dphi/5
-    phimax=phimax+dtheta/5
+    dphi = phimax - phimin
+    phimin = phimin - dphi / 5
+    phimax = phimax + dtheta / 5
 
     theta = np.linspace(thmin, thmax, ltheta)
     phi = phidist if flag2D else np.linspace(phimin, phimax, lphi)
@@ -167,7 +167,6 @@ def makegrid_full(
         write.maggrid(filename, mag)
 
     return mag
-
 
 
 def magframe(
@@ -260,8 +259,8 @@ def magframe(
     with h5py.File(filename, "r") as f:
         for k in {"Br", "Btheta", "Bphi"}:
             if flatlist:
-                dat[k] = f[f"/magfields/{k}"][:]                
+                dat[k] = f[f"/magfields/{k}"][:]
             else:
                 dat[k] = f[f"/magfields/{k}"][:].reshape((lr, ltheta, lphi))
-                
+
     return dat

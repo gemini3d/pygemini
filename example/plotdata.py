@@ -14,7 +14,7 @@ def plotplasma(dat: xarray.Dataset):
             continue
 
         ax = figure().gca()
-        ax.pcolormesh(v.squeeze())
+        ax.pcolormesh(v.squeeze(), shading="nearest")
         ax.set_title(f"{k}  {t}")
 
 

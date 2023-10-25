@@ -171,7 +171,7 @@ def plot_interp(
             # hack for pcolormesh to put labels in center of pixel
             wl = kwargs["wavelength"] + [""]
             hi = ax.pcolormesh(
-                np.arange(len(wl)), yp / 1e3, f(yp)[:, i].T, shading="nearest"
+                np.arange(len(wl)), yp / 1e3, f(yp)[:, i].transpose(), shading="nearest"
             )
             ax.set_xticks(np.arange(len(wl)) + 0.5)
             ax.set_xticklabels(wl)

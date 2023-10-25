@@ -50,10 +50,10 @@ def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
     else:
         Qfunc = str2func("gemini3d.particles.gaussian2d")
 
-    Qtmp=Qfunc(pg, cfg["Qprecip"], cfg["Qprecip_background"])
+    Qtmp = Qfunc(pg, cfg["Qprecip"], cfg["Qprecip_background"])
 
     for i in range(i_on, i_off):
-        pg["Q"][i, :, :] = Qtmp[i,:,:]
+        pg["Q"][i, :, :] = Qtmp[i, :, :]
         pg["E0"][i, :, :] = cfg["E0precip"]
 
     assert np.isfinite(pg["Q"]).all(), "Q flux must be finite"

@@ -500,7 +500,7 @@ def tilted_dipole3d_NUx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
 
     ###########################################################################
     print(" Uniform grid lat lims:  ", xg["glat"].min(), xg["glat"].max())
-    
+
     print(" Generating non-uniform grid...")
     # Determine a target differential spacing based on user extents and number of
     #   grid points.
@@ -540,8 +540,7 @@ def tilted_dipole3d_NUx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     """
     xg = generate_tilted_dipole3d(q, pnew, phi)
 
-    
-    print(" Shifting end L-shell by:  ", pnew[-3]-p[-3], pnew[-3], p[-3])
+    print(" Shifting end L-shell by:  ", pnew[-3] - p[-3], pnew[-3], p[-3])
     print(" Non-uniform grid lat lims:  ", xg["glat"].min(), xg["glat"].max())
-    
+
     return xg

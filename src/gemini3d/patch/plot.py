@@ -92,6 +92,7 @@ def patch(indir: Path, var: set[str]) -> None:
                     dat[k][ix1, :, :].transpose(),
                     vmin=clim[k][0],
                     vmax=clim[k][1],
+                    shading="nearest",
                 )
                 ax.text(
                     x2[x2.size // 2],
