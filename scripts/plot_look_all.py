@@ -8,6 +8,7 @@ to visually check for something unexpected.
 
 from pathlib import Path
 import argparse
+import typing as T
 from matplotlib.pyplot import figure, draw, pause
 from matplotlib.image import imread
 from datetime import datetime
@@ -38,7 +39,7 @@ new_sims = (d for d in new_dir.iterdir() if d.is_dir())
 ref_sims = (d for d in ref_dir.iterdir() if d.is_dir())
 
 fg = figure()
-axs = fg.subplots(2, 1, sharex=True, sharey=True)
+axs = fg.subplots(2, 1, sharex=True, sharey=True)  # type: T.Any
 
 for new_sim in new_sims:
     new_name = new_sim.name

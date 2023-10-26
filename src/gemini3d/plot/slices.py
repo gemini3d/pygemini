@@ -32,7 +32,7 @@ def plot12(
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("upward dist. (km)")
     ax.axhline(ref_alt, color="w", linestyle="--", linewidth=2)
-    ax.figure.colorbar(hi, ax=ax, label=CB_LBL[name])
+    ax.get_figure().colorbar(hi, ax=ax, label=CB_LBL[name])  # type: ignore
 
 
 def plot13(
@@ -54,7 +54,7 @@ def plot13(
     ax.yaxis.set_major_locator(MultipleLocator(100))
     ax.set_xlabel("northward dist. (km)")
     ax.set_ylabel("upward dist. (km)")
-    ax.figure.colorbar(hi, ax=ax, label=CB_LBL[name])
+    ax.get_figure().colorbar(hi, ax=ax, label=CB_LBL[name])  # type: ignore
 
 
 def plot23(
@@ -75,7 +75,7 @@ def plot23(
     )
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("northward dist. (km)")
-    ax.figure.colorbar(hi, ax=ax, label=CB_LBL[name])
+    ax.get_figure().colorbar(hi, ax=ax, label=CB_LBL[name])  # type: ignore
 
 
 def plot1d2(x, parm, name: str, ax: Axes) -> None:
@@ -115,7 +115,7 @@ def bright_east_north(
 
     meta = git_meta()
 
-    axs = fg.subplots(2, 2, sharey=True, sharex=True).ravel()
+    axs = fg.subplots(2, 2, sharey=True, sharex=True).ravel()  # type: ignore
     fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.99)
     # arbitrary pick of which emission lines to plot lat/lon slices
     Xp, Yp = np.meshgrid(xp, yp, indexing="ij")
@@ -176,7 +176,7 @@ def east_north(
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("northward dist. (km)")
     ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
-    ax.figure.colorbar(hi, ax=ax, label=CB_LBL[name])
+    ax.get_figure().colorbar(hi, ax=ax, label=CB_LBL[name])  # type: ignore
 
 
 def mag_lonlat(
@@ -205,4 +205,4 @@ def mag_lonlat(
     ax.set_xlabel("magnetic longitude (deg.)")
     ax.set_ylabel("magnetic latitude (deg.)")
     ax.set_title(f"{name}: {time.isoformat()}  {meta['commit']}")
-    ax.figure.colorbar(hi, ax=ax, label=CB_LBL[name])
+    ax.get_figure().colorbar(hi, ax=ax, label=CB_LBL[name])  # type: ignore

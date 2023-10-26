@@ -260,7 +260,8 @@ def plot3d_slice(
     clim: tuple[float, float],
     ref_alt: float,
 ) -> None:
-    axs = fg.subplots(1, 3, sharey=False, sharex=False)
+
+    axs = fg.subplots(1, 3, sharey=False, sharex=False)  # type: T.Any
     # fg.suptitle(f"{name}: {time.isoformat()}  {meta['commit']}", y=0.98)
     # %% CONVERT TO DISTANCE UP, EAST, NORTH (left panel)
     # JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT,

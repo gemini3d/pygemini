@@ -73,7 +73,7 @@ def emission_line(B: xarray.Dataset, time_str: str, fg: Figure):
     # arbitrary pick of which emission lines to plot lat/lon slices
     inds = [1, 3, 4, 8]
 
-    axs = fg.subplots(len(inds), 1, sharex=True, sharey=True)
+    axs = fg.subplots(len(inds), 1, sharex=True, sharey=True)  # type: T.Any
 
     for i, j in enumerate(inds):
         ax = axs[i]

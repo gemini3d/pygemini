@@ -38,7 +38,7 @@ def curv3d_long(
 
     # plot various slices through the 3D domain
 
-    axs = fg.subplots(1, 3)
+    axs = fg.subplots(1, 3)  # type: T.Any
 
     ax = axs[0]
     h = ax.pcolormesh(mloni, alti / 1e3, parmi[:, :, ilat], shading="nearest")
@@ -87,6 +87,6 @@ def curv2d(
     h = ax.pcolormesh(mlati, alti / 1e3, parmi[:, ilon, :], shading="nearest")
     ax.set_xlabel("mlat")
     ax.set_ylabel("alt")
-    ax.figure.colorbar(h, ax=ax)
+    fg.colorbar(h, ax=ax)
 
     ax.set_title(f"{time}")

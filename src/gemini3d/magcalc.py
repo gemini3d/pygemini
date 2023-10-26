@@ -2,7 +2,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 from math import pi, radians
-import typing as T
+import typing
 
 import numpy as np
 
@@ -15,7 +15,7 @@ def magcalc(
     dang: float,
     Ltheta: int = 40,
     Lphi: int = 40,
-    xg: dict[str, T.Any] | None = None,
+    xg: dict[str, typing.Any] | None = None,
 ):
     """
     Parameters

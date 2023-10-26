@@ -7,7 +7,7 @@ from matplotlib.figure import Figure
 
 
 def basic(fg: Figure, xg: dict[str, T.Any]) -> None:
-    axs = fg.subplots(1, 3)
+    axs = fg.subplots(1, 3)  # type: T.Any
     # %% x1
     lx1 = xg["x1"].size
     ax = axs[0]

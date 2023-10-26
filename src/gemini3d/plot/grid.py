@@ -49,13 +49,13 @@ def grid(
     # %% ECEF surface
     if "ecef" in only:
         fg.clf()  # clear figure for 3D axes when 2D previously
-        ax = fg.gca(projection="3d")
+        ax = fg.gca(projection="3d")  # type: ignore
 
         ax.scatter(xg["x"], xg["y"], xg["z"])
 
         ax.set_xlabel("x [m]")
         ax.set_ylabel("y [m]")
-        ax.set_zlabel("z [m]")
+        ax.set_zlabel("z [m]")  # type: ignore
 
         stitle(fg, xg, "ECEF")
         save_fig(fg, direc, "grid-ecef")
@@ -80,12 +80,12 @@ def geographic(fig: mpl.figure.Figure, xg: dict[str, T.Any]) -> None:
 
         proj = cartopy.crs.PlateCarree()  # arbitrary
 
-        ax = fig.gca(projection=proj)
-        ax.add_feature(cartopy.feature.LAND)
-        ax.add_feature(cartopy.feature.OCEAN)
-        ax.add_feature(cartopy.feature.COASTLINE)
-        ax.add_feature(cartopy.feature.BORDERS, linestyle=":")
-        ax.gridlines(draw_labels=True, x_inline=False, y_inline=False)
+        ax = fig.gca(projection=proj)  # type: ignore
+        ax.add_feature(cartopy.feature.LAND)  # type: ignore
+        ax.add_feature(cartopy.feature.OCEAN)  # type: ignore
+        ax.add_feature(cartopy.feature.COASTLINE)  # type: ignore
+        ax.add_feature(cartopy.feature.BORDERS, linestyle=":")  # type: ignore
+        ax.gridlines(draw_labels=True, x_inline=False, y_inline=False)  # type: ignore
         ax.scatter(glon, glat, transform=proj)
     except ImportError as e:
         logging.error(e)

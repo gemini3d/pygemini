@@ -4,7 +4,7 @@ Either locally (laptop or interactive HPC) or creating an HPC batch script based
 """
 
 from __future__ import annotations
-import typing as T
+import typing
 import os
 import logging
 import subprocess
@@ -27,7 +27,7 @@ except ImportError:
     from numpy import prod  # type: ignore
 
 
-def runner(pr: dict[str, T.Any]) -> None:
+def runner(pr: dict[str, typing.Any]) -> None:
     out_dir = check_outdir(pr["out_dir"])
 
     config_file = find.config(pr["config_file"])

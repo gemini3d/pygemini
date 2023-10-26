@@ -1,6 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 from datetime import datetime
+import typing
 
 import xarray
 import matplotlib as mpl
@@ -31,7 +32,7 @@ def plotdiff(
     ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
 
     fg = mpl.figure.Figure(constrained_layout=True, figsize=(12, 5))
-    axs = fg.subplots(1, 3)
+    axs = fg.subplots(1, 3)  # type: typing.Any
 
     if not name:
         name = str(A.name)

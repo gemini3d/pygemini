@@ -157,6 +157,6 @@ def plot2d_input(ax: mpl.axes.Axes, A, cfg: dict[str, T.Any]) -> None:
 
 def plot3d_input(ax: mpl.axes.Axes, A) -> None:
     h0 = ax.pcolormesh(A["mlon"], A["mlat"], A, shading="nearest")
-    ax.figure.colorbar(h0, ax=ax)
+    ax.get_figure().colorbar(h0, ax=ax)  # type: ignore
     ax.set_ylabel("magnetic latitude")
     ax.set_xlabel("magnetic longitude")

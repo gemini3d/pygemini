@@ -4,10 +4,10 @@ convert Gemini3D old raw binary neutral data to HDF5 .h5
 requires "simsize.dat" file to be present in the same directory at the neutral .dat files
 """
 
-import typing
 from pathlib import Path
 import argparse
 import h5py
+import typing
 
 import gemini3d.raw.read as raw_read
 

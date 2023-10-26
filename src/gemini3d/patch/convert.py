@@ -6,7 +6,6 @@ from __future__ import annotations
 from pathlib import Path
 from datetime import datetime
 import logging
-import typing
 
 import numpy as np
 import h5py
@@ -15,10 +14,8 @@ from . import filenames2times, time2filename, patch_grid
 from .. import utils
 from .plot import grid_step
 
-try:
-    from matplotlib.pyplot import figure
-except ImportError:
-    figure = None
+from matplotlib.pyplot import figure
+
 
 COMP_LEVEL = 6  # arbitrary GZIP compression level
 
@@ -49,21 +46,15 @@ def convert(indir: Path, outdir: Path, data_vars: set[str], plotgrid: bool = Fal
         combine_files(indir, outdir, t, data_vars, x1, x2, x3)
 
 
-def get_xlims(
-    path: Path, time: datetime, plotgrid: bool = False
-) -> tuple[typing.Any, typing.Any]:
+def get_xlims(path: Path, time: datetime, plotgrid: bool = False) -> tuple:
     """
     build up each axis by scanning files
 
     Remember HDF5 datasets are always in C-order, even when written from Fortran program.
     """
 
-    if plotgrid and figure is None:
-        logging.error("Matplotlib not available")
-        plotgrid = False
-
-    x2: typing.Any = np.ndarray(0)
-    x3: typing.Any = np.ndarray(0)
+    x2 = np.array(0)
+    x3 = np.array(0)
 
     pat = utils.datetime2stem(time) + "_*.h5"
 

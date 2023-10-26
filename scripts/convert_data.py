@@ -5,9 +5,9 @@ convert Gemini3D old raw binary data to HDF5 .h5
 For clarity, the user must provide a config.nml for the original raw data.
 """
 
-import typing
 from pathlib import Path
 import argparse
+import typing
 
 import gemini3d.raw.read as raw_read
 import gemini3d.read as read
