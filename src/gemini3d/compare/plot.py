@@ -32,7 +32,7 @@ def plotdiff(
     ref_dir = Path(ref_dir).expanduser().resolve(strict=True)
 
     fg = mpl.figure.Figure(constrained_layout=True, figsize=(12, 5))
-    axs = fg.subplots(1, 3)  # type: typing.Any
+    axs: typing.Any = fg.subplots(1, 3)
 
     if not name:
         name = str(A.name)

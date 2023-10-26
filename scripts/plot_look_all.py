@@ -39,7 +39,7 @@ new_sims = (d for d in new_dir.iterdir() if d.is_dir())
 ref_sims = (d for d in ref_dir.iterdir() if d.is_dir())
 
 fg = figure()
-axs = fg.subplots(2, 1, sharex=True, sharey=True)  # type: T.Any
+axs: T.Any = fg.subplots(2, 1, sharex=True, sharey=True)
 
 for new_sim in new_sims:
     new_name = new_sim.name
