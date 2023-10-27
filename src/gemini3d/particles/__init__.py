@@ -53,7 +53,10 @@ def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
     Qtmp = Qfunc(pg, cfg["Qprecip"], cfg["Qprecip_background"])
 
     for i in range(i_on, i_off):
-        pg["Q"][i, :, :] = Qtmp[i, :, :]
+        if Qtmp.ndim == 3:
+            pg["Q"][i, :, :] = Qtmp[i, :, :]
+        else:
+            pg["Q"][i, :, :] = Qtmp
         pg["E0"][i, :, :] = cfg["E0precip"]
 
     assert np.isfinite(pg["Q"]).all(), "Q flux must be finite"
