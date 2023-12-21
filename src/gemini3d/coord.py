@@ -62,7 +62,7 @@ def geog2geomag(lat, lon) -> tuple:
     argtmp = (np.cos(thetagp) - np.cos(thetat) * np.cos(thetan)) / (
         np.sin(thetat) * np.sin(thetan)
     )
-    alpha = np.arccos(max(min(argtmp, 1), -1))
+    alpha = np.arccos(np.maximum(np.minimum(argtmp, 1), -1))
     phit = np.empty_like(lat, dtype=float)
 
     i = ((phin > phig) & ((phin - phig) > pi)) | ((phin < phig) & ((phig - phin) < pi))
