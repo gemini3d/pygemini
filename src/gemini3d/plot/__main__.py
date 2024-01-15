@@ -1,6 +1,6 @@
 import argparse
 
-from . import plot_all, grid, input
+from . import plot_all, grid, inputs
 
 
 def cli():
@@ -36,11 +36,11 @@ def cli():
     if "grid" in p.which:
         grid.grid(p.direc)
     if "Efield" in p.which:
-        input.Efield(p.direc)
+        inputs.Efield(p.direc)
     if "precip" in p.which:
-        input.precip(p.direc)
+        inputs.precip(p.direc)
     if "input" in p.which:
-        input.plot_all(p.direc, var, saveplot_fmt=p.save)
+        inputs.plot_all(p.direc, var, saveplot_fmt=p.save)
 
 
 if __name__ == "__main__":
