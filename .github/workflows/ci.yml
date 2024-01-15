@@ -26,17 +26,17 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         include:
         - os: macos-latest
-          python-version: "3.11"
+          python-version: "3.12"
         - os: windows-latest
-          python-version: "3.11"
+          python-version: "3.12"
 
     name: Lint ${{ matrix.os }} Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
@@ -52,15 +52,18 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
         os: [ubuntu-latest]
         include:
         - os: macos-latest
-          python-version: '3.11'
+          python-version: '3.12'
 
     runs-on: ${{ matrix.os }}
 
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
+
+    env:
+      FC: gfortran-13
 
     steps:
 
@@ -70,13 +73,13 @@ jobs:
 
 # always need this for requirements.cmake
     - name: Checkout Gemini3D-External
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: gemini3d/external
         path: gemext
 
     - name: Checkout GemGI (for simulation config.nml inputs)
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: gemini3d/gemci
         path: ${{ github.workspace }}/gemci
@@ -91,11 +94,6 @@ jobs:
       if: runner.os == 'macOS'
       run: $(cmake -P gemext/scripts/requirements.cmake)
 
-    - name: set Fortran compiler (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        echo "FC=gfortran-12" >> $GITHUB_ENV
-
     - name: Cache install Gemini3D-External
       id: cache-gemext
       uses: actions/cache@v3
@@ -109,14 +107,14 @@ jobs:
       if: steps.cache-gemext.outputs.cache-hit != 'true'
       timeout-minutes: 15
       run: |
-        cmake -B build -Dfind:BOOL=true -Damr:BOOL=false --install-prefix ${{ env.CMAKE_PREFIX_PATH }}
+        cmake -B build -Dfind:BOOL=true --install-prefix ${{ env.CMAKE_PREFIX_PATH }}
         cmake --build build --parallel
         cmake --install build
       working-directory: gemext
 
     - name: Checkout Gemini3D
       if: steps.cache-gemext.outputs.cache-hit != 'true'
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: gemini3d/gemini3d
         path: gemini3d
@@ -131,7 +129,7 @@ jobs:
       working-directory: gemini3d
 
     - name: Git Checkout ${{ github.action_repository }}
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install Python packages
       run: python -m pip install .[tests,plots]
