@@ -103,7 +103,7 @@ def runner(pr: dict[str, typing.Any]) -> None:
         if avail_memory < 2 * ram_use_bytes:
             logging.warning(
                 f"""
-Computer RAM available: {avail_memory/1e9:.1} GB but simulation needs {ram_use_bytes/1e9:.1}
+Computer RAM available: {avail_memory / 1e9:.1} GB but simulation needs {ram_use_bytes / 1e9:.1}
 Gemini3D may run out of RAM on this computer, which may make the run exceedingly slow or fail.
 """
             )

@@ -447,7 +447,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Datas
                 vsx1 = np.concatenate((vsx1, vsp, vsp, vsx1[:, ::-1, :, :]), 1)
             else:
                 raise ValueError(
-                    f"closed dipole lalt: 2*lx1={2*lx1} != grid lx1: {xg['lx'][0]}"
+                    f"closed dipole lalt: 2*lx1={2 * lx1} != grid lx1: {xg['lx'][0]}"
                 )
 
     dat = xarray.Dataset(

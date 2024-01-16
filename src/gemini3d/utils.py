@@ -252,7 +252,7 @@ def datetime2stem(dt: datetime) -> str:
 
     return (
         dt.strftime("%Y%m%d")
-        + f"_{dt.hour*3600 + dt.minute*60 + dt.second + dt.microsecond/1e6:12.6f}"
+        + f"_{dt.hour * 3600 + dt.minute * 60 + dt.second + dt.microsecond / 1e6:12.6f}"
     )
 
 

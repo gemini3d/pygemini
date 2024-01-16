@@ -110,7 +110,7 @@ def plotdiff(
     plot_dir = new_dir / "plot_diff"
     plot_dir.mkdir(exist_ok=True)
 
-    fn = plot_dir / f"{name}-{tstr.replace(':','')}.png"
+    fn = plot_dir / f"{name}-{tstr.replace(':', '')}.png"
     print("write: ", fn)
     fg.savefig(fn)
 

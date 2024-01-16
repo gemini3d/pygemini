@@ -125,7 +125,7 @@ def frame(simdir: Path, time: datetime) -> Path:
 
     stem = (
         time.strftime("%Y%m%d")
-        + f"_{time.hour*3600 + time.minute*60 + time.second:05d}."
+        + f"_{time.hour * 3600 + time.minute * 60 + time.second:05d}."
         + f"{time.microsecond:06d}"
     )
 
