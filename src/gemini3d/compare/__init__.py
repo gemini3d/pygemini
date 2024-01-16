@@ -9,15 +9,15 @@ Command line usage:
 from __future__ import annotations
 from pathlib import Path
 
-from .input import compare_input
+from .inputs import compare_input
 from .out import compare_output
 from .grid import compare_grid
 
-# keep these two convenience imports for users
+# convenience imports
 from .efield import compare_Efield
 from .precip import compare_precip
 
-__all__ = ["compare_all"]
+__all__ = ["compare_all", "compare_Efield", "compare_precip"]
 
 
 def compare_all(

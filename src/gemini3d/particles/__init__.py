@@ -6,10 +6,12 @@ from .. import write
 from ..utils import str2func
 from .core import get_times
 from .grid import precip_grid
-from .gaussian2d import gaussian2d  # this is loaded dynamically via str2func
+
+# this is loaded dynamically via str2func
+from .gaussian2d import gaussian2d
 
 
-__all__ = ["get_times", "particles_BCs"]
+__all__ = ["get_times", "particles_BCs", "gaussian2d"]
 
 
 def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
