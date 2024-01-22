@@ -13,7 +13,6 @@ from pathlib import Path, PurePosixPath
 import numpy as np
 
 from . import find
-from .hpc import hpc_batch_detect, hpc_batch_create
 from . import model
 from . import write
 from . import read
@@ -85,16 +84,6 @@ def runner(pr: dict[str, typing.Any]) -> None:
         return None
 
     write.meta(out_dir / "setup_run.json", git_meta(gemexe.parent), p)
-
-    batcher = hpc_batch_detect()
-    if batcher:
-        job_file = hpc_batch_create(batcher, out_dir, cmd)
-        print(
-            "Please examine batch file",
-            job_file,
-            "and when ready submit the job as usual.",
-        )
-        return None
 
     try:
         import psutil
