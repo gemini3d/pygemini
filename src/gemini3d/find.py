@@ -86,9 +86,9 @@ def gemini_exe(name: str = "gemini3d.run", root: Path | None = None) -> Path:
 
     # %% ensure Gemini3D executable is runnable
     if os.name == "nt" and isinstance(exe, PurePosixPath):
-        cmd0 = ["wsl", str(exe)]
+        cmd0 = ["wsl", str(exe), "-h"]
     else:
-        cmd0 = [str(exe)]
+        cmd0 = [str(exe), "-h"]
 
     ret = subprocess.run(
         cmd0,
