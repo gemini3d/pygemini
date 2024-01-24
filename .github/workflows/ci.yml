@@ -3,7 +3,7 @@ name: ci
 env:
   GEMINI_CIROOT: ~/ci
   CMAKE_BUILD_TYPE: Release
-  CMAKE_PREFIX_PATH: ~/libgem
+  CMAKE_PREFIX_PATH: ~/libgem_gnu
   HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 on:
@@ -96,7 +96,7 @@ jobs:
 
     - name: Cache install Gemini3D-External
       id: cache-gemext
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ${{ env.CMAKE_PREFIX_PATH }}
