@@ -4,7 +4,6 @@ import os
 import shutil
 from pathlib import Path
 import importlib.resources as pkgr
-import sys
 
 from datetime import datetime, timedelta
 import typing as T
@@ -41,12 +40,8 @@ def get_pkg_file(package: str, filename: str) -> Path:
     NOTE: this probably assumes the install is Zip safe
     """
 
-    if sys.version_info < (3, 9):
-        with pkgr.path(package, filename) as f:
-            return f
-    else:
-        with pkgr.as_file(pkgr.files(package).joinpath(filename)) as f:
-            return f
+    with pkgr.as_file(pkgr.files(package).joinpath(filename)) as f:
+        return f
 
 
 def str2func(name: str, path: Path | None = None) -> T.Callable:
@@ -228,7 +223,7 @@ def get_cpu_count() -> int:
     try:
         import psutil
 
-        max_cpu = psutil.cpu_count(logical=False)
+        max_cpu: int | None = psutil.cpu_count(logical=False)
         if max_cpu is None:
             max_cpu = psutil.cpu_count()
             extradiv = 2

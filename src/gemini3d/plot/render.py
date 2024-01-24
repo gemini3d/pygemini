@@ -65,7 +65,9 @@ def frame(
 
         if saveplot_fmt:
             plot_fn = (
-                direc / "plots" / f"{k}-{time.isoformat().replace(':', '')}.{saveplot_fmt}"
+                direc
+                / "plots"
+                / f"{k}-{time.isoformat().replace(':', '')}.{saveplot_fmt}"
             )
             plot_fn.parent.mkdir(exist_ok=True)
             print(f"{dat['time']} => {plot_fn}")

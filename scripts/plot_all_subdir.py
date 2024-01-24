@@ -10,12 +10,8 @@ import argparse
 import concurrent.futures
 import itertools
 import os
-import sys
 
 import gemini3d.plot as plot
-
-if sys.version_info < (3, 9):
-    raise RuntimeError("Python 3.9 or later is required")
 
 
 def plot_dir(d: Path, resume: bool) -> None:
