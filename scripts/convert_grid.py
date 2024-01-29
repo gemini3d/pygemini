@@ -12,7 +12,6 @@ import gemini3d.write as write
 
 def cli():
     p = argparse.ArgumentParser()
-    p.add_argument("format", help="file format", choices=["h5", "nc"])
     p.add_argument(
         "indir", help="Gemini3d path to simgrid.dat or path containing inputs/simgrid.dat"
     )
@@ -40,7 +39,8 @@ def cli():
         "indat_grid": xg["filename"].with_suffix(f".{P.format}"),
     }
 
-    write.grid(cfg, file_format=P.format, xg=xg)
+    write.grid(cfg, xg)
+    write.meta(cfg, outdir / "setup_grid.json")
 
 
 if __name__ == "__main__":

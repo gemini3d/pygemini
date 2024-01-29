@@ -67,6 +67,7 @@ def equilibrium_resample(p: dict[str, T.Any], xg: dict[str, T.Any]):
 
     # %% WRITE OUT THE GRID
     write.grid(p, xg)
+    write.meta(p, p["indat_size"].parent / "setup_grid.json")
 
     write.state(p["indat_file"], dat_interp)
 

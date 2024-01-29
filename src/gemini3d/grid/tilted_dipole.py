@@ -13,7 +13,7 @@ from .newton_method import qp2rtheta
 from .convert import geog2geomag, geomag2geog, Re
 
 
-def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
+def tilted_dipole3d(cfg: dict[str, T.Any], var: set[str]) -> dict[str, T.Any]:
     """make tilted dipole grid
 
     Parameters
@@ -130,6 +130,7 @@ def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     # At this point we have all the arrays and sizes and the remainder will be
     #  coordinate conversions and construction of grid dictionary
     xg = generate_tilted_dipole3d(q, p, phi)
+
     return xg
 
 

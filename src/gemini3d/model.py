@@ -155,12 +155,15 @@ def equilibrium(cfg: dict[str, T.Any]):
 
     if "lxp" in cfg and "lyp" in cfg:
         xg = cartesian.cart3d(cfg)
+        write.grid(cfg, xg)
     elif "lq" in cfg and "lp" in cfg and "lphi" in cfg:
-        xg = tilted_dipole.tilted_dipole3d(cfg)
+        xg = tilted_dipole.tilted_dipole3d(
+            cfg, var={"gx1", "h1", "r", "phi", "theta", "alt", "lx", "x1", "x2", "x3"}
+        )
     else:
         raise ValueError("grid does not seem to be cartesian or curvilinear")
 
-    write.grid(cfg, xg)
+    write.meta(cfg, cfg["indat_size"].parent / "setup_grid.json")
 
     # %% Equilibrium input generation
     dat = equilibrium_state(cfg, xg)
@@ -172,7 +175,7 @@ def interp(cfg: dict[str, T.Any]) -> None:
     if "lxp" in cfg and "lyp" in cfg:
         xg = cartesian.cart3d(cfg)
     elif "lq" in cfg and "lp" in cfg and "lphi" in cfg:
-        xg = tilted_dipole.tilted_dipole3d(cfg)
+        xg = tilted_dipole.tilted_dipole3d(cfg, var={"lx", "x1", "x2", "x3", "alt", "h1"})
     else:
         raise ValueError("grid does not seem to be cartesian or curvilinear")
 

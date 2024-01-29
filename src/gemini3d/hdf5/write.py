@@ -82,7 +82,8 @@ def _write_var(fid, name: str, A: xarray.DataArray) -> None:
 
 
 def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]) -> None:
-    """writes grid to disk
+    """
+    writes simulation grid to disk
 
     Parameters
     ----------
@@ -107,12 +108,13 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]) -> None:
             np.int32
         )
 
-    logging.info(f"write_grid: {size_fn}")
-    with h5py.File(size_fn, "w") as h:
-        h["/lx"] = np.asarray(xg["lx"]).astype(np.int32)
+    if not size_fn.is_file():
+        with h5py.File(size_fn, "w") as h:
+            h["/lx"] = np.asarray(xg["lx"]).astype(np.int32)
 
     logging.info(f"write_grid: {grid_fn}")
-    with h5py.File(grid_fn, "w") as h:
+
+    with h5py.File(grid_fn, "a") as h:
         for i in {1, 2, 3}:
             for k in {
                 f"x{i}",
@@ -125,7 +127,6 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]) -> None:
                 f"h{i}x3i",
             }:
                 if k not in xg:
-                    logging.info(f"SKIP: {k}")
                     continue
 
                 if xg[k].ndim >= 2:
@@ -159,7 +160,6 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]) -> None:
             "z",
         }:
             if k not in xg:
-                logging.info(f"SKIP: {k}")
                 continue
 
             h.create_dataset(
@@ -176,7 +176,6 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]) -> None:
         # %% 2-D
         for k in {"I"}:
             if k not in xg:
-                logging.info(f"SKIP: {k}")
                 continue
 
             h.create_dataset(
@@ -193,7 +192,6 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]) -> None:
         # %% 4-D
         for k in {"e1", "e2", "e3", "er", "etheta", "ephi"}:
             if k not in xg:
-                logging.info(f"SKIP: {k}")
                 continue
 
             h.create_dataset(

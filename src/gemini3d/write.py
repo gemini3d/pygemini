@@ -56,8 +56,6 @@ def grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> None:
 
     h5write.grid(cfg["indat_size"], cfg["indat_grid"], xg)
 
-    meta(input_dir / "setup_grid.json", git_meta(), cfg)
-
 
 def Efield(E: xarray.Dataset, outdir: Path) -> None:
     """writes E-field to disk
@@ -109,7 +107,9 @@ def neutral2(data: dict[str, T.Any], outfile: Path):
     h5write.neutral(outfile, data)
 
 
-def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]) -> None:
+def meta(
+    cfg: dict[str, T.Any], fn: Path, git_metadata: dict[str, str] | None = None
+) -> None:
     """
     writes JSON file with sim setup metadata
     """
@@ -120,7 +120,13 @@ def meta(fn: Path, git_meta: dict[str, str], cfg: dict[str, T.Any]) -> None:
             f"{fn} is a directory, but I need a JSON file name to write."
         )
 
-    jm = {"python": {"platform": sys.platform, "version": sys.version}, "git": git_meta}
+    if git_metadata is None:
+        git_metadata = git_meta()
+
+    jm = {
+        "python": {"platform": sys.platform, "version": sys.version},
+        "git": git_metadata,
+    }
 
     if "eq_dir" in cfg:
         # JSON does not allow unescaped backslash

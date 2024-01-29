@@ -83,7 +83,7 @@ def runner(pr: dict[str, typing.Any]) -> None:
     if pr.get("dryrun"):
         return None
 
-    write.meta(out_dir / "setup_run.json", git_meta(gemexe.parent), p)
+    write.meta(p, out_dir / "setup_run.json", git_meta(gemexe.parent))
 
     try:
         import psutil
