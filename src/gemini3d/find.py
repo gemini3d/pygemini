@@ -53,6 +53,10 @@ def executable(name: str, root: Path | None = None) -> Path:
     if ep.is_file():
         return ep
 
+    exe_paths = EXE_PATHS
+    if name == "msis_setup":
+        exe_paths.insert(2, "build/msis")
+
     paths = (root, os.environ.get("GEMINI_ROOT"), os.environ.get("CMAKE_PREFIX_PATH"))
 
     for p in paths:
@@ -60,7 +64,7 @@ def executable(name: str, root: Path | None = None) -> Path:
             continue
         p = Path(p).expanduser()
 
-        for n in EXE_PATHS:
+        for n in exe_paths:
             e = p / n / name
             logging.debug(f"checking {e} for existance and executable permission")
             if wsl.is_wsl_path(p):
