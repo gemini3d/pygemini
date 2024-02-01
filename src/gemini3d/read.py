@@ -134,7 +134,10 @@ def frame(
 
 
 def derive(dat: xarray.Dataset, var: set[str], flag: int) -> xarray.Dataset:
-    lx = (dat.dims["x1"], dat.dims["x2"], dat.dims["x3"])
+    """
+    compute derived variables based on file data
+    """
+    lx = (dat.sizes["x1"], dat.sizes["x2"], dat.sizes["x3"])
 
     # %% Derived variables
     if flag == 1:
