@@ -9,6 +9,7 @@ import os
 import logging
 import subprocess
 import shutil
+from math import prod
 from pathlib import Path, PurePosixPath
 import numpy as np
 
@@ -19,14 +20,20 @@ from . import read
 from . import wsl
 from .utils import git_meta
 
-try:
-    from math import prod
-except ImportError:
-    # python < 3.8
-    from numpy import prod  # type: ignore
-
 
 def runner(pr: dict[str, typing.Any]) -> None:
+    """
+    setup simulation inputs and run Gemini3D in parallel using MPI
+
+    if you just want to setup the simulation, use
+
+        gemini3d.model.setup()
+
+    or
+
+        python -m gemini3d.model
+
+    """
     out_dir = check_outdir(pr["out_dir"])
 
     config_file = find.config(pr["config_file"])
