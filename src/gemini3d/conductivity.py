@@ -7,7 +7,7 @@ Created on Fri Feb 16 21:21:07 2024
 """
 
 import numpy as np
-from phys_const import ms,qs,kB
+from .phys_const import ms,qs,kB
 import gemini3d.msis
 import scipy as sp
 
