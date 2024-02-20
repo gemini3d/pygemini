@@ -7,9 +7,9 @@ Created on Fri Feb 16 21:21:07 2024
 """
 
 import numpy as np
-from .phys_const import ms,qs,kB
+from .phys_const import ms,qs
 import gemini3d.msis
-import scipy as sp
+#import scipy as sp
 
 def conductivity_reconstruct(time,dat,cfg,xg):
     # neutral atmospheric information
@@ -17,9 +17,9 @@ def conductivity_reconstruct(time,dat,cfg,xg):
     
     # composition and extraction (or creation) of full state variables
     if "ns" in dat.keys():    # proxy for full state output file
-        ns=dat["ns"]
-        Ts=dat["Ts"]
-        vs1=dat["vs1"]
+        ns=np.array(dat["ns"]).transpose((1,2,3,0))
+        Ts=np.array(dat["Ts"]).transpose((1,2,3,0))
+        vs1=np.array(dat["vs1"]).transpose((1,2,3,0))
     else:
         p=1/2+1/2*np.tanh((xg["alt"]-220e3)/20e3)
         shapevar=np.concatenate( (xg["lx"][:],[7]) )
