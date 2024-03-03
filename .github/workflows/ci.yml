@@ -107,9 +107,7 @@ jobs:
       if: steps.cache-gemext.outputs.cache-hit != 'true'
       timeout-minutes: 15
       run: |
-        cmake -B build -Dfind:BOOL=true --install-prefix ${{ env.CMAKE_PREFIX_PATH }}
-        cmake --build build --parallel
-        cmake --install build
+        cmake -Dmumps_only=true -Dfind=true -Dprefix=${{ env.CMAKE_PREFIX_PATH }} -P build.cmake
       working-directory: gemext
 
     - name: Checkout Gemini3D
