@@ -3,8 +3,11 @@ name: ci
 env:
   GEMINI_CIROOT: ~/ci
   CMAKE_BUILD_TYPE: Release
-  CMAKE_INSTALL_PREFIX: ~/libgem_gnu
+  CMAKE_INSTALL_PREFIX: ~/libgem
+  GEMINI_ROOT: ~/libgem
   HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+# GEMINI_ROOT is used to find Gemini3D by PyGemini
 
 on:
   push:
