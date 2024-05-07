@@ -3,7 +3,7 @@ name: ci
 env:
   GEMINI_CIROOT: ~/ci
   CMAKE_BUILD_TYPE: Release
-  CMAKE_PREFIX_PATH: ~/libgem_gnu
+  CMAKE_INSTALL_PREFIX: ~/libgem_gnu
   HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 on:
@@ -71,13 +71,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-# always need this for requirements.cmake
-    - name: Checkout Gemini3D-External
-      uses: actions/checkout@v4
-      with:
-        repository: gemini3d/external
-        path: gemext
-
     - name: Checkout GemGI (for simulation config.nml inputs)
       uses: actions/checkout@v4
       with:
@@ -88,41 +81,34 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt update
-        sudo $(cmake -P gemext/scripts/requirements.cmake)
+        sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev ninja-build
 
     - name: Install Prereqs (Macos)
       if: runner.os == 'macOS'
-      run: $(cmake -P gemext/scripts/requirements.cmake)
+      run: brew install ninja open-mpi hdf5 scalapack
 
-    - name: Cache install Gemini3D-External
-      id: cache-gemext
+    - name: Cache install Gemini3D
+      id: cache-gemini
       uses: actions/cache@v4
       with:
         path: |
-          ${{ env.CMAKE_PREFIX_PATH }}
-        key: ${{ runner.os }}-gemext-${{ hashFiles('gemext/cmake/libraries.json') }}
-      # weak check that gemini3d/external has changed since last cache update
-
-    - name: Non-Cache Install Gemini3D-External
-      if: steps.cache-gemext.outputs.cache-hit != 'true'
-      timeout-minutes: 15
-      run: |
-        cmake -Dmumps_only=true -Dfind=true -Dprefix=${{ env.CMAKE_PREFIX_PATH }} -P build.cmake
-      working-directory: gemext
+          ${{ env.CMAKE_INSTALL_PREFIX }}
+        key: ${{ runner.os }}-gemini-${{ hashFiles('gemini3d/CMakeLists.txt') }}
+      # weak check that gemini3d has changed since last cache update
 
     - name: Checkout Gemini3D
-      if: steps.cache-gemext.outputs.cache-hit != 'true'
+      if: steps.cache-gemini.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
         repository: gemini3d/gemini3d
         path: gemini3d
 
     - name: non-cache Install Gemini3D
-      if: steps.cache-gemext.outputs.cache-hit != 'true'
+      if: steps.cache-gemini.outputs.cache-hit != 'true'
       timeout-minutes: 15
       run: |
-        cmake -B build --install-prefix ${{ env.CMAKE_PREFIX_PATH }}
-        cmake --build build --parallel
+        cmake -B build
+        cmake --build build
         cmake --install build
       working-directory: gemini3d
 
