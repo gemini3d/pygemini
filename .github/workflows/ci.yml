@@ -105,6 +105,7 @@ jobs:
       with:
         repository: gemini3d/gemini3d
         path: gemini3d
+        submodules: true
 
     - name: non-cache Install Gemini3D
       if: steps.cache-gemini.outputs.cache-hit != 'true'
