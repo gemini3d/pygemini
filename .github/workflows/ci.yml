@@ -6,6 +6,7 @@ env:
   CMAKE_INSTALL_PREFIX: ~/libgem
   GEMINI_ROOT: ~/libgem
   HOMEBREW_NO_INSTALL_CLEANUP: 1
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
 
 # GEMINI_ROOT is used to find Gemini3D by PyGemini
 
@@ -24,7 +25,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
 
     strategy:
       matrix:
@@ -45,13 +46,13 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - run: python -m pip install -e .[lint]
-      timeout-minutes: 2
 
     - run: flake8
     - run: mypy
 
 
   linux-macos:
+    timeout-minutes: 45
 
     strategy:
       matrix:
@@ -84,11 +85,11 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt update
-        sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev ninja-build
+        sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev
 
     - name: Install Prereqs (Macos)
       if: runner.os == 'macOS'
-      run: brew install ninja open-mpi hdf5 scalapack
+      run: brew install open-mpi hdf5 scalapack
 
     - name: Cache install Gemini3D
       id: cache-gemini
