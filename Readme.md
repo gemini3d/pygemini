@@ -2,7 +2,8 @@
 
 ![ci](https://github.com/gemini3d/pygemini/workflows/ci/badge.svg)
 
-A Python interface to [Gemini3D](https://github.com/gemini3d/gemini), funded in part by NASA HDEE.
+A Python interface to [Gemini3D](https://github.com/gemini3d/gemini), funded in part by NASA
+[NNH19ZDA001N-HDEE grant 80NSSC20K0176](https://hdrl.gsfc.nasa.gov/HDEE19_Abstracts.pdf).
 
 Setup PyGemini by:
 
