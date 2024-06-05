@@ -15,7 +15,7 @@ on:
   push:
     paths:
     - "**.py"
-    - ".github/workflows/ci.yml"
+    - ".github/workflows/**"
     - "src/gemini3d/libraries.json"
     - "!scripts/**"
     - "!example/**"
