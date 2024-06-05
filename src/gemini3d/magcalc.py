@@ -93,6 +93,6 @@ if __name__ == "__main__":
         nargs="?",
         default=1.5,
     )
-    P = P.parse_args()
+    args = P.parse_args()
 
-    magcalc(P.direc, P.dang)
+    magcalc(args.direc, args.dang)

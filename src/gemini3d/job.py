@@ -169,22 +169,22 @@ def check_compiler():
         raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
 
 
-def check_mpiexec(mpiexec: str, gemexe: Path) -> str:
+def check_mpiexec(mpiexec_name: str, gemexe: Path) -> str:
     """
     check if specified mpiexec exists on this system.
     If not, error as most runs are exceedingly slow with one CPU core.
     """
 
-    if not mpiexec:
-        mpiexec = "mpiexec"
+    if not mpiexec_name:
+        mpiexec_name = "mpiexec"
 
     mpi_root = os.environ.get("MPI_ROOT", None)
     if mpi_root:
         mpi_root += "/bin"
 
-    mpiexec = shutil.which(mpiexec, path=mpi_root)
+    mpiexec = shutil.which(mpiexec_name, path=mpi_root)
     if not mpiexec:
-        raise FileNotFoundError(f"Cannot find mpiexec {mpiexec}")
+        raise FileNotFoundError(f"Cannot find mpiexec {mpiexec_name}")
 
     ret = subprocess.run([mpiexec, "-help"], capture_output=True, text=True, timeout=5)
     if ret.returncode != 0:

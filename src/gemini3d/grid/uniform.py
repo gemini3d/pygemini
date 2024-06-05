@@ -58,14 +58,14 @@ def non_uniform1d(xmax: float, parms: list[float]):
     ell = parms[3]  # transition length of degradation
     x2 = xmax - degdist
 
-    x = [dx0 / 2.0]
+    x = np.array([dx0 / 2.0])
     # start offset from zero so we can have an even number (better for mpi)
 
     while x[-1] < xmax:
         dx = dx0 + dxincr * (1 / 2 + 1 / 2 * math.tanh((x[-1] - x2) / ell))
-        x.append(x[-1] + dx)
+        x = np.append(x, x[-1] + dx)
 
-    x = np.append(-np.array(x[::-1]), x)
+    x = np.append(-x[::-1], x)
 
     return x
 
@@ -78,14 +78,13 @@ def altitude_grid(
     if alt_max <= alt_min:
         raise ValueError("grid_max must be greater than grid_min")
 
-    alt = [alt_min]
+    alt = np.array([alt_min])
 
     while alt[-1] < alt_max:
         # dalt=10+9.5*tanh((alt(i-1)-500)/150)
         dalt = d[0] + d[1] * math.tanh((alt[-1] - d[2]) / d[3])
-        alt.append(alt[-1] + dalt)
+        alt = np.append(alt, alt[-1] + dalt)
 
-    alt = np.asarray(alt)
     if alt.size < 10:
         raise ValueError("grid too small")
 

@@ -9,7 +9,6 @@ from datetime import datetime
 import typing as T
 
 import numpy as np
-import xarray
 
 from .config import read_nml
 from . import find
@@ -76,7 +75,7 @@ def frame(
     *,
     cfg: dict[str, T.Any] | None = None,
     xg: dict[str, T.Any] | None = None,
-) -> xarray.Dataset:
+):
     """
     load a frame of simulation data, automatically selecting the correct
     functions based on simulation parameters
@@ -93,6 +92,12 @@ def frame(
         to avoid reading config.nml
     xg: dict
         to avoid reading simgrid.*, useful to save time when reading data files in a loop
+
+    Returns
+    -------
+
+    dat: xarray.Dataset
+        simulation data from this time
     """
 
     # %% default variables

@@ -12,7 +12,7 @@ RE = 6370e3
 
 
 def makegrid(
-    direc: str,
+    direc: Path,
     dang: float = 1.5,
     ltheta: int = 16,
     lphi: int = 16,
@@ -89,7 +89,7 @@ def makegrid(
 
 
 def makegrid_full(
-    direc: str,
+    direc: Path,
     ltheta: int = 16,
     lphi: int = 16,
     write_grid: bool = False,
