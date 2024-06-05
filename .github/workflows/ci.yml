@@ -5,6 +5,7 @@ env:
   CMAKE_BUILD_TYPE: Release
   CMAKE_INSTALL_PREFIX: ~/libgem
   GEMINI_ROOT: ~/libgem
+  CMAKE_GENERATOR: Ninja
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   CMAKE_BUILD_PARALLEL_LEVEL: 4
 
@@ -75,50 +76,14 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Checkout GemGI (for simulation config.nml inputs)
-      uses: actions/checkout@v4
-      with:
-        repository: gemini3d/gemci
-        path: ${{ github.workspace }}/gemci
-
-    - name: Install Prereqs (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt update
-        sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev
-
-    - name: Install Prereqs (Macos)
-      if: runner.os == 'macOS'
-      run: brew install open-mpi hdf5 scalapack
-
-    - name: Cache install Gemini3D
-      id: cache-gemini
-      uses: actions/cache@v4
-      with:
-        path: |
-          ${{ env.CMAKE_INSTALL_PREFIX }}
-        key: ${{ runner.os }}-gemini-${{ hashFiles('gemini3d/CMakeLists.txt') }}
-      # weak check that gemini3d has changed since last cache update
-
-    - name: Checkout Gemini3D
-      if: steps.cache-gemini.outputs.cache-hit != 'true'
-      uses: actions/checkout@v4
-      with:
-        repository: gemini3d/gemini3d
-        path: gemini3d
-        submodules: true
-
-    - name: non-cache Install Gemini3D
-      if: steps.cache-gemini.outputs.cache-hit != 'true'
-      timeout-minutes: 15
-      run: |
-        cmake -B build
-        cmake --build build
-        cmake --install build
-      working-directory: gemini3d
-
     - name: Git Checkout ${{ github.action_repository }}
       uses: actions/checkout@v4
+
+    - uses: ./.github/workflows/composite-pkg
+      timeout-minutes: 15
+
+    - uses: ./.github/workflows/composite-gemini3d
+      timeout-minutes: 15
 
     - name: Install Python packages
       run: python -m pip install .[tests,plots]

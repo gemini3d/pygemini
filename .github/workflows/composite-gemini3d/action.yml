@@ -1,0 +1,37 @@
+runs:
+
+    using: 'composite'
+
+    steps:
+
+    - name: Checkout GemGI (for simulation config.nml inputs)
+      uses: actions/checkout@v4
+      with:
+        repository: gemini3d/gemci
+        path: ${{ github.workspace }}/gemci
+
+    - name: Cache install Gemini3D
+      id: cache-gemini
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ env.CMAKE_INSTALL_PREFIX }}
+        key: ${{ runner.os }}-gemini-${{ hashFiles('gemini3d/CMakeLists.txt') }}
+      # weak check that gemini3d has changed since last cache update
+
+    - name: Checkout Gemini3D
+      if: steps.cache-gemini.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        repository: gemini3d/gemini3d
+        path: gemini3d
+        submodules: true
+
+    - name: non-cache Install Gemini3D
+      if: steps.cache-gemini.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        cmake -B build
+        cmake --build build
+        cmake --install build
+      working-directory: gemini3d
