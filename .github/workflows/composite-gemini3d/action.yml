@@ -24,8 +24,7 @@ runs:
     with:
       path: |
         ${{ env.CMAKE_INSTALL_PREFIX }}
-      key: ${{ runner.os }}-gemini-${{ hashFiles('gemini3d/CMakeLists.txt') }}
-    # weak check that gemini3d has changed since last cache update
+      key: ${{ runner.os }}-gemini3d
 
   - name: Checkout Gemini3D
     if: steps.cache-gemini.outputs.cache-hit != 'true'
