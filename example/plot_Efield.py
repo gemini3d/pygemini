@@ -6,13 +6,12 @@ plot electric field input to simulation "Efield_inputs" for a single file
 from pathlib import Path
 import argparse
 
-import xarray
 import matplotlib as mpl
 
 import gemini3d.read as read
 
 
-def plotVmaxx1it(ax: mpl.axes.Axes, V: xarray.DataArray) -> None:
+def plotVmaxx1it(ax, V) -> None:
     ax.set_title("Vmaxx1it: Potential")
     if V.ndim == 1:
         ax.plot(dat["mlat"], V)

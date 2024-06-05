@@ -3,9 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 import typing as T
 from datetime import datetime
-import numpy as np
 import math
-import xarray
+
+import numpy as np
 import scipy.interpolate as interp
 from matplotlib.figure import Figure
 
@@ -29,7 +29,7 @@ def plot_interp(
     fg: Figure,
     time: datetime,
     xg: dict[str, T.Any],
-    parm: xarray.DataArray,
+    parm,
     *,
     name: str = "",
     ref_alt: float = REF_ALT,
@@ -39,6 +39,9 @@ def plot_interp(
 
     Parameters
     ----------
+
+    parm: xarray.DataArray
+        parameter to plot
 
     xp:  eastward distance (rads.)
         should be interpreted as northward distance (in rads.).

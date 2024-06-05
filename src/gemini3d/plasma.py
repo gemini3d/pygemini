@@ -71,9 +71,7 @@ def equilibrium_resample(p: dict[str, T.Any], xg: dict[str, T.Any]):
     write.state(p["indat_file"], dat_interp)
 
 
-def model_resample(
-    xgin: dict[str, T.Any], dat: xarray.Dataset, xg: dict[str, T.Any]
-) -> xarray.Dataset:
+def model_resample(xgin: dict[str, T.Any], dat, xg: dict[str, T.Any]):
     """resample a grid
     usually used to upsample an equilibrium simulation grid
 
@@ -198,7 +196,14 @@ def model_resample(
     return dat_interp
 
 
-def check_density(n: xarray.DataArray):
+def check_density(n):
+    """
+    Parameters
+    ----------
+
+    n: xarray.DataArray
+        number density
+    """
     if not np.isfinite(n).all():
         raise ValueError("non-finite density")
     if (n < 0).any():
@@ -207,14 +212,28 @@ def check_density(n: xarray.DataArray):
         raise ValueError("too small maximum density")
 
 
-def check_drift(v: xarray.DataArray):
+def check_drift(v):
+    """
+    Parameters
+    ----------
+
+    v: xarray.DataArray
+        velocity
+    """
     if not np.isfinite(v).all():
         raise ValueError("non-finite drift")
     if (abs(v) > 10e3).any():
         raise ValueError("excessive drift velocity")
 
 
-def check_temperature(Ts: xarray.DataArray):
+def check_temperature(Ts):
+    """
+    Parameters
+    ----------
+
+    Ts: xarray.DataArray
+        temperature
+    """
     if not np.isfinite(Ts).all():
         raise ValueError("non-finite temperature")
     if (Ts < 0).any():
@@ -223,12 +242,26 @@ def check_temperature(Ts: xarray.DataArray):
         raise ValueError("too cold maximum temperature")
 
 
-def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
+def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]):
     """
     generate (arbitrary) initial conditions for a grid.
     NOTE: only works on symmmetric closed grids!
 
     [f107a, f107, ap] = activ
+
+    Parameters
+    ----------
+
+    p: dict
+        simulation parameters
+    xg: dict
+        simulation grid
+
+    Returns
+    -------
+
+    dat: xarray.Dataset
+        initial conditions of equilibrium state
     """
 
     # %% MAKE UP SOME INITIAL CONDITIONS FOR FORTRAN CODE

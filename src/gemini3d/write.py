@@ -5,13 +5,11 @@ import sys
 import logging
 import json
 
-import xarray
-
 from .utils import git_meta
 from .hdf5 import write as h5write
 
 
-def state(out_file: Path, dat: xarray.Dataset, **kwargs) -> None:
+def state(out_file: Path, dat, **kwargs) -> None:
     """
     WRITE STATE VARIABLE DATA.
     NOTE: WE don't write ANY OF THE ELECTRODYNAMIC
@@ -20,6 +18,12 @@ def state(out_file: Path, dat: xarray.Dataset, **kwargs) -> None:
 
     INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
+
+    Parameters
+    ----------
+
+    dat: xarray.Dataset
+        state variables to write
     """
 
     # %% allow overriding "dat"
@@ -59,13 +63,13 @@ def grid(cfg: dict[str, T.Any], xg: dict[str, T.Any]) -> None:
     meta(input_dir / "setup_grid.json", git_meta(), cfg)
 
 
-def Efield(E: xarray.Dataset, outdir: Path) -> None:
+def Efield(E, outdir: Path) -> None:
     """writes E-field to disk
 
     Parameters
     ----------
 
-    E: dict
+    E: xarray.Dataset
         E-field values
     outdir: pathlib.Path
         directory to write files into
@@ -77,12 +81,12 @@ def Efield(E: xarray.Dataset, outdir: Path) -> None:
     h5write.Efield(outdir, E)
 
 
-def precip(precip: xarray.Dataset, outdir: Path) -> None:
+def precip(precip, outdir: Path) -> None:
     """writes precipitation to disk
 
     Parameters
     ----------
-    precip: dict
+    precip: xarray.Dataset
         preicipitation values
     outdir: pathlib.Path
         directory to write files into

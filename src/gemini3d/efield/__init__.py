@@ -211,7 +211,16 @@ def Esigma(pwidth: float, pmax: float, pmin: float, px) -> tuple[float, T.Any]:
     return wsig, xsig
 
 
-def check_finite(v: xarray.DataArray, name: str | None = None):
+def check_finite(v, name: str | None = None):
+    """
+    checks that the input is finite
+
+    Parameters
+    ----------
+
+    v: xarray.DataArray
+        input data to check
+    """
     i = np.logical_not(np.isfinite(v))
 
     if i.any():

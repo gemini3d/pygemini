@@ -48,7 +48,7 @@ def str2func(name: str, path: Path | None = None) -> T.Callable:
 
     0. file in "path" (if present)
     1. os.getcwd()/name.py containing function name()
-    2. gemiin3d.<foo> <foo>/name.py module file containing function name()
+    2. gemini3d.<foo> <foo>/name.py module file containing function name()
     3. gemini3d.<foo> <foo>/__init__.py containing function name()
 
 
@@ -90,16 +90,17 @@ def str2func(name: str, path: Path | None = None) -> T.Callable:
     return getattr(mod, func_name)
 
 
-def to_datetime(times: xarray.DataArray | np.datetime64 | datetime) -> datetime:
+def to_datetime(times) -> datetime:
     """
 
     Parameters
     ----------
-    atimes : xarray time
+    atimes: xarray.DataArray, np.datetime64, datetime.datetime
+        time
 
     Returns
     -------
-    times : list[datetime.datetime]
+    times: datetime.datetime
     """
 
     if isinstance(times, datetime):

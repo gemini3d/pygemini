@@ -10,14 +10,13 @@ import logging
 
 import h5py
 import numpy as np
-import xarray
 
 from ..utils import datetime2stem, to_datetime
 
 CLVL = 3  # GZIP compression level: larger => better compression, slower to write
 
 
-def state(fn: Path, dat: xarray.Dataset) -> None:
+def state(fn: Path, dat) -> None:
     """
     write STATE VARIABLE initial conditions
 
@@ -27,6 +26,14 @@ def state(fn: Path, dat: xarray.Dataset) -> None:
 
     INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
+
+    Parameters
+    ----------
+
+    fn: pathlib.Path
+        output filename
+    dat: xarray.Dataset
+        data to write
     """
 
     logging.info(f"state: {fn}")
@@ -42,7 +49,7 @@ def state(fn: Path, dat: xarray.Dataset) -> None:
             _write_var(f, "/Phiall", dat["Phitop"])
 
 
-def _write_var(fid, name: str, A: xarray.DataArray) -> None:
+def _write_var(fid, name: str, A) -> None:
     """
     NOTE: The .transpose() reverses the dimension order.
     The HDF Group never implemented the intended H5T_array_create(..., perm)
@@ -51,6 +58,12 @@ def _write_var(fid, name: str, A: xarray.DataArray) -> None:
     Fortran, including the HDF Group Fortran interfaces and h5fortran as well as
     Matlab read/write HDF5 in Fortran order. h5py read/write HDF5 in C order so we
     need the .transpose() for h5py
+
+    Parameters
+    ----------
+
+    A: xarray.DataArray
+        variable to write to HDF5
     """
 
     p4s = ("species", "x3", "x2", "x1")
@@ -212,9 +225,15 @@ def grid(size_fn: Path, grid_fn: Path, xg: dict[str, T.Any]) -> None:
             h["/glatctr"] = xg["glatctr"]
 
 
-def Efield(outdir: Path, E: xarray.Dataset) -> None:
+def Efield(outdir: Path, E) -> None:
     """
     write Efield to disk
+
+    Parameters
+    ----------
+
+    E: xarray.Dataset
+        Electric field
     """
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
@@ -248,7 +267,15 @@ def Efield(outdir: Path, E: xarray.Dataset) -> None:
                 f[f"/{k}"] = E[k].loc[time].astype(np.float32)
 
 
-def precip(outdir: Path, P: xarray.Dataset) -> None:
+def precip(outdir: Path, P) -> None:
+    """
+
+    Parameters
+    ----------
+
+    P: xarray.Dataset
+        precipitation data
+    """
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f.create_dataset("/llon", data=P.mlon.size, dtype=np.int32)
         f.create_dataset("/llat", data=P.mlat.size, dtype=np.int32)

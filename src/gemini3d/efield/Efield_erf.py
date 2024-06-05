@@ -2,22 +2,26 @@ from __future__ import annotations
 import logging
 import typing as T
 
-import xarray
 import numpy as np
 from scipy.special import erf
 
 
 def Efield_erf(
-    E: xarray.Dataset,
+    E,
     xg: dict[str, T.Any],
     lx1: int,
     lx2: int,
     lx3: int,
     gridflag: int,
     flagdip: bool,
-) -> xarray.Dataset:
+):
     """
     synthesize a feature
+
+    Parameters
+    ----------
+
+    E: xarray.Dataset
     """
 
     if E.Etarg > 1:

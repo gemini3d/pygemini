@@ -3,15 +3,14 @@ from pathlib import Path
 from datetime import datetime
 import typing
 
-import xarray
 import matplotlib as mpl
 
 from .. import read
 
 
 def plotdiff(
-    A: xarray.DataArray,
-    B: xarray.DataArray,
+    A,
+    B,
     time: datetime,
     new_dir: Path,
     ref_dir: Path,
@@ -23,6 +22,11 @@ def plotdiff(
 
     Parameters
     ----------
+
+    A: xarray.DataArray
+        new data
+    B: xarray.DataArray
+        reference data
 
     imax: int, optional
         index of maximum difference
@@ -63,7 +67,7 @@ def plotdiff(
                 plotdiff(A[i], B[i], time, new_dir, ref_dir, name=f"{name}-{i}")
         elif is3d:
             # pick x2 and x3 slice at maximum difference
-            im: dict[str, xarray.DataArray] = abs(A - B).argmax(dim=...)  # type: ignore
+            im = abs(A - B).argmax(dim=...)
             ix2: int = im["x2"].data
             ix3: int = im["x3"].data
             plotdiff(

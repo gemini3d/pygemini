@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
 from argparse import ArgumentParser
 
-import xarray
 from matplotlib.pyplot import figure, show
 
 import gemini3d.read as read
 
 
-def plotplasma(dat: xarray.Dataset):
+def plotplasma(dat):
+    """
+
+    Parameters
+    ----------
+
+    dat: xarray.Dataset
+        plasma state data to plot
+
+    """
     for k, v in dat.items():
         if k == "t":
             t = v

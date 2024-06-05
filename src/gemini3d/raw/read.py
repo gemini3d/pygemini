@@ -331,7 +331,15 @@ def frame3d_curvavg(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Da
     return dat
 
 
-def frame3d_curvne(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
+def frame3d_curvne(file: Path, xg: dict[str, T.Any] | None = None):
+    """
+
+    Returns
+    -------
+
+    dat: xarray.Dataset
+        3D simulation data
+    """
     if not file.is_file():
         raise FileNotFoundError(file)
 
@@ -394,9 +402,15 @@ def read2D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]):
     raise ValueError(f"lx must have 2 or 3 elements, you have lx={lx}")
 
 
-def glow_aurmap(file: Path, xg: dict[str, T.Any] | None = None) -> xarray.Dataset:
+def glow_aurmap(file: Path, xg: dict[str, T.Any] | None = None):
     """
     read the auroral output from GLOW
+
+    Returns
+    -------
+
+    dat: xarray.Dataset
+        GLOW auroral data
     """
 
     lx = simsize(file.parent)

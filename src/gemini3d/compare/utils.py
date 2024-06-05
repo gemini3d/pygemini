@@ -1,13 +1,26 @@
 from __future__ import annotations
 import json
 
-import xarray
-
 from ..utils import get_pkg_file
 
 
-def err_pct(a: xarray.DataArray, b: xarray.DataArray) -> float:
-    """compute maximum error percent"""
+def err_pct(a, b) -> float:
+    """compute maximum error percent
+
+    Parameters
+    ----------
+
+    a: xarray.DataArray
+        new data
+    b: xarray.DataArray
+        reference data
+
+    Returns
+    -------
+
+    float
+        maximum error percent
+    """
 
     return (abs(a - b).max() / abs(b).max()).item() * 100
 

@@ -1,20 +1,23 @@
 import numpy as np
-import xarray
 
 
-def gaussian2d(pg: xarray.Dataset, Qpeak: float, Qbackground: float):
+def gaussian2d(pg, Qpeak: float, Qbackground: float):
+    """
+
+    Parameters
+    ----------
+
+    pg: xarray.Dataset
+        parameters of gaussian
+    """
     mlon_mean = pg.mlon.mean().item()
     mlat_mean = pg.mlat.mean().item()
 
     if "mlon_sigma" in pg.attrs and "mlat_sigma" in pg.attrs:
         Q = (
             Qpeak
-            * np.exp(
-                -((pg.mlon.data[:, None] - mlon_mean) ** 2) / (2 * pg.mlon_sigma**2)
-            )
-            * np.exp(
-                -((pg.mlat.data[None, :] - mlat_mean) ** 2) / (2 * pg.mlat_sigma**2)
-            )
+            * np.exp(-((pg.mlon.data[:, None] - mlon_mean) ** 2) / (2 * pg.mlon_sigma**2))
+            * np.exp(-((pg.mlat.data[None, :] - mlat_mean) ** 2) / (2 * pg.mlat_sigma**2))
         )
     elif "mlon_sigma" in pg.attrs:
         Q = Qpeak * np.exp(

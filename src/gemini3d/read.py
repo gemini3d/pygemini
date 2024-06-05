@@ -133,9 +133,21 @@ def frame(
     return dat
 
 
-def derive(dat: xarray.Dataset, var: set[str], flag: int) -> xarray.Dataset:
+def derive(dat, var: set[str], flag: int):
     """
     compute derived variables based on file data
+
+    Parameters
+    ----------
+
+    dat: xarray.DataSet
+        data to derive from
+
+    Returns
+    -------
+
+    dat: xarray.DataSet
+        derived data
     """
     lx = (dat.sizes["x1"], dat.sizes["x2"], dat.sizes["x3"])
 
@@ -174,12 +186,18 @@ def derive(dat: xarray.Dataset, var: set[str], flag: int) -> xarray.Dataset:
     return dat
 
 
-def glow(fn: Path) -> xarray.Dataset:
-    """read GLOW data"""
+def glow(fn: Path):
+    """read GLOW data
+
+    Returns
+    -------
+
+    xarray.Dataset
+    """
     return h5read.glow_aurmap(fn)
 
 
-def Efield(fn: Path) -> xarray.Dataset:
+def Efield(fn: Path):
     """load Efield data "Efield_inputs"
 
     Parameters
@@ -189,7 +207,7 @@ def Efield(fn: Path) -> xarray.Dataset:
 
     Returns
     -------
-    dat: dict of np.ndarray
+    dat: xarray.Dataset
         electric field
     """
 
@@ -198,7 +216,7 @@ def Efield(fn: Path) -> xarray.Dataset:
     return h5read.Efield(fn)
 
 
-def precip(fn: Path) -> xarray.Dataset:
+def precip(fn: Path):
     """load precipitation to disk
 
     Parameters
@@ -208,7 +226,7 @@ def precip(fn: Path) -> xarray.Dataset:
 
     Returns
     -------
-    dat: dict
+    dat: xarray.Dataset
         precipitation
     """
 
