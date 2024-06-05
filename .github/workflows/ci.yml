@@ -56,9 +56,10 @@ jobs:
     timeout-minutes: 45
 
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12']
-        os: [ubuntu-24.04]
+        os: [ubuntu-latest]
         include:
         - os: macos-latest
           python-version: '3.12'
@@ -66,9 +67,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     name: ${{ matrix.os }} Python ${{ matrix.python-version }}
-
-    env:
-      FC: gfortran-13
 
     steps:
 
