@@ -146,7 +146,7 @@ def git_meta(path: Path | None = None) -> dict[str, str]:
             return meta
 
     ret = subprocess.run(
-        [git, "-C", str(path), "--version"], stdout=subprocess.PIPE, text=True
+        [git, "-C", str(path), "--version"], capture_output=True, text=True
     )
     if ret.returncode != 0:
         logging.error("Git was not available or is too old")
@@ -154,14 +154,14 @@ def git_meta(path: Path | None = None) -> dict[str, str]:
 
     meta["version"] = ret.stdout.strip()
 
-    ret = subprocess.run([git, "-C", str(path), "rev-parse"])
+    ret = subprocess.run([git, "-C", str(path), "rev-parse"], text=True)
     if ret.returncode != 0:
         logging.error(f"{path} is not a Git repo.")
         return meta
 
     ret = subprocess.run(
         [git, "-C", str(path), "rev-parse", "--abbrev-ref", "HEAD"],
-        stdout=subprocess.PIPE,
+        capture_output=True,
         text=True,
     )
     if ret.returncode != 0:
@@ -171,7 +171,7 @@ def git_meta(path: Path | None = None) -> dict[str, str]:
 
     ret = subprocess.run(
         [git, "-C", str(path), "remote", "get-url", "origin"],
-        stdout=subprocess.PIPE,
+        capture_output=True,
         text=True,
     )
     if ret.returncode != 0:
@@ -180,12 +180,12 @@ def git_meta(path: Path | None = None) -> dict[str, str]:
     meta["remote"] = ret.stdout.strip()
 
     ret = subprocess.run(
-        [git, "-C", str(path), "describe", "--tags"], stdout=subprocess.PIPE, text=True
+        [git, "-C", str(path), "describe", "--tags"], capture_output=True, text=True
     )
     if ret.returncode != 0:
         ret = subprocess.run(
             [git, "-C", str(path), "rev-parse", "--short", "HEAD"],
-            stdout=subprocess.PIPE,
+            capture_output=True,
             text=True,
         )
     if ret.returncode != 0:
@@ -194,7 +194,7 @@ def git_meta(path: Path | None = None) -> dict[str, str]:
     meta["commit"] = ret.stdout.strip()
 
     ret = subprocess.run(
-        [git, "-C", str(path), "status", "--porcelain"], stdout=subprocess.PIPE, text=True
+        [git, "-C", str(path), "status", "--porcelain"], capture_output=True, text=True
     )
     if ret.returncode != 0:
         logging.error(f"{path} could not determine Git status")
