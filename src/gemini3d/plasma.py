@@ -8,7 +8,7 @@ import logging
 
 import numpy as np
 import xarray
-from scipy.integrate import cumtrapz
+import scipy.integrate
 from scipy.interpolate import interp1d, interpn, RegularGridInterpolator
 
 from . import read
@@ -288,8 +288,8 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]):
             integrand = 1 / H[iord]
             integrand = np.append(integrand, integrand[-1])
 
-            # this cumtrapz() does NOT get initial=0, since matlab user code strips first element here
-            redheight = cumtrapz(integrand, z)
+            # Matlab user code also strips first element here (initial=None)
+            redheight = scipy.integrate.cumulative_trapezoid(integrand, z, initial=None)
             f = interp1d(altsort, nsort)
             n1top = f(zref) * np.exp(-redheight)
             n1sort = np.zeros(lz)
@@ -349,8 +349,8 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]):
             z = np.insert(z, 0, alt[iref, ix2, ix3])
             integrand = 1 / H[iord]
             integrand = np.append(integrand, integrand[-1])
-            # this cumtrapz() does NOT get initial=0, since matlab user code strips first element here
-            redheight = cumtrapz(integrand, z)
+            # Matlab user code also strips first element here (initial=None)
+            redheight = scipy.integrate.cumulative_trapezoid(integrand, z, initial=None)
             nmolctop = n0 * np.exp(-redheight)
             nmolcsort = np.zeros(lz)
             for iz in range(lz):
@@ -433,8 +433,8 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]):
                 z = np.insert(z, 0, z0f)
                 integrand = 1 / H[iord]
                 integrand = np.append(integrand, integrand[-1])
-                # initial=0 is to match Matlab cumtrapz()
-                redheight = cumtrapz(integrand, z, initial=0)
+                # initial=0 is to match Matlab
+                redheight = scipy.integrate.cumulative_trapezoid(integrand, z, initial=0)
                 netop = p["nmf"] * np.exp(-redheight)
                 nesort = np.zeros(lz)
                 for iz in range(lz):
