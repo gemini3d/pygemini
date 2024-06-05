@@ -89,7 +89,7 @@ jobs:
       # transient CI download speed
 
     - name: Unit and Integration Tests
-      run: pytest
+      run: pytest ${{ github.workspace }}
       timeout-minutes: 15
       env:
         GEMCI_ROOT: ${{ github.workspace }}/gemci
