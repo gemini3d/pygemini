@@ -1,0 +1,19 @@
+runs:
+
+  using: 'composite'
+
+  steps:
+
+  - uses: actions/setup-python@v5
+    with:
+      python-version: ${{ matrix.python-version }}
+
+  - name: Install Python packages
+    run: python -m pip install .[tests,plots]
+    shell: bash
+
+  - name: Unit and Integration Tests
+    run: pytest ${{ github.workspace }}
+    shell: bash
+    env:
+      GEMCI_ROOT: ${{ github.workspace }}/gemci
