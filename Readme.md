@@ -1,5 +1,6 @@
 # PyGemini
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7675594.svg)](https://doi.org/10.5281/zenodo.7675594)
 [![ci](https://github.com/gemini3d/pygemini/actions/workflows/ci.yml/badge.svg)](https://github.com/gemini3d/pygemini/actions/workflows/ci.yml)
 
 A Python interface to [Gemini3D](https://github.com/gemini3d/gemini), funded in part by NASA
