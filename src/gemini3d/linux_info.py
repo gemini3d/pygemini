@@ -39,12 +39,16 @@ def parse_os_release(txt: str) -> list[str]:
 
     C = ConfigParser(inline_comment_prefixes=("#", ";"))
     C.read_string(txt)
-    like = C["all"].get("ID_LIKE", fallback="")
-    if not like:
-        like = C["all"].get("ID", fallback="")
-    like = like.strip('"').strip("'").split()
 
-    return like
+    try:
+        like = C["all"]["ID_LIKE"]
+    except KeyError:
+        try:
+            like = C["all"]["ID"]
+        except KeyError:
+            like = ""
+
+    return like.strip('"').strip("'").split()
 
 
 def get_package_manager(like: list[str] | None = None) -> str:

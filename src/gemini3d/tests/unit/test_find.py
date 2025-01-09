@@ -1,3 +1,4 @@
+import importlib.resources as ir
 import pytest
 from datetime import datetime
 from pathlib import Path
@@ -5,7 +6,6 @@ from pathlib import Path
 import gemini3d
 import gemini3d.find as find
 import gemini3d.web
-from gemini3d.utils import get_pkg_file
 
 
 def test_config(tmp_path):
@@ -15,7 +15,7 @@ def test_config(tmp_path):
     with pytest.raises(FileNotFoundError):
         find.config(tmp_path / "not_exist")
 
-    cfn = get_pkg_file("gemini3d.tests.config", "config_example.nml")
+    cfn = ir.files("gemini3d.tests.config") / "config_example.nml"
     fn = find.config(cfn)
     assert fn == cfn
 

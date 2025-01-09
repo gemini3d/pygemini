@@ -3,7 +3,6 @@ import subprocess
 import os
 import shutil
 from pathlib import Path
-import importlib.resources as pkgr
 
 from datetime import datetime, timedelta
 import typing as T
@@ -17,29 +16,7 @@ import xarray
 import numpy as np
 
 
-__all__ = ["get_pkg_file", "str2func", "to_datetime", "git_meta", "datetime2stem"]
-
-
-def get_pkg_file(package: str, filename: str) -> Path:
-    """Get a file from a package.
-
-    Parameters
-    ----------
-    package : str
-        Package name.
-    filename : str
-        File name.
-
-    Returns
-    -------
-    Path
-        Path to the file.
-
-    NOTE: this probably assumes the install is Zip safe
-    """
-
-    with pkgr.as_file(pkgr.files(package).joinpath(filename)) as f:
-        return f
+__all__ = ["str2func", "to_datetime", "git_meta", "datetime2stem"]
 
 
 def str2func(name: str, path: Path | None = None) -> T.Callable:

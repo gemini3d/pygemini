@@ -1,7 +1,6 @@
 from __future__ import annotations
 import json
-
-from ..utils import get_pkg_file
+import importlib.resources as ir
 
 
 def err_pct(a, b) -> float:
@@ -26,5 +25,6 @@ def err_pct(a, b) -> float:
 
 
 def load_tol() -> dict[str, float]:
-    tol_json = get_pkg_file("gemini3d.compare", "tolerance.json").read_text()
+    file = ir.files(f"{__package__}") / "tolerance.json"
+    tol_json = file.read_text()
     return json.loads(tol_json)

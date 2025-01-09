@@ -4,7 +4,7 @@ import subprocess
 import binascii
 from pathlib import Path
 import shutil
-import importlib.resources
+import importlib.resources as ir
 
 
 def hpc_submit_job(batcher: str, job_file: Path):
@@ -41,11 +41,7 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: list[str]) -> Path:
     Nchar = 6  # arbitrary number of characters
 
     if batcher == "qsub":
-        template = (
-            importlib.resources.files("gemini3d.templates")
-            .joinpath("qsub_template.job")
-            .read_text()
-        )
+        template = (ir.files("gemini3d.templates") / "qsub_template.job").read_text()
         job_file = out_dir / f"{binascii.b2a_hex(os.urandom(Nchar)).decode('ascii')}.job"
         print("writing job file", job_file)
         text = template + "\n" + " ".join(cmd)

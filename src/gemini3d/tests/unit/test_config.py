@@ -1,3 +1,4 @@
+import importlib.resources as ir
 import pytest
 import os
 from datetime import datetime, timedelta
@@ -6,7 +7,6 @@ from pathlib import Path
 import gemini3d.config as config
 import gemini3d.read as read
 import gemini3d.model as model
-from gemini3d.utils import get_pkg_file
 
 
 def test_model_config(tmp_path):
@@ -101,7 +101,7 @@ def test_nml_bad(tmp_path):
 @pytest.mark.parametrize("group", ["base", "flags", "files", "precip", "efield"])
 def test_namelist_exists(group):
     assert config.namelist_exists(
-        get_pkg_file("gemini3d.tests.config", "config_example.nml"), group
+        ir.files("gemini3d.tests.config") / "config_example.nml", group
     )
 
 
@@ -110,7 +110,7 @@ def test_nml_gemini_env_root(monkeypatch, tmp_path):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path))
 
     cfg = config.parse_namelist(
-        get_pkg_file("gemini3d.tests.config", "config_example.nml"), "setup"
+        ir.files("gemini3d.tests.config") / "config_example.nml", "setup"
     )
 
     assert isinstance(cfg["eq_dir"], Path)
@@ -122,7 +122,7 @@ def test_nml_gemini_env_root(monkeypatch, tmp_path):
 @pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])
 def test_nml_namelist(namelist):
     params = config.parse_namelist(
-        get_pkg_file("gemini3d.tests.config", "config_example.nml"), namelist
+        ir.files("gemini3d.tests.config") / "config_example.nml", namelist
     )
 
     if "base" in namelist:
@@ -138,7 +138,7 @@ def test_nml_namelist(namelist):
 @pytest.mark.parametrize("namelist", ["neutral_BG"])
 def test_msis2_namelist(namelist):
     params = config.parse_namelist(
-        get_pkg_file("gemini3d.tests.config", "config_msis2.nml"), namelist
+        ir.files("gemini3d.tests.config") / "config_msis2.nml", namelist
     )
 
     if "neutral_BG" in namelist:
@@ -151,7 +151,7 @@ def test_read_config_nml(monkeypatch, tmp_path):
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path))
 
-    params = read.config(get_pkg_file("gemini3d.tests.config", "config_example.nml"))
+    params = read.config(ir.files("gemini3d.tests.config") / "config_example.nml")
 
     assert params["time"][0] == datetime(2013, 2, 20, 5)
     assert params["dtprec"] == timedelta(seconds=5)
