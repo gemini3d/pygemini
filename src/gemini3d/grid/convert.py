@@ -186,7 +186,7 @@ def rotvec_gg2gm(e):
     exflat = e[..., 0].ravel(order="F")
     eyflat = e[..., 1].ravel(order="F")
     ezflat = e[..., 2].ravel(order="F")
-    emat = np.row_stack((exflat, eyflat, ezflat))
+    emat = np.vstack((exflat, eyflat, ezflat))
 
     egg = Rgg2gm() @ emat
 
