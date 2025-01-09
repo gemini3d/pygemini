@@ -8,9 +8,9 @@ runs:
     shell: bash
     if: runner.os == 'macOS'
     run: |
-      echo "CC=gcc-13" >> $GITHUB_ENV
-      echo "CXX=g++-13" >> $GITHUB_ENV
-      echo "FC=gfortran-13" >> $GITHUB_ENV
+      echo "CC=gcc-14" >> $GITHUB_ENV
+      echo "CXX=g++-14" >> $GITHUB_ENV
+      echo "FC=gfortran-14" >> $GITHUB_ENV
 
   - name: Checkout GemGI (for simulation config.nml inputs)
     uses: actions/checkout@v4
