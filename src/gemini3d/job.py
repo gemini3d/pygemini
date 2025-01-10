@@ -10,14 +10,13 @@ import logging
 import subprocess
 import shutil
 from math import prod
-from pathlib import Path, PurePosixPath
-import numpy as np
+from pathlib import Path
+import numpy
 
 from . import find
 from . import model
 from . import write
 from . import read
-from . import wsl
 from .utils import git_meta
 
 
@@ -74,10 +73,7 @@ def runner(pr: dict[str, typing.Any]) -> None:
     gemexe = find.gemini_exe(pr.get("gemexe", ""))
     logging.info(f"gemini executable: {gemexe}")
 
-    if os.name == "nt" and isinstance(gemexe, PurePosixPath):
-        cmd = ["wsl", str(gemexe), str(wsl.win_path2wsl_path(out_dir))]
-    else:
-        cmd = [str(gemexe), str(out_dir)]
+    cmd = [str(gemexe), str(out_dir)]
 
     # %% attempt dry run, but don't fail in case intended for HPC
     logging.info("Gemini dry run command:")
@@ -144,7 +140,7 @@ def memory_estimate(path: Path) -> int:
     grid_size = 0
 
     for k, v in gs.items():
-        if k == "lx" or not isinstance(v, (tuple, list, np.ndarray)) or not v:
+        if k == "lx" or not isinstance(v, (tuple, list, numpy.ndarray)) or not v:
             continue
         print(k, v, grid_size)
         grid_size += int(prod(v))

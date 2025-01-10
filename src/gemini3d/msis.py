@@ -3,18 +3,16 @@ using MSIS Fortran executable from Python
 """
 
 from __future__ import annotations
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import subprocess
 import logging
 import typing as T
-import os
 
 import numpy as np
 import h5py
 import xarray
 
 from . import find
-from . import wsl
 
 
 def get_msis_features(exe: Path) -> dict[str, bool]:
@@ -89,15 +87,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
         f.create_dataset("/alt", shape=xg["lx"], dtype=np.float32, data=alt_km)
         f.create_dataset("/msis_version", dtype=np.int32, data=msis_version)
     # %% run MSIS
-    if os.name == "nt" and isinstance(msis_exe, PurePosixPath):
-        cmd = [
-            "wsl",
-            str(msis_exe),
-            str(wsl.win_path2wsl_path(msis_infile)),
-            str(wsl.win_path2wsl_path(msis_outfile)),
-        ]
-    else:
-        cmd = [str(msis_exe), str(msis_infile), str(msis_outfile)]
+    cmd = [str(msis_exe), str(msis_infile), str(msis_outfile)]
 
     logging.info(" ".join(cmd))
     subprocess.check_call(cmd, text=True)

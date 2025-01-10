@@ -2,8 +2,6 @@
 
 import pytest
 from pytest import approx
-from pathlib import PurePosixPath
-import os
 
 import gemini3d
 import gemini3d.run
@@ -26,9 +24,6 @@ def test_memory(name, bref, helpers):
 
 def test_mpiexec():
     exe = find.gemini_exe()
-
-    if os.name == "nt" and isinstance(exe, PurePosixPath):
-        pytest.skip("WSL check_mpiexec() not implemented")
 
     mpiexec = job.check_mpiexec("mpiexec", exe)
     assert isinstance(mpiexec, str)

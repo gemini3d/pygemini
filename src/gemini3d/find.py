@@ -4,7 +4,7 @@ functions for finding files
 
 from __future__ import annotations
 from datetime import datetime, timedelta
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import shutil
 import os
 import subprocess
@@ -13,7 +13,6 @@ import logging
 import numpy as np
 
 from .utils import filename2datetime
-from . import wsl
 
 
 EXE_PATHS = [
@@ -67,13 +66,8 @@ def executable(name: str, root: Path | None = None) -> Path:
         for n in exe_paths:
             e = p / n / name
             logging.debug(f"checking {e} for existance and executable permission")
-            if wsl.is_wsl_path(p):
-                # shutil.which() doesn't work on WSL paths
-                if e.is_file():
-                    return wsl.win_path2wsl_path(e)  # type: ignore
-            else:
-                if exe := shutil.which(e, path=p / n):
-                    return Path(exe)
+            if exe := shutil.which(e, path=p / n):
+                return Path(exe)
 
     raise FileNotFoundError(f"{name} not found, search paths: {paths}")
 
@@ -89,10 +83,7 @@ def gemini_exe(name: str = "gemini3d.run", root: Path | None = None) -> Path:
     exe = executable(name, root)
 
     # %% ensure Gemini3D executable is runnable
-    if os.name == "nt" and isinstance(exe, PurePosixPath):
-        cmd0 = ["wsl", str(exe), "-h"]
-    else:
-        cmd0 = [str(exe), "-h"]
+    cmd0 = [str(exe), "-h"]
 
     ret = subprocess.run(
         cmd0,
