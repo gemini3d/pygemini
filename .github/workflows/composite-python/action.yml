@@ -13,7 +13,5 @@ runs:
     shell: bash
 
   - name: Non-executable tests
-    run: pytest ${{ github.workspace }} -m "not exe"
+    run: pytest ${{ github.workspace }} -m "not exe" --basetemp=${{ github.workspace }}/pytest
     shell: bash
-    env:
-      GEMCI_ROOT: ${{ github.workspace }}/gemci

@@ -60,9 +60,9 @@ jobs:
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         os: [ubuntu-latest]
-        # include:
-        # - os: macos-latest
-        #   python-version: '3.12'
+        include:
+        - os: macos-latest
+          python-version: '3.13'
 
     runs-on: ${{ matrix.os }}
 
@@ -77,25 +77,37 @@ jobs:
       timeout-minutes: 15
       env:
         GEMINI_CIROOT: ${{ github.workspace }}/ci
+        GEMCI_ROOT: ${{ github.workspace }}/gemci
 
     - name: upload test files if failed
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: input-test-files
-        path: ${{ github.workspace }}/ci
+        name: input-${{ runner.os }}-py${{ matrix.python-version }}
+        path: ${{ github.workspace }}/pytest
 
     - uses: ./.github/workflows/composite-pkg
+      if: runner.os == 'Linux'
       timeout-minutes: 15
 
     - uses: ./.github/workflows/composite-gemini3d
+      if: runner.os == 'Linux'
       timeout-minutes: 15
 
     - name: Executable tests
-      run: pytest ${{ github.workspace }} -m "exe"
+      if: runner.os == 'Linux'
+      run: pytest ${{ github.workspace }} -m "exe" --basetemp=${{ github.workspace }}/pytest-exe
       env:
         GEMCI_ROOT: ${{ github.workspace }}/gemci
         GEMINI_CIROOT: ${{ github.workspace }}/ci
+
+    - name: upload test files if failed
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: exe-${{ runner.os }}-py${{ matrix.python-version }}
+        path: ${{ github.workspace }}/pytest-exe
+
 
 # codecov coverage
     # - run: pip install codecov pytest-cov
