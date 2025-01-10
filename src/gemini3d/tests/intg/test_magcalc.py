@@ -9,6 +9,7 @@ import gemini3d.web
 import gemini3d.magcalc as gm
 
 
+@pytest.mark.exe
 @pytest.mark.parametrize("name", ["mini2dew_fang", "mini2dns_fang", "mini3d_fang"])
 def test_dryrun(name, tmp_path, monkeypatch):
     if not os.environ.get("GEMINI_CIROOT"):

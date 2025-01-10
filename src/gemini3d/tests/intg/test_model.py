@@ -21,6 +21,7 @@ import gemini3d.find
 import gemini3d.msis
 
 
+@pytest.mark.exe
 @pytest.mark.parametrize(
     "name",
     [

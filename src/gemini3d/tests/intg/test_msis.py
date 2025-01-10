@@ -11,11 +11,13 @@ import gemini3d.msis as gp
 import gemini3d.find as find
 
 
+@pytest.mark.exe
 def test_find_msis():
     msis_exe = find.executable("msis_setup")
     print(msis_exe)
 
 
+@pytest.mark.exe
 @pytest.mark.parametrize("version", [0, 21])
 def test_msis(version, tmp_path):
     if version == 21:

@@ -57,3 +57,4 @@ log_cli = true
 log_cli_level = "WARNING"
 log_cli_format = "%(levelname)s"
 addopts = "--ignore=archive/"
+markers = ["exe: needs external executable to subprocess.run()"]

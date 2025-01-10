@@ -20,6 +20,7 @@ on:
     - "!scripts/**"
     - "!example/**"
     - "!Examples/**"
+  workflow_dispatch:
 
 
 jobs:
@@ -73,14 +74,19 @@ jobs:
     - name: Git Checkout ${{ github.action_repository }}
       uses: actions/checkout@v4
 
+    - uses: ./.github/workflows/composite-python
+      timeout-minutes: 15
+
     - uses: ./.github/workflows/composite-pkg
       timeout-minutes: 15
 
     - uses: ./.github/workflows/composite-gemini3d
       timeout-minutes: 15
 
-    - uses: ./.github/workflows/composite-python
-      timeout-minutes: 15
+    - name: Executable tests
+      run: pytest ${{ github.workspace }} -m "exe"
+      env:
+        GEMCI_ROOT: ${{ github.workspace }}/gemci
 
 # codecov coverage
     # - run: pip install codecov pytest-cov

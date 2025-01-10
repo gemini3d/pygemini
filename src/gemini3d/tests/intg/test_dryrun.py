@@ -24,6 +24,7 @@ def test_memory(name, bref):
     assert est == approx(bref, abs=0, rel=0)
 
 
+@pytest.mark.exe
 def test_mpiexec():
     exe = find.gemini_exe()
 
@@ -31,6 +32,7 @@ def test_mpiexec():
     assert isinstance(mpiexec, str)
 
 
+@pytest.mark.exe
 @pytest.mark.parametrize("name", ["mini2dew_eq"])
 def test_dryrun(name, tmp_path):
     ref = gemini3d.web.download_and_extract(name, ir.files(__package__) / "data")
