@@ -1,7 +1,6 @@
 name: ci
 
 env:
-  GEMINI_CIROOT: ~/ci
   CMAKE_BUILD_TYPE: Release
   CMAKE_INSTALL_PREFIX: ~/libgem
   GEMINI_ROOT: ~/libgem
@@ -76,6 +75,15 @@ jobs:
 
     - uses: ./.github/workflows/composite-python
       timeout-minutes: 15
+      env:
+        GEMINI_CIROOT: ${{ github.workspace }}/ci
+
+    - name: upload test files if failed
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: input-test-files
+        path: ${{ github.workspace }}/ci
 
     - uses: ./.github/workflows/composite-pkg
       timeout-minutes: 15
@@ -87,6 +95,7 @@ jobs:
       run: pytest ${{ github.workspace }} -m "exe"
       env:
         GEMCI_ROOT: ${{ github.workspace }}/gemci
+        GEMINI_CIROOT: ${{ github.workspace }}/ci
 
 # codecov coverage
     # - run: pip install codecov pytest-cov

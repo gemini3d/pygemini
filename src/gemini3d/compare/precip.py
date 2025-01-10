@@ -40,7 +40,7 @@ def compare_precip(
 
             if not np.allclose(a, b, rtol=tol["rtol"], atol=tol["atol"]):
                 prec_errs += 1
-                logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
+                logging.error(f"{k} {t}  {err_pct(a, b):.3f} %")
                 if plot:
                     plotdiff(a, b, t, new_dir.parent, ref_dir.parent)
             if prec_errs == 0:
