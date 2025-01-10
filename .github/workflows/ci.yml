@@ -56,7 +56,7 @@ jobs:
     timeout-minutes: 45
 
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         os: [ubuntu-latest]
@@ -84,7 +84,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: input-${{ runner.os }}-py${{ matrix.python-version }}
-        path: ${{ github.workspace }}/pytest
+        path: ${{ github.workspace }}/pytest/test*mini2*
+        retention-days: 1
 
     - uses: ./.github/workflows/composite-pkg
       if: runner.os == 'Linux'
@@ -106,7 +107,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: exe-${{ runner.os }}-py${{ matrix.python-version }}
-        path: ${{ github.workspace }}/pytest-exe
+        path: ${{ github.workspace }}/pytest-exe/test*mini2*
+        retention-days: 1
 
 
 # codecov coverage
