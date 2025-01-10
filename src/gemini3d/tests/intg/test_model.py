@@ -2,6 +2,8 @@
 these test that PyGemini generates inputs that match expectations
 """
 
+import importlib.resources as ir
+
 import logging
 import os
 from pathlib import Path
@@ -33,13 +35,13 @@ import gemini3d.msis
         "mini3d_glow",
     ],
 )
-def test_model_setup(name, tmp_path, monkeypatch, helpers):
+def test_model_setup(name, tmp_path, monkeypatch):
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
     out_dir = tmp_path
     # get files if needed
-    test_dir = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
+    test_dir = gemini3d.web.download_and_extract(name, ir.files(__package__) / "data")
 
     # setup new test data
     params = gemini3d.read.config(test_dir)

@@ -9,9 +9,9 @@ def err_pct(a, b) -> float:
     Parameters
     ----------
 
-    a: xarray.DataArray
+    a: numpy.ndarray
         new data
-    b: xarray.DataArray
+    b: numpy.ndarray
         reference data
 
     Returns

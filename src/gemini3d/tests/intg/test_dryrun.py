@@ -1,5 +1,7 @@
 """ test dryrun, that PyGemini can correctly invoke Gemini3D """
 
+import importlib.resources as ir
+
 import pytest
 from pytest import approx
 
@@ -12,8 +14,8 @@ import gemini3d.msis
 
 
 @pytest.mark.parametrize("name,bref", [("mini2dew_eq", 1238112), ("mini3d_eq", 2323072)])
-def test_memory(name, bref, helpers):
-    ref = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
+def test_memory(name, bref):
+    ref = gemini3d.web.download_and_extract(name, ir.files(__package__) / "data")
 
     est = job.memory_estimate(ref)
 
@@ -30,8 +32,8 @@ def test_mpiexec():
 
 
 @pytest.mark.parametrize("name", ["mini2dew_eq"])
-def test_dryrun(name, tmp_path, helpers):
-    ref = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
+def test_dryrun(name, tmp_path):
+    ref = gemini3d.web.download_and_extract(name, ir.files(__package__) / "data")
 
     params = {
         "config_file": ref,

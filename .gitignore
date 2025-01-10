@@ -1,4 +1,5 @@
 src/gemini3d/tests/data/
+src/gemini3d/tests/intg/data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

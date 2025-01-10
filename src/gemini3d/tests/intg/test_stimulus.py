@@ -2,6 +2,7 @@
 these test that PyGemini generates inputs that match expectations
 """
 
+import importlib.resources as ir
 import pytest
 import os
 
@@ -17,12 +18,12 @@ from gemini3d.particles import particles_BCs
 
 
 @pytest.mark.parametrize("name", ["mini2dew_fang", "mini2dns_fang", "mini3d_fang"])
-def test_Efield(name, tmp_path, monkeypatch, helpers):
+def test_Efield(name, tmp_path, monkeypatch):
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
-    test_dir = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
+    test_dir = gemini3d.web.download_and_extract(name, ir.files(__package__) / "data")
 
     cfg = gemini3d.read.config(test_dir)
     xg = gemini3d.read.grid(test_dir)
@@ -43,12 +44,12 @@ def test_Efield(name, tmp_path, monkeypatch, helpers):
 
 
 @pytest.mark.parametrize("name", ["mini2dew_fang", "mini2dns_fang", "mini3d_fang"])
-def test_precip(name, tmp_path, monkeypatch, helpers):
+def test_precip(name, tmp_path, monkeypatch):
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
-    test_dir = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
+    test_dir = gemini3d.web.download_and_extract(name, ir.files(__package__) / "data")
 
     cfg = gemini3d.read.config(test_dir)
     xg = gemini3d.read.grid(test_dir)

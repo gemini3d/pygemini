@@ -1,3 +1,5 @@
+import importlib.resources as ir
+
 import pytest
 import shutil
 import os
@@ -8,11 +10,11 @@ import gemini3d.magcalc as gm
 
 
 @pytest.mark.parametrize("name", ["mini2dew_fang", "mini2dns_fang", "mini3d_fang"])
-def test_dryrun(name, tmp_path, monkeypatch, helpers):
+def test_dryrun(name, tmp_path, monkeypatch):
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
-    ref = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
+    ref = gemini3d.web.download_and_extract(name, ir.files(__package__) / "data")
 
     shutil.copytree(ref, tmp_path, dirs_exist_ok=True)
 

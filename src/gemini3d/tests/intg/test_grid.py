@@ -2,6 +2,8 @@
 these test that PyGemini generates inputs that match expectations
 """
 
+import importlib.resources as ir
+
 from pytest import approx
 
 import numpy as np
@@ -21,9 +23,9 @@ import gemini3d.grid.convert as cvt
 
 
 @pytest.mark.parametrize("name", ["mini2dew_fang"])
-def test_file_time(name, helpers):
+def test_file_time(name):
     # get files if needed
-    test_dir = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
+    test_dir = gemini3d.web.download_and_extract(name, ir.files(__package__) / "data")
 
     t0 = datetime(2013, 2, 20, 5, 0, 0)
 
@@ -131,12 +133,12 @@ def test_convert_numpy():
         "mini3d_fang",
     ],
 )
-def test_grid(name, tmp_path, monkeypatch, helpers):
+def test_grid(name, tmp_path, monkeypatch):
     if not os.environ.get("GEMINI_CIROOT"):
         monkeypatch.setenv("GEMINI_CIROOT", str(tmp_path / "gemini_data"))
 
     # get files if needed
-    test_dir = gemini3d.web.download_and_extract(name, helpers.get_test_datadir())
+    test_dir = gemini3d.web.download_and_extract(name, ir.files(__package__) / "data")
 
     # setup new test data
     cfg = gemini3d.read.config(test_dir)
