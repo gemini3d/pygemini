@@ -31,7 +31,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         include:
         - os: macos-latest
           python-version: "3.12"
@@ -52,13 +52,13 @@ jobs:
     - run: mypy
 
 
-  linux-macos:
+  core:
     timeout-minutes: 45
 
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
         os: [ubuntu-latest]
         # include:
         # - os: macos-latest
