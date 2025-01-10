@@ -10,7 +10,7 @@ import os
 import subprocess
 import logging
 
-import numpy as np
+import numpy
 
 from .utils import filename2datetime
 
@@ -61,7 +61,8 @@ def executable(name: str, root: Path | None = None) -> Path:
     for p in paths:
         if not p:
             continue
-        p = Path(p).expanduser()
+        if not (p := Path(p).expanduser()).is_dir():
+            continue
 
         for n in exe_paths:
             e = p / n / name
@@ -140,7 +141,7 @@ def frame(simdir: Path, time: datetime) -> Path:
         file_times.append(filename2datetime(fn))
 
     if file_times:
-        afile_times = np.array(file_times)
+        afile_times = numpy.array(file_times)
         i = abs(afile_times - time).argmin()  # type: ignore
 
         if abs(afile_times[i] - time) <= MAX_OFFSET:
