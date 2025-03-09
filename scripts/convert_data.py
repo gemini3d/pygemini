@@ -7,7 +7,7 @@ For clarity, the user must provide a config.nml for the original raw data.
 
 from pathlib import Path
 import argparse
-import typing
+from collections.abc import Iterable
 
 import gemini3d.raw.read as raw_read
 import gemini3d.read as read
@@ -25,7 +25,7 @@ P = p.parse_args()
 indir = Path(P.indir).expanduser()
 outdir = Path(P.outdir).expanduser()
 
-infiles: typing.Iterable[Path]
+infiles: Iterable[Path]
 if indir.is_file():
     infiles = [indir]
     indir = indir.parent

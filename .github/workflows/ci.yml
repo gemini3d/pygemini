@@ -84,7 +84,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: input-${{ runner.os }}-py${{ matrix.python-version }}
-        path: ${{ github.workspace }}/pytest/test*mini2*
+        path: ${{ github.workspace }}/pytest/test*mini2*current
         retention-days: 1
 
     - uses: ./.github/workflows/composite-pkg
@@ -107,7 +107,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: exe-${{ runner.os }}-py${{ matrix.python-version }}
-        path: ${{ github.workspace }}/pytest-exe/test*mini2*
+        path: ${{ github.workspace }}/pytest-exe/test*mini2*current
         retention-days: 1
 
 

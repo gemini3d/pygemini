@@ -7,7 +7,7 @@ requires "simsize.dat" file to be present in the same directory at the neutral .
 from pathlib import Path
 import argparse
 import h5py
-import typing
+from collections.abc import Iterable
 
 import gemini3d.raw.read as raw_read
 
@@ -21,7 +21,7 @@ P = p.parse_args()
 indir = Path(P.indir).expanduser()
 outdir = Path(P.outdir).expanduser()
 
-infiles: typing.Iterable[Path]
+infiles: Iterable[Path]
 if indir.is_file():
     infiles = [indir]
     indir = indir.parent
