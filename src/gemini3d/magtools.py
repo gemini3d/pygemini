@@ -16,6 +16,7 @@ def makegrid(
     dang: float = 1.5,
     ltheta: int = 16,
     lphi: int = 16,
+    alt: float = 0e3,
     write_grid: bool = False,
 ) -> dict[str, T.Any]:
     """
@@ -65,7 +66,7 @@ def makegrid(
     theta = np.linspace(thmin, thmax, ltheta)
     phi = phidist if flag2D else np.linspace(phimin, phimax, lphi)
 
-    r = RE * np.ones((ltheta, lphi))
+    r = RE * np.ones((ltheta, lphi)) + alt
     # use ground level for altitude for all field points
 
     phi, theta = np.meshgrid(phi, theta, indexing="ij")
@@ -92,6 +93,7 @@ def makegrid_full(
     direc: Path,
     ltheta: int = 16,
     lphi: int = 16,
+    alt: float = 0e3,
     write_grid: bool = False,
 ) -> dict[str, T.Any]:
     """
@@ -146,7 +148,7 @@ def makegrid_full(
     theta = np.linspace(thmin, thmax, ltheta)
     phi = phidist if flag2D else np.linspace(phimin, phimax, lphi)
 
-    r = RE * np.ones((ltheta, lphi))
+    r = RE * np.ones((ltheta, lphi)) + alt
     # use ground level for altitude for all field points
 
     phi, theta = np.meshgrid(phi, theta, indexing="ij")
@@ -178,8 +180,6 @@ def magframe(
     """
     # example use
     # dat = gemini3d.read.magframe(filename)
-    # dat = gemini3d.read.magframe(folder, "time", datetime)
-    # dat = gemini3d.read.magframe(filename, "config", cfg)
 
     Translated from magframe.m
     2022/07/05
