@@ -3,7 +3,8 @@ from pathlib import Path
 import logging
 import typing as T
 
-import matplotlib as mpl
+import matplotlib.figure as mpf
+import matplotlib.axes as mpa
 
 from .. import read
 from .core import basic, stitle, save_fig
@@ -21,8 +22,9 @@ def grid(
         top-level path of simulation grid
     """
 
-    fg3 = mpl.figure.Figure(tight_layout=True, figsize=mpl.figure.figaspect(1 / 3))
-    fg = mpl.figure.Figure()
+    w, h = mpf.figaspect(1 / 3)
+    fg3 = mpf.Figure(tight_layout=True, figsize=(w, h))
+    fg = mpf.Figure()
 
     direc = Path(direc).expanduser()
 
@@ -67,7 +69,7 @@ def grid(
         save_fig(fg, direc, name="grid-geog", fmt=saveplot_fmt)
 
 
-def geographic(fig: mpl.figure.Figure, xg: dict[str, T.Any]) -> None:
+def geographic(fig: mpf.Figure, xg: dict[str, T.Any]) -> None:
     """
     plots grid in geographic map
     """
@@ -97,7 +99,7 @@ def geographic(fig: mpl.figure.Figure, xg: dict[str, T.Any]) -> None:
     stitle(fig, xg, "glat, glon")
 
 
-def altitude(ax: mpl.axes.Axes, xg: dict[str, T.Any]) -> None:
+def altitude(ax: mpa.Axes, xg: dict[str, T.Any]) -> None:
     """
     plot altitude x1 grid
 

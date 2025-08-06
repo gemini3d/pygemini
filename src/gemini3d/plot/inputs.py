@@ -3,7 +3,8 @@ from pathlib import Path
 import typing as T
 import logging
 
-import matplotlib as mpl
+import matplotlib.figure as mpf
+import matplotlib.axes as mpa
 
 from . import grid2plotfun
 from .core import save_fig
@@ -26,7 +27,8 @@ def plot_all(
     if save_dir defined, plots will not be visible while generating to speed plot writing
     """
 
-    fg = mpl.figure.Figure(figsize=mpl.figure.figaspect(1 / 4), tight_layout=True)
+    w, h = mpf.figaspect(1 / 4)
+    fg = mpf.Figure(figsize=(w, h), tight_layout=True)
     # tight_layout works better with suptitle
 
     direc = Path(direc).expanduser().resolve(strict=True)
@@ -75,7 +77,7 @@ def Efield(direc: Path) -> None:
         top-level simulation directory
     """
 
-    fg = mpl.figure.Figure()
+    fg = mpf.Figure()
 
     direc = Path(direc).expanduser()
 
@@ -115,7 +117,7 @@ def precip(direc: Path) -> None:
         top-level simulation directory
     """
 
-    fg = mpl.figure.Figure(tight_layout=True)
+    fg = mpf.Figure(tight_layout=True)
 
     direc = Path(direc).expanduser()
 
@@ -144,7 +146,7 @@ def precip(direc: Path) -> None:
             save_fig(fg, direc, name=f"precip-{k}", time=t)
 
 
-def plot2d_input(ax: mpl.axes.Axes, A, cfg: dict[str, T.Any]) -> None:
+def plot2d_input(ax: mpa.Axes, A, cfg: dict[str, T.Any]) -> None:
     if cfg["lyp"] == 1:
         x = A["mlon"]
         ax.set_xlabel("magnetic longitude")
@@ -155,8 +157,8 @@ def plot2d_input(ax: mpl.axes.Axes, A, cfg: dict[str, T.Any]) -> None:
     ax.plot(x, A)
 
 
-def plot3d_input(ax: mpl.axes.Axes, A) -> None:
+def plot3d_input(ax: mpa.Axes, A) -> None:
     h0 = ax.pcolormesh(A["mlon"], A["mlat"], A, shading="nearest")
-    ax.get_figure().colorbar(h0, ax=ax)  # type: ignore
+    ax.get_figure().colorbar(h0, ax=ax)  # type: ignore[union-attr]
     ax.set_ylabel("magnetic latitude")
     ax.set_xlabel("magnetic longitude")

@@ -11,7 +11,9 @@ from pathlib import Path
 import typing as T
 from datetime import datetime
 import logging
+
 import matplotlib as mpl
+import matplotlib.figure as mpf
 
 from .. import read
 from ..utils import to_datetime
@@ -46,7 +48,7 @@ def grid2plotfun(xg: dict[str, T.Any]) -> T.Callable:
     return cartesian.cart2d  # type: ignore
 
 
-def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str | None = None):
+def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str | None = None) -> None:
     """
     gemini3d.plot.plot_all(direc, var=None, saveplot_fmt="")
 
@@ -69,8 +71,8 @@ def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str | None 
     plotfun = grid2plotfun(xg)
     cfg = read.config(direc)
 
-    #    fg = mpl.figure.Figure(constrained_layout=True)
-    fg = mpl.figure.Figure(constrained_layout=True, dpi=150, figsize=(18, 4.5))
+    #    fg = mpf.Figure(constrained_layout=True)
+    fg = mpf.Figure(constrained_layout=True, dpi=150, figsize=(18, 4.5))
 
     # %% loop over files / time
     for t in cfg["time"]:
@@ -88,7 +90,7 @@ def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str | None 
 
 
 def frame(
-    fg: mpl.figure.Figure,
+    fg: mpf.Figure,
     path: Path,
     time: datetime | None = None,
     *,
@@ -97,7 +99,7 @@ def frame(
     var: set[str] | None = None,
     xg: dict[str, T.Any] | None = None,
     cfg: dict[str, T.Any] | None = None,
-):
+) -> None:
     """
     Parameters
     ----------
