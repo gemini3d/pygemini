@@ -124,23 +124,42 @@ def collisionfrequency(
     # neutral species
     
     #os.environ["GEMINI_ROOT"] = "~/libgem/"
-    msisdata = gemini3d.msis.msis_setup(cfg,xg)
+    msisdata0 = gemini3d.msis.msis_setup(cfg,xg)
 
     #msisdata.value
-    #print(msisdata.keys())
-    msisdata1 = msisdata.rename_dims(alt_km='x1', glat='x2', glon='x3')
-    msisdata2 = msisdata1.assign_coords(x1=(msisdata1.x1*1000.))
-    print('MSISDATA')
-    print(msisdata2)
+    print(list(msisdata0.keys()))
+
+#    breakpoint()
+#
+#
+#    msisdata1 = msisdata.rename_dims(alt_km='x1', glat='x2', glon='x3')
+#    msisdata2 = msisdata1.assign_coords(x1=(msisdata1.x1*1000.))
+#    print('MSISDATA')
+#    print(msisdata2)
+#        
+#    n_O_1 = np.array(msisdata["nO"])
+#    n_N2_1 = np.array(msisdata["nN2"])
+#    n_O2_1 = np.array(msisdata["nO2"])
+#    n_N_1 = np.array(msisdata["nN"])
+#    n_H_1 = np.array(msisdata["nH"])
+#    Tn_1 = np.array(msisdata["Tn"])
+#
+#
+#    msisdat = xr.Dataset(coords={"alt_km": alt1, "glat": glat1, "glon": glon1})
+#
+#        for k in {"nO", "nN2", "nO2", "Tn", "nN", "nH"}:
+#            atmos[k] = (("alt_km", "glat", "glon"), f[f"/{k}"][:])
+
+
+
+    msisdata = xr.DataArray(dims=['x1','x2','x3'], coords=[dat.x1, dat.x2, dat.x3])
+    for k in list(msisdata0.keys()):
+        msisdata[k] = (('x1','x2','x3'), np.array(msisdata0[k]))
+
+
+    print(msisdata)
         
-    n_O_1 = np.array(msisdata["nO"])
-    n_N2_1 = np.array(msisdata["nN2"])
-    n_O2_1 = np.array(msisdata["nO2"])
-    n_N_1 = np.array(msisdata["nN"])
-    n_H_1 = np.array(msisdata["nH"])
-    Tn_1 = np.array(msisdata["Tn"])
-        
-    ntrl_dens_1 = [n_O_1, n_N2_1, n_O2_1, n_N_1, n_H_1] 
+    #ntrl_dens_1 = [n_O_1, n_N2_1, n_O2_1, n_N_1, n_H_1] 
     
     # For individual ion-neutral pairs, the non-resonant collision frequency is given by
     # S&N equation (4.146): nu_in_nonres = C_in * n_n.  C_in values are listed in 
@@ -150,7 +169,7 @@ def collisionfrequency(
     #nu_in = xr.Dataset(data_vars={"O+":(["N2","O2","N"],[blank,blank,blank),
     #                              "N+":(["N2","O2","N"],[blank,blank,blank)})
     nu_in = xr.DataArray(dims=["ion", "neutral", "x1", "x2", "x3"], coords=(["O+", "NO+", "N2+", "O2+", "N+", "H+"], 
-                               ["O", "N2", "O2", "N", "H"], msisdata["x1"], msisdata["x2"], msisdata["x3"]))
+                               ["O", "N2", "O2", "N", "H"], dat["x1"], dat["x2"], dat["x3"]))
 
     #print(nu_in)
     #print(nu_in.loc["O+","O"])
@@ -311,7 +330,9 @@ def collisionfrequency(
     # neutral species
 
 
-    nu_en = xr.DataArray(dims=["neutral", "alt_km", "glat", "glon"], coords=(["O", "N2", "O2", "N", "H"], msisdata["alt_km"], msisdata["glat"], msisdata["glon"]))
+    #nu_en = xr.DataArray(dims=["neutral", "alt_km", "glat", "glon"], coords=(["O", "N2", "O2", "N", "H"], msisdata["alt_km"], msisdata["glat"], msisdata["glon"]))
+
+    nu_en = xr.DataArray(dims=["neutral", "x1", "x2", "x3"], coords=(["O", "N2", "O2", "N", "H"], dat["x1"], dat["x2"], dat["x3"]))
 
     
     nu_en.loc["O"] = 8.9e-11 * (msisdata["nO"] * 1e-6) * (1.0 + 5.7e-4 * dat["Te"]) * np.sqrt(dat["Te"])
@@ -370,16 +391,18 @@ def collisionfrequency(
     # Electron-ion (nu_ei).  Need to loop through all ion species.  Use Schunk and Nagy
     # Equation 4.144.
     
-    nu_ei = xr.DataArray(dims=["ion", "alt_km", "glat", "glon"], coords=(["O+", "NO+", "N2+", "O2+", "N+", "H+"], 
-                               msisdata["alt_km"], msisdata["glat"], msisdata["glon"]))
+    nu_ei = xr.DataArray(dims=["ion", "x1", "x2", "x3"], coords=(["O+", "NO+", "N2+", "O2+", "N+", "H+"], dat["x1"], dat["x2"], dat["x3"]))
 
-    nu_ei["O+"] = 54.5 * ((T_Oplus_1 * 1e-6) / Te_1**1.5)
+    #Ts.sel(species="O+")
+    print(nu_ei.coords["ion"].values)
+    for s in nu_ei.coords["ion"].values:
+        nu_ei.loc[s] = 54.5 * ((Ts.sel(species=s) * 1e-6) / dat["Te"]**1.5)
 
-    nu_ei_1 = np.zeros(np.shape(ne_1))
-    
-    for k in np.arange(0, 6, 1):
-        nu_ei_1 += 54.5 * ((ion_dens_1[k] * 1e-6) / Te_1**1.5)
-        #print('nu_ei =', nu_ei)
+    #nu_ei_1 = np.zeros(np.shape(ne_1))
+    #
+    #for k in np.arange(0, 6, 1):
+    #    nu_ei_1 += 54.5 * ((ion_dens_1[k] * 1e-6) / Te_1**1.5)
+    #    #print('nu_ei =', nu_ei)
         
     ## Electron-neutral interactions (Schunk and Nagy Table 4.6)
     #
