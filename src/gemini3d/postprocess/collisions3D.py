@@ -63,7 +63,7 @@ def collisionfrequency(
     ### Ion-Neutral Collision Frequency
     ###################################
    
-    nu_in = xr.DataArray(dims=["ion", "neutral", "x1", "x2", "x3"], 
+    nu_in = xr.DataArray(dims=["species", "neutral", "x1", "x2", "x3"], 
                          coords=(["O+", "NO+", "N2+", "O2+", "N+", "H+"], 
                                  ["O", "N2", "O2", "N", "H"], 
                                  dat["x1"], dat["x2"], dat["x3"]))
@@ -141,7 +141,7 @@ def collisionfrequency(
 
     # Total ion-neutral collision frequency
     # sum all ion and neutral dimensions of nu_in
-    nu_in_tot = nu_in.sum(dim=("ion","neutral"))
+    nu_in_tot = nu_in.sum(dim=("species","neutral"))
     
 
 
