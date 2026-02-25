@@ -3,6 +3,15 @@ Calculate collision frequencies for full gemini grid
 
 Equations from Shunk and Nagy, 2009
 
+NOTE: These collision freqeuences are good for *almost all* ionospheric conditions -- they 
+  do break down at very high temperatures.  This has become an issue in the past to
+  the point that @jdiazpena has implemented some thresholds in the core gemini code
+  (note temperature checking here:  
+  https://github.com/gemini3d/gemini3d/blob/main/src/collisions/collisions.f90
+  These checks are *not* currently implemented here as they are only rarely needed; 
+  really only when temperature exceeds 6000-7000 K (SAID/STEVE-type conditions).  
+    -MZ
+
 Original script - M. Redden, 2022
 M. Redden, 2023
 """
