@@ -16,4 +16,4 @@ Things to add based on mat-gemini:
 """
 
 from .collisions3D import collisionfrequency
-from .conduct_all_points import conductivity
+from .conductivities3D import conductivity
