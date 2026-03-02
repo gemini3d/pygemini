@@ -31,5 +31,7 @@ def gaussian2d(pg, Qpeak: float, Qbackground: float):
         raise LookupError("precipation must be defined in latitude, longitude or both")
 
     Q[Q < Qbackground] = Qbackground
+    
+    E0 = cfg["E0precip"]
 
-    return Q
+    return Q, E0

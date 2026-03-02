@@ -7,6 +7,8 @@ from ..utils import str2func
 from .core import get_times
 from .grid import precip_grid
 
+# OUTPUT ARGUMENT NEEDS TO BE MADE OPTIONAL TO RUN 'OLD' EXAMPLES!!!!!
+
 # this is loaded dynamically via str2func
 from .gaussian2d import gaussian2d
 
@@ -52,17 +54,25 @@ def particles_BCs(cfg: dict[str, T.Any], xg: dict[str, T.Any]):
     else:
         Qfunc = str2func("gemini3d.particles.gaussian2d")
 
-    Qtmp = Qfunc(pg, cfg["Qprecip"], cfg["Qprecip_background"])
-
+    Qtmp, E0_temp = Qfunc(pg, cfg["Qprecip"], cfg["Qprecip_background"])
+    print("i_on: ", i_on)
+    print("i_off: ", i_off)
+    print("Qtmp shape: ", Qtmp.shape)
+    print("E0tmp shape: ", E0_temp.shape)
+    
     for i in range(i_on, i_off):
         if Qtmp.ndim == 3:
-            pg["Q"][i, :, :] = Qtmp[i, :, :]
+            pg["Q"][i, :, :] = Qtmp[i, :, :] # time, lon, lat
         else:
             pg["Q"][i, :, :] = Qtmp
-        pg["E0"][i, :, :] = cfg["E0precip"]
+        pg["E0"][i, :, :] = E0_temp
 
     assert np.isfinite(pg["Q"]).all(), "Q flux must be finite"
     assert (pg["Q"] >= 0).all(), "Q flux must be non-negative"
+    if E0 > 0
+        assert (pg["E0"] >=0).all(), "E0 characteristic energy must be non-negative"
+    else
+        continue
 
     # %% CONVERT THE ENERGY TO EV
     # E0 = max(E0,0.100);
