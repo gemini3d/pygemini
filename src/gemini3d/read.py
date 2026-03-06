@@ -122,14 +122,15 @@ def frame(
 
     flag = h5read.flagoutput(path, cfg)
 
-    if flag == 3:
-        dat = h5read.frame3d_curvne(path, xg)
-    elif flag == 1:
-        dat = h5read.frame3d_curv(path, var, xg)
-    elif flag == 2:
-        dat = h5read.frame3d_curvavg(path, var, xg)
-    else:
-        raise ValueError(f"Unsure how to read {path} with flagoutput {flag}")
+    match flag:
+        case 1:
+            dat = h5read.frame3d_curv(path, var, xg)
+        case 2:
+            dat = h5read.frame3d_curvavg(path, var, xg)
+        case 3:
+            dat = h5read.frame3d_curvne(path, xg)
+        case _:
+            raise ValueError(f"Unsure how to read {path} with flagoutput {flag}")
 
     dat.attrs["filename"] = path
 
