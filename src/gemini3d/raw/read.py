@@ -3,7 +3,7 @@ raw binary file I/O.
 Raw files are deprecated and do not contain most features of Gemini
 """
 
-from __future__ import annotations
+
 
 from pathlib import Path
 import typing as T

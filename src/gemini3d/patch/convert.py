@@ -2,7 +2,7 @@
 for converting AMR patch files to single file per time step
 """
 
-from __future__ import annotations
+
 from pathlib import Path
 from datetime import datetime
 import logging

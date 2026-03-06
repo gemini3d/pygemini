@@ -6,7 +6,7 @@ Command line usage:
     python -m gemini3d.plot path/to/data
 """
 
-from __future__ import annotations
+
 from pathlib import Path
 import typing as T
 from datetime import datetime

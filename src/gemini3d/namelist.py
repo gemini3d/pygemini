@@ -3,7 +3,7 @@ read and write Fortran standard namelist
 This is very basic--see f90nml Python package.
 """
 
-from __future__ import annotations
+
 import typing as T
 from pathlib import Path
 import re
@@ -85,21 +85,22 @@ def write(file: Path, namelist: str, data: dict[str, T.Any], overwrite: bool = F
         f.write(f'{key} = "{value}"\n')
 
     def _write_value(f, key: str, value: T.Any):
-        if isinstance(value, (float, int)):
-            _write_scalar(f, key, value)
-        elif isinstance(value, str):
-            _write_string(f, key, value)
-        elif isinstance(value, (tuple, list)):
-            if isinstance(value[0], str):
-                s = ",".join([f'"{v}"' for v in value])
+        match value:
+            case float() | int():
+                _write_scalar(f, key, value)
+            case str():
+                _write_string(f, key, value)
+            case tuple() | list():
+                if isinstance(value[0], str):
+                    s = ",".join([f'"{v}"' for v in value])
+                    _write_scalar(f, key, s)
+                    return
+                s = ",".join(map(str, value))
                 _write_scalar(f, key, s)
-                return
-            s = ",".join(map(str, value))
-            _write_scalar(f, key, s)
-        elif isinstance(value, np.ndarray):
-            _write_scalar(f, key, value.astype(str))
-        else:
-            raise TypeError(f"unsure how to handle {type(value)}")
+            case np.ndarray():
+                _write_scalar(f, key, value.astype(str))
+            case _:
+                raise TypeError(f"unsure how to handle {type(value)}")
 
     file = file.expanduser().resolve()
 

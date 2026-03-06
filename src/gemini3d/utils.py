@@ -1,4 +1,4 @@
-from __future__ import annotations
+
 import subprocess
 import os
 import shutil
@@ -80,14 +80,15 @@ def to_datetime(times) -> datetime:
     times: datetime.datetime
     """
 
-    if isinstance(times, datetime):
-        time = times
-    elif isinstance(times, xarray.DataArray):
-        time = times.data.squeeze()[()]
-    elif isinstance(times, np.datetime64):
-        time = times.squeeze()[()]  # type: ignore
-    else:
-        raise TypeError("expected datetime-like value")
+    match times:
+        case datetime():
+            time = times
+        case xarray.DataArray():
+            time = times.data.squeeze()[()]
+        case np.datetime64():
+            time = times.squeeze()[()]  # type: ignore
+        case _:
+            raise TypeError("expected datetime-like value")
 
     if isinstance(time, np.datetime64):
         time = time.astype("datetime64[us]").astype(datetime)  # type: ignore

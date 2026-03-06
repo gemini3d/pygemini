@@ -4,7 +4,7 @@ Various transformations needed to grid model output so it can be easily plotted
 @author: zettergm
 """
 
-from __future__ import annotations
+
 import typing as T
 
 import numpy as np

@@ -6,7 +6,7 @@ Command line usage:
     python -m gemini3d.model python -m gemini3d.model /path/to/sim_equil/config.nml /path/to/sim_eq/
 """
 
-from __future__ import annotations
+
 import logging
 import argparse
 from pathlib import Path

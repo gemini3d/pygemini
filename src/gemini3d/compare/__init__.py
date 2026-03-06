@@ -6,7 +6,7 @@ Command line usage:
     python -m gemini3d.compare /path/to/ref_data /path/to/new_data
 """
 
-from __future__ import annotations
+
 from pathlib import Path
 
 from .inputs import compare_input

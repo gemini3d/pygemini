@@ -2,7 +2,7 @@
 get Linux system info
 """
 
-from __future__ import annotations
+
 from configparser import ConfigParser
 from pathlib import Path
 import sys
