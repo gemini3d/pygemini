@@ -1,19 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Sep  8 15:40:15 2023
-
-@author: redden
-"""
-
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb  8 13:49:51 2022
-
-@author: mer
-"""
-
 from pathlib import Path
 import numpy as np
 from datetime import datetime
