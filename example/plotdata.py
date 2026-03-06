@@ -30,9 +30,9 @@ if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument("simdir", help="directory where output data files are")
     p.add_argument("time", help="time of frame to plot")
-    p = p.parse_args()
+    args = p.parse_args()
 
-    dat = read.frame(p.simdir, p.time)
+    dat = read.frame(args.simdir, args.time)
 
     plotplasma(dat)
 

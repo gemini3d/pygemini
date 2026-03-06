@@ -16,24 +16,23 @@ import gemini3d.read as read
 
 clim = (None, None)
 
-p = argparse.ArgumentParser()
-p.add_argument("fn", help=".dat filename to load directly")
-p.add_argument(
+ap = argparse.ArgumentParser()
+ap.add_argument("fn", help=".dat filename to load directly")
+ap.add_argument(
     "-s", "--saveplot", help="save plots to data file directory", action="store_true"
 )
-p.add_argument(
+ap.add_argument(
     "-f",
     "--flagoutput",
     help="manually specify flagoutput, for if config.nml is missing",
     type=int,
 )
-P = p.parse_args()
+args = ap.parse_args()
 
 cfg = {}
-if P.flagoutput is not None:
-    cfg["flagoutput"] = P.flag
-
-dat_file = Path(P.fn).expanduser()
+if args.flagoutput is not None:
+    cfg["flagoutput"] = args.flagoutput
+dat_file = Path(args.fn).expanduser()
 dat = read.frame(dat_file, cfg=cfg)
 
 try:
@@ -81,7 +80,7 @@ for p in {"ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"}:
             ax=ax,
         )
 
-        if P.saveplot:
+        if args.saveplot:
             pfn = dat_file.parent / f"{p}-{dat_file.stem}.png"
             print("writing", pfn)
             fg.savefig(pfn, bbox_inches="tight")

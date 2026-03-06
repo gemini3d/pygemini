@@ -125,8 +125,8 @@ def scalar(time: datetime, xg: dict[str, T.Any], parm, name: str):
     yp = np.linspace(y.min(), y.max(), parm.shape[1])
     zp = np.linspace(z.min(), z.max(), parm.shape[2])
     x3, y3, z3 = np.mgrid[
-        xp[0] : xp[-1] : xp.size * 1j,
-        yp[0] : yp[-1] : yp.size * 1j,
+        xp[0] : xp[-1] : xp.size * 1j,  # type: ignore
+        yp[0] : yp[-1] : yp.size * 1j,  # type: ignore
         zp[0] : zp[-1] : zp.size * 1j,  # type: ignore
     ]
 
