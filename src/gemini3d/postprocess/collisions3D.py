@@ -16,12 +16,13 @@ Original script - M. Redden, 2022
 M. Redden, 2023
 """
 
-import gemini3d.read
-import gemini3d.msis
 from pathlib import Path
 import numpy as np
 from datetime import datetime
 import xarray as xr
+
+import gemini3d.read
+import gemini3d.msis
 
 # Types of collisions
 # - Ion-Neutral [NixNn] X
@@ -36,7 +37,7 @@ import xarray as xr
 def collisionfrequency(
     path: Path,
     time: datetime | None = None,
-) -> None:
+) -> tuple:
     """
     Parameters
     ----------
@@ -48,9 +49,9 @@ def collisionfrequency(
     """
 
     # Read in GEMINI data
-    dat = gemini3d.read.frame(path, time, var=["ne", "Te", "Ti", "ns", "Ts"])
+    dat = gemini3d.read.frame(path, time, var={"ne", "Te", "Ti", "ns", "Ts"})
 
-    ns = dat["ns"].assign_coords(species=["O+", "NO+", "N2+", "O2+", "N+", "H+", "e"])
+    # ns = dat["ns"].assign_coords(species=["O+", "NO+", "N2+", "O2+", "N+", "H+", "e"])
     Ts = dat["Ts"].assign_coords(species=["O+", "NO+", "N2+", "O2+", "N+", "H+", "e"])
 
     # Read in MSIS data

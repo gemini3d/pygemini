@@ -14,12 +14,13 @@ Created on Tue Feb  8 13:49:51 2022
 @author: mer
 """
 
-import gemini3d.read
 from pathlib import Path
 import numpy as np
 from datetime import datetime
 import scipy.constants as const
 import xarray as xr
+
+import gemini3d.read
 
 from .collisions3D import collisionfrequency
 
@@ -27,7 +28,7 @@ from .collisions3D import collisionfrequency
 def conductivity(
     path: Path,
     time: datetime | None = None,
-) -> None:
+) -> tuple:
     """
     Parameters
     ----------
@@ -62,7 +63,7 @@ def conductivity(
     Omg_e = const.e * B / const.m_e
 
     # Read in GEMINI data
-    dat = gemini3d.read.frame(path, time, var=["ne", "Te", "Ti", "ns", "Ts"])
+    dat = gemini3d.read.frame(path, time, var={"ne", "Te", "Ti", "ns", "Ts"})
 
     ns = dat["ns"].assign_coords(species=["O+", "NO+", "N2+", "O2+", "N+", "H+", "e"])
     n_i = ns.drop("e", dim="species")
