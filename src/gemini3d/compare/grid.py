@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import logging
 
@@ -28,9 +27,9 @@ def compare_grid(
         if k in ("lx", "lxs"):
             continue
 
-        assert (
-            ref[k].shape == new[k].shape
-        ), f"{k}: ref shape {ref[k].shape} != data shape {new[k].shape}"
+        assert ref[k].shape == new[k].shape, (
+            f"{k}: ref shape {ref[k].shape} != data shape {new[k].shape}"
+        )
         if not np.allclose(ref[k], new[k], rtol=tol["rtol"], atol=tol["atol"]):
             errs += 1
             logging.error(f"{k}  {err_pct(ref[k], new[k]):.1f} %")

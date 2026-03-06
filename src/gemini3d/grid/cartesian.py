@@ -2,7 +2,6 @@
 cartesian grid
 """
 
-
 import logging
 import typing as T
 

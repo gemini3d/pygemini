@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 import binascii
@@ -42,7 +41,9 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: list[str]) -> Path:
 
     if batcher == "qsub":
         template = (ir.files("gemini3d.templates") / "qsub_template.job").read_text()
-        job_file = out_dir / f"{binascii.b2a_hex(os.urandom(Nchar)).decode('ascii')}.job"
+        job_file = (
+            out_dir / f"{binascii.b2a_hex(os.urandom(Nchar)).decode('ascii')}.job"
+        )
         print("writing job file", job_file)
         text = template + "\n" + " ".join(cmd)
         job_file.write_text(text)

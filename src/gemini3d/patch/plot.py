@@ -1,4 +1,3 @@
-
 import typing
 from pathlib import Path
 
@@ -45,9 +44,9 @@ def read_var(file: Path, var: set[str]) -> dict[str, typing.Any]:
     if {"ne", "v1", "Ti"} & var:
         dat["ne"] = dat["ns"][LSP - 1, :, :, :]
     if "v1" in var:
-        dat["v1"] = (dat["ns"][:6, :, :, :] * dat["vs1"][:6, :, :, :]).sum(axis=0) / dat[
-            "ne"
-        ]
+        dat["v1"] = (dat["ns"][:6, :, :, :] * dat["vs1"][:6, :, :, :]).sum(
+            axis=0
+        ) / dat["ne"]
     if "Ti" in var:
         dat["Ti"] = (dat["ns"][:6, :, :, :] * dat["Ts"][:6, :, :, :]).sum(axis=0) / dat[
             "ne"

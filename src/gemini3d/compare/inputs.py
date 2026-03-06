@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import logging
 
@@ -58,7 +57,9 @@ def compare_input(
 
         assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
 
-        if not np.allclose(a, b, rtol=0.1 * tol[f"rtol{n}"], atol=0.1 * tol[f"atol{n}"]):
+        if not np.allclose(
+            a, b, rtol=0.1 * tol[f"rtol{n}"], atol=0.1 * tol[f"atol{n}"]
+        ):
             errs += 1
             logging.error(f"{k}  {err_pct(a, b):.1f} %")
 

@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from datetime import datetime
 import typing
@@ -42,9 +41,9 @@ def plotdiff(
         name = str(A.name)
 
     assert A.shape == B.shape, f"{name}: size of new and ref arrays don't match"
-    assert (
-        1 < A.ndim <= 4
-    ), f"failed to plot {A.ndim}-D array {name}: for 4D, 3D, or 2D arrays"
+    assert 1 < A.ndim <= 4, (
+        f"failed to plot {A.ndim}-D array {name}: for 4D, 3D, or 2D arrays"
+    )
 
     lx = read.simsize(new_dir)
     is3d = lx[1] != 1 and lx[2] != 1

@@ -2,7 +2,6 @@
 plasma functions
 """
 
-
 import typing as T
 import logging
 
@@ -434,7 +433,9 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]):
                 integrand = 1 / H[iord]
                 integrand = np.append(integrand, integrand[-1])
                 # initial=0 is to match Matlab
-                redheight = scipy.integrate.cumulative_trapezoid(integrand, z, initial=0)
+                redheight = scipy.integrate.cumulative_trapezoid(
+                    integrand, z, initial=0
+                )
                 netop = p["nmf"] * np.exp(-redheight)
                 nesort = np.zeros(lz)
                 for iz in range(lz):

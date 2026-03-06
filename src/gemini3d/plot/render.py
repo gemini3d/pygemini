@@ -6,7 +6,6 @@ suggested install:
     conda install mayavi
 """
 
-
 from pathlib import Path
 from datetime import datetime
 import typing as T
@@ -55,7 +54,9 @@ def frame(
     time = dat["time"]
 
     for k in var:
-        if k not in dat:  # not present at this time step, often just the first time step
+        if (
+            k not in dat
+        ):  # not present at this time step, often just the first time step
             continue
 
         if k in PLOTFUN["scalar"]:
@@ -124,7 +125,9 @@ def scalar(time: datetime, xg: dict[str, T.Any], parm, name: str):
     yp = np.linspace(y.min(), y.max(), parm.shape[1])
     zp = np.linspace(z.min(), z.max(), parm.shape[2])
     x3, y3, z3 = np.mgrid[
-        xp[0] : xp[-1] : xp.size * 1j, yp[0] : yp[-1] : yp.size * 1j, zp[0] : zp[-1] : zp.size * 1j  # type: ignore
+        xp[0] : xp[-1] : xp.size * 1j,
+        yp[0] : yp[-1] : yp.size * 1j,
+        zp[0] : zp[-1] : zp.size * 1j,  # type: ignore
     ]
 
     # %% 3-D interpolation for plot

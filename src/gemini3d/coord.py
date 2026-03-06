@@ -1,4 +1,3 @@
-
 import math
 
 import numpy as np
@@ -110,7 +109,9 @@ def UEN2geog(z, x, y, thetactr, phictr) -> tuple:
 
     # Northward angular distance
     gamma2 = y / Re  # must retain the sign of x3
-    theta = thetactr - gamma2  # minus because distance north is against theta's direction
+    theta = (
+        thetactr - gamma2
+    )  # minus because distance north is against theta's direction
 
     # Eastward angular distance
     gamma1 = x / Re / np.sin(thetactr)

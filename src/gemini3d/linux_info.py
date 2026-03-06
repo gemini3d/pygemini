@@ -2,7 +2,6 @@
 get Linux system info
 """
 
-
 from configparser import ConfigParser
 from pathlib import Path
 import sys
@@ -24,7 +23,10 @@ def os_release() -> list[str]:
 
     fn = Path("/etc/os-release")
     if not fn.is_file():
-        if Path("/etc/redhat-release").is_file() or Path("/etc/centos-release").is_file():
+        if (
+            Path("/etc/redhat-release").is_file()
+            or Path("/etc/centos-release").is_file()
+        ):
             return ["rhel"]
         elif Path("/etc/debian_version").is_file():
             return ["debian"]

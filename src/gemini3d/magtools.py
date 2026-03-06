@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from datetime import datetime
 import numpy as np
@@ -230,9 +229,9 @@ def magframe(
     phi = phi.reshape(gridsize)
 
     # Sanity check the grid size and total number of grid points
-    assert lpoints == np.prod(
-        gridsize
-    ), "Incompatible data size and grid specification..."
+    assert lpoints == np.prod(gridsize), (
+        "Incompatible data size and grid specification..."
+    )
 
     # Create grid alt, magnetic latitude, and longitude (assume input points
     # have been permuted in this order)...

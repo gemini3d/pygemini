@@ -115,7 +115,8 @@ def test_nml_gemini_env_root(monkeypatch, tmp_path):
 
     assert isinstance(cfg["eq_dir"], Path)
     assert (
-        cfg["eq_dir"] == Path(os.environ.get("GEMINI_CIROOT")).expanduser() / "test2d_eq"
+        cfg["eq_dir"]
+        == Path(os.environ.get("GEMINI_CIROOT")).expanduser() / "test2d_eq"
     )
 
 

@@ -149,7 +149,9 @@ def collisions3D(atmos, Ts, ns, vsx1, ms):
     T = Ts[:, :, :, lsp - 1]
     nusn[:, :, :, lsp - 1, 0] = 8.9e-11 * (1 + 5.7e-4 * T) * (T**0.5) * nO * 1e-6
     nusn[:, :, :, lsp - 1, 1] = 2.33e-11 * (1 - 1.21e-4 * T) * (T) * nN2 * 1e-6
-    nusn[:, :, :, lsp - 1, 2] = 1.82e-10 * (1 + 3.6e-2 * (T**0.5)) * (T**0.5) * nO2 * 1e-6
+    nusn[:, :, :, lsp - 1, 2] = (
+        1.82e-10 * (1 + 3.6e-2 * (T**0.5)) * (T**0.5) * nO2 * 1e-6
+    )
     nusn[:, :, :, lsp - 1, 3] = 4.5e-9 * (1 - 1.35e-4 * T) * (T**0.5) * nH * 1e-6
     nus[:, :, :, lsp - 1] = np.sum(nusn[:, :, :, lsp - 1, :], axis=3)
 
@@ -210,7 +212,9 @@ def conductivities3D(nus, nusj, ns, ms, qs, B):
         OMs = qs[isp] * B / ms[isp]  # cyclotron
 
         if not isp == lsp - 1:
-            mu0[:, :, :, isp] = qs[isp] / ms[isp] / nus[:, :, :, isp]  # parallel mobility
+            mu0[:, :, :, isp] = (
+                qs[isp] / ms[isp] / nus[:, :, :, isp]
+            )  # parallel mobility
             mubase[:, :, :, isp] = mu0[:, :, :, isp]
         else:
             nuse = np.sum(nusj[:, :, :, lsp - 1, :], axis=3)

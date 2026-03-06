@@ -2,7 +2,6 @@
 HDF5 file read
 """
 
-
 from pathlib import Path
 import typing as T
 import logging
@@ -52,7 +51,9 @@ def simsize(path: Path) -> tuple[int, ...]:
             else:
                 lx = np.array((f["lx1"][()], f["lx2"][()], f["lx3"][()]))
         else:
-            raise KeyError(f"could not find '/lxs', '/lx' or '/lx1' in {path.as_posix()}")
+            raise KeyError(
+                f"could not find '/lxs', '/lx' or '/lx1' in {path.as_posix()}"
+            )
 
     return lx
 

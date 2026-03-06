@@ -2,7 +2,6 @@
 tilted dipole grid generation function
 """
 
-
 import typing as T
 import math
 import logging

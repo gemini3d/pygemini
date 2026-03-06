@@ -3,7 +3,6 @@ struct manpage:
 https://docs.python.org/3/library/struct.html#struct-format-strings
 """
 
-
 from pathlib import Path
 from datetime import datetime
 import typing as T

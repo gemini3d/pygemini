@@ -21,7 +21,10 @@ import gemini3d.grid.tilted_dipole as grid
 def test_tilted_dipole():
     try:
         mateng = pytest.importorskip("matlab.engine")
-    except (ImportError, RuntimeError):  # can also get RuntimeError, let's just catch all
+    except (
+        ImportError,
+        RuntimeError,
+    ):  # can also get RuntimeError, let's just catch all
         pytest.skip("Matlab engine not available")
 
     # find MatGemini

@@ -1,4 +1,3 @@
-
 import typing
 from pathlib import Path
 import logging
@@ -36,7 +35,9 @@ def compare_precip(
             b = ref[k]
             a = new[k]
 
-            assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
+            assert a.shape == b.shape, (
+                f"{k}: ref shape {b.shape} != data shape {a.shape}"
+            )
 
             if not np.allclose(a, b, rtol=tol["rtol"], atol=tol["atol"]):
                 prec_errs += 1

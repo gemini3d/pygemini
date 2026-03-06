@@ -3,7 +3,6 @@ read and write Fortran standard namelist
 This is very basic--see f90nml Python package.
 """
 
-
 import typing as T
 from pathlib import Path
 import re

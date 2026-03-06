@@ -1,5 +1,3 @@
-
-
 from pathlib import Path
 import typing as T
 from datetime import datetime
@@ -141,7 +139,10 @@ def plot_interp(
         elif parm.ndim == 2:
             Xp, Zp = np.meshgrid(xp, zp)
             f = interp.RegularGridInterpolator(
-                (xg["x1"][inds1].astype(np.float64), xg["x2"][inds2].astype(np.float64)),
+                (
+                    xg["x1"][inds1].astype(np.float64),
+                    xg["x2"][inds2].astype(np.float64),
+                ),
                 parm.data.astype(np.float64),
                 bounds_error=False,
             )

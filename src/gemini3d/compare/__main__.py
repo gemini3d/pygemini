@@ -1,4 +1,3 @@
-
 import sys
 import argparse
 from pathlib import Path
@@ -49,9 +48,13 @@ def plot_cli(
         new = read.frame(new_indir / new_params["indat_file"].name, var=var)
     else:
         if not ref_path.is_file():
-            raise FileNotFoundError(f"{ref_path} must be a file when not specifying time")
+            raise FileNotFoundError(
+                f"{ref_path} must be a file when not specifying time"
+            )
         if not new_path.is_file():
-            raise FileNotFoundError(f"{new_path} must be a file when not specifying time")
+            raise FileNotFoundError(
+                f"{new_path} must be a file when not specifying time"
+            )
 
         new = read.frame(new_path, var=var)
         ref = read.frame(ref_path, var=var)
@@ -64,7 +67,9 @@ def plot_cli(
 
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="Compare simulation file outputs and inputs")
+    p = argparse.ArgumentParser(
+        description="Compare simulation file outputs and inputs"
+    )
     p.add_argument("new_dir", help="directory to compare")
     p.add_argument("ref_dir", help="reference directory")
     p.add_argument("-plot", help="plot instead of numeric compare", action="store_true")

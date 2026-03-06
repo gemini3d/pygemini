@@ -2,7 +2,6 @@
 generate, read, write Electric Field
 """
 
-
 import typing as T
 import logging
 from datetime import datetime

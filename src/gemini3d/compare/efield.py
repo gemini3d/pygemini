@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import typing
 import logging
@@ -38,7 +37,9 @@ def compare_Efield(
             b = ref[k]
             a = new[k]
 
-            assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
+            assert a.shape == b.shape, (
+                f"{k}: ref shape {b.shape} != data shape {a.shape}"
+            )
 
             if not np.allclose(a, b, rtol=tol["rtol"], atol=tol["atol"]):
                 efield_errs += 1

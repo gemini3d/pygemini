@@ -4,7 +4,6 @@ Various transformations needed to grid model output so it can be easily plotted
 @author: zettergm
 """
 
-
 import typing as T
 
 import numpy as np
@@ -279,8 +278,8 @@ def geog2UENgeog(
 ) -> tuple:
     """Convert geographic to UEN geographic coords."""
 
-    theta = pi / 2 - np.radians(
-        glat
+    theta = (
+        pi / 2 - np.radians(glat)
     )  # this is the zenith angle referenced from Earth's spin axis, i.e. the geographic (as opposed to magnetic) pole
     phi = np.radians(glon)
 

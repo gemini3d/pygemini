@@ -1,4 +1,4 @@
-""" test dryrun, that PyGemini can correctly invoke Gemini3D """
+"""test dryrun, that PyGemini can correctly invoke Gemini3D"""
 
 import importlib.resources as ir
 
@@ -13,7 +13,9 @@ import gemini3d.web
 import gemini3d.msis
 
 
-@pytest.mark.parametrize("name,bref", [("mini2dew_eq", 1238112), ("mini3d_eq", 2323072)])
+@pytest.mark.parametrize(
+    "name,bref", [("mini2dew_eq", 1238112), ("mini3d_eq", 2323072)]
+)
 def test_memory(name, bref):
     ref = gemini3d.web.download_and_extract(name, ir.files(__package__) / "data")
 

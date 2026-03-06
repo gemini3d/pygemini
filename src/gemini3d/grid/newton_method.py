@@ -3,8 +3,6 @@ Module containing root finding functions based on Newtons' method.
 These adaptations meant for dipole to spherical coordinate transformation
 """
 
-
-
 from .convert import calc_theta, Re
 from .convert import objfunr as f, objfunr_derivative as fprime
 

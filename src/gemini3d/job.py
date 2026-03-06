@@ -3,7 +3,6 @@ functions related to running Gemini3D.
 Either locally (laptop or interactive HPC) or creating an HPC batch script based on template.
 """
 
-
 import typing
 import os
 import logging

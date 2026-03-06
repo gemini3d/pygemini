@@ -14,7 +14,8 @@ def cli():
     p = argparse.ArgumentParser()
     p.add_argument("format", help="file format", choices=["h5", "nc"])
     p.add_argument(
-        "indir", help="Gemini3d path to simgrid.dat or path containing inputs/simgrid.dat"
+        "indir",
+        help="Gemini3d path to simgrid.dat or path containing inputs/simgrid.dat",
     )
     p.add_argument("-i", "--intype", help="type of input file [.dat]", default=".dat")
     p.add_argument("-o", "--outdir", help="directory to write HDF5 files")

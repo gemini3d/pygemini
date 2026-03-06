@@ -2,7 +2,6 @@
 function names in this module must start with "curv" so that "if" statements in plot/__init__.py work
 """
 
-
 import typing as T
 from datetime import datetime
 

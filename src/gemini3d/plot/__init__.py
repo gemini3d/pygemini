@@ -6,7 +6,6 @@ Command line usage:
     python -m gemini3d.plot path/to/data
 """
 
-
 from pathlib import Path
 import typing as T
 from datetime import datetime
@@ -48,7 +47,9 @@ def grid2plotfun(xg: dict[str, T.Any]) -> T.Callable:
     return cartesian.cart2d  # type: ignore
 
 
-def plot_all(direc: Path, var: set[str] | None = None, saveplot_fmt: str | None = None) -> None:
+def plot_all(
+    direc: Path, var: set[str] | None = None, saveplot_fmt: str | None = None
+) -> None:
     """
     gemini3d.plot.plot_all(direc, var=None, saveplot_fmt="")
 

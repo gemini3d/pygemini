@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import logging
 
@@ -48,9 +47,9 @@ def compare_output(
             a = A[k]
             b = B[k]
 
-            assert (
-                a.shape == b.shape
-            ), f"{k} time {i} {t}: shape: ref {b.shape} != data {a.shape}"
+            assert a.shape == b.shape, (
+                f"{k} time {i} {t}: shape: ref {b.shape} != data {a.shape}"
+            )
 
             if not np.allclose(a, b, rtol=tol[f"rtol{j}"], atol=tol[f"atol{j}"]):
                 errs += 1

@@ -2,7 +2,6 @@
 HDF5 file writing
 """
 
-
 import typing as T
 from pathlib import Path
 from datetime import datetime

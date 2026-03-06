@@ -1,4 +1,3 @@
-
 import math
 
 import numpy as np
@@ -71,7 +70,10 @@ def non_uniform1d(xmax: float, parms: list[float]):
 
 
 def altitude_grid(
-    alt_min: float, alt_max: float, incl_deg: float, d: tuple[float, float, float, float]
+    alt_min: float,
+    alt_max: float,
+    incl_deg: float,
+    d: tuple[float, float, float, float],
 ):
     if alt_min < 0 or alt_max < 0:
         raise ValueError("grid values must be positive")

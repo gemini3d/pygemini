@@ -8,7 +8,6 @@ transformations from dipole to spherical
 
 """
 
-
 import math
 import numpy as np
 from numpy import sin, cos
