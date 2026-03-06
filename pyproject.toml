@@ -26,9 +26,7 @@ readme = {file = ["README.md"], content-type = "text/markdown"}
 version = {attr = "gemini3d.__version__"}
 
 [project.optional-dependencies]
-tests = ["pytest"]
-lint = ["flake8", "flake8-bugbear", "flake8-builtins", "flake8-blind-except", "mypy",
-  "types-python-dateutil"]
+tests = ["pytest", "mypy"]
 
 [tool.black]
 line-length = 90
@@ -48,7 +46,9 @@ exclude = '''
 '''
 
 [tool.mypy]
-files = ["src", "scripts"]
+src = ["."]
+install_types = true
+exclude = ["^build([/\\\\]|$)"]
 
 ignore_missing_imports = true
 
