@@ -1,5 +1,6 @@
 import json
 import importlib.resources as ir
+import xarray
 
 
 def err_pct(a, b) -> float:
@@ -18,9 +19,19 @@ def err_pct(a, b) -> float:
 
     float
         maximum error percent
+
+    Compare raw numeric values only.
+    xarray.DataArray arithmetic aligns coordinates,
+    which can produce empty arrays when float coordinates
+    differ slightly.
     """
 
-    return (abs(a - b).max() / abs(b).max()).item() * 100
+    if isinstance(a, xarray.DataArray):
+        a = a.data
+    if isinstance(b, xarray.DataArray):
+        b = b.data
+
+    return (abs(a - b).max() / abs(b).max()) * 100
 
 
 def load_tol() -> dict[str, float]:
