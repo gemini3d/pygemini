@@ -6,7 +6,6 @@ env:
   GEMINI_ROOT: ~/libgem
   CMAKE_GENERATOR: Ninja
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  CMAKE_BUILD_PARALLEL_LEVEL: 4
 
 # GEMINI_ROOT is used to find Gemini3D by PyGemini
 
@@ -30,7 +29,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         os: [ubuntu-latest]
         include:
         - os: macos-latest
@@ -44,6 +43,13 @@ jobs:
 
     - name: Git Checkout ${{ github.action_repository }}
       uses: actions/checkout@v6
+
+    - name: GCC compiler (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        echo "CC=gcc-15" >> $GITHUB_ENV
+        echo "CXX=g++-15" >> $GITHUB_ENV
+        echo "FC=gfortran-15" >> $GITHUB_ENV
 
     - uses: ./.github/workflows/composite-python
       timeout-minutes: 15

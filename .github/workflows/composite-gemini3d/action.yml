@@ -1,44 +1,45 @@
+name: composite-gemini3d
+description: build or cache Gemini3D
+
 runs:
 
-  using: 'composite'
+  using: composite
 
   steps:
 
-  - name: GCC compiler (macOS)
-    shell: bash
-    if: runner.os == 'macOS'
-    run: |
-      echo "CC=gcc-14" >> $GITHUB_ENV
-      echo "CXX=g++-14" >> $GITHUB_ENV
-      echo "FC=gfortran-14" >> $GITHUB_ENV
-
   - name: Checkout GemGI (for simulation config.nml inputs)
-    uses: actions/checkout@v4
+    uses: actions/checkout@v6
     with:
       repository: gemini3d/gemci
       path: ${{ github.workspace }}/gemci
 
+  - name: Resolve Gemini3D remote SHA
+    id: gemini3d-sha
+    shell: bash
+    run: |
+      echo "sha=$(git ls-remote https://github.com/gemini3d/gemini3d.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
+
   - name: Cache install Gemini3D
     id: cache-gemini
-    uses: actions/cache@v4
+    uses: actions/cache@v5
     with:
-      path: |
-        ${{ env.CMAKE_INSTALL_PREFIX }}
-      key: ${{ runner.os }}-gemini3d
+      path: ${{ env.CMAKE_INSTALL_PREFIX }}
+      key: ${{ runner.os }}-gemini-${{ env.CXX }}-${{ steps.gemini3d-sha.outputs.sha }}
 
   - name: Checkout Gemini3D
     if: steps.cache-gemini.outputs.cache-hit != 'true'
-    uses: actions/checkout@v4
+    uses: actions/checkout@v6
     with:
       repository: gemini3d/gemini3d
-      path: gemini3d
+      ref: ${{ steps.gemini3d-sha.outputs.sha }}
+      path: ${{ github.workspace }}/gemini3d
       submodules: true
 
   - name: non-cache Install Gemini3D
     if: steps.cache-gemini.outputs.cache-hit != 'true'
     shell: bash
     run: |
-      cmake -B build
+      cmake --preset default
       cmake --build build
       cmake --install build
-    working-directory: gemini3d
+    working-directory: ${{ github.workspace }}/gemini3d

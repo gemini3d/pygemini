@@ -1,6 +1,9 @@
+name: composite-pkg
+description: install packages
+
 runs:
 
-  using: 'composite'
+  using: composite
 
   steps:
 
