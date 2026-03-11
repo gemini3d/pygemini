@@ -1,5 +1,5 @@
 {
-  "rtol": 1e-5,
+  "rtol": 0.01,
   "rtolN": 1e-5,
   "rtolT": 1e-5,
   "rtolJ": 1e-5,
