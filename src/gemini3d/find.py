@@ -14,15 +14,7 @@ import numpy
 from .utils import filename2datetime
 
 
-EXE_PATHS = [
-    ".",
-    "bin",
-    "build",
-    "build/bin",
-    "build/Release",
-    "build/RelWithDebInfo",
-    "build/Debug",
-]
+EXE_PATHS = [".", "bin"]
 
 
 def config(path: Path) -> Path:
@@ -53,7 +45,7 @@ def executable(name: str, root: Path | None = None) -> Path:
 
     exe_paths = EXE_PATHS
     if name == "msis_setup":
-        exe_paths.insert(2, "build/msis")
+        exe_paths.append("msis")
 
     paths = (root, os.environ.get("GEMINI_ROOT"), os.environ.get("CMAKE_PREFIX_PATH"))
 
