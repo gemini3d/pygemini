@@ -173,8 +173,7 @@ def check_mpiexec(mpiexec_name: str, gemexe: Path) -> str:
     if not mpiexec_name:
         mpiexec_name = "mpiexec"
 
-    mpi_root = os.environ.get("MPI_ROOT", None)
-    if mpi_root:
+    if mpi_root := os.environ.get("MPI_ROOT", None):
         mpi_root += "/bin"
 
     mpiexec = shutil.which(mpiexec_name, path=mpi_root)

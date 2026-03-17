@@ -326,12 +326,13 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]):
         nmolc[i] = (1 - rho[i]) * ne[i]
 
         if any(inds):
-            if xgr.ndim == 3:
-                cond = xgr[0, 0, 0] > xgr[1, 0, 0]
-            elif xgr.ndim == 2:
-                cond = xgr[0, 0] > xgr[1, 0]
-            else:
-                raise ValueError(
+            match xgr.ndim:
+                case 3:
+                    cond = xgr[0, 0, 0] > xgr[1, 0, 0]
+                case 2:
+                    cond = xgr[0, 0] > xgr[1, 0]
+                case _:
+                    raise ValueError(
                     "xg['r'] expected to be 3D, possibly with degenerate 2nd or 3rd dimension"
                 )
 
