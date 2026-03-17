@@ -11,7 +11,7 @@ import argparse
 import typing as T
 from matplotlib.pyplot import figure, draw, pause
 from matplotlib.image import imread
-from datetime import datetime
+import datetime
 
 
 var = {"ne", "Te", "Ti", "J1", "J2", "J3", "v1", "v2", "v3"}
@@ -56,10 +56,18 @@ for new_sim in new_sims:
 
         axs[0].imshow(imread(ref_file))
         axs[0].set_title(ref_file, fontsize=fs)
-        axs[0].set_xlabel(datetime.utcfromtimestamp(ref_file.stat().st_ctime))
+        axs[0].set_xlabel(
+            datetime.datetime.fromtimestamp(
+                ref_file.stat().st_ctime, datetime.timezone.utc
+            )
+        )
 
         axs[1].imshow(imread(new_file))
         axs[1].set_title(new_file, fontsize=fs)
-        axs[1].set_xlabel(datetime.utcfromtimestamp(new_file.stat().st_ctime))
+        axs[1].set_xlabel(
+            datetime.datetime.fromtimestamp(
+                new_file.stat().st_ctime, datetime.timezone.utc
+            )
+        )
         draw()
         pause(0.1)

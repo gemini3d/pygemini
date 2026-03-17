@@ -1,7 +1,7 @@
 import sys
 import argparse
 from pathlib import Path
-from dateutil.parser import parse
+from datetime import datetime
 
 from . import compare_all
 from .plot import plotdiff
@@ -33,7 +33,7 @@ def plot_cli(
     new_path = Path(new_dir).expanduser().resolve(strict=True)
 
     if time_str:
-        time = parse(time_str)
+        time = datetime.fromisoformat(time_str)
         new = read.frame(new_path, time, var=var)
         ref = read.frame(ref_path, time, var=var)
     elif only == "in":
