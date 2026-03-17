@@ -37,12 +37,13 @@ def simsize(path: Path) -> tuple[int, ...]:
         raise FileNotFoundError(f"did not find simsize.dat in {path}")
 
     fsize = file.stat().st_size
-    if fsize == 12:
-        lx = struct.unpack("III", file.open("rb").read(12))
-    elif fsize == 8:
-        lx = struct.unpack("II", file.open("rb").read(8))
-    else:
-        raise ValueError(f"{file} is not expected 8 bytes (2-D) or 12 bytes (3-D) long")
+    match fsize:
+        case 12:
+            lx = struct.unpack("III", file.open("rb").read(12))
+        case 8:
+            lx = struct.unpack("II", file.open("rb").read(8))
+        case _:
+            raise ValueError(f"{file} is not expected 8 bytes (2-D) or 12 bytes (3-D) long")
 
     if any(i < 1 for i in lx):
         raise ValueError(f"{file} has nonpositive grid size {lx}")
@@ -75,10 +76,11 @@ def grid(file: Path, shape: bool = False) -> dict[str, T.Any]:
     if not f:
         raise FileNotFoundError(f"did not find simgrid.dat in {file}")
 
-    if len(lx) == 2:
-        return grid2(f, lx)
-    elif len(lx) == 3:
-        return grid3(f, lx)
+    match len(lx):
+        case 2:
+            return grid2(f, lx)
+        case 3:
+            return grid3(f, lx)
 
     raise ValueError("lx must be 2-D or 3-D")
 
@@ -217,14 +219,15 @@ def data(
     var = {"ne", "Ti", "Te", "v1", "v2", "v3", "J1", "J2", "J3", "Phi"}
 
     flag = cfg.get("flagoutput")
-    if flag == 3:
-        dat = frame3d_curvne(file, xg)
-    elif flag == 1:
-        dat = frame3d_curv(file, xg)
-    elif flag == 2:
-        dat = frame3d_curvavg(file, xg)
-    else:
-        raise ValueError(f"Unsure how to read {file} with flagoutput {flag}")
+    match flag:
+        case 3:
+            dat = frame3d_curvne(file, xg)
+        case 1:
+            dat = frame3d_curv(file, xg)
+        case 2:
+            dat = frame3d_curvavg(file, xg)
+        case _:
+            raise ValueError(f"Unsure how to read {file} with flagoutput {flag}")
 
     dat.attrs["filename"] = file
 
@@ -392,10 +395,11 @@ def read2D(f: T.BinaryIO, lx: tuple[int, ...] | list[int]):
     read 2D array from raw file
     """
 
-    if len(lx) == 3:
-        return np.fromfile(f, np.float64, np.prod(lx[1:])).reshape(*lx[1:], order="F")
-    elif len(lx) == 2:
-        return np.fromfile(f, np.float64, np.prod(lx)).reshape(*lx, order="F")
+    match len(lx):
+        case 3:
+            return np.fromfile(f, np.float64, np.prod(lx[1:])).reshape(*lx[1:], order="F")
+        case 2:
+            return np.fromfile(f, np.float64, np.prod(lx)).reshape(*lx, order="F")
 
     raise ValueError(f"lx must have 2 or 3 elements, you have lx={lx}")
 

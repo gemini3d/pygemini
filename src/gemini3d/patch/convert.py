@@ -144,14 +144,15 @@ def convert_var(
         return
 
     if v not in oh:
-        if ih[v].ndim == 4:
-            shape: tuple[int, ...] = (ih[v].shape[0], *lx[::-1])
-        elif ih[v].ndim == 3:
-            shape = lx[::-1]
-        elif ih[v].ndim == 2:
-            shape = (lx[2], lx[1])
-        else:
-            raise ValueError(f"{v}: ndim {ih[v].ndim} not supported: {oh.filename}")
+        match ih[v].ndim:
+            case 4:
+                shape: tuple[int, ...] = (ih[v].shape[0], *lx[::-1])
+            case 3:
+                shape = lx[::-1]
+            case 2:
+                shape = (lx[2], lx[1])
+            case _:
+                raise ValueError(f"{v}: ndim {ih[v].ndim} not supported: {oh.filename}")
 
         oh.create_dataset(
             name=v,
@@ -168,9 +169,10 @@ def convert_var(
         f"{Path(ih.filename).stem}=>{Path(oh.filename).stem}:{v}:  {ih[v].shape}  ix2: {ix2} ix3: {ix3} {oh[v].shape}"
     )
 
-    if ih[v].ndim == 4:
-        oh[v][:, ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, :] = ih[v]
-    elif ih[v].ndim == 3:
-        oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, :] = ih[v]
-    elif ih[v].ndim == 2:
-        oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1] = ih[v]
+    match ih[v].ndim:
+        case 4:
+            oh[v][:, ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, :] = ih[v]
+        case 3:
+            oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1, :] = ih[v]
+        case 2:
+            oh[v][ix3[0] : ix3[1] + 1, ix2[0] : ix2[1] + 1] = ih[v]

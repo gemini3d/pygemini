@@ -69,18 +69,19 @@ def _write_var(fid, name: str, A) -> None:
     p3s = ("x3", "x2", "x1")
     p2s = ("x3", "x2")
 
-    if A.ndim == 4:
-        A = A.transpose(*p4s)
-    elif A.ndim == 3:
-        A = A.transpose(*p3s)
-    elif A.ndim == 2:
-        A = A.transpose(*p2s)
-    elif A.ndim == 1:
-        pass
-    else:
-        raise ValueError(
-            f"write_hdf5: unexpected number of dimensions {A.ndim}. Please raise a GitHub Issue."
-        )
+    match A.ndim:
+        case 4:
+            A = A.transpose(*p4s)
+        case 3:
+            A = A.transpose(*p3s)
+        case 2:
+            A = A.transpose(*p2s)
+        case 1:
+            pass
+        case _:
+            raise ValueError(
+                f"write_hdf5: unexpected number of dimensions {A.ndim}. Please raise a GitHub Issue."
+            )
 
     fid.create_dataset(
         name,

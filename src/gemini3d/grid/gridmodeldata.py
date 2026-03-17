@@ -130,12 +130,13 @@ def model2pointsgeomagcoords(xg, parm, alti, mloni, mlati):
     # Compute the coordinates of the intended interpolation grid IN THE MODEL SYSTEM/BASIS.
     # There needs to be a separate transformation here for each coordinate system that the model
     # may use...
-    if flagcurv == 1:
-        x1i, x2i, x3i = geomag2dipole(alti, mloni, mlati)
-    elif flagcurv == 0:
-        x1i, x2i, x3i = geomag2UENgeomag(alti, mloni, mlati)
-    else:
-        raise ValueError("Unsupported grid type...")
+    match flagcurv:
+        case 1:
+            x1i, x2i, x3i = geomag2dipole(alti, mloni, mlati)
+        case 0:
+            x1i, x2i, x3i = geomag2UENgeomag(alti, mloni, mlati)
+        case _:
+            raise ValueError("Unsupported grid type...")
 
     parmi = interpmodeldata(xg, x1, x2, x3, parm, x1i, x2i, x3i)
     return parmi
@@ -170,12 +171,13 @@ def model2pointsgeogcoords(xg: dict[str, T.Any], parm, alti, gloni, glati):
     # Compute the coordinates of the intended interpolation grid IN THE MODEL SYSTEM/BASIS.
     # There needs to be a separate transformation here for each coordinate system that the model
     # may use...
-    if flagcurv == 1:
-        x1i, x2i, x3i = geog2dipole(alti, gloni, glati)
-    elif flagcurv == 0:
-        x1i, x2i, x3i = geog2UENgeog(alti, gloni, glati)
-    else:
-        raise ValueError("Unsupported grid type...")
+    match flagcurv:
+        case 1:
+            x1i, x2i, x3i = geog2dipole(alti, gloni, glati)
+        case 0:
+            x1i, x2i, x3i = geog2UENgeog(alti, gloni, glati)
+        case _:
+            raise ValueError("Unsupported grid type...")
 
     parmi = interpmodeldata(xg, x1, x2, x3, parm, x1i, x2i, x3i)
     return parmi
@@ -195,40 +197,41 @@ def interpmodeldata(xg, x1, x2, x3, parm, x1i, x2i, x3i):
 
     # Execute plaid interpolation
     # [X1,X2,X3]=np.meshgrid(x1,x2,x3,indexing="ij")
-    if numdims == 3:
-        # xi=np.zeros((x1i.size,3))
-        xi = np.array((x1i.ravel(), x2i.ravel(), x3i.ravel())).transpose()
-        parmi = scipy.interpolate.interpn(
-            points=(x1, x2, x3),
-            values=parm.data,
-            xi=xi,
+    match numdims:
+        case 3:
+            # xi=np.zeros((x1i.size,3))
+            xi = np.array((x1i.ravel(), x2i.ravel(), x3i.ravel())).transpose()
+            parmi = scipy.interpolate.interpn(
+                points=(x1, x2, x3),
+                values=parm.data,
+                xi=xi,
             method="linear",
             bounds_error=False,
             fill_value=np.NaN,
         )
-    elif numdims == 2:
-        coord1 = x1
-        coord1i = x1i
-        if parm.shape[1] == 1:
-            coord2 = x3
-            coord2i = x3i
-        else:
-            coord2 = x2
-            coord2i = x2i
-        # fi=scipy.interpolate.interp2d(coord1,coord2, parm.data, kind="linear", \
-        #                              bounds_error=False, fill_value=np.NaN)
-        # parmi=fi(coord1i.ravel(),coord2i.ravel())
-        xi = np.array((coord1i.ravel(), coord2i.ravel())).transpose()
-        parmi = scipy.interpolate.interpn(
-            points=(coord1, coord2),
-            values=parm.data,
-            xi=xi,
-            method="linear",
-            bounds_error=False,
-            fill_value=np.NaN,
-        )
-    else:
-        raise ValueError("Can only grid 2D or 3D data, check array dims...")
+        case 2:
+            coord1 = x1
+            coord1i = x1i
+            if parm.shape[1] == 1:
+                coord2 = x3
+                coord2i = x3i
+            else:
+                coord2 = x2
+                coord2i = x2i
+            # fi=scipy.interpolate.interp2d(coord1,coord2, parm.data, kind="linear", \
+            #                              bounds_error=False, fill_value=np.NaN)
+            # parmi=fi(coord1i.ravel(),coord2i.ravel())
+            xi = np.array((coord1i.ravel(), coord2i.ravel())).transpose()
+            parmi = scipy.interpolate.interpn(
+                points=(coord1, coord2),
+                values=parm.data,
+                xi=xi,
+                method="linear",
+                bounds_error=False,
+                fill_value=np.NaN,
+            )
+        case _:
+            raise ValueError("Can only grid 2D or 3D data, check array dims...")
 
     # parmi = parmi.reshape(lalt, llon, llat)
     return parmi
