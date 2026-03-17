@@ -91,42 +91,43 @@ def parse_namelist(file: Path, nml: str) -> dict[str, T.Any]:
 
     P = {}
 
-    if nml == "base":
-        P = parse_base(r)
-    elif nml == "flags":
-        P = _parse_flags(r)
-    elif nml == "files":
-        P = parse_files(r)
-    elif nml == "setup":
-        P = parse_setup(r)
-    elif nml == "neutral_perturb":
-        P = parse_neutral_perturb(r)
-    elif nml == "neutral_BG":
-        P = parse_neutral_BG(r)
-    elif nml == "precip":
-        P = {
-            "dtprec": timedelta(seconds=float(r["dtprec"])),
-            "precdir": r["prec_dir"],
-        }
-    elif nml == "precip_BG":
-        for k in r:
-            if k in {"W0BG", "PhiWBG"}:
-                P[k] = float(r[k])
-            else:
-                P[k] = r[k]
-    elif nml == "efield":
-        P = {
-            "dtE0": timedelta(seconds=float(r["dtE0"])),
-            "E0dir": r["E0_dir"],
-        }
-    elif nml == "glow":
-        P = {
-            "aurmap_dir": r.get("aurmap_dir", "aurmaps"),
-            "dtglow": timedelta(seconds=float(r["dtglow"])),
-            "dtglowout": float(r["dtglowout"]),
-        }
-    else:
-        raise ValueError(f"Not sure how to parse NML namelist {nml}")
+    match nml:
+        case "base":
+            P = parse_base(r)
+        case "flags":
+            P = _parse_flags(r)
+        case "files":
+            P = parse_files(r)
+        case "setup":
+            P = parse_setup(r)
+        case "neutral_perturb":
+            P = parse_neutral_perturb(r)
+        case "neutral_BG":
+            P = parse_neutral_BG(r)
+        case "precip":
+            P = {
+                "dtprec": timedelta(seconds=float(r["dtprec"])),
+                "precdir": r["prec_dir"],
+            }
+        case "precip_BG":
+            for k in r:
+                if k in {"W0BG", "PhiWBG"}:
+                    P[k] = float(r[k])
+                else:
+                    P[k] = r[k]
+        case "efield":
+            P = {
+                "dtE0": timedelta(seconds=float(r["dtE0"])),
+                "E0dir": r["E0_dir"],
+            }
+        case "glow":
+            P = {
+                "aurmap_dir": r.get("aurmap_dir", "aurmaps"),
+                "dtglow": timedelta(seconds=float(r["dtglow"])),
+                "dtglowout": float(r["dtglowout"]),
+            }
+        case _:
+            raise ValueError(f"Not sure how to parse NML namelist {nml}")
 
     P = expand_envvar(P)
 
@@ -268,42 +269,43 @@ def parse_setup(r: dict[str, T.Any]) -> dict[str, T.Any]:
     P: dict[str, T.Any] = {}
 
     for k in r:
-        if k in {
-            "lxp",
-            "lyp",
-            "lq",
-            "lp",
-            "lphi",
-            "gridflag",
-            "Efield_llon",
-            "Efield_llat",
-            "precip_llon",
-            "precip_llat",
-            "random_seed_init",
-        }:
-            P[k] = int(r[k])
-        elif k in {
-            "glat",
-            "glon",
-            "dtheta",
-            "dphi",
-            "Qprecip",
-            "Qprecip_background",
-            "E0precip",
-            "Etarg",
-            "Efield_latwidth",
-            "Efield_latoffset",
-            "Efield_lonwidth",
-            "Efield_lonoffset",
-            "altmin",
-            "grid_openparm",
-        }:
-            P[k] = float(r[k])
-        elif k == "eqdir":  # eqdir obsolete, should use eq_dir
-            P["eq_dir"] = r[k]
-        elif k == "setup_functions":
-            P["setup_functions"] = [r[k]] if isinstance(r[k], str) else r[k]
-        else:
-            P[k] = r[k]
+        match k:
+            case (
+                "lxp"
+                | "lyp"
+                | "lq"
+                | "lp"
+                | "lphi"
+                | "gridflag"
+                | "Efield_llon"
+                | "Efield_llat"
+                | "precip_llon"
+                | "precip_llat"
+                | "random_seed_init"
+            ):
+                P[k] = int(r[k])
+            case (
+                "glat"
+                | "glon"
+                | "dtheta"
+                | "dphi"
+                | "Qprecip"
+                | "Qprecip_background"
+                | "E0precip"
+                | "Etarg"
+                | "Efield_latwidth"
+                | "Efield_latoffset"
+                | "Efield_lonwidth"
+                | "Efield_lonoffset"
+                | "altmin"
+                | "grid_openparm"
+            ):
+                P[k] = float(r[k])
+            case "eqdir":  # eqdir obsolete, should use eq_dir
+                P["eq_dir"] = r[k]
+            case "setup_functions":
+                P["setup_functions"] = [r[k]] if isinstance(r[k], str) else r[k]
+            case _:
+                P[k] = r[k]
 
     return P
