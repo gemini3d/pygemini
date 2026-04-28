@@ -12,7 +12,7 @@ from .newton_method import qp2rtheta
 from .convert import geog2geomag, geomag2geog, Re
 
 
-def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
+def tilted_dipole3d_uniformx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     """make tilted dipole grid
 
     Parameters
@@ -372,7 +372,7 @@ def generate_tilted_dipole3d(q, p, phi):
     return xg
 
 
-def tilted_dipole3d_NUx2(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
+def tilted_dipole3d(cfg: dict[str, T.Any]) -> dict[str, T.Any]:
     """
     Generate a tilted dipole grid with nonuniform x2 spacing that
     attempts to keep differentiallengths in the x2-direction approximately constant.
