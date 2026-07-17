@@ -42,7 +42,7 @@ jobs:
     steps:
 
     - name: Git Checkout ${{ github.action_repository }}
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: GCC compiler (macOS)
       if: runner.os == 'macOS'
