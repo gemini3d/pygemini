@@ -77,9 +77,9 @@ def runner(pr: dict[str, typing.Any]) -> None:
     # %% attempt dry run, but don't fail in case intended for HPC
     logging.info("Gemini dry run command:")
     logging.info(" ".join(cmd))
-    proc = subprocess.run(cmd + ["-dryrun"])
+    proc = subprocess.run(cmd + ["-dryrun"], capture_output=True, text=True)
 
-    if proc.returncode != 0:
+    if proc.returncode != 0 or "OK: Gemini dry run" not in proc.stdout:
         raise RuntimeError(f"Gemini dry run failed. {' '.join(cmd)}")
 
     if pr.get("dryrun"):
