@@ -11,6 +11,7 @@ runs:
     with:
       repository: gemini3d/gemci
       path: ${{ github.workspace }}/gemci
+
   - name: Resolve Gemini3D remote SHA
     id: gemini3d-sha
     shell: bash
@@ -37,7 +38,6 @@ runs:
     if: steps.cache-gemini.outputs.cache-hit != 'true'
     shell: bash
     run: |
-      cmake --preset default
-      cmake --build build
+      cmake --workflow build
       cmake --install build
     working-directory: ${{ github.workspace }}/gemini3d
