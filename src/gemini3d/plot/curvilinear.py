@@ -52,7 +52,7 @@ def curv3d_long(
     fg.colorbar(h, ax=ax)
 
     ax = axs[2]
-    ax.pcolormesh(mlati, alti / 1e3, parmi[:, ilon, :], shading="nearest")
+    h=ax.pcolormesh(mlati, alti / 1e3, parmi[:, ilon, :], shading="nearest")
     ax.set_xlabel("mlat")
     ax.set_ylabel("alt")
     fg.colorbar(h, ax=ax)
