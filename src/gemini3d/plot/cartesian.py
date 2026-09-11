@@ -149,7 +149,7 @@ def plot_interp(
             plot12(
                 xp[i],
                 zp,
-                f((Xp, Zp))[:, i],
+                f((Zp, Xp))[:, i],
                 ax,
                 name=name,
                 ref_alt=ref_alt,
@@ -191,8 +191,8 @@ def plot_interp(
                 parm.data.astype(np.float64),
                 bounds_error=False,
             )
-            parmp = f((Yp, Zp)).reshape((lzp, lyp))
-            plot13(yp[i], zp, parmp[:, i], ax, clim, name=name, cmap=cmap)
+            parmp = f((Zp,Yp)).reshape((lzp, lyp))
+            plot13(yp[i], zp, parmp[:, i], ax, clim, name=name, ref_alt=ref_alt, cmap=cmap)
         elif parm.ndim == 1:  # phitop
             f = interp.interp1d(xg["x3"][inds3], parm, bounds_error=False)
             plot1d3(yp, f(yp), name, ax)
