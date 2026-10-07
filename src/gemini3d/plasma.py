@@ -59,6 +59,8 @@ def equilibrium_resample(p: dict[str, T.Any], xg: dict[str, T.Any]):
 
     dat_interp = model_resample(xg_in, dat, xg)
 
+    #breakpoint()
+
     # %% sanity check interpolated variables
     check_density(dat_interp["ns"])
     check_drift(dat_interp["vs1"])
@@ -459,12 +461,14 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]):
     Ts2 = np.broadcast_to(Tn, [7, lx1, lx2, lx3])
     Ts=Ts2.copy()
     
-    # FIXME: if user wants periodic we need to force Ts periodic here
+    # If user wants periodic we need to force ICs periodic here
     if p["flagperiodic"]!=0:
         for i in range(0,7):
             Tref=np.copy(Ts[i,:,:,0])
+            nref=np.copy(ns[i,:,:,0])
             for j in range(1,lx3):
                 Ts[i,:,:,j]=Tref
+                ns[i,:,:,j]=nref
 
     if closeddip:
         # closed dipole grid
