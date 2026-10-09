@@ -87,7 +87,7 @@ def gemini_exe(name: str = "gemini3d.run", root: Path | None = None) -> Path:
     if ret.returncode == 0:
         return exe
 
-    if ret.returncode == 3221225781 and os.name == "nt":
+    if ret.returncode == 0xC0000135 and os.name == "nt":
         # Windows 0xc0000135, missing DLL
         raise RuntimeError(
             "On Windows, it's best to build Gemini3D with static libraries--including all numeric libraries "
