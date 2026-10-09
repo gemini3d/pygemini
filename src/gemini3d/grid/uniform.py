@@ -40,7 +40,7 @@ def uniform1d(xmin: float, xmax: float, L: int):
         x = np.linspace(xmin, xmax, L + 4)
     else:
         # exclude the ghost cells when setting extents
-        x = np.linspace(xmin, xmax, L)
+        x = np.linspace(xmin, xmax, L, endpoint=False)
         d0 = x[1] - x[0]
         d1 = x[-1] - x[-2]
         # now tack on ghost cells so they are outside user-specified region
