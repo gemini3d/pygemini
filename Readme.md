@@ -13,15 +13,17 @@ Setup PyGemini by:
 ```sh
 git clone https://github.com/gemini3d/pygemini
 
-pip install -e pygemini
+pip install -e ./pygemini
 ```
+
+The "-e" flag installs PyGemini in editable mode, allowing you to make changes to the PyGemini source code and have them immediately reflected without reinstalling PyGemini.
 
 ## Developers
 
 For those working with GEMINI Fortran code itself or to work with non-release versions of GEMINI Fortran code:
 
-1. install PyGemini in development mode as above
-2. set environment variable GEMINI_ROOT to the Gemini3D Fortran code directory, otherwise PyGemini will Git clone a new copy.
+* set environment variable GEMINI_ROOT to the Gemini3D build/ directory where the gemini.bin executable resides.
+* optional: set environment variable GEMCI_ROOT to the https://github.com/gemini3d/gemci repository location on the computer.
 
 ## Run simulation
 
