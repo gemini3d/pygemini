@@ -458,17 +458,13 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]):
 
     vsx1 = np.zeros((7, lx1, lx2, lx3), dtype=np.float32)
 
-    Ts2 = np.broadcast_to(Tn, [7, lx1, lx2, lx3])
-    Ts=Ts2.copy()
-    
+    assert Tn.shape == (lx1, lx2, lx3)
+    Ts = np.broadcast_to(Tn, [7, lx1, lx2, lx3]).copy()
+
     # If user wants periodic we need to force ICs periodic here
     if p["flagperiodic"]!=0:
-        for i in range(0,7):
-            Tref=np.copy(Ts[i,:,:,0])
-            nref=np.copy(ns[i,:,:,0])
-            for j in range(1,lx3):
-                Ts[i,:,:,j]=Tref
-                ns[i,:,:,j]=nref
+        Ts[:, :, :, 1:] = Ts[:, :, :, :1]
+        ns[:, :, :, 1:] = ns[:, :, :, :1]
 
     if closeddip:
         # closed dipole grid
