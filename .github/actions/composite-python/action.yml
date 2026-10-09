@@ -16,5 +16,5 @@ runs:
     shell: bash
 
   - name: Non-executable tests
-    run: pytest ${{ github.workspace }} -m "not exe" --basetemp=${{ github.workspace }}/pytest
+    run: pytest ${{ github.workspace }}/src/gemini3d/tests -m "not exe" --basetemp=${{ github.workspace }}/pytest
     shell: bash

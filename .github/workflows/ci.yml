@@ -81,7 +81,7 @@ jobs:
 
     - name: Executable tests
       if: runner.os == 'Linux'
-      run: pytest ${{ github.workspace }} -m "exe" --basetemp=${{ github.workspace }}/pytest-exe
+      run: pytest ${{ github.workspace }}/src/gemini3d/tests -m "exe" --basetemp=${{ github.workspace }}/pytest-exe
       env:
         GEMCI_ROOT: ${{ github.workspace }}/gemci
         GEMINI_CIROOT: ${{ github.workspace }}/ci
@@ -93,10 +93,3 @@ jobs:
         name: exe-${{ runner.os }}-py${{ matrix.python-version }}
         path: ${{ github.workspace }}/pytest-exe/test*mini2*current
         retention-days: 1
-
-
-# codecov coverage
-    # - run: pip install codecov pytest-cov
-    # - run: pytest --cov --cov-report=xml
-    # - name: Upload coverage to Codecov
-    #   uses: codecov/codecov-action@v1
