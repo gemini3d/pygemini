@@ -462,7 +462,7 @@ def equilibrium_state(p: dict[str, T.Any], xg: dict[str, T.Any]):
     Ts = np.broadcast_to(Tn, [7, lx1, lx2, lx3]).copy()
 
     # If user wants periodic we need to force ICs periodic here
-    if p["flagperiodic"]!=0:
+    if p.get("flagperiodic", 0) != 0:
         Ts[:, :, :, 1:] = Ts[:, :, :, :1]
         ns[:, :, :, 1:] = ns[:, :, :, :1]
 
