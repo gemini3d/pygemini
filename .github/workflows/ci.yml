@@ -13,7 +13,7 @@ on:
   push:
     paths:
     - "**.py"
-    - ".github/workflows/**"
+    - ".github/actions/**.yml"
     - "src/gemini3d/libraries.json"
     - "!scripts/**"
     - "!example/**"
@@ -57,7 +57,7 @@ jobs:
         echo "CXX=g++-15" >> $GITHUB_ENV
         echo "FC=gfortran-15" >> $GITHUB_ENV
 
-    - uses: ./.github/workflows/composite-python
+    - uses: ./.github/actions/composite-python
       timeout-minutes: 15
       env:
         GEMINI_CIROOT: ${{ github.workspace }}/ci
@@ -71,11 +71,11 @@ jobs:
         path: ${{ github.workspace }}/pytest/test*mini2*current
         retention-days: 1
 
-    - uses: ./.github/workflows/composite-pkg
+    - uses: gemini3d/gemini3d/.github/actions/composite-pkg@main
       if: runner.os == 'Linux'
       timeout-minutes: 15
 
-    - uses: ./.github/workflows/composite-gemini3d
+    - uses: ./.github/actions/composite-gemini3d
       if: runner.os == 'Linux'
       timeout-minutes: 15
 
