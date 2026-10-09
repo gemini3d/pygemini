@@ -47,7 +47,9 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     alt_km = alt_km.clip(min=1)
 
     # %% CREATE INPUT FILE FOR FORTRAN PROGRAM
-    if p.get("indat_size") is not None:
+    if p.get("indat_size") is None:
+        input_dir = Path(".").resolve()
+    else:
         input_dir = Path(p["indat_size"]).expanduser().resolve(strict=False).parent
 
     if p.get("msis_infile") is None:
@@ -89,7 +91,7 @@ def msis_setup(p: dict[str, T.Any], xg: dict[str, T.Any]) -> xarray.Dataset:
     cmd = [str(msis_exe), str(msis_infile), str(msis_outfile)]
 
     logging.info(" ".join(cmd))
-    subprocess.check_call(cmd, text=True)
+    subprocess.check_call(cmd, text=True, cwd=msis_exe.parent)
 
     # %% load MSIS output
     # use disk coordinates for tracability
